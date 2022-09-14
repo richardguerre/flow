@@ -28,6 +28,7 @@ export interface NexusGenScalars {
 }
 
 export interface NexusGenObjects {
+  ExternalTask: {};
   Query: {};
 }
 
@@ -42,14 +43,20 @@ export type NexusGenRootTypes = NexusGenObjects
 export type NexusGenAllTypes = NexusGenRootTypes & NexusGenScalars
 
 export interface NexusGenFieldTypes {
+  ExternalTask: { // field return type
+    id: number | null; // Int
+  }
   Query: { // field return type
-    ok: boolean; // Boolean!
+    externalTask: NexusGenRootTypes['ExternalTask'][]; // [ExternalTask!]!
   }
 }
 
 export interface NexusGenFieldTypeNames {
+  ExternalTask: { // field return type name
+    id: 'Int'
+  }
   Query: { // field return type name
-    ok: 'Boolean'
+    externalTask: 'ExternalTask'
   }
 }
 
