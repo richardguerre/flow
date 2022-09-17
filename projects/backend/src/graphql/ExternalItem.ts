@@ -1,7 +1,7 @@
 import { extendType, objectType } from "nexus";
 
-export const ExternalTask = objectType({
-  name: "ExternalTask",
+export const ExternalItem = objectType({
+  name: "ExternalItem",
   description: "A task coming from an external source (e.g. Linear, GitHub, Google Calendar, etc.)",
   definition(t) {
     t.int("id", {
@@ -16,8 +16,8 @@ export const ExternalTask = objectType({
 export const PostQuery = extendType({
   type: "Query",
   definition(t) {
-    t.nonNull.list.nonNull.field("externalTask", {
-      type: "ExternalTask",
+    t.nonNull.list.nonNull.field("externalItem", {
+      type: "ExternalItem",
       resolve() {
         return [{ id: 1 }];
       },

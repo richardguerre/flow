@@ -2,7 +2,7 @@ import express from "express";
 import { createServer } from "@graphql-yoga/node";
 import { makeSchema } from "nexus";
 import * as graphqlTypes from "./graphql";
-import { externalSourceConfig } from "../../../config";
+import { externalSources } from "../../../config";
 
 const PORT = process.env.PORT || 4000;
 const app = express();
@@ -27,15 +27,15 @@ app.post("/webhook/:name", async (req, res) => {
   console.log("Received webhook", req.params.name, req.body);
   try {
     if (!req.params.name) throw "No name provided for Webhook";
-    const externalSourceName = Object.keys(externalSourceConfig).find((name) => {
-      const externalSource = externalSourceConfig[name];
+    const externalSourceName = Object.keys(externalSources).find((name) => {
+      const externalSource = externalSources[name];
       const webhookName = externalSource?.webhook?.name ?? name;
       return webhookName.toLowerCase() === req.params.name.toLowerCase();
     });
     if (!externalSourceName) {
       throw "No external source found with name " + req.params.name + "in config.";
     }
-    const externalSource = externalSourceConfig[externalSourceName];
+    const externalSource = externalSources[externalSourceName];
     let result = (await externalSource?.webhook?.onWebhookEvent(req.body)) ?? null;
     if (!result) throw "Webhook event is not relevant";
     if (!Array.isArray(result)) result = [result];
@@ -50,10 +50,10 @@ app.post("/webhook/:name", async (req, res) => {
 app.listen(PORT, () => {
   console.log(`\nServer started on port ${PORT}`);
   console.log(`GraphQL API: http://localhost:${PORT}/graphql`);
-  for (const name in externalSourceConfig) {
+  for (const name in externalSources) {
     console.log(
       `Webhook: http://localhost:${PORT}/webhook/${(
-        externalSourceConfig[name]?.webhook?.name ?? name
+        externalSources[name]?.webhook?.name ?? name
       ).toLowerCase()}`
     );
   }

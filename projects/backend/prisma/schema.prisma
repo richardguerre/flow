@@ -1,0 +1,30 @@
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model Task {
+  id        Int        @id @default(autoincrement())
+  title     String
+  status    TaskStatus @default(TODO)
+  createdAt DateTime   @default(now())
+
+  externalItem   ExternalItem? @relation(fields: [externalItemId], references: [id])
+  externalItemId String?
+}
+
+enum TaskStatus {
+  TODO
+  DONE
+  CANCELED
+}
+
+model ExternalItem {
+  id         String    @id
+  title      String
+  url        String?
+  isRelevant Boolean   @default(true)
+  deletedAt  DateTime?
+
+  Tasks Task[]
+}

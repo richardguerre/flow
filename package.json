@@ -7,5 +7,20 @@
   "license": "MIT",
   "workspaces": [
     "projects/*"
-  ]
+  ],
+  "scripts": {
+    "dev": "yarn workspace backend dev",
+    "---------util---------": "",
+    "setup:init": "yarn install && yarn setup:env:root && yarn setup:env:packages",
+    "setup:env:root": "ts-node --project scripts/tsconfig.json -T scripts/setupEnvRoot.ts",
+    "setup:env:projects": "ts-node --project scripts/tsconfig.json -T scripts/setupEnvProjects.ts",
+    "clean": "yarn clean:root && yarn clean:packages",
+    "clean:root": "rm -rf ./node_modules",
+    "clean:packages": "rm -rf ./packages/**/node_modules",
+    "clean:reset": "yarn clean && yarn install"
+  },
+  "devDependencies": {
+    "dotenv": "^16.0.2",
+    "dotenv-expand": "^9.0.0"
+  }
 }
