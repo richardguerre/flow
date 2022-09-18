@@ -1,7 +1,11 @@
-export {};
+import type { Prisma } from "@prisma/client";
 
 declare global {
-  type ExternalItem = {
+  /**
+   * The input to create an ExternalItem in the database.
+   * Prisma's types are not used as to keep the descriptions of each field.
+   */
+  type ExternalItemInput = {
     /**
      * The ID of the item in the external source.
      * Must be unique accross all external sources, and must not change from one sync to another.
@@ -36,25 +40,25 @@ declare global {
      * Allows you to perform additional actions when a task is created.
      * Errors thrown will cancel the task creation and will be exposed as a GraphQLYogaError.
      */
-    onTaskCreate?: (task: ExternalItem) => Promise<void>;
+    onTaskCreate?: (task: ExternalItemInput) => Promise<void>;
     /**
      * Hook triggered before a task linked to an external item is canceled.
      * Allows you to perform a certain action when a task is canceled.
      * Errors thrown will cancel the task cancelation and will be exposed as a GraphQLYogaError.
      */
-    onTaskCancel?: (task: ExternalItem) => Promise<void>;
+    onTaskCancel?: (task: ExternalItemInput) => Promise<void>;
     /**
      * Hook triggered before a task linked to an external item is completed, but the external item should not be completed.
      * Allows you to perform a certain action when a task is completed.
      */
-    onTaskSemiDone?: (task: ExternalItem) => Promise<void>;
+    onTaskSemiDone?: (task: ExternalItemInput) => Promise<void>;
     /**
      * Hook triggered before a task linked to an external item is completed (i.e. status == DONE).
      * Allows you to perform a certain action when a task is completed.
      * Errors thrown will cancel the task completion and will be exposed as a GraphQLYogaError.
      * This exposes the double checkmark button on task cards of tasks that have this external source.
      */
-    onTaskDone?: (task: ExternalItem) => Promise<void>;
+    onTaskDone?: (task: ExternalItemInput) => Promise<void>;
     /** Webhook configurations */
     webhook?: {
       /**
@@ -66,7 +70,7 @@ declare global {
        * Hook triggered when a webhook event is received.
        * It should map to an ExternalItem or array of ExternalItem or return null if the webhook event is not relevant.
        */
-      onWebhookEvent: (event: any) => Promise<ExternalItem | ExternalItem[] | null>;
+      onWebhookEvent: (event: any) => Promise<ExternalItemInput | ExternalItemInput[] | null>;
       /**
        * Secret string used to verify the webhook event comes from the external source and not a malicious actor.
        */
@@ -80,7 +84,7 @@ declare global {
        * Hook triggered when a poll is done on the external source.
        * It should map to an ExternalItem or array of ExternalItem or return null if the poll results are not relevant.
        */
-      onPoll?: () => Promise<ExternalItem | ExternalItem[] | null>;
+      onPoll?: () => Promise<ExternalItemInput | ExternalItemInput[] | null>;
     };
   };
 
