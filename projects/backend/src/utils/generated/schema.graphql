@@ -24,9 +24,11 @@ An item that is used to create tasks from.\nIt can be a calendar event, a task f
 """
 type ExternalItem {
   durationInMinutes: Int
+  iconUrl: String
   id: ID!
   isRelevant: Boolean!
   scheduledAt: DateTime
+  source: String!
   title: String!
   url: String
 }
@@ -43,4 +45,63 @@ scalar Json @specifiedBy(url: "http://www.ecma-international.org/publications/fi
 
 type Query {
   externalItems(where: ExternalItemWhereInput): [ExternalItem!]!
+  repeatingTasks(where: TaskTemplateWhereInput): [TaskTemplate!]!
+}
+
+type Task {
+  createdAt: DateTime!
+
+  """
+  The date the task is scheduled for\nOnly the day is relevant, the time should be ignored.
+  """
+  date: DateTime!
+
+  """
+  The length of time the task is expected to take.\nIf this task has an external item, use the externalItem.durationInMinutest instead.
+  """
+  durationInMinutes: Int
+  externalItem: ExternalItem
+  id: Int!
+
+  """
+  The dates of the tasks that were posponed to create this task.\nThis is mostly for analytics purposes, hence why it's not a relation.
+  """
+  previousTaskDates: [DateTime!]!
+  repeats: Boolean
+  status: TaskStatus!
+  taskTemplate: TaskTemplate
+  title: String!
+}
+
+enum TaskRepeatance {
+  EVERYDAY
+  FRIDAY
+  MONDAY
+  SATURDAY
+  SUNDAY
+  THURSDAY
+  TUESDAY
+  WEDNESDAY
+  WEEKDAY
+  WEEKEND
+}
+
+enum TaskStatus {
+  CANCELED
+  DONE
+  POSTPONED
+  TODO
+}
+
+"""Templates for repeating tasks."""
+type TaskTemplate {
+  """The intial durationInMinutes when creating a task using the template."""
+  durationInMinutes: Int
+  id: Int!
+  repeats: [TaskRepeatance!]!
+  title: String!
+}
+
+input TaskTemplateWhereInput {
+  repeats: [TaskRepeatance!]
 }

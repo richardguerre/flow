@@ -6,6 +6,7 @@ const constants = {
 export const externalSources: ExternalSources = {
   Linear: {
     description: "Linear issues that I'm assigned and that are in a status I care about",
+    iconUrl: "",
     webhook: {
       onWebhookEvent: async (event: LinearWebhookEvent) => {
         if (event.type !== "Issue") return null;

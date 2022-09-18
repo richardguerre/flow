@@ -1,7 +1,8 @@
 import { extendType, objectType, inputObjectType, arg } from "nexus";
 import { ExternalItem } from "nexus-prisma";
+import { externalSources } from "../../../../config";
 
-// -------------- ExternalItem --------------
+// -------------- ExternalItem types --------------
 
 export const ExternalItemType = objectType({
   name: ExternalItem.$name,
@@ -13,10 +14,14 @@ export const ExternalItemType = objectType({
     t.field(ExternalItem.url);
     t.field(ExternalItem.scheduledAt);
     t.field(ExternalItem.durationInMinutes);
+    t.field(ExternalItem.source);
+    t.string("iconUrl", {
+      resolve: (parent) => externalSources[parent.source]?.iconUrl ?? null,
+    });
   },
 });
 
-// --------------- Query types ---------------
+// --------------- ExternalItem query types ---------------
 
 export const ExternalItemQueryTypes = extendType({
   type: "Query",

@@ -35,6 +35,8 @@ declare global {
      * Exposed in the GraphQL API
      */
     description?: string;
+    /** The URL to an icon of the external source. For example the Google Calendar icon. */
+    iconUrl?: string;
     /**
      * Hook triggered before a task is created with an external item.
      * Allows you to perform additional actions when a task is created.

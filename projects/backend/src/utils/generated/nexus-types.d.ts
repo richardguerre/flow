@@ -67,9 +67,14 @@ export interface NexusGenInputs {
     isRelevant?: boolean | null; // Boolean
     isScheduled?: boolean | null; // Boolean
   }
+  TaskTemplateWhereInput: { // input type
+    repeats?: NexusGenEnums['TaskRepeatance'][] | null; // [TaskRepeatance!]
+  }
 }
 
 export interface NexusGenEnums {
+  TaskRepeatance: "EVERYDAY" | "FRIDAY" | "MONDAY" | "SATURDAY" | "SUNDAY" | "THURSDAY" | "TUESDAY" | "WEDNESDAY" | "WEEKDAY" | "WEEKEND"
+  TaskStatus: "CANCELED" | "DONE" | "POSTPONED" | "TODO"
 }
 
 export interface NexusGenScalars {
@@ -91,10 +96,25 @@ export interface NexusGenObjects {
     id: string; // ID!
     isRelevant: boolean; // Boolean!
     scheduledAt?: NexusGenScalars['DateTime'] | null; // DateTime
+    source: string; // String!
     title: string; // String!
     url?: string | null; // String
   }
   Query: {};
+  Task: { // root type
+    createdAt: NexusGenScalars['DateTime']; // DateTime!
+    durationInMinutes?: number | null; // Int
+    id: number; // Int!
+    previousTaskDates: NexusGenScalars['DateTime'][]; // [DateTime!]!
+    status: NexusGenEnums['TaskStatus']; // TaskStatus!
+    title: string; // String!
+  }
+  TaskTemplate: { // root type
+    durationInMinutes?: number | null; // Int
+    id: number; // Int!
+    repeats: NexusGenEnums['TaskRepeatance'][]; // [TaskRepeatance!]!
+    title: string; // String!
+  }
 }
 
 export interface NexusGenInterfaces {
@@ -105,33 +125,75 @@ export interface NexusGenUnions {
 
 export type NexusGenRootTypes = NexusGenObjects
 
-export type NexusGenAllTypes = NexusGenRootTypes & NexusGenScalars
+export type NexusGenAllTypes = NexusGenRootTypes & NexusGenScalars & NexusGenEnums
 
 export interface NexusGenFieldTypes {
   ExternalItem: { // field return type
     durationInMinutes: number | null; // Int
+    iconUrl: string | null; // String
     id: string; // ID!
     isRelevant: boolean; // Boolean!
     scheduledAt: NexusGenScalars['DateTime'] | null; // DateTime
+    source: string; // String!
     title: string; // String!
     url: string | null; // String
   }
   Query: { // field return type
     externalItems: NexusGenRootTypes['ExternalItem'][]; // [ExternalItem!]!
+    repeatingTasks: NexusGenRootTypes['TaskTemplate'][]; // [TaskTemplate!]!
+  }
+  Task: { // field return type
+    createdAt: NexusGenScalars['DateTime']; // DateTime!
+    date: NexusGenScalars['DateTime']; // DateTime!
+    durationInMinutes: number | null; // Int
+    externalItem: NexusGenRootTypes['ExternalItem'] | null; // ExternalItem
+    id: number; // Int!
+    previousTaskDates: NexusGenScalars['DateTime'][]; // [DateTime!]!
+    repeats: boolean | null; // Boolean
+    status: NexusGenEnums['TaskStatus']; // TaskStatus!
+    taskTemplate: NexusGenRootTypes['TaskTemplate'] | null; // TaskTemplate
+    title: string; // String!
+  }
+  TaskTemplate: { // field return type
+    durationInMinutes: number | null; // Int
+    id: number; // Int!
+    repeats: NexusGenEnums['TaskRepeatance'][]; // [TaskRepeatance!]!
+    title: string; // String!
   }
 }
 
 export interface NexusGenFieldTypeNames {
   ExternalItem: { // field return type name
     durationInMinutes: 'Int'
+    iconUrl: 'String'
     id: 'ID'
     isRelevant: 'Boolean'
     scheduledAt: 'DateTime'
+    source: 'String'
     title: 'String'
     url: 'String'
   }
   Query: { // field return type name
     externalItems: 'ExternalItem'
+    repeatingTasks: 'TaskTemplate'
+  }
+  Task: { // field return type name
+    createdAt: 'DateTime'
+    date: 'DateTime'
+    durationInMinutes: 'Int'
+    externalItem: 'ExternalItem'
+    id: 'Int'
+    previousTaskDates: 'DateTime'
+    repeats: 'Boolean'
+    status: 'TaskStatus'
+    taskTemplate: 'TaskTemplate'
+    title: 'String'
+  }
+  TaskTemplate: { // field return type name
+    durationInMinutes: 'Int'
+    id: 'Int'
+    repeats: 'TaskRepeatance'
+    title: 'String'
   }
 }
 
@@ -139,6 +201,9 @@ export interface NexusGenArgTypes {
   Query: {
     externalItems: { // args
       where?: NexusGenInputs['ExternalItemWhereInput'] | null; // ExternalItemWhereInput
+    }
+    repeatingTasks: { // args
+      where?: NexusGenInputs['TaskTemplateWhereInput'] | null; // TaskTemplateWhereInput
     }
   }
 }
@@ -153,7 +218,7 @@ export type NexusGenObjectNames = keyof NexusGenObjects;
 
 export type NexusGenInputNames = keyof NexusGenInputs;
 
-export type NexusGenEnumNames = never;
+export type NexusGenEnumNames = keyof NexusGenEnums;
 
 export type NexusGenInterfaceNames = never;
 

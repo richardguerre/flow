@@ -46,7 +46,7 @@ app.post("/webhook/:name", async (req, res) => {
     if (!externalItems) throw "Webhook event is not relevant";
     if (!Array.isArray(externalItems)) externalItems = [externalItems];
 
-    const result = await addExternalItems(externalItems);
+    const result = await addExternalItems(externalSourceName, externalItems);
     console.log(`Added ${result.count} external items`);
   } catch (e: any) {
     console.log(e);

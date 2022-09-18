@@ -27,7 +27,7 @@ CREATE TABLE "TaskTemplate" (
     "updatedAt" TIMESTAMP(3) NOT NULL,
     "title" TEXT NOT NULL,
     "durationInMinutes" INTEGER,
-    "every" "TaskRepeatance"[],
+    "repeats" "TaskRepeatance"[],
 
     CONSTRAINT "TaskTemplate_pkey" PRIMARY KEY ("id")
 );
@@ -38,6 +38,7 @@ CREATE TABLE "ExternalItem" (
     "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
     "updatedAt" TIMESTAMP(3) NOT NULL,
     "title" TEXT NOT NULL,
+    "source" TEXT NOT NULL,
     "isRelevant" BOOLEAN NOT NULL DEFAULT true,
     "url" TEXT,
     "scheduledAt" TIMESTAMP(3),

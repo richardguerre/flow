@@ -55,7 +55,7 @@ model TaskTemplate {
   title             String
   /// The intial durationInMinutes when creating a task using the template.
   durationInMinutes Int?
-  every             TaskRepeatance[]
+  repeats           TaskRepeatance[]
 
   tasks Task[] @ignore
 }
@@ -80,6 +80,7 @@ model ExternalItem {
   createdAt         DateTime  @default(now())
   updatedAt         DateTime  @updatedAt
   title             String
+  source            String
   isRelevant        Boolean   @default(true)
   url               String?
   scheduledAt       DateTime?
