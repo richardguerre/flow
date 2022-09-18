@@ -4,6 +4,7 @@ import { makeSchema } from "nexus";
 import * as graphqlTypes from "./graphql";
 import { externalSources } from "../../../config";
 import { addExternalItems } from "./utils/addExternalItems";
+import { prisma } from "./utils/prisma";
 
 const PORT = process.env.PORT || 4000;
 const app = express();
@@ -17,8 +18,12 @@ const schema = makeSchema({
     schema: __dirname + "/utils/generated/schema.graphql",
     typegen: __dirname + "/utils/generated/nexus-types.d.ts",
   },
+  contextType: {
+    module: __dirname + "/graphql/context.ts",
+    export: "Context",
+  },
 });
-const graphQLServer = createServer({ schema });
+const graphQLServer = createServer({ schema, context: { prisma } });
 
 app.use("/graphql", graphQLServer);
 
