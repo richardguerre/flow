@@ -19,10 +19,10 @@ declare global {
     /** The date and time the item is scheduled at */
     scheduledAt?: Date;
     /**
-     * The length of time the item should take to complete
+     * The length of time, in minutes, the item should take to complete
      * When coupled with scheduledAt (e.g. when it's a calendar event), the duration determines when the item ends.
      */
-    duration?: number;
+    durationInMinutes?: number;
   };
 
   type ExternalSource = {

@@ -3,28 +3,81 @@ datasource db {
   url      = env("DATABASE_URL")
 }
 
-model Task {
-  id        Int        @id @default(autoincrement())
-  title     String
-  status    TaskStatus @default(TODO)
-  createdAt DateTime   @default(now())
+generator client {
+  provider = "prisma-client-js"
+}
 
-  externalItem   ExternalItem? @relation(fields: [externalItemId], references: [id])
+model Task {
+  id                Int        @id @default(autoincrement())
+  createdAt         DateTime   @default(now())
+  updatedAt         DateTime   @updatedAt
+  title             String
+  status            TaskStatus @default(TODO)
+  /// The date the task is scheduled for
+  /// Only the day is relevant, the time should be ignored.
+  date              DateTime
+  /// The dates of the tasks that were posponed to create this task.
+  /// This is mostly for analytics purposes, hence why it's not a relation.
+  previousTaskDates DateTime[]
+  /// The length of time the task is expected to take.
+  /// If this task has an external item, use the externalItem.durationInMinutest instead.
+  durationInMinutes Int?
+  /// The date and time the task is scheduled to start.
+  /// Only the time is relevant. The date is always the same as the date of the task.
+  // scheduledAt       DateTime?
+
   externalItemId String?
+  externalItem   ExternalItem? @relation(fields: [externalItemId], references: [id])
+
+  taskTemplateId Int?
+  taskTemplate   TaskTemplate? @relation(fields: [taskTemplateId], references: [id])
 }
 
 enum TaskStatus {
   TODO
   DONE
+  /// When the task was decided not to be done anymore.
   CANCELED
+  /// When the task was not completed on the scheduled date, but was decided to work on it a different day.
+  /// A new task is created at the new date, instead of changing the date of this task.
+  POSTPONED
+}
+
+/// Templates for repeating tasks.
+model TaskTemplate {
+  id                Int              @id @default(autoincrement())
+  createdAt         DateTime         @default(now())
+  updatedAt         DateTime         @updatedAt
+  title             String
+  /// The intial durationInMinutes when creating a task using the template.
+  durationInMinutes Int?
+  every             TaskRepeatance[]
+
+  tasks Task[] @ignore
+}
+
+enum TaskRepeatance {
+  EVERYDAY
+  WEEKDAY
+  WEEKEND
+  MONDAY
+  TUESDAY
+  WEDNESDAY
+  THURSDAY
+  FRIDAY
+  SATURDAY
+  SUNDAY
 }
 
 model ExternalItem {
-  id         String    @id
-  title      String
-  url        String?
-  isRelevant Boolean   @default(true)
-  deletedAt  DateTime?
+  id                String    @id
+  createdAt         DateTime  @default(now())
+  updatedAt         DateTime  @updatedAt
+  title             String
+  isRelevant        Boolean   @default(true)
+  url               String?
+  scheduledAt       DateTime?
+  durationInMinutes Int?
 
-  Tasks Task[]
+  tasks Task[] @ignore
 }

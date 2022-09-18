@@ -5,7 +5,7 @@ const constants = {
 
 export const externalSources: ExternalSources = {
   Linear: {
-    description: "Linear is a project management tool",
+    description: "Linear issues that I'm assigned and that are in a status I care about",
     webhook: {
       onWebhookEvent: async (event: LinearWebhookEvent) => {
         if (event.type !== "Issue") return null;
@@ -14,17 +14,16 @@ export const externalSources: ExternalSources = {
 
         return {
           id: event.data.id,
-          title: `[${event.data.team?.key || ""}-${event.data.number}] ` + event.data.title,
+          title: `${event.data.team?.key || ""}-${event.data.number}: ` + event.data.title,
           url: event.url,
           isRelevant:
             !!event.data?.state?.name &&
             constants.linearStatusesICareAbout.includes(event.data.state.name),
-          deletedAt: event.action === "delete" ? new Date() : undefined,
         };
       },
     },
   },
   GitHub: {
-    description: "Github is a code hosting platform",
+    description: "GitHub PRs that need my review and aren't closed",
   },
 };
