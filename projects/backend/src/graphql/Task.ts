@@ -94,7 +94,7 @@ builder.mutationField("createTask", (t) =>
         data: {
           title: args.input.title,
           status: u(args.input.status),
-          durationInMinutes: u(args.input.durationInMinutes),
+          durationInMinutes: args.input.durationInMinutes,
           date: u(args.input.date),
           isPrivate: u(args.input.isPrivate),
           externalItemId: args.input.externalItemId?.id,
@@ -156,8 +156,10 @@ builder.mutationField("postponeAndCreateTask", (t) =>
 builder.mutationField("updateTask", (t) =>
   t.prismaFieldWithInput({
     type: "Task",
+    description: `Update a task.
+      To postpone and create a new task, use \`postponeAndCreateTask\` instead.`,
     input: {
-      id: t.input.globalID({ required: true }),
+      id: t.input.globalID({ required: true, description: "The Relay ID of the task to update." }),
       title: t.input.string({ description: "The title of the task." }),
       status: t.input.field({
         type: TaskStatusEnum,
@@ -181,7 +183,7 @@ builder.mutationField("updateTask", (t) =>
         data: {
           title: u(args.input.title),
           status: u(args.input.status),
-          durationInMinutes: u(args.input.durationInMinutes),
+          durationInMinutes: args.input.durationInMinutes,
           date: u(args.input.date),
           isPrivate: u(args.input.isPrivate),
         },

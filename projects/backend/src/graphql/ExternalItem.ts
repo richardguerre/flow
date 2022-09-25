@@ -23,7 +23,7 @@ export const ExternalItemType = builder.prismaNode("ExternalItem", {
   }),
 });
 
-// // --------------- ExternalItem query types ---------------
+// --------------- ExternalItem query types ---------------
 
 builder.queryField("externalItems", (t) =>
   t.prismaConnection({

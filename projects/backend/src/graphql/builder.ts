@@ -34,7 +34,9 @@ builder.scalarType("Date", {
   parseValue: (val) => new Date(val as string),
 });
 
-// utils
+// ----------------- utils -----------------
+// The following utils help to work interact with Pothos and Prisma.
+
 /**
  * Returns either T or undefined which matches with Prisma's inputs.
  * @returns T | undefined
@@ -45,6 +47,7 @@ export function u<T>(input: T | null | undefined): T | undefined {
 
 /**
  * Returns either number or undefined which matches with Prisma's number inputs.
+ * @returns number | undefined
  */
 export function uParseInt<T>(input: T | null | undefined): number | undefined {
   return input ? parseInt(input as any) : undefined;
