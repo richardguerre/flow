@@ -2,7 +2,7 @@
 CREATE TYPE "TaskStatus" AS ENUM ('TODO', 'DONE', 'CANCELED', 'POSTPONED');
 
 -- CreateEnum
-CREATE TYPE "TaskRepeatance" AS ENUM ('EVERYDAY', 'WEEKDAY', 'WEEKEND', 'MONDAY', 'TUESDAY', 'WEDNESDAY', 'THURSDAY', 'FRIDAY', 'SATURDAY', 'SUNDAY');
+CREATE TYPE "TaskRepeatance" AS ENUM ('MONDAY', 'TUESDAY', 'WEDNESDAY', 'THURSDAY', 'FRIDAY', 'SATURDAY', 'SUNDAY');
 
 -- CreateTable
 CREATE TABLE "Task" (
@@ -11,11 +11,12 @@ CREATE TABLE "Task" (
     "updatedAt" TIMESTAMP(3) NOT NULL,
     "title" TEXT NOT NULL,
     "status" "TaskStatus" NOT NULL DEFAULT 'TODO',
-    "date" TIMESTAMP(3) NOT NULL,
-    "previousTaskDates" TIMESTAMP(3)[],
+    "date" DATE NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    "isPrivate" BOOLEAN NOT NULL DEFAULT false,
     "durationInMinutes" INTEGER,
+    "previousDates" DATE[],
     "externalItemId" TEXT,
-    "taskTemplateId" INTEGER,
+    "fromTemplateId" INTEGER,
 
     CONSTRAINT "Task_pkey" PRIMARY KEY ("id")
 );
@@ -28,6 +29,7 @@ CREATE TABLE "TaskTemplate" (
     "title" TEXT NOT NULL,
     "durationInMinutes" INTEGER,
     "repeats" "TaskRepeatance"[],
+    "firstDay" DATE NOT NULL DEFAULT CURRENT_TIMESTAMP,
 
     CONSTRAINT "TaskTemplate_pkey" PRIMARY KEY ("id")
 );
@@ -51,4 +53,4 @@ CREATE TABLE "ExternalItem" (
 ALTER TABLE "Task" ADD CONSTRAINT "Task_externalItemId_fkey" FOREIGN KEY ("externalItemId") REFERENCES "ExternalItem"("id") ON DELETE SET NULL ON UPDATE CASCADE;
 
 -- AddForeignKey
-ALTER TABLE "Task" ADD CONSTRAINT "Task_taskTemplateId_fkey" FOREIGN KEY ("taskTemplateId") REFERENCES "TaskTemplate"("id") ON DELETE SET NULL ON UPDATE CASCADE;
+ALTER TABLE "Task" ADD CONSTRAINT "Task_fromTemplateId_fkey" FOREIGN KEY ("fromTemplateId") REFERENCES "TaskTemplate"("id") ON DELETE SET NULL ON UPDATE CASCADE;

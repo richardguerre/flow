@@ -7,38 +7,46 @@ generator client {
   provider = "prisma-client-js"
 }
 
-generator nexusPrisma {
-  provider = "nexus-prisma"
+generator pothos {
+  provider = "prisma-pothos-types"
 }
 
 model Task {
+  /// The id of the task.
   id                Int        @id @default(autoincrement())
+  /// The date and time of creation of the task
   createdAt         DateTime   @default(now())
+  /// The date and time the task was updated
   updatedAt         DateTime   @updatedAt
+  /// The title of the task
   title             String
+  /// The status of the task
   status            TaskStatus @default(TODO)
   /// The date the task is scheduled for
-  /// Only the day is relevant, the time should be ignored.
-  date              DateTime
+  date              DateTime   @default(now()) @db.Date
+  /// Whether the task is private or not
+  isPrivate         Boolean    @default(false)
+  /// The length of time the task is expected to take.
+  durationInMinutes Int?
   /// The dates of the tasks that were posponed to create this task.
   /// This is mostly for analytics purposes, hence why it's not a relation.
-  previousTaskDates DateTime[]
-  /// The length of time the task is expected to take.
-  /// If this task has an external item, use the externalItem.durationInMinutest instead.
-  durationInMinutes Int?
-  /// The date and time the task is scheduled to start.
-  /// Only the time is relevant. The date is always the same as the date of the task.
-  // scheduledAt       DateTime?
+  previousDates     DateTime[] @db.Date
 
-  externalItemId String?
+  /// The externalItem linked to the task
   externalItem   ExternalItem? @relation(fields: [externalItemId], references: [id])
+  externalItemId String?
 
-  taskTemplateId Int?
-  taskTemplate   TaskTemplate? @relation(fields: [taskTemplateId], references: [id])
+  /// The template that was used to create the task
+  fromTemplate   TaskTemplate? @relation(fields: [fromTemplateId], references: [id])
+  fromTemplateId Int?
 }
 
+// The description of each enum value is copied into src/graphql/Task.ts
+/// The status of a task
 enum TaskStatus {
+  /// When the task is planned or in progress.
   TODO
+  /// When the task is done.
   DONE
   /// When the task was decided not to be done anymore.
   CANCELED
@@ -49,21 +57,26 @@ enum TaskStatus {
 
 /// Templates for repeating tasks.
 model TaskTemplate {
+  /// The id of the task template
   id                Int              @id @default(autoincrement())
+  /// The date and time of creation of the task template
   createdAt         DateTime         @default(now())
+  /// The date and time the task template was updated
   updatedAt         DateTime         @updatedAt
+  /// The initial title when creating a task using the template.
   title             String
-  /// The intial durationInMinutes when creating a task using the template.
+  /// The initial durationInMinutes when creating a task using the template.
   durationInMinutes Int?
+  /// The repeatance of the task template. Must have at least one value.
   repeats           TaskRepeatance[]
+  /// The first day the task template takes effect.
+  firstDay          DateTime         @default(now()) @db.Date
 
+  // Ignoring as we don't need to get tasks from a template
   tasks Task[] @ignore
 }
 
 enum TaskRepeatance {
-  EVERYDAY
-  WEEKDAY
-  WEEKEND
   MONDAY
   TUESDAY
   WEDNESDAY
@@ -76,15 +89,27 @@ enum TaskRepeatance {
 /// An item that is used to create tasks from.
 /// It can be a calendar event, a task from tools like Trello or Linear, etc.
 model ExternalItem {
+  /// The id of the external item
   id                String    @id
+  /// The date and time of creation of the external item
   createdAt         DateTime  @default(now())
+  /// The date and time the external item was updated
   updatedAt         DateTime  @updatedAt
+  /// The title of the external item.
+  /// It is used as the initial title creating a task from the external item.
   title             String
+  /// The source of the external item.
+  /// This is equal to one of the keys in the config.externalSources object.
   source            String
+  /// Whether the external item is relevant to the user and should be shown.
   isRelevant        Boolean   @default(true)
+  /// The url to the external item.
   url               String?
+  /// The date and time the external item is scheduled for.
   scheduledAt       DateTime?
+  /// The length of time the external item is expected to take.
   durationInMinutes Int?
 
+  // Ignoring as we don't need to get tasks from a external item
   tasks Task[] @ignore
 }

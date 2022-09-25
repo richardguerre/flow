@@ -1,59 +1,62 @@
-import { extendType, objectType, inputObjectType, arg } from "nexus";
-import { ExternalItem } from "nexus-prisma";
+import { builder } from "./builder";
 import { externalSources } from "../../../../config";
+import { prisma } from "../utils/prisma";
+import { endOfDay, startOfDay } from "../utils/getDays";
 
 // -------------- ExternalItem types --------------
 
-export const ExternalItemType = objectType({
-  name: ExternalItem.$name,
-  description: ExternalItem.$description,
-  definition(t) {
-    t.field(ExternalItem.id);
-    t.field(ExternalItem.title);
-    t.field(ExternalItem.isRelevant);
-    t.field(ExternalItem.url);
-    t.field(ExternalItem.scheduledAt);
-    t.field(ExternalItem.durationInMinutes);
-    t.field(ExternalItem.source);
-    t.string("iconUrl", {
-      resolve: (parent) => externalSources[parent.source]?.iconUrl ?? null,
-    });
-  },
+export const ExternalItemType = builder.prismaNode("ExternalItem", {
+  id: { field: "id" },
+  fields: (t) => ({
+    createdAt: t.expose("createdAt", { type: "Date" }),
+    title: t.exposeString("title"),
+    isRelevant: t.exposeBoolean("isRelevant"),
+    url: t.exposeString("url", { nullable: true }),
+    scheduledAt: t.expose("scheduledAt", { type: "Date", nullable: true }),
+    durationInMinutes: t.exposeInt("durationInMinutes", { nullable: true }),
+    source: t.exposeString("source"),
+    iconUrl: t.string({
+      description: "Icon url for the external source",
+      resolve: (item) => externalSources[item.source]?.iconUrl ?? null,
+      nullable: true,
+    }),
+  }),
 });
 
-// --------------- ExternalItem query types ---------------
+// // --------------- ExternalItem query types ---------------
 
-export const ExternalItemQueryTypes = extendType({
-  type: "Query",
-  definition(t) {
-    t.nonNull.list.nonNull.field("externalItems", {
-      type: "ExternalItem",
-      args: {
-        where: arg({ type: "ExternalItemWhereInput" }),
-      },
-      resolve: (_, args, ctx) => {
-        return ctx.prisma.externalItem.findMany({
-          where: {
-            isRelevant: args.where?.isRelevant ?? true,
-            ...(args.where?.isScheduled
-              ? {
-                  scheduledAt: {
-                    gte: new Date(new Date().setHours(0, 0, 0, 0)),
-                    lte: new Date(new Date().setHours(23, 59, 59, 999)),
-                  },
-                }
-              : { scheduledAt: null }),
-          },
-        });
-      },
-    });
-  },
-});
+builder.queryField("externalItems", (t) =>
+  t.prismaConnection({
+    type: "ExternalItem",
+    cursor: "id",
+    description: `Get all external items.
+      By default, only items where isRelevant is true and scheduledAt is null are returned.
+      Pass the \`where\` argument to override these defaults.`,
+    args: { where: t.arg({ type: ExternalItemWhereInput, required: false }) },
+    resolve: (query, _, args) => {
+      const today = new Date();
+      return prisma.externalItem.findMany({
+        ...query,
+        where: {
+          isRelevant: args.where?.isRelevant ?? true,
+          ...(args.where?.isScheduled
+            ? { scheduledAt: { gte: startOfDay(today), lte: endOfDay(today) } }
+            : { scheduledAt: null }),
+        },
+      });
+    },
+  })
+);
 
-export const ExternalItemWhereInput = inputObjectType({
-  name: "ExternalItemWhereInput",
-  definition(t) {
-    t.boolean("isRelevant");
-    t.boolean("isScheduled");
-  },
+export const ExternalItemWhereInput = builder.inputType("ExternalItemWhereInput", {
+  fields: (t) => ({
+    isRelevant: t.boolean({
+      required: false,
+      description: `If set to true, it will return items where isRelevant is true.`,
+    }),
+    isScheduled: t.boolean({
+      required: false,
+      description: `If set to true, it will return items where scheduledAt is today or null.`,
+    }),
+  }),
 });

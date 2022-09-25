@@ -1,42 +1,62 @@
-import { arg, enumType, extendType, inputObjectType, objectType } from "nexus";
-import { TaskRepeatance, TaskTemplate } from "nexus-prisma";
+import { builder } from "./builder";
+import { TaskRepeatance } from "@prisma/client";
+import { prisma } from "../utils/prisma";
 
 // --------------- TaskTemplate types ---------------
 
-export const TaskTemplateTypes = objectType({
-  name: TaskTemplate.$name,
-  description: TaskTemplate.$description,
-  definition(t) {
-    t.field(TaskTemplate.id);
-    t.field(TaskTemplate.title);
-    t.field(TaskTemplate.durationInMinutes);
-    t.field(TaskTemplate.repeats);
-  },
+export const TaskTemplateType = builder.prismaNode("TaskTemplate", {
+  id: { field: "id" },
+  fields: (t) => ({
+    title: t.exposeString("title"),
+    durationInMinutes: t.exposeInt("durationInMinutes", { nullable: true }),
+    repeatsEvery: t.expose("repeats", { type: [TaskRepeatanceEnum] }),
+    firstDay: t.expose("firstDay", { type: "Date" }),
+  }),
 });
 
-export const TaskRepeatanceEnum = enumType(TaskRepeatance);
+export const TaskRepeatanceEnum = builder.enumType("TaskRepeatance", {
+  values: [
+    "MONDAY",
+    "TUESDAY",
+    "WEDNESDAY",
+    "THURSDAY",
+    "FRIDAY",
+    "SATURDAY",
+    "SUNDAY",
+  ] as TaskRepeatance[],
+});
 
 // ------------ TaskTemplate query types ------------
 
-export const TaskTemplateQueryTypes = extendType({
-  type: "Query",
-  definition(t) {
-    t.nonNull.list.nonNull.field("repeatingTasks", {
-      type: "TaskTemplate",
-      args: {
-        where: arg({ type: "TaskTemplateWhereInput" }),
-      },
-      resolve: (_, args, ctx) =>
-        ctx.prisma.taskTemplate.findMany({
-          where: { ...(args.where?.repeats ? { repeats: { hasSome: args.where.repeats } } : {}) },
-        }),
-    });
-  },
+builder.queryField("repeatingTasks", (t) => {
+  return t.prismaField({
+    type: ["TaskTemplate"],
+    description: `Get repeating tasks (aka task templates).
+    `,
+    args: { where: t.arg({ type: TaskTemplateWhereInput, required: false }) },
+    resolve: async (query, _root, args) => {
+      return prisma.taskTemplate.findMany({
+        ...query,
+        where: {
+          ...(args.where?.from ? { firstDay: { gte: args.where.from } } : {}),
+          ...(args.where?.repeatsEvery ? { repeats: { hasSome: args.where.repeatsEvery } } : {}),
+        },
+      });
+    },
+  });
 });
 
-export const TaskTemplateWhereInput = inputObjectType({
-  name: "TaskTemplateWhereInput",
-  definition(t) {
-    t.list.nonNull.field({ name: "repeats", type: TaskRepeatanceEnum });
-  },
+export const TaskTemplateWhereInput = builder.inputType("TaskTemplateWhereInput", {
+  fields: (t) => ({
+    from: t.field({
+      type: "Date",
+      required: false,
+      description: "Will return task templates that were started from the given date or later.",
+    }),
+    repeatsEvery: t.field({
+      type: [TaskRepeatanceEnum],
+      required: false,
+      description: "Will return repeating tasks that repeat on the given days of the week.",
+    }),
+  }),
 });

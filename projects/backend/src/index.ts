@@ -1,10 +1,8 @@
 import express from "express";
 import { createServer } from "@graphql-yoga/node";
-import { makeSchema } from "nexus";
-import * as graphqlTypes from "./graphql";
+import { schema } from "./graphql";
 import { externalSources } from "../../../config";
 import { addExternalItems } from "./utils/addExternalItems";
-import { prisma } from "./utils/prisma";
 
 const PORT = process.env.PORT || 4000;
 const app = express();
@@ -12,19 +10,7 @@ app.use(express.json());
 
 // -------------------------- GraphQL ----------------------------
 
-const schema = makeSchema({
-  types: graphqlTypes,
-  outputs: {
-    schema: __dirname + "/utils/generated/schema.graphql",
-    typegen: __dirname + "/utils/generated/nexus-types.d.ts",
-  },
-  contextType: {
-    module: __dirname + "/graphql/context.ts",
-    export: "Context",
-  },
-});
-const graphQLServer = createServer({ schema, context: { prisma } });
-
+const graphQLServer = createServer({ schema });
 app.use("/graphql", graphQLServer);
 
 // -------------------------- Webhooks ----------------------------
