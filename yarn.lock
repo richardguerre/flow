@@ -177,6 +177,11 @@
   resolved "https://registry.yarnpkg.com/@pothos/plugin-relay/-/plugin-relay-3.27.0.tgz#1a6f8ddcb8eaa6d5d4b81755d950a0bc238bfbdc"
   integrity sha512-+U/C1tY5jfUR4Cdixe7DBihlKQgDTfVZN1WwuEdgG9Vwq5fr0SdaH3tUTdllJTF+u0qowCpiVA25FI7Y/MMQ/A==
 
+"@pothos/plugin-with-input@^3.8.0":
+  version "3.8.0"
+  resolved "https://registry.yarnpkg.com/@pothos/plugin-with-input/-/plugin-with-input-3.8.0.tgz#63b32e3fac24743bed256b011a41d437cce5760d"
+  integrity sha512-sDmDyhZ74odbn9/4vAig65uvE34DqquwNzSAkdp5wIwi49iGov7dvZt+KQ3CXiKSvkryZO544WJSWbT/8gQg3A==
+
 "@prisma/client@^4.3.1":
   version "4.3.1"
   resolved "https://registry.yarnpkg.com/@prisma/client/-/client-4.3.1.tgz#b9aad9bd9bd43e7f715ec1d763c8bd9273688800"

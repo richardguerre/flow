@@ -73,10 +73,10 @@ export const getStartFromConnectionArgs = ({ after, before, last }: LoadEdgesInp
   return startOfDay(start);
 };
 
-export const startOfDay = (day: Date) => {
+export const startOfDay = (day: Date = new Date()) => {
   return new Date(day.setHours(0, 0, 0, 0));
 };
 
-export const endOfDay = (day: Date) => {
+export const endOfDay = (day: Date = new Date()) => {
   return new Date(day.setHours(23, 59, 59, 999));
 };

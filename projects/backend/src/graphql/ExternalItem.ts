@@ -34,13 +34,12 @@ builder.queryField("externalItems", (t) =>
       Pass the \`where\` argument to override these defaults.`,
     args: { where: t.arg({ type: ExternalItemWhereInput, required: false }) },
     resolve: (query, _, args) => {
-      const today = new Date();
       return prisma.externalItem.findMany({
         ...query,
         where: {
           isRelevant: args.where?.isRelevant ?? true,
           ...(args.where?.isScheduled
-            ? { scheduledAt: { gte: startOfDay(today), lte: endOfDay(today) } }
+            ? { scheduledAt: { gte: startOfDay(), lte: endOfDay() } }
             : { scheduledAt: null }),
         },
       });
