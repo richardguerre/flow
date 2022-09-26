@@ -73,8 +73,7 @@ model TaskTemplate {
   /// The first day the task template takes effect.
   firstDay          DateTime         @default(now()) @db.Date
 
-  // Ignoring as we don't need to get tasks from a template
-  tasks Task[] @ignore
+  tasks Task[]
 }
 
 enum TaskRepeatance {
@@ -111,6 +110,5 @@ model ExternalItem {
   /// The length of time the external item is expected to take.
   durationInMinutes Int?
 
-  // Ignoring as we don't need to get tasks from a external item
-  tasks Task[] @ignore
+  tasks Task[]
 }
