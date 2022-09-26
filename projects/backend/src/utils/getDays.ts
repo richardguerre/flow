@@ -8,10 +8,10 @@ export const loadOneDay = async (day: string) => {
     where: { date: { gte: startOfDay(date), lt: endOfDay(date) } },
   });
 
-  // Get ids of tasks that were created from a template
+  // Get IDs of task templates from tasks that were created from a template
   // so that we don't repeat them in the `repeatingTasks` field
-  const templatesOfTasksFromTemplate = tasks.reduce<number[]>(
-    (taskIds, task) => (task.fromTemplateId ? taskIds.concat(task.id) : taskIds),
+  const templateIdsOfTasksFromTemplate = tasks.reduce<number[]>(
+    (taskIds, task) => (task.fromTemplateId ? taskIds.concat(task.fromTemplateId) : taskIds),
     []
   );
 
@@ -19,7 +19,7 @@ export const loadOneDay = async (day: string) => {
     where: {
       repeats: { has: getDayOfWeek(date) },
       firstDay: { lte: date },
-      id: { notIn: templatesOfTasksFromTemplate },
+      id: { notIn: templateIdsOfTasksFromTemplate },
     },
   });
 
