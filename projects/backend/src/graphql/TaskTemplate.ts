@@ -65,10 +65,15 @@ builder.mutationField("createRepeatingTask", (t) =>
     description: `Create a new repeating task (aka a task template).`,
     input: {
       title: t.input.string({ required: true, description: "The title of the task." }),
+      isPrivate: t.input.boolean({ description: "Whether the task is private." }),
       firstDay: t.input.field({
         type: "Date",
         required: true,
         description: "The date the task template starts repeating from.",
+      }),
+      lastDay: t.input.field({
+        type: "Date",
+        description: "The date the task template stops repeating on.",
       }),
       repeatsEvery: t.input.field({
         type: [TaskRepeatanceEnum],
@@ -78,15 +83,21 @@ builder.mutationField("createRepeatingTask", (t) =>
       durationInMinutes: t.input.int({
         description: "The length of time a task from this template is expected to take.",
       }),
+      externalItemId: t.input.globalID({
+        description: "The Relay ID of the ExternalItem that should be linked to the task template.",
+      }),
     },
     resolve: (query, _, args) => {
       return prisma.taskTemplate.create({
         ...query,
         data: {
           title: args.input.title,
+          isPrivate: u(args.input.isPrivate),
           durationInMinutes: args.input.durationInMinutes,
           firstDay: args.input.firstDay,
+          lastDay: args.input.lastDay,
           repeats: args.input.repeatsEvery,
+          externalItemId: args.input.externalItemId?.id,
         },
       });
     },
@@ -103,12 +114,20 @@ builder.mutationField("updateRepeatingTask", (t) =>
         description: "The Relay ID of the task template to update.",
       }),
       title: t.input.string({ description: "The title of the task." }),
+      isPrivate: t.input.boolean({ description: "Whether the task is private." }),
+      lastDay: t.input.field({
+        type: "Date",
+        description: "The date the task template stops repeating on.",
+      }),
       durationInMinutes: t.input.int({
         description: "The length of time a task from this template is expected to take.",
       }),
       repeatsEvery: t.input.field({
         type: [TaskRepeatanceEnum],
         description: "The days of the week the task repeats on.",
+      }),
+      externalItemId: t.input.globalID({
+        description: "The Relay ID of the ExternalItem that should be linked to the task template.",
       }),
     },
     resolve: (query, _, args) => {
@@ -117,8 +136,11 @@ builder.mutationField("updateRepeatingTask", (t) =>
         where: { id: parseInt(args.input.id.id) },
         data: {
           title: u(args.input.title),
+          isPrivate: u(args.input.isPrivate),
+          lastDay: args.input.lastDay,
           durationInMinutes: args.input.durationInMinutes,
           repeats: u(args.input.repeatsEvery),
+          externalItemId: args.input.externalItemId?.id,
         },
       });
     },

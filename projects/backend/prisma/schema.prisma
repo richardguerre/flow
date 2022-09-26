@@ -66,12 +66,20 @@ model TaskTemplate {
   updatedAt         DateTime         @updatedAt
   /// The initial title when creating a task using the template.
   title             String
+  /// Whether the task is private or not
+  isPrivate         Boolean          @default(false)
   /// The initial durationInMinutes when creating a task using the template.
   durationInMinutes Int?
   /// The repeatance of the task template. Must have at least one value.
   repeats           TaskRepeatance[]
   /// The first day the task template takes effect.
   firstDay          DateTime         @default(now()) @db.Date
+  /// The last day the task template takes effect.
+  lastDay           DateTime?        @db.Date
+
+  /// The externalItem linked to the template
+  externalItem   ExternalItem? @relation(fields: [externalItemId], references: [id])
+  externalItemId String?
 
   tasks Task[]
 }
@@ -96,7 +104,7 @@ model ExternalItem {
   /// The date and time the external item was updated
   updatedAt         DateTime  @updatedAt
   /// The title of the external item.
-  /// It is used as the initial title creating a task from the external item.
+  /// It is used as the initial title when creating a task from the external item.
   title             String
   /// The source of the external item.
   /// This is equal to one of the keys in the config.externalSources object.
@@ -110,5 +118,6 @@ model ExternalItem {
   /// The length of time the external item is expected to take.
   durationInMinutes Int?
 
-  tasks Task[]
+  tasks         Task[]
+  taskTemplates TaskTemplate[]
 }

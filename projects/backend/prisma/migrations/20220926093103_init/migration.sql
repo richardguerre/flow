@@ -27,9 +27,12 @@ CREATE TABLE "TaskTemplate" (
     "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
     "updatedAt" TIMESTAMP(3) NOT NULL,
     "title" TEXT NOT NULL,
+    "isPrivate" BOOLEAN NOT NULL DEFAULT false,
     "durationInMinutes" INTEGER,
     "repeats" "TaskRepeatance"[],
     "firstDay" DATE NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    "lastDay" DATE,
+    "externalItemId" TEXT,
 
     CONSTRAINT "TaskTemplate_pkey" PRIMARY KEY ("id")
 );
@@ -54,3 +57,6 @@ ALTER TABLE "Task" ADD CONSTRAINT "Task_externalItemId_fkey" FOREIGN KEY ("exter
 
 -- AddForeignKey
 ALTER TABLE "Task" ADD CONSTRAINT "Task_fromTemplateId_fkey" FOREIGN KEY ("fromTemplateId") REFERENCES "TaskTemplate"("id") ON DELETE SET NULL ON UPDATE CASCADE;
+
+-- AddForeignKey
+ALTER TABLE "TaskTemplate" ADD CONSTRAINT "TaskTemplate_externalItemId_fkey" FOREIGN KEY ("externalItemId") REFERENCES "ExternalItem"("id") ON DELETE SET NULL ON UPDATE CASCADE;
