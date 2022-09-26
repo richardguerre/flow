@@ -5,7 +5,7 @@ import { DayObjectType } from "../graphql/Day";
 export const loadOneDay = async (day: string) => {
   const date = new Date(day);
   const tasks = await prisma.task.findMany({
-    where: { date: { gte: startOfDay(date), lte: endOfDay(date) } },
+    where: { date: { gte: startOfDay(date), lt: endOfDay(date) } },
   });
 
   // Get ids of tasks that were created from a template
