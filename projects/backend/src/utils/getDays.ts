@@ -1,5 +1,4 @@
 import { prisma } from "./prisma";
-import { getDayOfWeek } from "./getDayOfWeek";
 import { DayObjectType } from "../graphql/Day";
 
 export const loadOneDay = async (day: string) => {
@@ -27,10 +26,10 @@ export const loadOneDay = async (day: string) => {
 };
 
 type LoadEdgesInput = {
-  first: number | null | undefined;
-  after: string | null | undefined;
-  last: number | null | undefined;
-  before: string | null | undefined;
+  first?: number | null | undefined;
+  after?: string | null | undefined;
+  last?: number | null | undefined;
+  before?: string | null | undefined;
 };
 type DayEdge = { cursor: string; node: DayObjectType };
 type LoadEdgesOuput = {
@@ -80,3 +79,18 @@ export const startOfDay = (day: Date = new Date()) => {
 export const endOfDay = (day: Date = new Date()) => {
   return new Date(day.setHours(23, 59, 59, 999));
 };
+
+/** @returns values from the TaskRepeatance enum */
+const getDayOfWeek = (date: Date) => {
+  return dayOfWeekArr[date.getDay()];
+};
+
+const dayOfWeekArr = [
+  "SUNDAY",
+  "MONDAY",
+  "TUESDAY",
+  "WEDNESDAY",
+  "THURSDAY",
+  "FRIDAY",
+  "SATURDAY",
+] as const;
