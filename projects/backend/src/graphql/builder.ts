@@ -6,6 +6,14 @@ import WithInputPlugin from "@pothos/plugin-with-input";
 import type PrismaTypes from "@pothos/plugin-prisma/generated";
 import { DateResolver, DateTimeResolver, PositiveIntResolver } from "graphql-scalars";
 
+export const encodeGlobalID = (typename: string, id: string | number | bigint) => {
+  return `${typename}:${id}`;
+};
+export const decodeGlobalID = (globalId: string) => {
+  const [typename, id] = globalId.split(":");
+  if (!typename || !id) throw new Error("Invalid Relay ID");
+  return { typename, id };
+};
 export const builder = new SchemaBuilder<{
   PrismaTypes: PrismaTypes;
   Scalars: {
@@ -27,6 +35,8 @@ export const builder = new SchemaBuilder<{
   relayOptions: {
     clientMutationId: "omit",
     cursorType: "String",
+    encodeGlobalID,
+    decodeGlobalID,
   },
   prisma: {
     client: prisma,
