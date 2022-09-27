@@ -8,11 +8,11 @@ import { endOfDay, startOfDay } from "../utils/getDays";
 export const ExternalItemType = builder.prismaNode("ExternalItem", {
   id: { field: "id" },
   fields: (t) => ({
-    createdAt: t.expose("createdAt", { type: "Date" }),
+    createdAt: t.expose("createdAt", { type: "DateTime" }),
     title: t.exposeString("title"),
     isRelevant: t.exposeBoolean("isRelevant"),
     url: t.exposeString("url", { nullable: true }),
-    scheduledAt: t.expose("scheduledAt", { type: "Date", nullable: true }),
+    scheduledAt: t.expose("scheduledAt", { type: "DateTime", nullable: true }),
     durationInMinutes: t.exposeInt("durationInMinutes", { nullable: true }),
     source: t.exposeString("source"),
     iconUrl: t.string({

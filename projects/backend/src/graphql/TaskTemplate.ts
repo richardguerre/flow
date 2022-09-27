@@ -34,7 +34,7 @@ builder.queryField("repeatingTasks", (t) => {
     description: `Get repeating tasks (aka task templates).`,
     argOptions: { name: "where" }, // this changes the name of the default `input` field to `where`
     input: {
-      from: t.input.field({
+      after: t.input.field({
         type: "Date",
         required: false,
         description: "Will return task templates that were started from the given date or later.",
@@ -49,7 +49,7 @@ builder.queryField("repeatingTasks", (t) => {
       return prisma.taskTemplate.findMany({
         ...query,
         where: {
-          ...(args.where?.from ? { firstDay: { gte: args.where.from } } : {}),
+          ...(args.where?.after ? { firstDay: { gte: args.where.after } } : {}),
           ...(args.where?.repeatsEvery ? { repeats: { hasSome: args.where.repeatsEvery } } : {}),
         },
       });
@@ -80,7 +80,8 @@ builder.mutationField("createRepeatingTask", (t) =>
         required: true,
         description: "The days of the week the task repeats on.",
       }),
-      durationInMinutes: t.input.int({
+      durationInMinutes: t.input.field({
+        type: "PositiveInt",
         description: "The length of time a task from this template is expected to take.",
       }),
       externalItemId: t.input.globalID({
@@ -119,7 +120,8 @@ builder.mutationField("updateRepeatingTask", (t) =>
         type: "Date",
         description: "The date the task template stops repeating on.",
       }),
-      durationInMinutes: t.input.int({
+      durationInMinutes: t.input.field({
+        type: "PositiveInt",
         description: "The length of time a task from this template is expected to take.",
       }),
       repeatsEvery: t.input.field({

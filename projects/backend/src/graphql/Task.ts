@@ -8,7 +8,7 @@ import { builder, u, uParseInt } from "./builder";
 export const TaskType = builder.prismaNode("Task", {
   id: { field: "id" },
   fields: (t) => ({
-    createdAt: t.expose("createdAt", { type: "Date" }),
+    createdAt: t.expose("createdAt", { type: "DateTime" }),
     title: t.exposeString("title"),
     status: t.expose("status", { type: TaskStatusEnum }),
     date: t.expose("date", { type: "Date" }),
@@ -23,7 +23,7 @@ export const TaskType = builder.prismaNode("Task", {
       resolve: (task) => task.externalItem.durationInMinutes ?? task.durationInMinutes,
     }),
     scheduledAt: t.field({
-      type: "Date",
+      type: "DateTime",
       nullable: true,
       description: "The date and time the task is scheduled to start.",
       select: { externalItem: { select: { scheduledAt: true } } },
@@ -72,7 +72,8 @@ builder.mutationField("createTask", (t) =>
         type: TaskStatusEnum,
         description: "The initial status of the task. Defaults to `TODO`.", // default value set by prisma/SQL
       }),
-      durationInMinutes: t.input.int({
+      durationInMinutes: t.input.field({
+        type: "PositiveInt",
         description: "The length of time (in minutes) the task is expected to take.",
       }),
       date: t.input.field({
@@ -192,7 +193,8 @@ builder.mutationField("updateTask", (t) =>
         type: TaskStatusEnum,
         description: "The status of the task.",
       }),
-      durationInMinutes: t.input.int({
+      durationInMinutes: t.input.field({
+        type: "PositiveInt",
         description: "The length of time (in minutes) the task is expected to take.",
       }),
       date: t.input.field({

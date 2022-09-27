@@ -4,6 +4,7 @@ import RelayPlugin from "@pothos/plugin-relay";
 import PrismaPlugin from "@pothos/plugin-prisma";
 import WithInputPlugin from "@pothos/plugin-with-input";
 import type PrismaTypes from "@pothos/plugin-prisma/generated";
+import { DateResolver, DateTimeResolver, PositiveIntResolver } from "graphql-scalars";
 
 export const builder = new SchemaBuilder<{
   PrismaTypes: PrismaTypes;
@@ -11,6 +12,14 @@ export const builder = new SchemaBuilder<{
     Date: {
       Input: Date;
       Output: Date;
+    };
+    DateTime: {
+      Input: Date;
+      Output: Date;
+    };
+    PositiveInt: {
+      Input: number;
+      Output: number;
     };
   };
 }>({
@@ -29,10 +38,9 @@ export const builder = new SchemaBuilder<{
 builder.queryType();
 builder.mutationType();
 
-builder.scalarType("Date", {
-  serialize: (val) => val.toJSON(),
-  parseValue: (val) => new Date(val as string),
-});
+builder.addScalarType("Date", DateResolver, {});
+builder.addScalarType("DateTime", DateTimeResolver, {});
+builder.addScalarType("PositiveInt", PositiveIntResolver, {}); // only used in input types
 
 // ----------------- utils -----------------
 // The following utils help to work interact with Pothos and Prisma.
