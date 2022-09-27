@@ -2,7 +2,7 @@ import { builder } from "./builder";
 import { Task, TaskTemplate } from "@prisma/client";
 import { TaskType } from "./Task";
 import { TaskTemplateType } from "./TaskTemplate";
-import { loadDayEdges, loadOneDay } from "../utils/getDays";
+import { loadDayEdges, loadOneDay, toDateOnly } from "../utils/getDays";
 
 // -------------- Day types --------------
 
@@ -15,7 +15,7 @@ export type DayObjectType = {
 const DayObjectRef = builder.objectRef<DayObjectType>("Day");
 export const DayType = builder.node(DayObjectRef, {
   name: "Day",
-  id: { resolve: (day) => day.date.toJSON() },
+  id: { resolve: (day) => toDateOnly(day.date) },
   loadOne: loadOneDay,
   fields: (t) => ({
     date: t.expose("date", { type: "Date", description: "The date of the day." }),

@@ -46,7 +46,7 @@ export const loadDayEdges = async ({
 
   const dayEdges: DayEdge[] = [];
   for (const _ of Array.from({ length: first ?? last ?? 1 })) {
-    const day = new Date(start.setDate(start.getDate() + 1)).toJSON();
+    const day = toDateOnly(new Date(start.setDate(start.getDate() + 1)));
     const node = await loadOneDay(day);
     dayEdges.push({ cursor: day, node });
   }
@@ -92,3 +92,8 @@ const dayOfWeekArr = [
   "FRIDAY",
   "SATURDAY",
 ] as const;
+
+export const toDateOnly = (date: Date) => {
+  const dateString = date.toJSON();
+  return dateString.split("T")[0] ?? dateString;
+};

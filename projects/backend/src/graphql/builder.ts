@@ -26,7 +26,7 @@ export const builder = new SchemaBuilder<{
   plugins: [RelayPlugin, PrismaPlugin, WithInputPlugin],
   relayOptions: {
     clientMutationId: "omit",
-    cursorType: "ID",
+    cursorType: "String",
   },
   prisma: {
     client: prisma,
