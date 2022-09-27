@@ -8,7 +8,8 @@ declare global {
   type ExternalItemInput = {
     /**
      * The ID of the item in the external source.
-     * Must be unique accross all external sources, and must not change from one sync to another.
+     * It will be prefixed by `${SourceName}:` as it must be unique accross
+     * all external sources, and must not change from one sync to another.
      */
     id: string;
     /**

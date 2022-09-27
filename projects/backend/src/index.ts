@@ -3,6 +3,7 @@ import { createServer } from "@graphql-yoga/node";
 import { schema } from "./graphql";
 import { externalSources } from "../../../config";
 import { addExternalItems } from "./utils/addExternalItems";
+import { pluralize } from "./utils/pluralize";
 
 const PORT = process.env.PORT || 4000;
 const app = express();
@@ -33,9 +34,11 @@ app.post("/webhook/:name", async (req, res) => {
     if (!Array.isArray(externalItems)) externalItems = [externalItems];
 
     const result = await addExternalItems(externalSourceName, externalItems);
-    console.log(`Added ${result.count} external items`);
+    console.log(
+      `Added ${result.count} external ${pluralize("item", result.count)} from ${externalSourceName}`
+    );
   } catch (e: any) {
-    console.log(e);
+    console.log("Webhook error:", e);
   }
   res.sendStatus(200);
 });
