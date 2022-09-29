@@ -1,47 +1,93 @@
+// inspired by https://github.com/prisma/prisma/issues/12458#issuecomment-1253936442
 import { PrismaClient } from "@prisma/client";
+import { afterEach, beforeEach, vi } from "vitest";
 import * as prismaUtils from "../src/utils/prisma";
-import { execSync } from "child_process";
-import { join } from "path";
-import { URL } from "url";
-import { nanoid } from "nanoid";
-import { beforeEach, afterEach, vi } from "vitest";
+import packageJson from "../../../package.json";
 
-// ------- mock implementation --------
+type CtorParams<C> = C extends new (...args: infer P) => any ? P[0] : never;
+type TxClient = Parameters<Parameters<PrismaClient["$transaction"]>[0]>[0];
+const ROLLBACK = { [Symbol.for("prisma.client.extension.rollback")]: true };
+const PRISMA_ROLLBACK_MSG = "Prisma Client ROLLBACK";
 
-const generateDatabaseURL = (schema: string) => {
-  if (!process.env.DATABASE_URL) {
-    throw new Error("please provide a database url");
-  }
-  const url = new URL(process.env.DATABASE_URL);
-  url.searchParams.append("schema", schema);
-  return url.toString();
+const $begin = async (client: PrismaClient, data?: { txId: number }) => {
+  let captureInnerPrismaTxClient: (txClient: TxClient) => void;
+  let commit: () => void;
+  let rollback: () => void;
+
+  // a promise for getting the tx inner client
+  const txClient = new Promise<TxClient>((res) => {
+    captureInnerPrismaTxClient = (txClient) => res(txClient);
+  });
+
+  // a promise for controlling the transaction
+  const controlTxPromise = new Promise((_res, _rej) => {
+    commit = () => {
+      console.log(`Commit called, resolving for ${data?.txId}`);
+      _res(undefined);
+    };
+    rollback = () => _rej(ROLLBACK);
+  });
+
+  // opening a transaction to control externally
+  const prismaTranactionResult = client.$transaction((prismaTxClient) => {
+    captureInnerPrismaTxClient(prismaTxClient);
+
+    return controlTxPromise.catch((e) => {
+      if (e === ROLLBACK) throw new Error(PRISMA_ROLLBACK_MSG);
+      throw e;
+    });
+  });
+
+  const capturedPrismaTxClient = await txClient;
+
+  return {
+    txId: data?.txId,
+    $commit: async () => {
+      commit();
+      await prismaTranactionResult;
+    },
+    $rollback: async () => {
+      rollback();
+      await prismaTranactionResult.catch((err) => {
+        if (err.message !== PRISMA_ROLLBACK_MSG) {
+          console.log(`Rollback txn, cause: ${err}`);
+        }
+      });
+    },
+    ...capturedPrismaTxClient,
+    $executeRaw: capturedPrismaTxClient.$executeRaw,
+    $executeRawUnsafe: capturedPrismaTxClient.$executeRawUnsafe,
+  };
 };
 
-const schemaId = `test-${nanoid()}`;
-const prismaBinary = join(__dirname, "..", "node_modules", ".bin", "prisma");
+// patches the prisma client with a $begin method
+function getTxClient(options?: CtorParams<typeof PrismaClient>) {
+  const client = new PrismaClient(options);
 
-const url = generateDatabaseURL(schemaId);
-process.env.DATABASE_URL = url;
-const prismaTestClient = new PrismaClient({
-  datasources: { db: { url } },
+  return Object.assign(client, {
+    $begin: () => $begin(client),
+  }) as PrismaClient & { $begin: () => ReturnType<typeof $begin> };
+}
+
+const prismaTestClient = getTxClient({
+  datasources: {
+    db: {
+      url: process.env.DATABASE_URL?.replace(packageJson.name, `${packageJson.name}_test`) ?? "",
+    },
+  },
 });
 
-// ------- setup and teardown --------
+// ------------ setup and teardown ------------
 
 const prismaMock = vi.spyOn(prismaUtils, "prisma", "get");
 export const withDb = () => {
-  prismaMock.mockReturnValue(prismaTestClient);
-};
-
-beforeEach(() => {
-  execSync(`${prismaBinary} db push`, {
-    env: {
-      ...process.env,
-      DATABASE_URL: generateDatabaseURL(schemaId),
-    },
+  let prismaTxClient: any;
+  beforeEach(async () => {
+    prismaTxClient = await prismaTestClient.$begin();
+    prismaMock.mockReturnValue(prismaTxClient);
   });
-});
-afterEach(async () => {
-  await prismaTestClient.$executeRawUnsafe(`DROP SCHEMA IF EXISTS "${schemaId}" CASCADE;`);
-  await prismaTestClient.$disconnect();
-});
+
+  afterEach(async () => {
+    await prismaTxClient.$rollback();
+  });
+};

@@ -79,7 +79,7 @@ export const endOfDay = (day: Date = new Date()) => {
 };
 
 /** @returns values from the TaskRepeatance enum */
-const getDayOfWeek = (date: Date) => {
+export const getDayOfWeek = (date: Date) => {
   return dayOfWeekArr[date.getDay()];
 };
 

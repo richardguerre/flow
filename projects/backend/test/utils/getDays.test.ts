@@ -1,5 +1,12 @@
 import { describe, it, expect } from "vitest";
-import { getStartFromConnectionArgs, startOfDay } from "../../src/utils/getDays";
+import {
+  loadOneDay,
+  getStartFromConnectionArgs,
+  startOfDay,
+  getDayOfWeek,
+} from "../../src/utils/getDays";
+import { withDb } from "../../.vitest/prisma";
+import { prisma } from "../../src/utils/prisma";
 
 describe("getStartFromConnectionArgs", () => {
   it("should return today if no arguments are passed", () => {
@@ -33,5 +40,53 @@ describe("startOfDay", () => {
     const today = new Date();
     const start = startOfDay(today);
     expect(start).toEqual(new Date(today.setHours(0, 0, 0, 0)));
+  });
+});
+
+describe("loadOneDay", () => {
+  withDb();
+
+  it("should return no tasks nor repeatingTasks when there are none", async () => {
+    const date = startOfDay();
+    const day = await loadOneDay(date.toJSON());
+    expect(day).toEqual({
+      date: date,
+      tasks: [],
+      repeatingTasks: [],
+    });
+  });
+
+  it("should return tasks if there are some for that date", async () => {
+    const date = startOfDay();
+    const task = await prisma.task.create({
+      data: {
+        title: "test",
+        date,
+      },
+    });
+    const day = await loadOneDay(date.toJSON());
+    expect(day).toEqual({
+      date: date,
+      tasks: [task],
+      repeatingTasks: [],
+    });
+  });
+
+  it("should return repeatingTasks if a template repeats on that day", async () => {
+    const date = startOfDay();
+    const dayOfWeek = getDayOfWeek(date);
+    const repeatingTask = await prisma.taskTemplate.create({
+      data: {
+        title: "test",
+        repeats: [dayOfWeek],
+        firstDay: date,
+      },
+    });
+    const day = await loadOneDay(date.toJSON());
+    expect(day).toEqual({
+      date: date,
+      tasks: [],
+      repeatingTasks: [repeatingTask],
+    });
   });
 });

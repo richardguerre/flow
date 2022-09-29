@@ -12,7 +12,6 @@
   "devDependencies": {
     "@types/express": "^4.17.13",
     "@types/node": "^18.7.16",
-    "nanoid": "^4.0.0",
     "prisma": "^4.3.1",
     "ts-node": "^10.9.1",
     "ts-node-dev": "^2.0.0",
