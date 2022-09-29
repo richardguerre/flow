@@ -20,12 +20,12 @@ const $begin = async (client: PrismaClient, data?: { txId: number }) => {
   });
 
   // a promise for controlling the transaction
-  const controlTxPromise = new Promise((_res, _rej) => {
+  const controlTxPromise = new Promise((res, rej) => {
     commit = () => {
       console.log(`Commit called, resolving for ${data?.txId}`);
-      _res(undefined);
+      res(undefined);
     };
-    rollback = () => _rej(ROLLBACK);
+    rollback = () => rej(ROLLBACK);
   });
 
   // opening a transaction to control externally
@@ -54,6 +54,11 @@ const $begin = async (client: PrismaClient, data?: { txId: number }) => {
         }
       });
     },
+    $transaction: client.$transaction,
+    // @ts-ignore as Prisma doesn't expose internal methods in their types
+    _hasPreviewFlag: client._hasPreviewFlag,
+    // @ts-ignore as Prisma doesn't expose internal methods in their types
+    _transactionWithCallback: client._transactionWithCallback,
     ...capturedPrismaTxClient,
     $executeRaw: capturedPrismaTxClient.$executeRaw,
     $executeRawUnsafe: capturedPrismaTxClient.$executeRawUnsafe,
