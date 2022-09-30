@@ -46,9 +46,10 @@ export const loadDayEdges = async ({
 
   const dayEdges: DayEdge[] = [];
   for (const _ of Array.from({ length: first ?? last ?? 1 })) {
-    const day = toDateOnly(new Date(start.setDate(start.getDate() + 1)));
+    const day = toDateOnly(start);
     const node = await loadOneDay(day);
     dayEdges.push({ cursor: day, node });
+    start.setDate(start.getDate() + 1);
   }
 
   return {
@@ -71,11 +72,11 @@ export const getStartFromConnectionArgs = ({ after, before, last }: LoadEdgesInp
 };
 
 export const startOfDay = (day: Date = new Date()) => {
-  return new Date(day.setHours(0, 0, 0, 0));
+  return new Date(day.setUTCHours(0, 0, 0, 0));
 };
 
 export const endOfDay = (day: Date = new Date()) => {
-  return new Date(day.setHours(23, 59, 59, 999));
+  return new Date(day.setUTCHours(23, 59, 59, 999));
 };
 
 /** @returns values from the TaskRepeatance enum */
