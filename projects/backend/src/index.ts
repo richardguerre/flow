@@ -6,7 +6,7 @@ import { addExternalItems } from "./utils/addExternalItems";
 import { pluralize } from "./utils/pluralize";
 
 const PORT = process.env.PORT || 4000;
-const app = express();
+export const app = express();
 app.use(express.json());
 
 // -------------------------- GraphQL ----------------------------

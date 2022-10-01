@@ -12,6 +12,15 @@ generator pothos {
   provider = "prisma-pothos-types"
 }
 
+// model Day {
+//   /// The date of the day, which acts as the ID
+//   date      DateTime @id @db.Date
+//   /// The order of the tasks in the day
+//   taskOrder Int[]
+
+//   tasks Task[]
+// }
+
 model Task {
   /// The id of the task.
   id                Int        @id @default(autoincrement())
@@ -23,6 +32,8 @@ model Task {
   title             String
   /// The status of the task
   status            TaskStatus @default(TODO)
+  // /// The day the task is scheduled for
+  // day               Day        @relation(fields: [date], references: [date])
   /// The date the task is scheduled for
   date              DateTime   @default(now()) @db.Date
   /// Whether the task is private or not
