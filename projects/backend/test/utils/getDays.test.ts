@@ -8,7 +8,7 @@ import {
   toDateOnly,
 } from "../../src/utils/getDays";
 import { withDb } from "../../.vitest/prisma";
-import { prisma } from "../../src/utils/prisma";
+import { Factory } from "../../.vitest/factory";
 
 describe("getStartFromConnectionArgs", () => {
   it("returns today if no arguments are passed", () => {
@@ -56,7 +56,7 @@ describe("loadOneDay", () => {
 
   it("returns tasks if there are some for that date", async () => {
     const date = startOfDay();
-    const task = await prisma.task.create({ data: { title: "test", date } });
+    const { task } = await new Factory().newTask({ date }).run();
     const day = await loadOneDay(date.toJSON());
     expect(day).toEqual({ date: date, tasks: [task], repeatingTasks: [] });
   });
@@ -64,9 +64,9 @@ describe("loadOneDay", () => {
   it("returns repeatingTasks if a template repeats on that day", async () => {
     const date = startOfDay();
     const dayOfWeek = getDayOfWeek(date);
-    const repeatingTask = await prisma.taskTemplate.create({
-      data: { title: "test", repeats: [dayOfWeek], firstDay: date },
-    });
+    const { taskTemplate: repeatingTask } = await new Factory()
+      .newTaskTemplate({ repeats: [dayOfWeek], firstDay: date })
+      .run();
     const day = await loadOneDay(date.toJSON());
     expect(day).toEqual({ date: date, tasks: [], repeatingTasks: [repeatingTask] });
   });
@@ -94,13 +94,15 @@ describe("loadDayEdges", () => {
     });
   });
 
-  it.only("returns tomorrow and the day after with one task in each", async () => {
+  it("returns tomorrow and the day after with one task in each", async () => {
     const today = startOfDay();
     const tomorrow = new Date(today.setDate(today.getDate() + 1));
     const dayAfter = new Date(today.setDate(today.getDate() + 1)); // here, today is tomorrow as we set it above
     today.setDate(today.getDate() - 2); // reset today to actually be today
-    const taskTomorrow = await prisma.task.create({ data: { title: "test", date: tomorrow } });
-    const taskDayAfter = await prisma.task.create({ data: { title: "test", date: dayAfter } });
+    const { tasks } = await new Factory()
+      .newTask({ date: tomorrow })
+      .newTask({ date: dayAfter })
+      .run();
     const edges = await loadDayEdges({ first: 2, after: today.toJSON() });
     expect(edges).toEqual({
       startCursor: toDateOnly(tomorrow),
@@ -108,11 +110,11 @@ describe("loadDayEdges", () => {
       edges: [
         {
           cursor: toDateOnly(tomorrow),
-          node: { date: tomorrow, tasks: [taskTomorrow], repeatingTasks: [] },
+          node: { date: tomorrow, tasks: [tasks[0]], repeatingTasks: [] },
         },
         {
           cursor: toDateOnly(dayAfter),
-          node: { date: dayAfter, tasks: [taskDayAfter], repeatingTasks: [] },
+          node: { date: dayAfter, tasks: [tasks[1]], repeatingTasks: [] },
         },
       ],
     });
