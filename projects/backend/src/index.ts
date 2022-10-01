@@ -45,14 +45,20 @@ app.post("/webhook/:name", async (req, res) => {
 
 // -------------------------- Server ------------------------------
 
-app.listen(PORT, () => {
-  console.log(`\nServer started on port ${PORT}`);
-  console.log(`GraphQL API: http://localhost:${PORT}/graphql`);
-  for (const name in externalSources) {
-    console.log(
-      `Webhook: http://localhost:${PORT}/webhook/${(
-        externalSources[name]?.webhook?.name ?? name
-      ).toLowerCase()}`
-    );
-  }
-});
+if (process.env.NODE_ENV !== "test") {
+  app.listen(PORT, () => {
+    console.log(`\nServer started on port ${PORT}`);
+    console.log(`GraphQL API: http://localhost:${PORT}/graphql`);
+    for (const name in externalSources) {
+      console.log(
+        `Webhook: http://localhost:${PORT}/webhook/${(
+          externalSources[name]?.webhook?.name ?? name
+        ).toLowerCase()}`
+      );
+    }
+  });
+} else {
+  // express will default to port 0 which will randomly assign a port
+  // this prevents errors stating that the port is already in use
+  // more info here: https://stackoverflow.com/questions/54422849/jest-testing-multiple-test-file-port-3000-already-in-use
+}

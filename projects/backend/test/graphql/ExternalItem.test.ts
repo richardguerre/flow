@@ -3,8 +3,9 @@ import { withDb } from "../../.vitest/prisma";
 import { graphql, gql } from "../../.vitest/server";
 import { Factory } from "../../.vitest/factory";
 import { encodeGlobalID } from "../../src/graphql/builder";
+import { prisma } from "../../src/utils/prisma";
 
-describe("ExternalItem GraphQL type", () => {
+describe("ExternalItem GraphQL types", () => {
   withDb();
 
   it("returns the fields available for an external item", async () => {
@@ -39,11 +40,11 @@ describe("ExternalItem GraphQL type", () => {
           {
             node: {
               id: encodeGlobalID("ExternalItem", externalItem.id),
-              createdAt: externalItem.createdAt.toISOString(),
+              createdAt: externalItem.createdAt.toJSON(),
               title: externalItem.title,
               isRelevant: externalItem.isRelevant,
               url: externalItem.url,
-              scheduledAt: externalItem.scheduledAt?.toISOString() ?? null,
+              scheduledAt: externalItem.scheduledAt?.toJSON() ?? null,
               durationInMinutes: externalItem.durationInMinutes,
               source: externalItem.source,
               iconUrl: null,
@@ -52,5 +53,25 @@ describe("ExternalItem GraphQL type", () => {
         ],
       },
     });
+  });
+
+  it("can be fetched through the node interface", async () => {
+    // This test only asserts if the GraphQL types are correct.
+    // It does not assert if the data is correct as @pothos/plugin-prisma
+    // uses it's own findUnique method to fetch the node, which is not
+    // captured by the test runner in .vitest/prisma.
+    const res = await graphql({
+      query: gql`
+        query {
+          node(id: "SomeId") {
+            ... on ExternalItem {
+              id
+            }
+          }
+        }
+      `,
+    });
+
+    expect(res.status).toBe(200);
   });
 });

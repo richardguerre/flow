@@ -26,6 +26,7 @@ export class Factory {
       this[addAs] = await promise;
       this[addAs + "s"].push(this[addAs]);
     }
+    this.promises = [];
     return this;
   }
 
@@ -36,8 +37,6 @@ export class Factory {
     const task = prisma.task.create({
       data: {
         title: chance.sentence(),
-        ...add("externalItem", this.externalItem),
-        ...add("fromTemplate", this.taskTemplate),
         ...overrides,
       },
     });
