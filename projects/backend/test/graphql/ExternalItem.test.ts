@@ -3,7 +3,6 @@ import { withDb } from "../../.vitest/prisma";
 import { graphql, gql } from "../../.vitest/server";
 import { Factory } from "../../.vitest/factory";
 import { encodeGlobalID } from "../../src/graphql/builder";
-import { prisma } from "../../src/utils/prisma";
 
 describe("ExternalItem GraphQL types", () => {
   withDb();

@@ -32,7 +32,7 @@ builder.queryField("repeatingTasks", (t) => {
   return t.prismaFieldWithInput({
     type: ["TaskTemplate"],
     description: `Get repeating tasks (aka task templates).`,
-    argOptions: { name: "where" }, // this changes the name of the default `input` field to `where`
+    argOptions: { name: "where", required: false }, // this changes the name of the default `input` field to `where`
     input: {
       after: t.input.field({
         type: "Date",

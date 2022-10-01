@@ -4,7 +4,6 @@ import { graphql, gql } from "../../.vitest/server";
 import { Factory } from "../../.vitest/factory";
 import { encodeGlobalID } from "../../src/graphql/builder";
 import { toDateOnly } from "../../src/utils/getDays";
-import { prisma } from "../../src/utils/prisma";
 
 describe("Task GraphQL types", () => {
   withDb();
