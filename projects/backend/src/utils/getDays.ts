@@ -16,6 +16,7 @@ export const loadOneDay = async (day: string) => {
     where: {
       repeats: { has: getDayOfWeek(date) },
       firstDay: { lte: date },
+      OR: [{ lastDay: null }, { lastDay: { gte: date } }],
       id: { notIn: templateIdsOfTasksFromTemplate },
     },
   });

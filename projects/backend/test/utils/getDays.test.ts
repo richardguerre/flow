@@ -70,6 +70,28 @@ describe("loadOneDay", () => {
     const day = await loadOneDay(date.toJSON());
     expect(day).toEqual({ date: date, tasks: [], repeatingTasks: [repeatingTask] });
   });
+
+  it("doesn't return repeatingTasks if a template doesn't repeat on that day", async () => {
+    const today = startOfDay(startOfDay());
+    const tomorrow = new Date(today.setDate(today.getDate() + 1));
+    today.setDate(today.getDate() - 1); // reset today to actually be today
+    const dayOfWeek = getDayOfWeek(tomorrow);
+    await new Factory().newTaskTemplate({ repeats: [dayOfWeek], firstDay: today }).run();
+    const day = await loadOneDay(today.toJSON());
+    expect(day).toEqual({ date: today, tasks: [], repeatingTasks: [] });
+  });
+
+  it("doesn't return repeatingTasks if a template's lastDay is before the date", async () => {
+    const today = startOfDay();
+    const yesterday = new Date(today.setDate(today.getDate() - 1));
+    today.setDate(today.getDate() + 1); // reset today to actually be today
+    const dayOfWeek = getDayOfWeek(today);
+    await new Factory()
+      .newTaskTemplate({ repeats: [dayOfWeek], firstDay: yesterday, lastDay: yesterday })
+      .run();
+    const day = await loadOneDay(today.toJSON());
+    expect(day).toEqual({ date: today, tasks: [], repeatingTasks: [] });
+  });
 });
 
 describe("loadDayEdges", () => {
