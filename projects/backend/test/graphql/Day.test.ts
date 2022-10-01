@@ -3,7 +3,7 @@ import { withDb } from "../../.vitest/prisma";
 import { graphql, gql } from "../../.vitest/server";
 import { startOfDay, toDateOnly } from "../../src/utils/getDays";
 
-describe("Day", () => {
+describe("Day GraphQL type", () => {
   withDb();
 
   it("returns the fields available for a day", async () => {
