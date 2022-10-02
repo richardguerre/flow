@@ -134,7 +134,7 @@ builder.mutationField("updateRepeatingTask", (t) =>
     },
     resolve: (query, _, args) => {
       return prisma.taskTemplate.update({
-        ...(query.select ? { select: query.select } : {}),
+        ...query,
         where: { id: parseInt(args.input.id.id) },
         data: {
           title: u(args.input.title),

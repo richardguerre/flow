@@ -4,12 +4,6 @@ import { chance } from "./chance";
 
 type P<T> = Partial<T>;
 
-function createAdd<T>() {
-  return function add(key: keyof T, toCreate: any | undefined) {
-    return toCreate ? { [key]: { create: toCreate } } : {};
-  };
-}
-
 export class Factory {
   private promises: { addAs: "task" | "taskTemplate" | "externalItem"; promise: any }[] = [];
 
@@ -33,7 +27,6 @@ export class Factory {
   task: Task;
   tasks: Task[] = [];
   newTask(overrides?: P<Prisma.TaskCreateInput>) {
-    const add = createAdd<Prisma.TaskCreateInput>();
     const task = prisma.task.create({
       data: {
         title: chance.sentence(),

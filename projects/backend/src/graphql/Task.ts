@@ -92,7 +92,7 @@ builder.mutationField("createTask", (t) =>
     },
     resolve: (query, _, args) => {
       return prisma.task.create({
-        ...(query.select ? { select: query.select } : {}),
+        ...query,
         data: {
           title: args.input.title,
           status: u(args.input.status),
@@ -207,7 +207,7 @@ builder.mutationField("updateTask", (t) =>
     },
     resolve: (query, _, args) => {
       return prisma.task.update({
-        ...(query.select ? { select: query.select } : {}),
+        ...query,
         where: { id: parseInt(args.input.id.id) },
         data: {
           title: u(args.input.title),

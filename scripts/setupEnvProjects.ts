@@ -23,7 +23,12 @@ const matcher = /(\${?)(\w+)(}?)/g;
 
   await Promise.all([
     projects.map((it) => {
-      if (!it.startsWith("."))
+      if (it === "backend") {
+        writeFile(
+          resolve(process.cwd(), `projects/${it}/.env`),
+          outputString.replace(/DATABASE_URL(.*)/, "")
+        );
+      } else if (!it.startsWith("."))
         writeFile(resolve(process.cwd(), `projects/${it}/.env`), outputString);
     }),
   ]);
