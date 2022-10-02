@@ -1,5 +1,5 @@
 -- CreateEnum
-CREATE TYPE "TaskStatus" AS ENUM ('TODO', 'DONE', 'CANCELED', 'POSTPONED');
+CREATE TYPE "TaskStatus" AS ENUM ('TODO', 'DONE', 'CANCELED');
 
 -- CreateEnum
 CREATE TYPE "TaskRepeatance" AS ENUM ('MONDAY', 'TUESDAY', 'WEDNESDAY', 'THURSDAY', 'FRIDAY', 'SATURDAY', 'SUNDAY');

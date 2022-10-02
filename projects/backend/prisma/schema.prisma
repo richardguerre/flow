@@ -62,9 +62,6 @@ enum TaskStatus {
   DONE
   /// When the task was decided not to be done anymore.
   CANCELED
-  /// When the task was not completed on the scheduled date, but was decided to work on it a different day.
-  /// A new task is created at the new date, instead of changing the date of this task.
-  POSTPONED
 }
 
 /// Templates for repeating tasks.

@@ -1,5 +1,4 @@
-import { Task, TaskStatus } from "@prisma/client";
-import { endOfDay, startOfDay } from "../utils/getDays";
+import { TaskStatus } from "@prisma/client";
 import { prisma } from "../utils/prisma";
 import { builder, u, uParseInt } from "./builder";
 
@@ -51,11 +50,6 @@ export const TaskStatusEnum = builder.enumType("TaskStatus", {
       description: "When the task is done.",
       value: "DONE",
     },
-    POSTPONED: {
-      description: `When the task was not completed on the scheduled date, but was decided to work on it a different day. 
-        A new task is created at the new date, instead of changing the date of this task.`,
-      value: "POSTPONED",
-    },
   } as Record<TaskStatus, { value: TaskStatus; description?: string }>,
 });
 
@@ -64,8 +58,7 @@ export const TaskStatusEnum = builder.enumType("TaskStatus", {
 builder.mutationField("createTask", (t) =>
   t.prismaFieldWithInput({
     type: "Task", // the output type
-    description: `Create a new task.
-      To postpone and create a new task based on the postponed one, use \`postponeAndCreateTask\` instead.`,
+    description: `Create a new task.`,
     input: {
       title: t.input.string({ required: true, description: "The title of the task." }),
       status: t.input.field({
@@ -107,85 +100,10 @@ builder.mutationField("createTask", (t) =>
   })
 );
 
-builder.mutationField("postponeAndCreateTask", (t) =>
-  t.fieldWithInput({
-    type: PostponeTaskPayloadType,
-    description: `Postpone a task and create a new task based on the postponed one.
-      The postponed task must have been planned (i.e. \`Task.date\`) in the past or today, 
-      and the new task must be planned for a later date.
-      The new task will have the same title, status, duration, and external item as the postponed one.
-      To simply create a new task, use \`createTask\` instead.`,
-    input: {
-      id: t.input.globalID({
-        required: true,
-        description: "The Relay ID of the task to postpone.",
-      }),
-      newDate: t.input.field({
-        type: "Date",
-        required: true,
-        description: "The new day (no time required) the task is planned for.",
-      }),
-    },
-    resolve: async (_, args) => {
-      // interactive transaction, see https://www.prisma.io/docs/concepts/components/prisma-client/transactions#interactive-transactions-in-preview
-      return prisma.$transaction(async (tx) => {
-        const postponedTask = await tx.task.update({
-          where: { id: parseInt(args.input.id.id) },
-          data: { status: "POSTPONED" },
-        });
-        if (postponedTask.date > endOfDay()) {
-          throw new Error(
-            "The new date must be before the current date. Use `updateTask` instead."
-          );
-        } else if (postponedTask.date > startOfDay(args.input.newDate)) {
-          throw new Error("The new date must be after the current date.");
-        }
-        return {
-          postponedTask,
-          newTask: await tx.task.create({
-            data: {
-              ...postponedTask,
-              id: undefined, // ensures that the new task has a new id
-              createdAt: undefined, // ensures that the new task has a new createdAt date
-              updatedAt: undefined, // ensures that the new task has a new updatedAt date
-              status: undefined, // ensures that the new task has a new status
-              date: args.input.newDate,
-              previousDates: [postponedTask.date, ...postponedTask.previousDates],
-            },
-          }),
-        };
-      });
-    },
-  })
-);
-
-type PostponeTaskObjectType = {
-  postponedTask: Task;
-  newTask: Task;
-};
-
-const PostponeTaskPayloadRef = builder.objectRef<PostponeTaskObjectType>("PostponeTaskPayload");
-export const PostponeTaskPayloadType = builder.objectType(PostponeTaskPayloadRef, {
-  description: "The payload returned by `postponeAndCreateTask`.",
-  fields: (t) => ({
-    postponedTask: t.prismaField({
-      type: "Task",
-      description: "The task that was postponed.",
-      resolve: (_, payload) => payload.postponedTask,
-    }),
-    newTask: t.prismaField({
-      type: "Task",
-      description: "The new task that was created.",
-      resolve: (_, payload) => payload.newTask,
-    }),
-  }),
-});
-
 builder.mutationField("updateTask", (t) =>
   t.prismaFieldWithInput({
     type: "Task",
-    description: `Update a task.
-      To postpone and create a new task, use \`postponeAndCreateTask\` instead.`,
+    description: `Update a task.`,
     input: {
       id: t.input.globalID({ required: true, description: "The Relay ID of the task to update." }),
       title: t.input.string({ description: "The title of the task." }),
