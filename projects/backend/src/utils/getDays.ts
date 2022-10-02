@@ -1,9 +1,14 @@
 import { prisma } from "./prisma";
 import { DayObjectType } from "../graphql/Day";
 
-export const loadOneDay = async (day: string) => {
-  const date = new Date(day);
-  const tasks = await prisma.task.findMany({ where: { date } });
+export const loadOneDay = async (dayString: string) => {
+  const date = new Date(dayString);
+  const day = await prisma.day.findUnique({ where: { date } });
+
+  let tasks = await prisma.task.findMany({ where: { date } });
+  if (day && day.tasksOrder.length === tasks.length) {
+    tasks = tasks.sort((a, b) => day.tasksOrder.indexOf(a.id) - day.tasksOrder.indexOf(b.id));
+  }
 
   // Get IDs of task templates from tasks that were created from a template
   // so that we don't repeat them in the `repeatingTasks` field

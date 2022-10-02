@@ -56,7 +56,7 @@ describe("loadOneDay", () => {
 
   it("returns tasks if there are some for that date", async () => {
     const date = startOfDay();
-    const { task } = await new Factory().newTask({ date }).run();
+    const { task } = await new Factory().newTask({ day: { create: { date } } }).run();
     const day = await loadOneDay(date.toJSON());
     expect(day).toEqual({ date: date, tasks: [task], repeatingTasks: [] });
   });
@@ -122,8 +122,8 @@ describe("loadDayEdges", () => {
     const dayAfter = new Date(today.setDate(today.getDate() + 1)); // here, today is tomorrow as we set it above
     today.setDate(today.getDate() - 2); // reset today to actually be today
     const { tasks } = await new Factory()
-      .newTask({ date: tomorrow })
-      .newTask({ date: dayAfter })
+      .newTask({ day: { create: { date: tomorrow } } })
+      .newTask({ day: { create: { date: dayAfter } } })
       .run();
     const edges = await loadDayEdges({ first: 2, after: today.toJSON() });
     expect(edges).toEqual({
@@ -137,6 +137,29 @@ describe("loadDayEdges", () => {
         {
           cursor: toDateOnly(dayAfter),
           node: { date: dayAfter, tasks: [tasks[1]], repeatingTasks: [] },
+        },
+      ],
+    });
+  });
+
+  it("returns today with tasks in order of creation", async () => {
+    const today = startOfDay();
+    const taskCreateInput = {
+      day: { connectOrCreate: { where: { date: today }, create: { date: today } } },
+    };
+    const { tasks } = await new Factory()
+      .newTask(taskCreateInput)
+      .newTask(taskCreateInput)
+      .newTask(taskCreateInput)
+      .run();
+    const edges = await loadDayEdges({});
+    expect(edges).toEqual({
+      startCursor: toDateOnly(today),
+      endCursor: toDateOnly(today),
+      edges: [
+        {
+          cursor: toDateOnly(today),
+          node: { date: today, tasks: [tasks[0], tasks[1], tasks[2]], repeatingTasks: [] },
         },
       ],
     });

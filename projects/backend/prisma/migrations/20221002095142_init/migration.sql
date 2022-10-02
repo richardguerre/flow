@@ -5,13 +5,21 @@ CREATE TYPE "TaskStatus" AS ENUM ('TODO', 'DONE', 'CANCELED');
 CREATE TYPE "TaskRepeatance" AS ENUM ('MONDAY', 'TUESDAY', 'WEDNESDAY', 'THURSDAY', 'FRIDAY', 'SATURDAY', 'SUNDAY');
 
 -- CreateTable
+CREATE TABLE "Day" (
+    "date" DATE NOT NULL,
+    "tasksOrder" INTEGER[],
+
+    CONSTRAINT "Day_pkey" PRIMARY KEY ("date")
+);
+
+-- CreateTable
 CREATE TABLE "Task" (
     "id" SERIAL NOT NULL,
     "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
     "updatedAt" TIMESTAMP(3) NOT NULL,
     "title" TEXT NOT NULL,
     "status" "TaskStatus" NOT NULL DEFAULT 'TODO',
-    "date" DATE NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    "date" DATE NOT NULL,
     "isPrivate" BOOLEAN NOT NULL DEFAULT false,
     "durationInMinutes" INTEGER,
     "previousDates" DATE[],
@@ -51,6 +59,9 @@ CREATE TABLE "ExternalItem" (
 
     CONSTRAINT "ExternalItem_pkey" PRIMARY KEY ("id")
 );
+
+-- AddForeignKey
+ALTER TABLE "Task" ADD CONSTRAINT "Task_date_fkey" FOREIGN KEY ("date") REFERENCES "Day"("date") ON DELETE RESTRICT ON UPDATE CASCADE;
 
 -- AddForeignKey
 ALTER TABLE "Task" ADD CONSTRAINT "Task_externalItemId_fkey" FOREIGN KEY ("externalItemId") REFERENCES "ExternalItem"("id") ON DELETE SET NULL ON UPDATE CASCADE;

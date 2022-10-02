@@ -1,11 +1,12 @@
-import { ExternalItem, Task, TaskTemplate, Prisma } from "@prisma/client";
+import { Day, ExternalItem, Task, TaskTemplate, Prisma } from "@prisma/client";
 import { prisma } from "../../src/utils/prisma";
 import { chance } from "./chance";
 
 type P<T> = Partial<T>;
+type FactorySingularMember = "day" | "task" | "taskTemplate" | "externalItem";
 
 export class Factory {
-  private promises: { addAs: "task" | "taskTemplate" | "externalItem"; promise: any }[] = [];
+  private promises: { addAs: FactorySingularMember; promise: any }[] = [];
 
   constructor() {
     return this;
@@ -24,12 +25,26 @@ export class Factory {
     return this;
   }
 
+  day: Day;
+  days: Day[] = [];
+  newDay(overrides?: P<Prisma.DayCreateInput>) {
+    const day = prisma.day.create({
+      data: {
+        date: new Date(),
+        ...overrides,
+      },
+    });
+    this.promises.push({ addAs: "day", promise: day });
+    return this;
+  }
+
   task: Task;
   tasks: Task[] = [];
   newTask(overrides?: P<Prisma.TaskCreateInput>) {
     const task = prisma.task.create({
       data: {
         title: chance.sentence(),
+        day: { create: { date: new Date() } },
         ...overrides,
       },
     });

@@ -158,6 +158,11 @@ describe("Task GraphQL mutations", () => {
           scheduledAt: task.externalItem?.scheduledAt?.toJSON() ?? null,
         },
       });
+
+      const day = await prisma.day.findFirst();
+      expect(day).not.toBe(null);
+      if (!day) throw new Error("No day found");
+      expect(day.tasksOrder).toEqual([task.id]);
     });
 
     it("creates a task with an external item", async () => {

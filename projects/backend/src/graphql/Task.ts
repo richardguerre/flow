@@ -1,6 +1,7 @@
 import { TaskStatus } from "@prisma/client";
+import { startOfDay } from "../utils/getDays";
 import { prisma } from "../utils/prisma";
-import { builder, u, uParseInt } from "./builder";
+import { builder, u } from "./builder";
 
 // -------------- Task types --------------
 
@@ -84,17 +85,26 @@ builder.mutationField("createTask", (t) =>
       }),
     },
     resolve: (query, _, args) => {
-      return prisma.task.create({
-        ...query,
-        data: {
-          title: args.input.title,
-          status: u(args.input.status),
-          durationInMinutes: args.input.durationInMinutes,
-          date: u(args.input.date),
-          isPrivate: u(args.input.isPrivate),
-          externalItemId: args.input.externalItemId?.id,
-          fromTemplateId: uParseInt(args.input.templateId?.id),
-        },
+      const date = args.input.date ?? startOfDay(new Date());
+      return prisma.$transaction(async (tx) => {
+        const task = await tx.task.create({
+          ...query,
+          data: {
+            title: args.input.title,
+            status: u(args.input.status),
+            durationInMinutes: args.input.durationInMinutes,
+            day: { connectOrCreate: { where: { date }, create: { date } } },
+            isPrivate: u(args.input.isPrivate),
+            ...(args.input.externalItemId
+              ? { externalItem: { connect: { id: args.input.externalItemId.id } } }
+              : {}),
+            ...(args.input.templateId
+              ? { fromTemplate: { connect: { id: parseInt(args.input.templateId.id) } } }
+              : {}),
+          },
+        });
+        await tx.day.update({ where: { date }, data: { tasksOrder: { push: task.id } } });
+        return task;
       });
     },
   })
