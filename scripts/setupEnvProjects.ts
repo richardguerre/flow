@@ -1,7 +1,8 @@
 import { config } from "dotenv";
 import dotenvExpand from "dotenv-expand";
-import { writeFile, readFile, readdir } from "fs/promises";
+import { writeFile, readFile } from "fs/promises";
 import { resolve } from "path";
+import packageJson from "../package.json";
 
 dotenvExpand.expand(config());
 
@@ -19,12 +20,13 @@ const matcher = /(\${?)(\w+)(}?)/g;
     }
     return value;
   });
-  const projects = await readdir(resolve(process.cwd(), "projects"));
+
+  const projects = packageJson.workspaces;
 
   await Promise.all([
     projects.map((it) => {
       if (!it.startsWith(".")) {
-        writeFile(resolve(process.cwd(), `projects/${it}/.env`), outputString);
+        writeFile(resolve(process.cwd(), `./${it}/.env`), outputString);
       }
     }),
   ]);
