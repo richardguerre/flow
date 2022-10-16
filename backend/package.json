@@ -1,6 +1,6 @@
 {
   "name": "backend",
-  "description": "This is the backend of Persama",
+  "description": "This is the backend of Flow",
   "version": "1.0.0",
   "license": "MIT",
   "scripts": {
@@ -9,8 +9,8 @@
     "test": "vitest --config .vitest/config.ts",
     "gen": "prisma generate",
     "migrate": "prisma migrate dev --create-only",
-    "setup:db": "psql -c \"CREATE DATABASE persama;\" || echo \"Ignore the above error. Everything is good to go!\"",
-    "setup:db:test": "psql -c \"CREATE DATABASE persama_test;\" || echo \"Ignore the above error. Everything is good to go!\""
+    "setup:db": "psql -c \"CREATE DATABASE FLow;\" || echo \"Ignore the above error. Everything is good to go!\"",
+    "setup:db:test": "psql -c \"CREATE DATABASE FLow_test;\" || echo \"Ignore the above error. Everything is good to go!\""
   },
   "devDependencies": {
     "@types/chance": "^1.1.3",
