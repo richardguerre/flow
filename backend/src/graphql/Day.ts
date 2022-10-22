@@ -11,10 +11,14 @@ export type DayObjectType = {
   tasks: Task[];
   repeatingTasks: TaskTemplate[];
 };
-
+/**
+ * Maybe refactor to use builder.prismaNode instead
+ * repeatingTasks has it's own resolver which uses the day.tasks to filter down
+ */
 const DayObjectRef = builder.objectRef<DayObjectType>("Day");
 export const DayType = builder.node(DayObjectRef, {
   name: "Day",
+  description: "A day in the calendar. Contains tasks and repeating tasks for that day",
   id: { resolve: (day) => toDateOnly(day.date) },
   loadOne: loadOneDay,
   fields: (t) => ({

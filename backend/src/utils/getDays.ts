@@ -55,7 +55,7 @@ export const loadDayEdges = async ({
     const day = toDateOnly(start);
     const node = await loadOneDay(day);
     dayEdges.push({ cursor: day, node });
-    start.setDate(start.getDate() + 1);
+    start.setDate(start.getDate() + 1); // sets start for the next iteration
   }
 
   return {
@@ -69,10 +69,10 @@ export const getStartFromConnectionArgs = ({ after, before, last }: LoadEdgesInp
   let start = new Date();
   if (after) {
     const afterDate = new Date(after);
-    start = new Date(afterDate.setDate(afterDate.getDate() + 1));
+    start = addDays(afterDate, 1);
   } else if (last) {
     const beforeDate = new Date(before ?? start);
-    start = new Date(beforeDate.setDate(beforeDate.getDate() - last + (before ? 0 : 1)));
+    start = addDays(beforeDate, (before ? 0 : 1) - last);
   }
   return startOfDay(start);
 };
@@ -83,6 +83,10 @@ export const startOfDay = (day: Date = new Date()) => {
 
 export const endOfDay = (day: Date = new Date()) => {
   return new Date(day.setUTCHours(23, 59, 59, 999));
+};
+
+export const addDays = (day: Date = new Date(), days: number) => {
+  return new Date(day.setDate(day.getDate() + days));
 };
 
 /** @returns values from the TaskRepeatance enum */

@@ -40,13 +40,15 @@ export class Factory {
 
   task: Task;
   tasks: Task[] = [];
-  newTask(overrides?: P<Prisma.TaskCreateInput>) {
+  newTask(overrides?: P<Prisma.TaskCreateInput> & { date?: Date }) {
+    const date = overrides?.date ?? new Date();
+    delete overrides?.date;
     const task = prisma.task.create({
       data: {
         title: chance.sentence(),
-        day: { create: { date: new Date() } },
+        day: { connectOrCreate: { where: { date }, create: { date } } },
         ...overrides,
-      },
+      } as Prisma.TaskCreateInput,
     });
     this.promises.push({ addAs: "task", promise: task });
     return this;

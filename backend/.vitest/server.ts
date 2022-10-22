@@ -11,4 +11,4 @@ export const graphql = async (request: GraphQLRequest) => {
   return await server.post("/graphql").send(request);
 };
 
-export const gql = (val: TemplateStringsArray) => val[0];
+export const gql = (val: TemplateStringsArray) => val[0]!;
