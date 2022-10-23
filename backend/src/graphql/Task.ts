@@ -149,7 +149,7 @@ builder.mutationField("updateTask", (t) =>
 builder.mutationField("updateTaskStatus", (t) =>
   t.fieldWithInput({
     type: [DayType],
-    description: `Update the status of a task and get the updated days (as a list).
+    description: `Update the status of a task and get the updated days (as a list in chronological order).
 
       When the task is:
       - already in the desired status, it does nothing and returns an empty list.
@@ -168,7 +168,7 @@ builder.mutationField("updateTaskStatus", (t) =>
       status: t.input.field({
         type: TaskStatusEnum,
         required: true,
-        description: "The status of the task.",
+        description: "The new status of the task.",
       }),
     },
     resolve: (_, args) => {
@@ -246,5 +246,29 @@ builder.mutationField("updateTaskStatus", (t) =>
         return Promise.all(dayPromises);
       });
     },
+  })
+);
+
+builder.mutationField("updateTaskDate", (t) =>
+  t.fieldWithInput({
+    type: [DayType],
+    description: `Update the date of a task and get the updated days (as a list in chronological order).
+
+      When the task is:
+      - already in the desired date, it does nothing and returns an empty list.
+      - moved into the past, it updates the date, updates the status to DONE (if not already),
+        and returns the original day and the new day.
+      - moved into the future, it updates the date, updates the status to TODO (if not already),
+        and returns the original day and the new day.
+    `,
+    input: {
+      id: t.input.globalID({ required: true, description: "The Relay ID of the task to update." }),
+      date: t.input.field({
+        type: "Date",
+        required: true,
+        description: "The new date of the task.",
+      }),
+    },
+    resolve: (_, args) => {},
   })
 );

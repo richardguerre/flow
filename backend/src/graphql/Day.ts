@@ -20,7 +20,7 @@ export const DayType = builder.node(DayObjectRef, {
   name: "Day",
   description: "A day in the calendar. Contains tasks and repeating tasks for that day",
   id: { resolve: (day) => toDateOnly(day.date) },
-  loadOne: loadOneDay,
+  loadOne: (id) => loadOneDay(id),
   fields: (t) => ({
     date: t.expose("date", { type: "Date", description: "The date of the day." }),
     tasks: t.expose("tasks", { description: "Tasks planned on that day", type: [TaskType] }),

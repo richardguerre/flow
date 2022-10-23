@@ -6,6 +6,7 @@ import { encodeGlobalID } from "../../src/graphql/builder";
 import { addDays, startOfDay, toDateOnly } from "../../src/utils/getDays";
 import { prisma } from "../../src/utils/prisma";
 import { TaskStatus } from "@prisma/client";
+import { DayObjectType } from "../../src/graphql/Day";
 
 describe("Task GraphQL types", () => {
   withDb();
@@ -107,6 +108,8 @@ describe("Task GraphQL types", () => {
 
 describe("Task GraphQL mutations", () => {
   withDb();
+  const allStatuses: TaskStatus[] = ["TODO", "DONE", "CANCELED"];
+  const terminalStatuses: TaskStatus[] = ["DONE", "CANCELED"];
 
   describe("createTask", () => {
     it("creates a task using defaults", async () => {
@@ -352,8 +355,6 @@ describe("Task GraphQL mutations", () => {
         status
       }
     `;
-    const allStatuses: TaskStatus[] = ["TODO", "DONE", "CANCELED"];
-    const terminalStatuses: TaskStatus[] = ["DONE", "CANCELED"];
 
     // changing status of tasks from today
     for (const startStatus of allStatuses) {
@@ -378,7 +379,7 @@ describe("Task GraphQL mutations", () => {
 
           expect(res.status).toBe(200);
 
-          const updatedTask = await prisma.task.findFirstOrThrow();
+          const updatedTask = await prisma.task.findFirst();
           expect(updatedTask).not.toBe(null);
           if (!updatedTask) throw new Error("No task found");
 
@@ -427,7 +428,7 @@ describe("Task GraphQL mutations", () => {
 
         expect(res.status).toBe(200);
 
-        const updatedTask = await prisma.task.findFirstOrThrow();
+        const updatedTask = await prisma.task.findFirst();
         expect(updatedTask).not.toBe(null);
         if (!updatedTask) throw new Error("No task found");
 
@@ -476,7 +477,7 @@ describe("Task GraphQL mutations", () => {
 
         expect(res.status).toBe(200);
 
-        const updatedTask = await prisma.task.findFirstOrThrow();
+        const updatedTask = await prisma.task.findFirst();
         expect(updatedTask).not.toBe(null);
         if (!updatedTask) throw new Error("No task found");
 
@@ -504,25 +505,66 @@ describe("Task GraphQL mutations", () => {
     }
   });
 
-  describe.skip("updateTaskDate", () => {
+  describe("updateTaskDate", () => {
     const commonFields = `
-      days {
+      date
+      tasks {
+        __typename
+        id
         date
-        tasks {
-          __typename
-          id
-          date
-          status
-        }
+        status
       }
     `;
+    const twoDaysAgo = addDays(startOfDay(), -2);
+    const yesterday = addDays(startOfDay(), -1);
+    const today = startOfDay();
+    const tomorrow = addDays(startOfDay(), 1);
+    const twoDaysLater = addDays(startOfDay(), 2);
+    const allDays = [
+      ["yesterday", yesterday],
+      ["today", today],
+      ["tomorrow", tomorrow],
+    ] as const;
 
-    // moving tasks into the future (e.g. tomorrow)
-    it("moves a TODO task into the future", async () => {
-      const today = startOfDay();
-      const { task } = await new Factory().newTask({ status: "TODO", date: today }).run();
+    // moving tasks already in the desired date
+    for (const [day, date] of allDays) {
+      for (const status of allStatuses) {
+        it(`does nothing when moving a ${status} task from ${day} to ${day}`, async () => {
+          const { task } = await new Factory().newTask({ status, date }).run();
 
-      const tomorrow = addDays(new Date(), 1);
+          const res = await graphql({
+            query: /* GraphQL */ `
+              mutation UpdateTaskDateMutation($taskId: ID!, $date: Date!) {
+                updateTaskDate(input: { id: $taskId, date: $date }) {
+                  ${commonFields}
+                }
+              }
+            `,
+            variables: {
+              taskId: encodeGlobalID("Task", task.id),
+              date,
+            },
+          });
+
+          expect(res.status).toBe(200);
+
+          const updatedTask = await prisma.task.findFirst();
+          expect(updatedTask).not.toBe(null);
+          if (!updatedTask) throw new Error("No task found");
+          expect(updatedTask.date).toEqual(date);
+          expect(updatedTask.status).toEqual(status);
+
+          expect(res.body.data).toEqual({
+            updateTaskDate: [],
+          });
+        });
+      }
+    }
+
+    // moving tasks from the past to today
+    it("moves a DONE task from yesterday to today and doesn't change status", async () => {
+      const { task } = await new Factory().newTask({ status: "DONE", date: yesterday }).run();
+
       const res = await graphql({
         query: /* GraphQL */ `
           mutation UpdateTaskDateMutation($taskId: ID!, $date: Date!) {
@@ -533,7 +575,7 @@ describe("Task GraphQL mutations", () => {
         `,
         variables: {
           taskId: encodeGlobalID("Task", task.id),
-          date: toDateOnly(tomorrow),
+          date: today,
         },
       });
 
@@ -544,33 +586,30 @@ describe("Task GraphQL mutations", () => {
       if (!updatedTask) throw new Error("No task found");
 
       expect(res.body.data).toEqual({
-        updateTaskDate: {
-          days: [
-            {
-              date: toDateOnly(today),
-              tasks: [],
-            },
-            {
-              date: toDateOnly(tomorrow),
-              tasks: [
-                {
-                  __typename: "Task",
-                  id: encodeGlobalID("Task", task.id),
-                  date: toDateOnly(updatedTask.date),
-                  status: "TODO",
-                },
-              ],
-            },
-          ],
-        },
+        updateTaskDate: [
+          {
+            date: toDateOnly(yesterday),
+            tasks: [],
+          },
+          {
+            date: toDateOnly(today),
+            tasks: [
+              {
+                __typename: "Task",
+                id: encodeGlobalID("Task", task.id),
+                date: toDateOnly(today),
+                status: "DONE",
+              },
+            ],
+          },
+        ],
       });
     });
 
-    it("moves a DONE task into the future and changes status to TODO", async () => {
-      const today = startOfDay();
-      const { task } = await new Factory().newTask({ status: "DONE", date: today }).run();
+    // moving tasks from the future to today
+    it("moves a TODO task from tomorrow to today and doesn't change status", async () => {
+      const { task } = await new Factory().newTask({ status: "TODO", date: tomorrow }).run();
 
-      const tomorrow = addDays(new Date(), 1);
       const res = await graphql({
         query: /* GraphQL */ `
           mutation UpdateTaskDateMutation($taskId: ID!, $date: Date!) {
@@ -581,7 +620,7 @@ describe("Task GraphQL mutations", () => {
         `,
         variables: {
           taskId: encodeGlobalID("Task", task.id),
-          date: toDateOnly(tomorrow),
+          date: today,
         },
       });
 
@@ -592,218 +631,126 @@ describe("Task GraphQL mutations", () => {
       if (!updatedTask) throw new Error("No task found");
 
       expect(res.body.data).toEqual({
-        updateTaskDate: {
-          days: [
-            {
-              date: toDateOnly(today),
-              tasks: [],
-            },
-            {
-              date: toDateOnly(tomorrow),
-              tasks: [
-                {
-                  __typename: "Task",
-                  id: encodeGlobalID("Task", task.id),
-                  date: toDateOnly(updatedTask.date),
-                  status: "TODO",
-                },
-              ],
-            },
-          ],
-        },
+        updateTaskDate: [
+          {
+            date: toDateOnly(today),
+            tasks: [
+              {
+                __typename: "Task",
+                id: encodeGlobalID("Task", task.id),
+                date: toDateOnly(today),
+                status: "TODO",
+              },
+            ],
+          },
+          {
+            date: toDateOnly(tomorrow),
+            tasks: [],
+          },
+        ],
       });
     });
 
-    it("moves a CANCELED task into the future and changes status to TODO", async () => {
-      const today = startOfDay();
-      const { task } = await new Factory().newTask({ status: "CANCELED", date: today }).run();
+    // moving tasks into the past from allDays
+    for (const [startDay, startDate] of allDays) {
+      for (const startStatus of allStatuses) {
+        it(`moves a ${startStatus} task from ${startDay} into the past and changes status to DONE`, async () => {
+          const { task } = await new Factory()
+            .newTask({ status: startStatus, date: startDate })
+            .run();
 
-      const tomorrow = addDays(new Date(), 1);
-      const res = await graphql({
-        query: /* GraphQL */ `
-          mutation UpdateTaskDateMutation($taskId: ID!, $date: Date!) {
-            updateTaskDate(input: { id: $taskId, date: $date }) {
-              ${commonFields}
-            }
-          }
-        `,
-        variables: {
-          taskId: encodeGlobalID("Task", task.id),
-          date: toDateOnly(tomorrow),
-        },
-      });
-
-      expect(res.status).toBe(200);
-
-      const updatedTask = await prisma.task.findFirst();
-      expect(updatedTask).not.toBe(null);
-      if (!updatedTask) throw new Error("No task found");
-
-      expect(res.body.data).toEqual({
-        updateTaskDate: {
-          days: [
-            {
-              date: toDateOnly(today),
+          const res = await graphql({
+            query: /* GraphQL */ `
+              mutation UpdateTaskDateMutation($taskId: ID!, $date: Date!) {
+                updateTaskDate(input: { id: $taskId, date: $date }) {
+                  ${commonFields}
+                }
+              }
+            `,
+            variables: {
+              taskId: encodeGlobalID("Task", task.id),
+              date: twoDaysAgo,
             },
-            {
-              date: toDateOnly(tomorrow),
-              tasks: [
-                {
-                  __typename: "Task",
-                  id: encodeGlobalID("Task", task.id),
-                  date: toDateOnly(updatedTask.date),
-                  status: "TODO",
-                },
-              ],
+          });
+
+          expect(res.status).toBe(200);
+
+          const updatedTask = await prisma.task.findFirst();
+          expect(updatedTask).not.toBe(null);
+          if (!updatedTask) throw new Error("No task found");
+
+          expect(res.body.data).toEqual({
+            updateTaskDate: [
+              {
+                date: toDateOnly(twoDaysAgo),
+                tasks: [
+                  {
+                    __typename: "Task",
+                    id: encodeGlobalID("Task", task.id),
+                    date: toDateOnly(twoDaysAgo),
+                    status: "DONE",
+                  },
+                ],
+              },
+              {
+                date: toDateOnly(startDate),
+                tasks: [],
+              },
+            ],
+          });
+        });
+      }
+    }
+
+    // moving tasks into the future from allDays
+    for (const [startDay, startDate] of allDays) {
+      for (const startStatus of allStatuses) {
+        it(`moves a ${startStatus} task from ${startDay} into the future and changes status to TODO`, async () => {
+          const { task } = await new Factory()
+            .newTask({ status: startStatus, date: startDate })
+            .run();
+
+          const res = await graphql({
+            query: /* GraphQL */ `
+              mutation UpdateTaskDateMutation($taskId: ID!, $date: Date!) {
+                updateTaskDate(input: { id: $taskId, date: $date }) {
+                  ${commonFields}
+                }
+              }
+            `,
+            variables: {
+              taskId: encodeGlobalID("Task", task.id),
+              date: twoDaysLater,
             },
-          ],
-        },
-      });
-    });
+          });
 
-    // moving tasks into the past (e.g. yesterday)
-    it("moves a DONE task into the past", async () => {
-      const today = startOfDay();
-      const { task } = await new Factory().newTask({ status: "DONE", date: today }).run();
+          expect(res.status).toBe(200);
 
-      const yesterday = addDays(new Date(), -1);
-      const res = await graphql({
-        query: /* GraphQL */ `
-          mutation UpdateTaskDateMutation($taskId: ID!, $date: Date!) {
-            updateTaskDate(input: { id: $taskId, date: $date }) {
-              ${commonFields}
-            }
-          }
-        `,
-        variables: {
-          taskId: encodeGlobalID("Task", task.id),
-          date: toDateOnly(yesterday),
-        },
-      });
+          const updatedTask = await prisma.task.findFirst();
+          expect(updatedTask).not.toBe(null);
+          if (!updatedTask) throw new Error("No task found");
 
-      expect(res.status).toBe(200);
-
-      const updatedTask = await prisma.task.findFirst();
-      expect(updatedTask).not.toBe(null);
-      if (!updatedTask) throw new Error("No task found");
-
-      expect(res.body.data).toEqual({
-        updateTaskDate: {
-          days: [
-            {
-              date: toDateOnly(yesterday),
-              tasks: [
-                {
-                  __typename: "Task",
-                  id: encodeGlobalID("Task", task.id),
-                  date: toDateOnly(yesterday),
-                  status: "DONE",
-                },
-              ],
-            },
-            {
-              date: toDateOnly(today),
-              tasks: [],
-            },
-          ],
-        },
-      });
-    });
-
-    it("moves a CANCELED task into the past", async () => {
-      const today = startOfDay();
-      const { task } = await new Factory().newTask({ status: "CANCELED", date: today }).run();
-
-      const yesterday = addDays(new Date(), -1);
-      const res = await graphql({
-        query: /* GraphQL */ `
-          mutation UpdateTaskDateMutation($taskId: ID!, $date: Date!) {
-            updateTaskDate(input: { id: $taskId, date: $date }) {
-              ${commonFields}
-            }
-          }
-        `,
-        variables: {
-          taskId: encodeGlobalID("Task", task.id),
-          date: toDateOnly(yesterday),
-        },
-      });
-
-      expect(res.status).toBe(200);
-
-      const updatedTask = await prisma.task.findFirst();
-      expect(updatedTask).not.toBe(null);
-      if (!updatedTask) throw new Error("No task found");
-
-      expect(res.body.data).toEqual({
-        updateTaskDate: {
-          days: [
-            {
-              date: toDateOnly(yesterday),
-              tasks: [
-                {
-                  __typename: "Task",
-                  id: encodeGlobalID("Task", task.id),
-                  date: toDateOnly(yesterday),
-                  status: "CANCELED",
-                },
-              ],
-            },
-            {
-              date: toDateOnly(today),
-              tasks: [],
-            },
-          ],
-        },
-      });
-    });
-
-    it("moves a TODO task into the past and changes status to DONE", async () => {
-      const today = startOfDay();
-      const { task } = await new Factory().newTask({ status: "TODO", date: today }).run();
-
-      const yesterday = addDays(new Date(), -1);
-      const res = await graphql({
-        query: /* GraphQL */ `
-          mutation UpdateTaskDateMutation($taskId: ID!, $date: Date!) {
-            updateTaskDate(input: { id: $taskId, date: $date }) {
-              ${commonFields}
-            }
-          }
-        `,
-        variables: {
-          taskId: encodeGlobalID("Task", task.id),
-          date: toDateOnly(addDays(task.date, -1)),
-        },
-      });
-
-      expect(res.status).toBe(200);
-
-      const updatedTask = await prisma.task.findFirst();
-      expect(updatedTask).not.toBe(null);
-      if (!updatedTask) throw new Error("No task found");
-
-      expect(res.body.data).toEqual({
-        updateTaskDate: {
-          days: [
-            {
-              date: toDateOnly(yesterday),
-              tasks: [
-                {
-                  __typename: "Task",
-                  date: toDateOnly(updatedTask.date),
-                  status: "DONE",
-                  id: encodeGlobalID("Task", task.id),
-                },
-              ],
-            },
-            {
-              date: toDateOnly(today),
-              tasks: [],
-            },
-          ],
-        },
-      });
-    });
+          expect(res.body.data).toEqual({
+            updateTaskDate: [
+              {
+                date: toDateOnly(startDate),
+                tasks: [],
+              },
+              {
+                date: toDateOnly(twoDaysLater),
+                tasks: [
+                  {
+                    __typename: "Task",
+                    id: encodeGlobalID("Task", task.id),
+                    date: toDateOnly(twoDaysLater),
+                    status: "TODO",
+                  },
+                ],
+              },
+            ],
+          });
+        });
+      }
+    }
   });
 });
