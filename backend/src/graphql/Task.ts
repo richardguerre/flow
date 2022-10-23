@@ -1,7 +1,8 @@
 import { TaskStatus } from "@prisma/client";
-import { startOfDay } from "../utils/getDays";
+import { endOfDay, loadOneDay, startOfDay } from "../utils/getDays";
 import { prisma } from "../utils/prisma";
 import { builder, u } from "./builder";
+import { DayType } from "./Day";
 
 // -------------- Task types --------------
 
@@ -58,13 +59,14 @@ export const TaskStatusEnum = builder.enumType("TaskStatus", {
 
 builder.mutationField("createTask", (t) =>
   t.prismaFieldWithInput({
-    type: "Task", // the output type
+    type: "Task",
     description: `Create a new task.`,
     input: {
       title: t.input.string({ required: true, description: "The title of the task." }),
       status: t.input.field({
         type: TaskStatusEnum,
-        description: "The initial status of the task. Defaults to `TODO`.", // default value set by prisma/SQL
+        defaultValue: "TODO",
+        description: "The initial status of the task. Defaults to `TODO`.",
       }),
       durationInMinutes: t.input.field({
         type: "PositiveInt",
@@ -117,10 +119,6 @@ builder.mutationField("updateTask", (t) =>
     input: {
       id: t.input.globalID({ required: true, description: "The Relay ID of the task to update." }),
       title: t.input.string({ description: "The title of the task." }),
-      status: t.input.field({
-        type: TaskStatusEnum,
-        description: "The status of the task.",
-      }),
       durationInMinutes: t.input.field({
         type: "PositiveInt",
         description: "The length of time (in minutes) the task is expected to take.",
@@ -139,11 +137,113 @@ builder.mutationField("updateTask", (t) =>
         where: { id: parseInt(args.input.id.id) },
         data: {
           title: u(args.input.title),
-          status: u(args.input.status),
           durationInMinutes: args.input.durationInMinutes,
           date: u(args.input.date),
           isPrivate: u(args.input.isPrivate),
         },
+      });
+    },
+  })
+);
+
+builder.mutationField("updateTaskStatus", (t) =>
+  t.fieldWithInput({
+    type: [DayType],
+    description: `Update the status of a task and get the updated days (as a list).
+
+      When the task is:
+      - already in the desired status, it does nothing and returns an empty list.
+      - for today, it updates the status and returns the day.
+      - for a previous day and changing to \`TODO\`, it updates the status and
+        returns the original day and today.
+      - for a future day and changing to \`DONE\` or \`CANCELED\`, it updates the status and
+        returns the original day and today.
+
+      Any other scenario is not possible by nature of the app, where tasks:
+      - in the past can only be \`DONE\` or \`CANCELED\` 
+      - in the future can only be in \`TODO\`
+    `,
+    input: {
+      id: t.input.globalID({ required: true, description: "The Relay ID of the task to update." }),
+      status: t.input.field({
+        type: TaskStatusEnum,
+        required: true,
+        description: "The status of the task.",
+      }),
+    },
+    resolve: (_, args) => {
+      return prisma.$transaction(async (tx) => {
+        const days: Date[] = [];
+        const newStatus = args.input.status;
+        const task = await tx.task.findUniqueOrThrow({
+          where: { id: parseInt(args.input.id.id) },
+          include: { day: true },
+        });
+        const originalDay = task.day;
+        const startOfToday = startOfDay();
+        const endOfToday = endOfDay();
+        if (task.status === newStatus) {
+          // When the task is already in the desired status, do nothing.
+          // Hence we keep the `days` arrays empty.
+        } else if (task.date >= startOfToday && task.date <= endOfToday) {
+          // When the task is for today, we only need to update the status
+          await tx.task.update({
+            where: { id: task.id },
+            data: { status: newStatus },
+          });
+          days.push(task.date);
+        } else if (task.date > endOfToday && (newStatus === "DONE" || newStatus === "CANCELED")) {
+          // When the task is in the future and the new status is DONE or CANCELED,
+          // we need to move it to today and update the status
+          await tx.task.update({
+            where: { id: task.id },
+            data: {
+              status: newStatus,
+              day: {
+                connectOrCreate: {
+                  where: { date: startOfToday },
+                  create: { date: startOfToday },
+                },
+              },
+            },
+          });
+          await tx.day.update({
+            where: { date: startOfToday },
+            data: { tasksOrder: { push: task.id } },
+          });
+          days.push(startOfToday);
+          await tx.day.update({
+            where: { date: originalDay.date },
+            data: { tasksOrder: { set: originalDay.tasksOrder.filter((id) => id !== task.id) } },
+          });
+          days.push(originalDay.date);
+        } else if (task.date < startOfToday && newStatus === "TODO") {
+          // Task is in the past, so we need to move it to today and update the status
+          await tx.task.update({
+            where: { id: task.id },
+            data: {
+              status: newStatus,
+              day: {
+                connectOrCreate: {
+                  where: { date: startOfToday },
+                  create: { date: startOfToday },
+                },
+              },
+            },
+          });
+          await tx.day.update({
+            where: { date: originalDay.date },
+            data: { tasksOrder: { set: originalDay.tasksOrder.filter((id) => id !== task.id) } },
+          });
+          days.push(task.date);
+          await tx.day.update({
+            where: { date: startOfToday },
+            data: { tasksOrder: { push: task.id } },
+          });
+          days.push(startOfToday);
+        }
+        const dayPromises = days.map((date) => loadOneDay(date.toString(), tx));
+        return Promise.all(dayPromises);
       });
     },
   })
