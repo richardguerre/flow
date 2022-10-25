@@ -123,10 +123,6 @@ builder.mutationField("updateTask", (t) =>
         type: "PositiveInt",
         description: "The length of time (in minutes) the task is expected to take.",
       }),
-      date: t.input.field({
-        type: "Date",
-        description: "The day (no time required) the task is planned for.",
-      }),
       isPrivate: t.input.boolean({
         description: "Whether the task should be private and not shown in the team message.",
       }),
@@ -138,7 +134,6 @@ builder.mutationField("updateTask", (t) =>
         data: {
           title: u(args.input.title),
           durationInMinutes: args.input.durationInMinutes,
-          date: u(args.input.date),
           isPrivate: u(args.input.isPrivate),
         },
       });
