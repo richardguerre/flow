@@ -269,6 +269,85 @@ builder.mutationField("updateTaskDate", (t) =>
         description: "The new date of the task.",
       }),
     },
-    resolve: (_, args) => {},
+    resolve: (_, args) => {
+      return prisma.$transaction(async (tx) => {
+        const days: Date[] = [];
+        const newDate = args.input.date;
+        const task = await tx.task.findUniqueOrThrow({
+          where: { id: parseInt(args.input.id.id) },
+          include: { day: true },
+        });
+        const originalDay = task.day;
+        const startOfToday = startOfDay();
+        const endOfToday = endOfDay();
+        if (task.date >= newDate && task.date <= newDate) {
+          // When the task is already in the desired date, do nothing.
+          // Hence we keep the `days` arrays empty.
+        } else if (newDate >= startOfToday && newDate <= endOfToday) {
+          // When the task is for today, we need to update the date but not the status
+          await tx.task.update({
+            where: { id: task.id },
+            data: {
+              day: { connectOrCreate: { where: { date: newDate }, create: { date: newDate } } },
+            },
+          });
+          await tx.day.update({
+            where: { date: newDate },
+            data: { tasksOrder: { push: task.id } },
+          });
+          days.push(startOfToday);
+          await tx.day.update({
+            where: { date: originalDay.date },
+            data: { tasksOrder: { set: originalDay.tasksOrder.filter((id) => id !== task.id) } },
+          });
+          days.push(originalDay.date);
+        } else if (newDate < startOfToday) {
+          // When the task is moving into the past,
+          // we need to update the date and update the status to DONE (if not already)
+          await tx.task.update({
+            where: { id: task.id },
+            data: {
+              day: { connectOrCreate: { where: { date: newDate }, create: { date: newDate } } },
+              status: "DONE",
+            },
+          });
+          await tx.day.update({
+            where: { date: newDate },
+            data: { tasksOrder: { push: task.id } },
+          });
+          days.push(newDate);
+          await tx.day.update({
+            where: { date: originalDay.date },
+            data: { tasksOrder: { set: originalDay.tasksOrder.filter((id) => id !== task.id) } },
+          });
+          days.push(originalDay.date);
+        } else if (newDate > endOfToday) {
+          // When the task is moving into the future,
+          // we need to update the date and update the status to TODO (if not already)
+          await tx.task.update({
+            where: { id: task.id },
+            data: {
+              day: { connectOrCreate: { where: { date: newDate }, create: { date: newDate } } },
+              status: "TODO",
+            },
+          });
+          await tx.day.update({
+            where: { date: newDate },
+            data: { tasksOrder: { push: task.id } },
+          });
+          days.push(newDate);
+          await tx.day.update({
+            where: { date: originalDay.date },
+            data: { tasksOrder: { set: originalDay.tasksOrder.filter((id) => id !== task.id) } },
+          });
+          days.push(originalDay.date);
+        }
+
+        const dayPromises = days
+          .sort((a, b) => a.getTime() - b.getTime())
+          .map((date) => loadOneDay(date.toString(), tx));
+        return Promise.all(dayPromises);
+      });
+    },
   })
 );

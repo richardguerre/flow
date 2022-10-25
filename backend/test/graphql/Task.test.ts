@@ -542,7 +542,7 @@ describe("Task GraphQL mutations", () => {
             `,
             variables: {
               taskId: encodeGlobalID("Task", task.id),
-              date,
+              date: toDateOnly(date),
             },
           });
 
@@ -575,7 +575,7 @@ describe("Task GraphQL mutations", () => {
         `,
         variables: {
           taskId: encodeGlobalID("Task", task.id),
-          date: today,
+          date: toDateOnly(today),
         },
       });
 
@@ -620,7 +620,7 @@ describe("Task GraphQL mutations", () => {
         `,
         variables: {
           taskId: encodeGlobalID("Task", task.id),
-          date: today,
+          date: toDateOnly(today),
         },
       });
 
@@ -669,7 +669,7 @@ describe("Task GraphQL mutations", () => {
             `,
             variables: {
               taskId: encodeGlobalID("Task", task.id),
-              date: twoDaysAgo,
+              date: toDateOnly(twoDaysAgo),
             },
           });
 
@@ -720,7 +720,7 @@ describe("Task GraphQL mutations", () => {
             `,
             variables: {
               taskId: encodeGlobalID("Task", task.id),
-              date: twoDaysLater,
+              date: toDateOnly(twoDaysLater),
             },
           });
 
