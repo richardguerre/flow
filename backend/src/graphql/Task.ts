@@ -146,17 +146,17 @@ builder.mutationField("updateTaskStatus", (t) =>
     type: [DayType],
     description: `Update the status of a task and get the updated days (as a list in chronological order).
 
-      When the task is:
-      - already in the desired status, it does nothing and returns an empty list.
-      - for today, it updates the status and returns the day.
-      - for a previous day and changing to \`TODO\`, it updates the status and
-        returns the original day and today.
-      - for a future day and changing to \`DONE\` or \`CANCELED\`, it updates the status and
-        returns the original day and today.
+When the task is:
+- already in the desired status, it does nothing and returns an empty list.
+- for today, it updates the status and returns the day.
+- for a previous day and changing to \`TODO\`, it updates the status and
+  returns the original day and today.
+- for a future day and changing to \`DONE\` or \`CANCELED\`, it updates the status and
+  returns the original day and today.
 
-      Any other scenario is not possible by nature of the app, where tasks:
-      - in the past can only be \`DONE\` or \`CANCELED\` 
-      - in the future can only be in \`TODO\`
+Any other scenario is not possible by nature of the app, where tasks:
+- in the past can only be \`DONE\` or \`CANCELED\` 
+- in the future can only be in \`TODO\`
     `,
     input: {
       id: t.input.globalID({ required: true, description: "The Relay ID of the task to update." }),
@@ -249,12 +249,13 @@ builder.mutationField("updateTaskDate", (t) =>
     type: [DayType],
     description: `Update the date of a task and get the updated days (as a list in chronological order).
 
-      When the task is:
-      - already in the desired date, it does nothing and returns an empty list.
-      - moved into the past, it updates the date, updates the status to DONE (if not already),
-        and returns the original day and the new day.
-      - moved into the future, it updates the date, updates the status to TODO (if not already),
-        and returns the original day and the new day.
+When the task is:
+- already in the desired date, it does nothing and returns an empty list.
+- moved to today, it updates the date but not the status, and returns the original day and today.
+- moved into the past, it updates the date, updates the status to DONE (if not already),
+  and returns the original day and the new day.
+- moved into the future, it updates the date, updates the status to TODO (if not already),
+  and returns the original day and the new day.
     `,
     input: {
       id: t.input.globalID({ required: true, description: "The Relay ID of the task to update." }),
