@@ -252,9 +252,9 @@ builder.mutationField("updateTaskDate", (t) =>
 When the task is:
 - already in the desired date, it does nothing and returns an empty list.
 - moved to today, it updates the date but not the status, and returns the original day and today.
-- moved into the past, it updates the date, updates the status to DONE (if not already),
+- moved into the past, it updates the date, updates the status to \`DONE\` (if not already),
   and returns the original day and the new day.
-- moved into the future, it updates the date, updates the status to TODO (if not already),
+- moved into the future, it updates the date, updates the status to \`TODO\` (if not already),
   and returns the original day and the new day.
     `,
     input: {
