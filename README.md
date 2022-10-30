@@ -34,7 +34,7 @@ The intial release of includes the following features:
 The following are features I plan to add to Flow:
 
 - Simplify setting it up
-- Slack integration to sync changes to Slack.
+- Slack integration to sync changes back to Slack.
 - Being able to create and manage calendar events from within Flow.
 - Hook to automatically create tasks from external items
 - Notifications aggregator (e.g. it automatically creates tasks like "Review 3 notifications in GitHub")
@@ -47,6 +47,8 @@ Typescript, although not the most loved language, strikes a good balance of:
 - Being typesafe, which makes it easier to refactor with peace in mind.
 - Having a decent ecosystem of tools and libraries.
 - Being a good language to write a web application in, for both the frontend and backend.
+
+It is also the language I am most comfortable working with and have the most experience with.
 
 ## Contribute
 

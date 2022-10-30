@@ -123,8 +123,8 @@ describe("loadDayEdges", () => {
     const dayAfter = addDays(today, 1); // here, today is tomorrow as we set it above
     today.setDate(today.getDate() - 2); // reset today to actually be today
     const { tasks } = await new Factory()
-      .newTask({ day: { create: { date: tomorrow } } })
-      .newTask({ day: { create: { date: dayAfter } } })
+      .newTask({ date: tomorrow })
+      .newTask({ date: dayAfter })
       .run();
     const edges = await loadDayEdges({ first: 2, after: today.toJSON() });
     expect(edges).toEqual({
@@ -145,13 +145,10 @@ describe("loadDayEdges", () => {
 
   it("returns today with tasks in order of creation", async () => {
     const today = startOfDay();
-    const taskCreateInput = {
-      day: { connectOrCreate: { where: { date: today }, create: { date: today } } },
-    };
     const { tasks } = await new Factory()
-      .newTask(taskCreateInput)
-      .newTask(taskCreateInput)
-      .newTask(taskCreateInput)
+      .newTask({ date: today })
+      .newTask({ date: today })
+      .newTask({ date: today })
       .run();
     const edges = await loadDayEdges({});
     expect(edges).toEqual({

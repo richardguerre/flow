@@ -1,7 +1,7 @@
 import { TaskStatus } from "@prisma/client";
 import { endOfDay, loadOneDay, startOfDay } from "../utils/getDays";
 import { prisma } from "../utils/prisma";
-import { builder, u } from "./builder";
+import { builder, u, uParseInt } from "./builder";
 import { DayType } from "./Day";
 
 // -------------- Task types --------------
@@ -247,14 +247,19 @@ Any other scenario is not possible by nature of the app, where tasks:
 builder.mutationField("updateTaskDate", (t) =>
   t.fieldWithInput({
     type: [DayType],
-    description: `Update the date of a task and get the updated days (as a list in chronological order).
+    description: `Update the date of a task and/or order of the day, and get the updated days (as a list in chronological order).
+
+Input:
+- \`id\`: The ID of the task to update.
+- \`date\`: The new date of the task.
+- \`after\`: The ID of the task to place the task after. If \`null\`, the task will be placed at the beginning of the day.
 
 When the task is:
-- already in the desired date, it does nothing and returns an empty list.
-- moved to today, it updates the date but not the status, and returns the original day and today.
-- moved into the past, it updates the date, updates the status to \`DONE\` (if not already),
+- already in the desired date, it updates the order and returns the day.
+- moved to today, it updates the date and order but not the status, and returns the original day and today.
+- moved into the past, it updates the date and order, updates the status to \`DONE\` (if not already),
   and returns the original day and the new day.
-- moved into the future, it updates the date, updates the status to \`TODO\` (if not already),
+- moved into the future, it updates the date and order, updates the status to \`TODO\` (if not already),
   and returns the original day and the new day.
     `,
     input: {
@@ -264,79 +269,85 @@ When the task is:
         required: true,
         description: "The new date of the task.",
       }),
+      after: t.input.globalID({
+        required: false,
+        description:
+          "The ID of the task to place the task after. If `null`, the task will be placed at the beginning of the day.",
+      }),
     },
     resolve: (_, args) => {
       return prisma.$transaction(async (tx) => {
         const days: Date[] = [];
         const newDate = args.input.date;
+        const afterTaskId = uParseInt(args.input.after?.id) ?? null;
         const task = await tx.task.findUniqueOrThrow({
           where: { id: parseInt(args.input.id.id) },
-          include: { day: true },
+          include: { day: { select: { date: true, tasksOrder: true } } },
         });
         const originalDay = task.day;
+        const isSameDay = equalDay(task.date, newDate);
+        const newDay = isSameDay
+          ? originalDay
+          : await tx.day.findUnique({ where: { date: newDate }, select: { tasksOrder: true } });
+        const newDayTasksOrder = newDay?.tasksOrder ?? [];
+        const beforeTaskIndex = newDayTasksOrder.findIndex((a) => a === afterTaskId);
+        const newTasksOrder = Array.from(newDayTasksOrder.filter((id) => id !== task.id));
+        newTasksOrder.splice(beforeTaskIndex + 1, 0, task.id);
         const startOfToday = startOfDay();
         const endOfToday = endOfDay();
-        if (task.date >= newDate && task.date <= newDate) {
-          // When the task is already in the desired date, do nothing.
-          // Hence we keep the `days` arrays empty.
+        // the only thing that changes in each status is the status each scenario
+        // if the status doesn't change in a scenario, it's set to null
+        /** The new status of the task. It is `null` when it doesn't change. */
+        let newStatus: TaskStatus | null = null;
+        if (isSameDay) {
+          // When the task is already in the desired date, don't update the status
+          newStatus = null;
+          days.push(task.date);
         } else if (newDate >= startOfToday && newDate <= endOfToday) {
-          // When the task is for today, we need to update the date but not the status
-          await tx.task.update({
-            where: { id: task.id },
-            data: {
-              day: { connectOrCreate: { where: { date: newDate }, create: { date: newDate } } },
-            },
-          });
-          await tx.day.update({
-            where: { date: newDate },
-            data: { tasksOrder: { push: task.id } },
-          });
-          days.push(startOfToday);
-          await tx.day.update({
-            where: { date: originalDay.date },
-            data: { tasksOrder: { set: originalDay.tasksOrder.filter((id) => id !== task.id) } },
-          });
-          days.push(originalDay.date);
+          // When the task is for today, don't update the status
+          newStatus = null;
+          days.push(task.date, newDate);
         } else if (newDate < startOfToday) {
           // When the task is moving into the past,
-          // we need to update the date and update the status to DONE (if not already)
-          await tx.task.update({
-            where: { id: task.id },
-            data: {
-              day: { connectOrCreate: { where: { date: newDate }, create: { date: newDate } } },
-              status: "DONE",
-            },
-          });
-          await tx.day.update({
-            where: { date: newDate },
-            data: { tasksOrder: { push: task.id } },
-          });
-          days.push(newDate);
-          await tx.day.update({
-            where: { date: originalDay.date },
-            data: { tasksOrder: { set: originalDay.tasksOrder.filter((id) => id !== task.id) } },
-          });
-          days.push(originalDay.date);
+          // update the date and update the status to DONE (if not already)
+          newStatus = "DONE";
+          days.push(task.date, newDate);
         } else if (newDate > endOfToday) {
           // When the task is moving into the future,
-          // we need to update the date and update the status to TODO (if not already)
-          await tx.task.update({
-            where: { id: task.id },
-            data: {
-              day: { connectOrCreate: { where: { date: newDate }, create: { date: newDate } } },
-              status: "TODO",
-            },
-          });
+          // update the date and update the status to TODO (if not already)
+          newStatus = "TODO";
+          days.push(task.date, newDate);
+        }
+
+        // Update the task
+        await tx.task.update({
+          where: { id: task.id },
+          data: {
+            day: { connectOrCreate: { where: { date: newDate }, create: { date: newDate } } },
+            ...(newStatus ? { status: newStatus } : {}),
+          },
+        });
+
+        if (isSameDay) {
+          // update just one day as they are the same
           await tx.day.update({
-            where: { date: newDate },
-            data: { tasksOrder: { push: task.id } },
+            where: { date: originalDay.date },
+            data: { tasksOrder: { set: newTasksOrder } },
           });
-          days.push(newDate);
+        } else {
+          // update the original and new day
+
+          // Update the original day
           await tx.day.update({
             where: { date: originalDay.date },
             data: { tasksOrder: { set: originalDay.tasksOrder.filter((id) => id !== task.id) } },
           });
-          days.push(originalDay.date);
+
+          // Update the new day (it may be the same as the original day)
+          await tx.day.update({
+            where: { date: newDate },
+            data: { tasksOrder: { set: newTasksOrder } },
+          });
         }
 
         const dayPromises = days
@@ -347,3 +358,11 @@ When the task is:
     },
   })
 );
+
+const equalDay = (date1: Date, date2: Date) => {
+  return (
+    date1.getUTCFullYear() === date2.getUTCFullYear() &&
+    date1.getUTCMonth() === date2.getUTCMonth() &&
+    date1.getUTCDate() === date2.getUTCDate()
+  );
+};

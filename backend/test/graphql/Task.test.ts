@@ -555,7 +555,19 @@ describe("Task GraphQL mutations", () => {
           expect(updatedTask.status).toEqual(status);
 
           expect(res.body.data).toEqual({
-            updateTaskDate: [],
+            updateTaskDate: [
+              {
+                date: toDateOnly(date),
+                tasks: [
+                  {
+                    __typename: "Task",
+                    id: encodeGlobalID("Task", task.id),
+                    date: toDateOnly(date),
+                    status,
+                  },
+                ],
+              },
+            ],
           });
         });
       }
@@ -752,5 +764,123 @@ describe("Task GraphQL mutations", () => {
         });
       }
     }
+
+    it("moves a task from today to today and re-orders the day", async () => {
+      const date = today;
+      const { tasks } = await new Factory()
+        .newTask({ status: "TODO", date }) // 0
+        .newTask({ status: "TODO", date }) // 1
+        .run();
+      await prisma.day.update({
+        where: { date },
+        data: { tasksOrder: { set: [tasks[0].id, tasks[1].id] } },
+      });
+
+      // move task 0 after task 1
+      const res = await graphql({
+        query: /* GraphQL */ `
+          mutation UpdateTaskDateMutation($input: MutationUpdateTaskDateInput!) {
+            updateTaskDate(input: $input) {
+              date
+              tasks {
+                id
+              }
+            }
+          }
+        `,
+        variables: {
+          input: {
+            id: encodeGlobalID("Task", tasks[0].id),
+            date: toDateOnly(today),
+            after: encodeGlobalID("Task", tasks[1].id),
+          },
+        },
+      });
+
+      expect(res.status).toBe(200);
+
+      const updatedTasks = await prisma.task.findMany();
+      expect(updatedTasks).toHaveLength(2);
+
+      expect(res.body.data).toEqual({
+        updateTaskDate: [
+          {
+            date: toDateOnly(today),
+            tasks: [
+              { id: encodeGlobalID("Task", tasks[1].id) },
+              { id: encodeGlobalID("Task", tasks[0].id) },
+            ],
+          },
+        ],
+      });
+    });
+
+    it("moves a task to tomorrow and re-orders the day", async () => {
+      const { tasks } = await new Factory()
+        .newTask({ status: "TODO", date: today }) // 0
+        .newTask({ status: "TODO", date: tomorrow }) // 1
+        .newTask({ status: "TODO", date: tomorrow }) // 2
+        .run();
+      await prisma.day.update({
+        where: { date: today },
+        data: { tasksOrder: { set: [tasks[0].id] } },
+      });
+      await prisma.day.update({
+        where: { date: tomorrow },
+        data: { tasksOrder: { set: [tasks[1].id, tasks[2].id] } },
+      });
+
+      // move task 0 to tomorrow and in between task 1 and 2
+      const res = await graphql({
+        query: /* GraphQL */ `
+          mutation UpdateTaskDateMutation($input: MutationUpdateTaskDateInput!) {
+            updateTaskDate(input: $input) {
+              ${commonFields}
+            }
+          }
+        `,
+        variables: {
+          input: {
+            id: encodeGlobalID("Task", tasks[0].id),
+            date: toDateOnly(tomorrow),
+            after: encodeGlobalID("Task", tasks[1].id),
+          },
+        },
+      });
+
+      expect(res.status).toBe(200);
+
+      expect(res.body.data).toEqual({
+        updateTaskDate: [
+          {
+            date: toDateOnly(today),
+            tasks: [],
+          },
+          {
+            date: toDateOnly(tomorrow),
+            tasks: [
+              {
+                __typename: "Task",
+                id: encodeGlobalID("Task", tasks[1].id),
+                date: toDateOnly(tomorrow),
+                status: "TODO",
+              },
+              {
+                __typename: "Task",
+                id: encodeGlobalID("Task", tasks[0].id),
+                date: toDateOnly(tomorrow),
+                status: "TODO",
+              },
+              {
+                __typename: "Task",
+                id: encodeGlobalID("Task", tasks[2].id),
+                date: toDateOnly(tomorrow),
+                status: "TODO",
+              },
+            ],
+          },
+        ],
+      });
+    });
   });
 });

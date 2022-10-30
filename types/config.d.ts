@@ -33,7 +33,7 @@ declare global {
   type ExternalSource = {
     /**
      * Description of the external source of tasks.
-     * Exposed in the GraphQL API
+     * Exposed in the GraphQL API, which exposes it in the UI.
      */
     description?: string;
     /** The URL to an icon of the external source. For example the Google Calendar icon. */
@@ -43,25 +43,25 @@ declare global {
      * Allows you to perform additional actions when a task is created.
      * Errors thrown will cancel the task creation and will be exposed as a GraphQLYogaError.
      */
-    onTaskCreate?: (task: ExternalItemInput) => Promise<void>;
+    // onTaskCreate?: (task: ExternalItemInput) => Promise<void>; // TODO
     /**
      * Hook triggered before a task linked to an external item is canceled.
      * Allows you to perform a certain action when a task is canceled.
      * Errors thrown will cancel the task cancelation and will be exposed as a GraphQLYogaError.
      */
-    onTaskCancel?: (task: ExternalItemInput) => Promise<void>;
+    // onTaskCancel?: (task: ExternalItemInput) => Promise<void>; // TODO
     /**
      * Hook triggered before a task linked to an external item is completed, but the external item should not be completed.
      * Allows you to perform a certain action when a task is completed.
      */
-    onTaskSemiDone?: (task: ExternalItemInput) => Promise<void>;
+    // onTaskSemiDone?: (task: ExternalItemInput) => Promise<void>; // TODO
     /**
      * Hook triggered before a task linked to an external item is completed (i.e. status == DONE).
      * Allows you to perform a certain action when a task is completed.
      * Errors thrown will cancel the task completion and will be exposed as a GraphQLYogaError.
      * This exposes the double checkmark button on task cards of tasks that have this external source.
      */
-    onTaskDone?: (task: ExternalItemInput) => Promise<void>;
+    // onTaskDone?: (task: ExternalItemInput) => Promise<void>; // TODO
     /** Webhook configurations */
     webhook?: {
       /**
@@ -79,10 +79,13 @@ declare global {
        */
       secret?: string;
     };
-    /** Polling configurations */
+    /**
+     * Polling configurations
+     * This config can also be used for the refresh button to manually trigger a sync.
+     */
     polling?: {
       /** Polling frequency in minutes. */
-      frequencyInMinutes: string;
+      frequencyInMinutes?: number;
       /**
        * Hook triggered when a poll is done on the external source.
        * It should map to an ExternalItem or array of ExternalItem or return null if the poll results are not relevant.
