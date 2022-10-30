@@ -4,7 +4,7 @@
 
 ## What is flow?
 
-Flow is a daily planner to keep you in the flow. It's an open-source you can self-host, so you can change anything about it.
+Flow is a daily planner to keep you in the flow. It's an open-source project you can self-host, so you can change anything about it.
 
 ## Flow vs Sunsama
 
@@ -22,7 +22,7 @@ The following are the main differences Flow has with Sunsama:
 
 ## Initial Release
 
-The intial release of includes the following features:
+The intial release of Flow includes the following features:
 
 - Being able to create and manage regular tasks
 - Being able to create recurring tasks (e.g. every Monday)
