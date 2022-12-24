@@ -1,7 +1,7 @@
 import express from "express";
 import { createServer } from "@graphql-yoga/node";
 import { schema } from "./graphql";
-import { externalSources } from "../../config";
+import { externalSources } from "../../../config";
 import { addExternalItems } from "./utils/addExternalItems";
 import { pluralize } from "./utils/pluralize";
 

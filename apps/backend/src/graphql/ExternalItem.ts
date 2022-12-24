@@ -1,5 +1,5 @@
 import { builder } from "./builder";
-import { externalSources } from "../../../config";
+import { externalSources } from "../../../../config";
 import { prisma } from "../utils/prisma";
 import { endOfDay, startOfDay } from "../utils/getDays";
 

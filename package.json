@@ -6,8 +6,8 @@
   "author": "@richardguerre",
   "license": "MIT",
   "workspaces": [
-    "backend",
-    "frotend"
+    "apps/*",
+    "packages/*"
   ],
   "scripts": {
     "dev": "yarn workspace backend dev",
