@@ -11,21 +11,67 @@ generator pothos {
   provider = "prisma-pothos-types"
 }
 
+/// A day a user has planned or already done.
+/// Days that have not yet been planned are virtually created in the GraphQL API.
 model Day {
   /// The date of the day, which acts as the ID
   date       DateTime @id @db.Date
   /// The order of the tasks in the day
   tasksOrder Int[]
 
+  /// The tasks linked to the day.
   tasks Task[]
+  /// The notes linked to the day.
+  notes Note[]
 }
 
+/// A note that the user has created.
+model Note {
+  /// The id of the note
+  id        Int      @id @default(autoincrement())
+  /// The date and time of creation of the note
+  createdAt DateTime @default(now())
+  /// The date and time the note was last updated
+  updatedAt DateTime @updatedAt
+  /// The date the note was created
+  date      DateTime @db.Date
+  /// The day the note was created
+  day       Day      @relation(fields: [date], references: [date])
+  /// The title of the note
+  title     String
+  /// The content of the note
+  content   String
+
+  /// The labels of the note
+  labels NoteLabel[]
+}
+
+/// A label that can be applied to a note.
+model NoteLabel {
+  /// The id of the note label
+  id        Int      @id @default(autoincrement())
+  /// The date and time of creation of the note label
+  createdAt DateTime @default(now())
+  /// The date and time the note label was last updated
+  updatedAt DateTime @updatedAt
+  /// The name of the note label
+  name      String
+  /// The slug (i.e. the url-safe version) of the note label
+  slug      String   @unique
+  /// The color of the note label in hex
+  color     String
+
+  /// The notes with this label
+  notes Note[]
+}
+
+/// A task that the user or a plugin has created.
 model Task {
   /// The id of the task.
   id                Int        @id @default(autoincrement())
   /// The date and time of creation of the task
   createdAt         DateTime   @default(now())
-  /// The date and time the task was updated
+  /// The date and time the task was last updated
   updatedAt         DateTime   @updatedAt
   /// The title of the task
   title             String
@@ -43,13 +89,14 @@ model Task {
   /// This is mostly for analytics purposes, hence why it's not a relation.
   previousDates     DateTime[] @db.Date
 
-  /// The externalItem linked to the task
-  externalItem   ExternalItem? @relation(fields: [externalItemId], references: [id])
-  externalItemId String?
+  /// The item linked to the task
+  item   Item? @relation(fields: [itemId], references: [id])
+  itemId Int?
 
-  /// The template that was used to create the task
-  fromTemplate   TaskTemplate? @relation(fields: [fromTemplateId], references: [id])
-  fromTemplateId Int?
+  /// The labels of the task 
+  taskLabels  TaskLabel[]
+  /// The plugin datas of the task
+  pluginDatas TaskPluginData[]
 }
 
 // The description of each enum value is copied into src/graphql/Task.ts
@@ -63,35 +110,149 @@ enum TaskStatus {
   CANCELED
 }
 
-/// Templates for repeating tasks.
-model TaskTemplate {
-  /// The id of the task template
-  id                Int              @id @default(autoincrement())
-  /// The date and time of creation of the task template
-  createdAt         DateTime         @default(now())
-  /// The date and time the task template was updated
-  updatedAt         DateTime         @updatedAt
-  /// The initial title when creating a task using the template.
-  title             String
-  /// Whether the task is private or not
-  isPrivate         Boolean          @default(false)
-  /// The initial durationInMinutes when creating a task using the template.
-  durationInMinutes Int?
-  /// The repeatance of the task template. Must have at least one value.
-  repeats           TaskRepeatance[]
-  /// The first day the task template takes effect.
-  firstDay          DateTime         @default(now()) @db.Date
-  /// The last day the task template takes effect.
-  lastDay           DateTime?        @db.Date
-
-  /// The externalItem linked to the template
-  externalItem   ExternalItem? @relation(fields: [externalItemId], references: [id])
-  externalItemId String?
+/// A label that can be applied to a task.
+model TaskLabel {
+  /// The id of the task label
+  id        Int      @id @default(autoincrement())
+  /// The date and time of creation of the task label
+  createdAt DateTime @default(now())
+  /// The date and time the task label was last updated
+  updatedAt DateTime @updatedAt
+  /// The name of the task label
+  name      String
+  /// The slug (i.e. the url-safe version) of the task label
+  slug      String   @unique
+  /// The color of the task label
+  color     String
+  /// Whether tasks with this label should be private. (default: true)
+  isPrivate Boolean  @default(true)
 
   tasks Task[]
 }
 
-enum TaskRepeatance {
+/// The data required by a plugin to be linked to a task.
+model TaskPluginData {
+  /// The id of the task label
+  id        Int      @id @default(autoincrement())
+  /// The date and time of creation of the task plugin data
+  createdAt DateTime @default(now())
+  /// The date and time the task plugin data was last updated
+  updatedAt DateTime @updatedAt
+  /// The minimum data required to render the information on task cards.
+  min       Json
+  /// The full data required by the plugin to be linked to the task.
+  full      Json
+  /// The slug of the plugin that created the data
+  by        String
+
+  /// The task linked to the plugin data
+  task   Task @relation(fields: [taskId], references: [id])
+  taskId Int
+}
+
+/// The data a plugin links to an item.
+model ItemPluginData {
+  /// The id of the item label
+  id        Int      @id @default(autoincrement())
+  /// The date and time of creation of the item plugin data
+  createdAt DateTime @default(now())
+  /// The date and time the item plugin data was last updated
+  updatedAt DateTime @updatedAt
+  /// The minimum data required to render the information on item cards.
+  min       Json
+  /// The full data required by the plugin to be linked to the item.
+  full      Json
+
+  /// The item linked to the plugin data
+  item   Item @relation(fields: [itemId], references: [id])
+  itemId Int
+}
+
+/// An item that is used to create tasks from.
+/// It can be a calendar event, a task from tools like Trello or Linear, etc.
+model Item {
+  /// The id of the item
+  id                Int       @id @default(autoincrement())
+  /// The date and time of creation of the item
+  createdAt         DateTime  @default(now())
+  /// The date and time the item was last updated
+  updatedAt         DateTime  @updatedAt
+  /// The title of the item.
+  /// It is used as the initial title when creating a task from the item.
+  title             String
+  /// Whether the item is relevant to the user and should be shown.
+  isRelevant        Boolean   @default(true)
+  /// The date and time the item is scheduled for.
+  scheduledAt       DateTime?
+  /// The length of time the item is expected to take.
+  durationInMinutes Int?
+
+  /// The tasks linked to the item
+  tasks       Task[]
+  /// The plugin datas linked to the item
+  pluginDatas ItemPluginData[]
+  /// The list in which the item is
+  list        List?            @relation(fields: [listId], references: [id])
+  listId      Int?
+}
+
+/// List of items
+model List {
+  /// The id of the list
+  id        Int      @id @default(autoincrement())
+  /// The date and time of creation of the list
+  createdAt DateTime @default(now())
+  /// The date and time the list was last updated
+  updatedAt DateTime @updatedAt
+  /// The name of the list
+  name      String
+  /// The slug (i.e. the url-safe version) of the list name
+  slug      String   @unique
+
+  /// The items linked to the list
+  items Item[]
+}
+
+/// Settings the user has modified for both Flow and plugins, or configs that plugins have created such as API keys.
+model Setting {
+  /// The id of the user settings
+  id        Int      @id @default(autoincrement())
+  /// The date and time of creation of the user settings
+  createdAt DateTime @default(now())
+  /// The date and time the user settings was last updated
+  updatedAt DateTime @updatedAt
+  /// The key of the setting
+  key       String   @unique
+  /// The value of the setting
+  value     Json
+  /// The slug of the plugin the setting is linked to.
+  /// If null, the setting is linked to Flow.
+  plugin    String?
+  /// Whether the setting is secret.
+  /// Secret settings are only accessible by the user or the plugin with the same pluginSlug.
+  isSecret  Boolean  @default(false)
+}
+
+/// A routine the user has set up.
+model Routine {
+  /// The id of the routine
+  id        Int          @id @default(autoincrement())
+  /// The date and time of creation of the routine
+  createdAt DateTime     @default(now())
+  /// The date and time the routine was last updated
+  updatedAt DateTime     @updatedAt
+  /// The name of the routine
+  name      String
+  /// The time the routine takes place
+  time      DateTime     @db.Time
+  /// The pattern(s) the routine repeats on
+  repeats   Repeatance[]
+  /// The steps of the routine.
+  /// A list of strings in the format `['flow' or pluginSlug]:[stepSlug]:[shouldSkip]`.
+  steps     String[]
+}
+
+enum Repeatance {
   MONDAY
   TUESDAY
   WEDNESDAY
@@ -99,32 +260,21 @@ enum TaskRepeatance {
   FRIDAY
   SATURDAY
   SUNDAY
-}
-
-/// An item that is used to create tasks from.
-/// It can be a calendar event, a task from tools like Trello or Linear, etc.
-model ExternalItem {
-  /// The id of the external item
-  id                String    @id
-  /// The date and time of creation of the external item
-  createdAt         DateTime  @default(now())
-  /// The date and time the external item was updated
-  updatedAt         DateTime  @updatedAt
-  /// The title of the external item.
-  /// It is used as the initial title when creating a task from the external item.
-  title             String
-  /// The source of the external item.
-  /// This is equal to one of the keys in the config.externalSources object.
-  source            String
-  /// Whether the external item is relevant to the user and should be shown.
-  isRelevant        Boolean   @default(true)
-  /// The url to the external item.
-  url               String?
-  /// The date and time the external item is scheduled for.
-  scheduledAt       DateTime?
-  /// The length of time the external item is expected to take.
-  durationInMinutes Int?
-
-  tasks         Task[]
-  taskTemplates TaskTemplate[]
+  // following will be added later
+  // BIWEEKLY_MONDAY
+  // BIWEEKLY_TUESDAY
+  // BIWEEKLY_WEDNESDAY
+  // BIWEEKLY_THURSDAY
+  // BIWEEKLY_FRIDAY
+  // BIWEEKLY_SATURDAY
+  // BIWEEKLY_SUNDAY
+  // TRIWEEKLY_MONDAY
+  // TRIWEEKLY_TUESDAY
+  // TRIWEEKLY_WEDNESDAY
+  // TRIWEEKLY_THURSDAY
+  // TRIWEEKLY_FRIDAY
+  // TRIWEEKLY_SATURDAY
+  // TRIWEEKLY_SUNDAY
+  // FIRST_OF_MONTH
+  // LAST_OF_MONTH
 }
