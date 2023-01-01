@@ -2,7 +2,7 @@
 import { PrismaClient } from "@prisma/client";
 import { afterEach, beforeEach, vi } from "vitest";
 import * as prismaUtils from "../src/utils/prisma";
-import packageJson from "../../package.json";
+import packageJson from "../../../package.json";
 
 type CtorParams<C> = C extends new (...args: infer P) => any ? P[0] : never;
 type TxClient = Parameters<Parameters<PrismaClient["$transaction"]>[0]>[0];

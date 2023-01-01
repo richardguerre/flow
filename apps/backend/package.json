@@ -9,8 +9,8 @@
     "test": "vitest --config .vitest/config.ts",
     "gen": "prisma generate",
     "migrate": "prisma migrate dev --create-only",
-    "setup:db": "psql -c \"CREATE DATABASE FLow;\" || echo \"Ignore the above error. Everything is good to go!\"",
-    "setup:db:test": "psql -c \"CREATE DATABASE FLow_test;\" || echo \"Ignore the above error. Everything is good to go!\""
+    "setup:db": "psql -c \"CREATE DATABASE flow;\" || echo \"Ignore the above error. Everything is good to go!\"",
+    "setup:db:test": "psql -c \"CREATE DATABASE flow_test;\" || echo \"Ignore the above error. Everything is good to go!\""
   },
   "devDependencies": {
     "@types/chance": "^1.1.3",
