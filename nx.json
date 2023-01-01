@@ -1,0 +1,32 @@
+{
+  "tasksRunnerOptions": {
+    "default": {
+      "runner": "@nrwl/nx-cloud",
+      "options": {
+        "cacheableOperations": [
+          "gen",
+          "build"
+        ],
+        "accessToken": "ZTE4ZmViY2UtMGFlYi00YjY4LTkzM2EtOTZhZmQ2Yjk5OTcwfHJlYWQtd3JpdGU="
+      }
+    }
+  },
+  "targetDefaults": {
+    "test": {
+      "dependsOn": [
+        "^test"
+      ]
+    },
+    "gen": {
+      "outputs": [
+        "{projectRoot}/../../node_modules/.prisma"
+      ]
+    },
+    "build": {
+      "outputs": [
+        "{projectRoot}/dist"
+      ]
+    }
+  },
+  "defaultBase": "main"
+}

@@ -30,3 +30,8 @@ dist-ssr
 *.njsproj
 *.sln
 *.sw?
+
+# nx monorepo setup
+.turbo
+build/**
+dist/**
