@@ -1,6 +1,6 @@
 import { builder } from "./builder";
 import "./Day";
-import "./ExternalItem";
+import "./Item";
 import "./Task";
 import "./TaskTemplate";
 

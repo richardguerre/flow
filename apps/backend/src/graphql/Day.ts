@@ -1,7 +1,6 @@
 import { builder } from "./builder";
-import { Task, TaskTemplate } from "@prisma/client";
+import { Task } from "@prisma/client";
 import { TaskType } from "./Task";
-import { TaskTemplateType } from "./TaskTemplate";
 import { loadDayEdges, loadOneDay, toDateOnly } from "../utils/getDays";
 
 // -------------- Day types --------------
@@ -9,7 +8,6 @@ import { loadDayEdges, loadOneDay, toDateOnly } from "../utils/getDays";
 export type DayObjectType = {
   date: Date;
   tasks: Task[];
-  repeatingTasks: TaskTemplate[];
 };
 /**
  * Maybe refactor to use builder.prismaNode instead
@@ -24,11 +22,6 @@ export const DayType = builder.node(DayObjectRef, {
   fields: (t) => ({
     date: t.expose("date", { type: "Date", description: "The date of the day." }),
     tasks: t.expose("tasks", { description: "Tasks planned on that day", type: [TaskType] }),
-    repeatingTasks: t.expose("repeatingTasks", {
-      description: `Task templates of repeating tasks on that day.
-        It does not contain templates of tasks that were already created for that day.`,
-      type: [TaskTemplateType],
-    }),
   }),
 });
 

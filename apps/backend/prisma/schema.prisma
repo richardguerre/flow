@@ -39,7 +39,7 @@ model Note {
   day       Day      @relation(fields: [date], references: [date])
   /// The title of the note
   title     String
-  /// The content of the note
+  /// The content of the note in markdown
   content   String
 
   /// The labels of the note
@@ -56,7 +56,7 @@ model NoteLabel {
   updatedAt DateTime @updatedAt
   /// The name of the note label
   name      String
-  /// The slug (i.e. the url-safe version) of the note label
+  /// The slug (i.e. the url-safe version) of the note label name
   slug      String   @unique
   /// The color of the note label in hex
   color     String
@@ -120,7 +120,7 @@ model TaskLabel {
   updatedAt DateTime @updatedAt
   /// The name of the task label
   name      String
-  /// The slug (i.e. the url-safe version) of the task label
+  /// The slug (i.e. the url-safe version) of the task label name
   slug      String   @unique
   /// The color of the task label
   color     String
@@ -133,17 +133,19 @@ model TaskLabel {
 /// The data required by a plugin to be linked to a task.
 model TaskPluginData {
   /// The id of the task label
-  id        Int      @id @default(autoincrement())
+  id         Int      @id @default(autoincrement())
   /// The date and time of creation of the task plugin data
-  createdAt DateTime @default(now())
+  createdAt  DateTime @default(now())
   /// The date and time the task plugin data was last updated
-  updatedAt DateTime @updatedAt
+  updatedAt  DateTime @updatedAt
   /// The minimum data required to render the information on task cards.
-  min       Json
+  min        Json
   /// The full data required by the plugin to be linked to the task.
-  full      Json
+  full       Json
   /// The slug of the plugin that created the data
-  by        String
+  pluginSlug String
+  /// The original id of the task given by the plugin, if any
+  originalId String?
 
   /// The task linked to the plugin data
   task   Task @relation(fields: [taskId], references: [id])
@@ -153,15 +155,19 @@ model TaskPluginData {
 /// The data a plugin links to an item.
 model ItemPluginData {
   /// The id of the item label
-  id        Int      @id @default(autoincrement())
+  id         Int      @id @default(autoincrement())
   /// The date and time of creation of the item plugin data
-  createdAt DateTime @default(now())
+  createdAt  DateTime @default(now())
   /// The date and time the item plugin data was last updated
-  updatedAt DateTime @updatedAt
+  updatedAt  DateTime @updatedAt
   /// The minimum data required to render the information on item cards.
-  min       Json
+  min        Json
   /// The full data required by the plugin to be linked to the item.
-  full      Json
+  full       Json
+  /// The slug of the plugin that created the data
+  pluginSlug String
+  /// The original id of the item given by the plugin, if any
+  originalId String?
 
   /// The item linked to the plugin data
   item   Item @relation(fields: [itemId], references: [id])
@@ -169,7 +175,7 @@ model ItemPluginData {
 }
 
 /// An item that is used to create tasks from.
-/// It can be a calendar event, a task from tools like Trello or Linear, etc.
+/// It can be a calendar event, a Trello task, a Linear issue, a GitHub request for review, a notification, etc.
 model Item {
   /// The id of the item
   id                Int       @id @default(autoincrement())
@@ -216,21 +222,21 @@ model List {
 /// Settings the user has modified for both Flow and plugins, or configs that plugins have created such as API keys.
 model Setting {
   /// The id of the user settings
-  id        Int      @id @default(autoincrement())
+  id         Int      @id @default(autoincrement())
   /// The date and time of creation of the user settings
-  createdAt DateTime @default(now())
+  createdAt  DateTime @default(now())
   /// The date and time the user settings was last updated
-  updatedAt DateTime @updatedAt
+  updatedAt  DateTime @updatedAt
   /// The key of the setting
-  key       String   @unique
+  key        String   @unique
   /// The value of the setting
-  value     Json
+  value      Json
   /// The slug of the plugin the setting is linked to.
   /// If null, the setting is linked to Flow.
-  plugin    String?
+  pluginSlug String?
   /// Whether the setting is secret.
   /// Secret settings are only accessible by the user or the plugin with the same pluginSlug.
-  isSecret  Boolean  @default(false)
+  isSecret   Boolean  @default(false)
 }
 
 /// A routine the user has set up.

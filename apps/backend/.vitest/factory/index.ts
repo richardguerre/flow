@@ -1,9 +1,9 @@
-import { Day, ExternalItem, Task, TaskTemplate, Prisma } from "@prisma/client";
+import { Day, Item, Task, Prisma } from "@prisma/client";
 import { prisma } from "../../src/utils/prisma";
 import { chance } from "./chance";
 
 type P<T> = Partial<T>;
-type FactorySingularMember = "day" | "task" | "taskTemplate" | "externalItem";
+type FactorySingularMember = "day" | "task" | "taskTemplate" | "item";
 
 export class Factory {
   private promises: { addAs: FactorySingularMember; promise: any }[] = [];
@@ -14,7 +14,7 @@ export class Factory {
   /**
    * This is the function that needs to be called at the end of the chain
    * so that there is no need to `await` each step.
-   * @returns {Promise<{task: Task, taskTemplate: TaskTemplate, externalItem: ExternalItem}>}
+   * @returns {Promise<{task: Task, taskTemplate: TaskTemplate, item: Item}>}
    */
   async run() {
     for (const { addAs, promise } of this.promises) {
@@ -54,31 +54,16 @@ export class Factory {
     return this;
   }
 
-  taskTemplate: TaskTemplate;
-  taskTemplates: TaskTemplate[] = [];
-  newTaskTemplate(overrides?: P<Prisma.TaskTemplateCreateInput>) {
-    const taskTemplate = prisma.taskTemplate.create({
+  item: Item;
+  items: Item[] = [];
+  newItem(overrides?: P<Prisma.ItemCreateInput>) {
+    const item = prisma.item.create({
       data: {
         title: chance.sentence(),
         ...overrides,
       },
     });
-    this.promises.push({ addAs: "taskTemplate", promise: taskTemplate });
-    return this;
-  }
-
-  externalItem: ExternalItem;
-  externalItems: ExternalItem[] = [];
-  newExternalItem(overrides?: P<Prisma.ExternalItemCreateInput>) {
-    const externalItem = prisma.externalItem.create({
-      data: {
-        id: chance.guid(),
-        title: chance.sentence(),
-        source: "TestSource",
-        ...overrides,
-      },
-    });
-    this.promises.push({ addAs: "externalItem", promise: externalItem });
+    this.promises.push({ addAs: "item", promise: item });
     return this;
   }
 }
