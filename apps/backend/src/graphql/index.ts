@@ -3,10 +3,13 @@ import { writeFileSync } from "fs";
 import { printSchema } from "graphql";
 import "./Day";
 import "./Item";
-import "./Task";
+import "./ItemPluginData";
 import "./List";
 import "./Note";
 import "./NoteLabel";
+import "./Task";
+import "./TaskLabel";
+import "./TaskPluginData";
 
 export const schema = builder.toSchema();
 const schemaAsString = printSchema(schema);

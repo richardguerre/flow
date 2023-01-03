@@ -28,6 +28,8 @@ export const TaskType = builder.prismaNode("Task", {
       select: { item: { select: { scheduledAt: true } } },
       resolve: (task) => task.item?.scheduledAt ?? null,
     }),
+    labels: t.relation("labels"),
+    pluginDatas: t.relation("pluginDatas"),
   }),
 });
 

@@ -60,6 +60,8 @@ model NoteLabel {
   slug      String   @unique
   /// The color of the note label in hex
   color     String
+  /// Whether notes with this label should be private. (default: true)
+  isPrivate Boolean  @default(true)
 
   /// The notes with this label
   notes Note[]
@@ -89,7 +91,7 @@ model Task {
   itemId Int?
 
   /// The labels of the task 
-  taskLabels  TaskLabel[]
+  labels      TaskLabel[]
   /// The plugin datas of the task
   pluginDatas TaskPluginData[]
 }

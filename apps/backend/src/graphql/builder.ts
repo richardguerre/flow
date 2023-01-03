@@ -1,10 +1,11 @@
 import SchemaBuilder from "@pothos/core";
+import { Prisma } from "@prisma/client";
 import { prisma } from "../utils/prisma";
 import RelayPlugin from "@pothos/plugin-relay";
 import PrismaPlugin from "@pothos/plugin-prisma";
 import WithInputPlugin from "@pothos/plugin-with-input";
 import type PrismaTypes from "@pothos/plugin-prisma/generated";
-import { DateResolver, DateTimeResolver, PositiveIntResolver } from "graphql-scalars";
+import { DateResolver, DateTimeResolver, PositiveIntResolver, JSONResolver } from "graphql-scalars";
 
 export const encodeGlobalID = (typename: string, id: string | number | bigint) => {
   return `${typename}_${id}`;
@@ -29,6 +30,10 @@ export const builder = new SchemaBuilder<{
     PositiveInt: {
       Input: number;
       Output: number;
+    };
+    JSON: {
+      Input: Prisma.JsonValue;
+      Output: Prisma.JsonValue;
     };
   };
 }>({
@@ -59,6 +64,7 @@ builder.mutationType(); // this initializes the mutation type, so that builder.m
 builder.addScalarType("Date", DateResolver, {});
 builder.addScalarType("DateTime", DateTimeResolver, {});
 builder.addScalarType("PositiveInt", PositiveIntResolver, {}); // only used in input types
+builder.addScalarType("JSON", JSONResolver, {}); // only used in input types
 
 // ----------------- utils -----------------
 // The following utils help when working at the intersection of Pothos and Prisma.

@@ -12,6 +12,7 @@ export const ItemType = builder.prismaNode("Item", {
     isRelevant: t.exposeBoolean("isRelevant"),
     scheduledAt: t.expose("scheduledAt", { type: "DateTime", nullable: true }),
     durationInMinutes: t.exposeInt("durationInMinutes", { nullable: true }),
+    pluginDatas: t.relation("pluginDatas"),
   }),
 });
 
