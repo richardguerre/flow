@@ -19,22 +19,10 @@ export const decodeGlobalID = (globalId: string) => {
 export const builder = new SchemaBuilder<{
   PrismaTypes: PrismaTypes;
   Scalars: {
-    Date: {
-      Input: Date;
-      Output: Date;
-    };
-    DateTime: {
-      Input: Date;
-      Output: Date;
-    };
-    PositiveInt: {
-      Input: number;
-      Output: number;
-    };
-    JSON: {
-      Input: Prisma.JsonValue;
-      Output: Prisma.JsonValue;
-    };
+    Date: { Input: Date; Output: Date };
+    DateTime: { Input: Date; Output: Date };
+    PositiveInt: { Input: number; Output: number };
+    JSON: { Input: Prisma.InputJsonValue; Output: Prisma.JsonValue };
   };
 }>({
   plugins: [RelayPlugin, PrismaPlugin, WithInputPlugin],

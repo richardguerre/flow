@@ -17,9 +17,8 @@ export const ListType = builder.prismaNode("List", {
 // --------------- List query types ---------------
 
 builder.queryField("lists", (t) =>
-  t.prismaConnection({
-    type: "List",
-    cursor: "id",
+  t.prismaField({
+    type: ["List"],
     description: "Get all lists.",
     resolve: prisma.list.findMany,
   })

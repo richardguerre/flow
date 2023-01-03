@@ -221,21 +221,23 @@ model List {
 /// Settings the user has modified for both Flow and plugins, or configs that plugins have created such as API keys.
 model Setting {
   /// The id of the user settings
-  id         Int      @id @default(autoincrement())
+  id           Int      @id @default(autoincrement())
   /// The date and time of creation of the user settings
-  createdAt  DateTime @default(now())
+  createdAt    DateTime @default(now())
   /// The date and time the user settings was last updated
-  updatedAt  DateTime @updatedAt
+  updatedAt    DateTime @updatedAt
   /// The key of the setting
-  key        String   @unique
+  key          String   @unique
   /// The value of the setting
-  value      Json
+  value        Json
   /// The slug of the plugin the setting is linked to.
-  /// If null, the setting is linked to Flow.
-  pluginSlug String?
+  pluginSlug   String
   /// Whether the setting is secret.
-  /// Secret settings are only accessible by the user or the plugin with the same pluginSlug.
-  isSecret   Boolean  @default(false)
+  /// Secret settings are server-only and can only be accessed by the plugin with the same pluginSlug.
+  isSecret     Boolean  @default(false)
+  /// Whether the setting is server-only.
+  /// Server-only settings are not sent to the client.
+  isServerOnly Boolean  @default(false)
 }
 
 /// A routine the user has set up.
