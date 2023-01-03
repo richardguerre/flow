@@ -81,13 +81,8 @@ model Task {
   day               Day        @relation(fields: [date], references: [date])
   /// The date the task is scheduled for
   date              DateTime   @db.Date
-  /// Whether the task is private or not
-  isPrivate         Boolean    @default(false)
   /// The length of time the task is expected to take.
   durationInMinutes Int?
-  /// The dates of the tasks that were posponed to create this task.
-  /// This is mostly for analytics purposes, hence why it's not a relation.
-  previousDates     DateTime[] @db.Date
 
   /// The item linked to the task
   item   Item? @relation(fields: [itemId], references: [id])
@@ -205,15 +200,17 @@ model Item {
 /// List of items
 model List {
   /// The id of the list
-  id        Int      @id @default(autoincrement())
+  id          Int      @id @default(autoincrement())
   /// The date and time of creation of the list
-  createdAt DateTime @default(now())
+  createdAt   DateTime @default(now())
   /// The date and time the list was last updated
-  updatedAt DateTime @updatedAt
+  updatedAt   DateTime @updatedAt
   /// The name of the list
-  name      String
+  name        String
   /// The slug (i.e. the url-safe version) of the list name
-  slug      String   @unique
+  slug        String   @unique
+  /// The description of the list
+  description String?
 
   /// The items linked to the list
   items Item[]
@@ -254,7 +251,7 @@ model Routine {
   /// The pattern(s) the routine repeats on
   repeats   Repeatance[]
   /// The steps of the routine.
-  /// A list of strings in the format `['flow' or pluginSlug]:[stepSlug]:[shouldSkip]`.
+  /// A list of strings in the format `['flow' or pluginSlug]_[stepSlug]_[shouldSkip]`.
   steps     String[]
 }
 

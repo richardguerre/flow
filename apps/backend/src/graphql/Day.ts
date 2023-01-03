@@ -31,11 +31,11 @@ builder.queryField("days", (t) =>
   t.connection({
     type: DayType,
     description: `Get days using a Relay connection.
-      If no arguments are provided, it will return the current day.
-      If \`first\` is provided, it will return the current day and the following days.
-      If \`after\` is provided, it will return the days after the given date.
-      If \`last\` is provided, it will return the current day and the previous days.
-      If \`before\` is provided, it will return the days before the given date.`,
+If no arguments are provided, it will return the current day.
+If \`first\` is provided, it will return the current day and the following days.
+If \`after\` is provided, it will return the days after the given date.
+If \`last\` is provided, it will return the current day and the previous days.
+If \`before\` is provided, it will return the days before the given date.`,
     resolve: async (_parent, { first, after, last, before }) => {
       const { edges, startCursor, endCursor } = await loadDayEdges({ first, after, last, before });
       return {

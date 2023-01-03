@@ -12,16 +12,8 @@ describe("Task GraphQL types", () => {
   withDb();
 
   it("returns the fields available for a task", async () => {
-    const { externalItem, taskTemplate } = await new Factory()
-      .newExternalItem({ durationInMinutes: 60 })
-      .newTaskTemplate()
-      .run();
-    const { task } = await new Factory()
-      .newTask({
-        externalItem: { connect: { id: externalItem.id } },
-        fromTemplate: { connect: { id: taskTemplate.id } },
-      })
-      .run();
+    const { item } = await new Factory().newItem({ durationInMinutes: 60 }).run();
+    const { task } = await new Factory().newTask({ item: { connect: { id: item.id } } }).run();
 
     const res = await graphql({
       query: gql`
@@ -40,10 +32,7 @@ describe("Task GraphQL types", () => {
                   durationInMinutes
                   scheduledAt
                   repeats
-                  externalItem {
-                    id
-                  }
-                  fromTemplate {
+                  fromItem {
                     id
                   }
                 }
@@ -68,11 +57,10 @@ describe("Task GraphQL types", () => {
                   status: task.status,
                   date: toDateOnly(task.date),
                   isPrivate: task.isPrivate,
-                  previousDates: task.previousDates.map((d) => toDateOnly(d)),
-                  durationInMinutes: task.durationInMinutes, // incorrect it should be externalItem.durationInMinutes
-                  scheduledAt: externalItem.scheduledAt?.toJSON() ?? null,
+                  durationInMinutes: task.durationInMinutes, // incorrect it should be item.durationInMinutes
+                  scheduledAt: item.scheduledAt?.toJSON() ?? null,
                   repeats: true,
-                  externalItem: null, // incorrect it should be { id: encodeGlobalID("ExternalItem", externalItem.id) }
+                  item: null, // incorrect it should be { id: encodeGlobalID("ExternalItem", item.id) }
                   fromTemplate: null, // incorrect it should be { id: encodeGlobalID("TaskTemplate", taskTemplate.id) }
                 },
               ],
@@ -127,7 +115,7 @@ describe("Task GraphQL mutations", () => {
               durationInMinutes
               scheduledAt
               repeats
-              externalItem {
+              item {
                 id
               }
               fromTemplate {
@@ -141,7 +129,7 @@ describe("Task GraphQL mutations", () => {
       expect(res.status).toBe(200);
 
       const task = await prisma.task.findFirst({
-        include: { externalItem: true, fromTemplate: true },
+        include: { item: true },
       });
       expect(task).not.toBe(null);
       if (!task) throw new Error("No task found");
@@ -154,12 +142,11 @@ describe("Task GraphQL mutations", () => {
           status: task.status,
           date: toDateOnly(task.date),
           durationInMinutes: task.durationInMinutes,
-          externalItem: null,
+          item: null,
           fromTemplate: null,
           isPrivate: task.isPrivate,
           previousDates: [],
-          repeats: !!task.fromTemplate,
-          scheduledAt: task.externalItem?.scheduledAt?.toJSON() ?? null,
+          scheduledAt: task.item?.scheduledAt?.toJSON() ?? null,
         },
       });
 
@@ -170,12 +157,12 @@ describe("Task GraphQL mutations", () => {
     });
 
     it("creates a task with an external item", async () => {
-      const { externalItem } = await new Factory().newExternalItem().run();
+      const { item } = await new Factory().newItem().run();
 
       const res = await graphql({
         query: gql`
-          mutation CreateTaskMutation($externalItemId: ID!) {
-            createTask(input: { title: "Test task", externalItemId: $externalItemId }) {
+          mutation CreateTaskMutation($itemId: ID!) {
+            createTask(input: { title: "Test task", itemId: $itemId }) {
               id
               createdAt
               title
@@ -186,7 +173,7 @@ describe("Task GraphQL mutations", () => {
               durationInMinutes
               scheduledAt
               repeats
-              externalItem {
+              item {
                 id
               }
               fromTemplate {
@@ -196,13 +183,13 @@ describe("Task GraphQL mutations", () => {
           }
         `,
         variables: {
-          externalItemId: encodeGlobalID("ExternalItem", externalItem.id),
+          itemId: encodeGlobalID("ExternalItem", item.id),
         },
       });
 
       expect(res.status).toBe(200);
       const task = await prisma.task.findFirst({
-        include: { externalItem: true, fromTemplate: true },
+        include: { item: true },
       });
       expect(task).not.toBe(null);
       if (!task) throw new Error("No task found");
@@ -215,72 +202,13 @@ describe("Task GraphQL mutations", () => {
           status: task.status,
           date: toDateOnly(task.date),
           durationInMinutes: task.durationInMinutes,
-          externalItem: {
-            id: encodeGlobalID("ExternalItem", externalItem.id),
+          item: {
+            id: encodeGlobalID("ExternalItem", item.id),
           },
           fromTemplate: null,
           isPrivate: task.isPrivate,
           previousDates: [],
-          repeats: !!task.fromTemplate,
-          scheduledAt: task.externalItem?.scheduledAt?.toJSON() ?? null,
-        },
-      });
-    });
-
-    it("creates a task with a template", async () => {
-      const { taskTemplate } = await new Factory().newTaskTemplate().run();
-
-      const res = await graphql({
-        query: gql`
-          mutation CreateTaskMutation($taskTemplateId: ID!) {
-            createTask(input: { title: "Test task", templateId: $taskTemplateId }) {
-              id
-              createdAt
-              title
-              status
-              date
-              isPrivate
-              previousDates
-              durationInMinutes
-              scheduledAt
-              repeats
-              externalItem {
-                id
-              }
-              fromTemplate {
-                id
-              }
-            }
-          }
-        `,
-        variables: {
-          taskTemplateId: encodeGlobalID("TaskTemplate", taskTemplate.id),
-        },
-      });
-
-      expect(res.status).toBe(200);
-      const task = await prisma.task.findFirst({
-        include: { externalItem: true, fromTemplate: true },
-      });
-      expect(task).not.toBe(null);
-      if (!task) throw new Error("No task found");
-
-      expect(res.body.data).toEqual({
-        createTask: {
-          id: encodeGlobalID("Task", task.id),
-          createdAt: task.createdAt.toJSON(),
-          title: "Test task",
-          status: task.status,
-          date: toDateOnly(task.date),
-          durationInMinutes: task.durationInMinutes,
-          externalItem: null,
-          fromTemplate: {
-            id: encodeGlobalID("TaskTemplate", taskTemplate.id),
-          },
-          isPrivate: task.isPrivate,
-          previousDates: [],
-          repeats: !!task.fromTemplate,
-          scheduledAt: task.externalItem?.scheduledAt?.toJSON() ?? null,
+          scheduledAt: task.item?.scheduledAt?.toJSON() ?? null,
         },
       });
     });
@@ -304,7 +232,7 @@ describe("Task GraphQL mutations", () => {
               durationInMinutes
               scheduledAt
               repeats
-              externalItem {
+              item {
                 id
               }
               fromTemplate {
@@ -321,7 +249,7 @@ describe("Task GraphQL mutations", () => {
       expect(res.status).toBe(200);
 
       const updatedTask = await prisma.task.findFirst({
-        include: { externalItem: true, fromTemplate: true },
+        include: { item: true },
       });
       expect(updatedTask).not.toBe(null);
       if (!updatedTask) throw new Error("No task found");
@@ -334,12 +262,11 @@ describe("Task GraphQL mutations", () => {
           status: "TODO",
           date: toDateOnly(updatedTask.date),
           durationInMinutes: updatedTask.durationInMinutes,
-          externalItem: null,
+          item: null,
           fromTemplate: null,
           isPrivate: updatedTask.isPrivate,
           previousDates: [],
-          repeats: !!updatedTask.fromTemplate,
-          scheduledAt: updatedTask.externalItem?.scheduledAt?.toJSON() ?? null,
+          scheduledAt: updatedTask.item?.scheduledAt?.toJSON() ?? null,
         },
       });
     });

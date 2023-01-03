@@ -5,7 +5,7 @@ import { Prisma, PrismaClient } from "@prisma/client";
 export const loadOneDay = async (
   dayString: string,
   prismaClient: PrismaClient | Prisma.TransactionClient = prisma
-) => {
+): Promise<DayObjectType> => {
   const date = new Date(dayString);
   const day = await prismaClient.day.findUnique({ where: { date }, include: { tasks: true } });
 
@@ -15,48 +15,27 @@ export const loadOneDay = async (
       return day.tasksOrder.indexOf(a.id) - day.tasksOrder.indexOf(b.id);
     }) ?? [];
 
-  // Get IDs of task templates from tasks that were created from a template
-  // so that we don't repeat them in the `repeatingTasks` field
-  const templateIdsOfTasksFromTemplate = tasks.reduce<number[]>(
-    (taskIds, task) => (task.fromTemplateId ? taskIds.concat(task.fromTemplateId) : taskIds),
-    []
-  );
-
-  const repeatingTasks = await prismaClient.taskTemplate.findMany({
-    where: {
-      repeats: { has: getDayOfWeek(date) },
-      firstDay: { lte: date },
-      OR: [{ lastDay: null }, { lastDay: { gte: date } }],
-      id: { notIn: templateIdsOfTasksFromTemplate },
-    },
-  });
-
-  return { date, tasks, repeatingTasks };
+  return { date, tasks };
 };
 
-type LoadEdgesInput = {
+type LoadDayEdgesInput = {
   first?: number | null | undefined;
   after?: string | null | undefined;
   last?: number | null | undefined;
   before?: string | null | undefined;
 };
 type DayEdge = { cursor: string; node: DayObjectType };
-type LoadEdgesOuput = {
+type LoadDayEdgesOuput = {
   startCursor: string;
   endCursor: string;
   edges: DayEdge[];
 };
 
-export const loadDayEdges = async ({
-  first,
-  after,
-  last,
-  before,
-}: LoadEdgesInput): Promise<LoadEdgesOuput> => {
-  const start = getStartFromConnectionArgs({ first, after, last, before });
+export const loadDayEdges = async (input: LoadDayEdgesInput): Promise<LoadDayEdgesOuput> => {
+  const start = getStartFromConnectionArgs(input);
 
   const dayEdges: DayEdge[] = [];
-  for (const _ of Array.from({ length: first ?? last ?? 1 })) {
+  for (const _ of Array.from({ length: input.first ?? input.last ?? 1 })) {
     const day = toDateOnly(start);
     const node = await loadOneDay(day);
     dayEdges.push({ cursor: day, node });
@@ -70,7 +49,7 @@ export const loadDayEdges = async ({
   };
 };
 
-export const getStartFromConnectionArgs = ({ after, before, last }: LoadEdgesInput) => {
+export const getStartFromConnectionArgs = ({ after, before, last }: LoadDayEdgesInput) => {
   let start = new Date();
   if (after) {
     const afterDate = new Date(after);
@@ -88,6 +67,22 @@ export const startOfDay = (day: Date = new Date()) => {
 
 export const endOfDay = (day: Date = new Date()) => {
   return new Date(day.setUTCHours(23, 59, 59, 999));
+};
+
+/**
+ * @returns the date at 4:00:00.000 UTC
+ * 4am is considered the start of a new day as items can happen over midnight and we want to show them on the same day.
+ */
+export const startOfDayScheduledAt = (day: Date = new Date()) => {
+  return new Date(day.setUTCHours(4, 0, 0, 0));
+};
+
+/**
+ * @returns the date + 1 day, at 3:59:59.999 UTC
+ * 4am is considered the start of a new day as items can happen over midnight and we want to show them on the same day.
+ */
+export const endOfDayScheduledAt = (day: Date = new Date()) => {
+  return new Date(addDays(day, 1).setUTCHours(3, 59, 59, 999));
 };
 
 export const addDays = (day: Date = new Date(), days: number) => {

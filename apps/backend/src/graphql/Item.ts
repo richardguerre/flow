@@ -1,6 +1,6 @@
 import { builder } from "./builder";
 import { prisma } from "../utils/prisma";
-import { endOfDay, startOfDay } from "../utils/getDays";
+import { startOfDayScheduledAt, endOfDayScheduledAt } from "../utils/getDays";
 
 // -------------- ExternalItem types --------------
 
@@ -21,17 +21,23 @@ builder.queryField("items", (t) =>
   t.prismaConnection({
     type: "Item",
     cursor: "id",
-    description: `Get all external items.
-      By default, only items where isRelevant is true and scheduledAt is null are returned.
-      Pass the \`where\` argument to override these defaults.`,
-    args: { where: t.arg({ type: ExternalItemWhereInput, required: false }) },
+    description: `Get all external items. Useuful to get list of items for a specific day to show in a calendar.
+By default, only items where isRelevant is true and scheduledAt is today.
+Pass the \`where\` argument to override these defaults.`,
+    args: { where: t.arg({ type: ItemWhereInput, required: false }) },
     resolve: (query, _, args) => {
+      const scheduledFor = args.where?.scheduledFor;
       return prisma.item.findMany({
         ...query,
         where: {
           isRelevant: args.where?.isRelevant ?? true,
-          ...(args.where?.isScheduledForToday
-            ? { scheduledAt: { gte: startOfDay(), lte: endOfDay() } }
+          ...(scheduledFor
+            ? {
+                scheduledAt: {
+                  gte: startOfDayScheduledAt(scheduledFor),
+                  lte: endOfDayScheduledAt(scheduledFor),
+                },
+              }
             : { scheduledAt: null }),
         },
       });
@@ -39,15 +45,18 @@ builder.queryField("items", (t) =>
   })
 );
 
-export const ExternalItemWhereInput = builder.inputType("ExternalItemWhereInput", {
+export const ItemWhereInput = builder.inputType("ExternalItemWhereInput", {
   fields: (t) => ({
     isRelevant: t.boolean({
       required: false,
       description: `If set to true, it will return items where isRelevant is true.`,
+      defaultValue: true,
     }),
-    isScheduledForToday: t.boolean({
+    scheduledFor: t.field({
+      type: "Date",
       required: false,
       description: `If set to true, it will return items where scheduledAt is today or null.`,
+      defaultValue: new Date(),
     }),
   }),
 });

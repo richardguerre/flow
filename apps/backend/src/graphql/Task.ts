@@ -13,9 +13,7 @@ export const TaskType = builder.prismaNode("Task", {
     title: t.exposeString("title"),
     status: t.expose("status", { type: TaskStatusEnum }),
     date: t.expose("date", { type: "Date" }),
-    isPrivate: t.exposeBoolean("isPrivate"),
-    previousDates: t.expose("previousDates", { type: ["Date"] }),
-    externalItem: t.relation("item", { nullable: true }),
+    item: t.relation("item", { nullable: true }),
     durationInMinutes: t.int({
       nullable: true,
       description: "The length of time the task is expected to take.",
@@ -25,7 +23,8 @@ export const TaskType = builder.prismaNode("Task", {
     scheduledAt: t.field({
       type: "DateTime",
       nullable: true,
-      description: "The date and time the task is scheduled to start.",
+      description:
+        "The date and time the task is scheduled to start. It is not changeable by the user, but plugins can change it.",
       select: { item: { select: { scheduledAt: true } } },
       resolve: (task) => task.item?.scheduledAt ?? null,
     }),
@@ -71,9 +70,6 @@ builder.mutationField("createTask", (t) =>
         type: "Date",
         description: "The day (no time required) the task is planned for.",
       }),
-      isPrivate: t.input.boolean({
-        description: "Whether the task should be private and not shown in the team message.",
-      }),
       externalItemId: t.input.globalID({
         description: "The Relay ID of the ExternalItem that should be linked to the task.",
       }),
@@ -91,7 +87,6 @@ builder.mutationField("createTask", (t) =>
             status: u(args.input.status),
             durationInMinutes: args.input.durationInMinutes,
             day: { connectOrCreate: { where: { date }, create: { date } } },
-            isPrivate: u(args.input.isPrivate),
             ...(args.input.externalItemId
               ? { externalItem: { connect: { id: args.input.externalItemId.id } } }
               : {}),
@@ -118,9 +113,6 @@ builder.mutationField("updateTask", (t) =>
         type: "PositiveInt",
         description: "The length of time (in minutes) the task is expected to take.",
       }),
-      isPrivate: t.input.boolean({
-        description: "Whether the task should be private and not shown in the team message.",
-      }),
     },
     resolve: (query, _, args) => {
       return prisma.task.update({
@@ -129,7 +121,6 @@ builder.mutationField("updateTask", (t) =>
         data: {
           title: u(args.input.title),
           durationInMinutes: args.input.durationInMinutes,
-          isPrivate: u(args.input.isPrivate),
         },
       });
     },

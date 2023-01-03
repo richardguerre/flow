@@ -35,7 +35,14 @@ export const builder = new SchemaBuilder<{
   plugins: [RelayPlugin, PrismaPlugin, WithInputPlugin],
   relayOptions: {
     clientMutationId: "omit",
-    cursorType: "String",
+    cursorType: "ID",
+    edgesFieldOptions: {
+      // @ts-ignore as the types don't match the docs, and this works
+      nullable: false,
+    },
+    nodeFieldOptions: {
+      nullable: false,
+    },
     encodeGlobalID,
     decodeGlobalID,
   },
