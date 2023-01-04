@@ -8,7 +8,7 @@ export const loadOneDay = async (
 ): Promise<DayObjectType> => {
   const date = new Date(dayString);
   const [day, routines] = await Promise.all([
-    prismaClient.day.findUnique({ where: { date }, include: { tasks: true } }),
+    prismaClient.day.findUnique({ where: { date }, include: { tasks: true, notes: true } }),
     prismaClient.routine.findMany({
       where: {
         isActive: true,
@@ -25,7 +25,9 @@ export const loadOneDay = async (
       return day.tasksOrder.indexOf(a.id) - day.tasksOrder.indexOf(b.id);
     }) ?? [];
 
-  return { date, tasks, routines };
+  const notes = day?.notes ?? [];
+
+  return { date, tasks, notes, routines };
 };
 
 type LoadDayEdgesInput = {

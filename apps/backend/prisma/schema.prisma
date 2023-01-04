@@ -171,7 +171,7 @@ model ItemPluginData {
   itemId Int
 }
 
-/// An item that is used to create tasks from.
+/// An item created by the user or a plugin. These items are then turned into tasks.
 /// It can be a calendar event, a Trello task, a Linear issue, a GitHub request for review, a notification, etc.
 model Item {
   /// The id of the item
