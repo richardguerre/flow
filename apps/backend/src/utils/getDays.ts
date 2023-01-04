@@ -7,7 +7,17 @@ export const loadOneDay = async (
   prismaClient: PrismaClient | Prisma.TransactionClient = prisma
 ): Promise<DayObjectType> => {
   const date = new Date(dayString);
-  const day = await prismaClient.day.findUnique({ where: { date }, include: { tasks: true } });
+  const [day, routines] = await Promise.all([
+    prismaClient.day.findUnique({ where: { date }, include: { tasks: true } }),
+    prismaClient.routine.findMany({
+      where: {
+        isActive: true,
+        repeats: { has: getDayOfWeek(date) },
+        firstDay: { lte: date },
+        OR: [{ lastDay: null }, { lastDay: { gte: date } }],
+      },
+    }),
+  ]);
 
   // sort tasks using the `day.tasksOrder` array
   const tasks =
@@ -15,7 +25,7 @@ export const loadOneDay = async (
       return day.tasksOrder.indexOf(a.id) - day.tasksOrder.indexOf(b.id);
     }) ?? [];
 
-  return { date, tasks };
+  return { date, tasks, routines };
 };
 
 type LoadDayEdgesInput = {
@@ -89,7 +99,7 @@ export const addDays = (day: Date = new Date(), days: number) => {
   return new Date(day.setDate(day.getDate() + days));
 };
 
-/** @returns values from the TaskRepeatance enum */
+/** @returns the day in all caps (e.g., `"MONDAY"`)*/
 export const getDayOfWeek = (date: Date) => {
   return dayOfWeekArr[date.getDay()];
 };

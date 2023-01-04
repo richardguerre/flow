@@ -5,7 +5,14 @@ import RelayPlugin from "@pothos/plugin-relay";
 import PrismaPlugin from "@pothos/plugin-prisma";
 import WithInputPlugin from "@pothos/plugin-with-input";
 import type PrismaTypes from "@pothos/plugin-prisma/generated";
-import { DateResolver, DateTimeResolver, PositiveIntResolver, JSONResolver } from "graphql-scalars";
+import {
+  DateResolver,
+  DateTimeResolver,
+  PositiveIntResolver,
+  JSONResolver,
+  LocalEndTimeResolver,
+} from "graphql-scalars";
+import { RoutineStep } from "./Routine";
 
 export const encodeGlobalID = (typename: string, id: string | number | bigint) => {
   return `${typename}_${id}`;
@@ -23,6 +30,8 @@ export const builder = new SchemaBuilder<{
     DateTime: { Input: Date; Output: Date };
     PositiveInt: { Input: number; Output: number };
     JSON: { Input: Prisma.InputJsonValue; Output: Prisma.JsonValue };
+    LocalEndTime: { Input: Date; Output: Date };
+    RoutineStep: { Input: RoutineStep; Output: RoutineStep | string };
   };
 }>({
   plugins: [RelayPlugin, PrismaPlugin, WithInputPlugin],
@@ -53,6 +62,11 @@ builder.addScalarType("Date", DateResolver, {});
 builder.addScalarType("DateTime", DateTimeResolver, {});
 builder.addScalarType("PositiveInt", PositiveIntResolver, {}); // only used in input types
 builder.addScalarType("JSON", JSONResolver, {}); // only used in input types
+builder.addScalarType("LocalEndTime", LocalEndTimeResolver, {}); // only used in input types
+builder.scalarType("RoutineStep", {
+  serialize: (value) => value,
+  parseValue: (value) => value as RoutineStep,
+});
 
 // ----------------- utils -----------------
 // The following utils help when working at the intersection of Pothos and Prisma.

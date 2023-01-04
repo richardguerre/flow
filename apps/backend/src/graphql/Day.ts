@@ -1,6 +1,7 @@
 import { builder } from "./builder";
-import { Task } from "@prisma/client";
+import { Task, Routine } from "@prisma/client";
 import { TaskType } from "./Task";
+import { RoutineType } from "./Routine";
 import { loadDayEdges, loadOneDay, toDateOnly } from "../utils/getDays";
 
 // -------------- Day types --------------
@@ -8,6 +9,7 @@ import { loadDayEdges, loadOneDay, toDateOnly } from "../utils/getDays";
 export type DayObjectType = {
   date: Date;
   tasks: Task[];
+  routines: Routine[];
 };
 /**
  * Maybe refactor to use builder.prismaNode instead
@@ -22,6 +24,10 @@ export const DayType = builder.node(DayObjectRef, {
   fields: (t) => ({
     date: t.expose("date", { type: "Date", description: "The date of the day." }),
     tasks: t.expose("tasks", { description: "Tasks planned on that day", type: [TaskType] }),
+    routines: t.expose("routines", {
+      description: "Routines that occur on that day.",
+      type: [RoutineType],
+    }),
   }),
 });
 
