@@ -1,5 +1,5 @@
 import { TaskStatus } from "@prisma/client";
-import { endOfDay, loadOneDay, startOfDay } from "../utils/getDays";
+import { endOfDay, startOfDay } from "../utils/getDays";
 import { prisma } from "../utils/prisma";
 import { builder, u, uParseInt } from "./builder";
 import { DayType } from "./Day";
@@ -225,8 +225,7 @@ Any other scenario is not possible by nature of the app, where tasks:
           });
           days.push(startOfToday);
         }
-        const dayPromises = days.map((date) => loadOneDay(date.toString(), tx));
-        return Promise.all(dayPromises);
+        return prisma.day.findMany({ where: { date: { in: days } }, orderBy: { date: "asc" } });
       });
     },
   })
@@ -338,10 +337,7 @@ When the task is:
           });
         }
 
-        const dayPromises = days
-          .sort((a, b) => a.getTime() - b.getTime())
-          .map((date) => loadOneDay(date.toString(), tx));
-        return Promise.all(dayPromises);
+        return prisma.day.findMany({ where: { date: { in: days } }, orderBy: { date: "asc" } });
       });
     },
   })

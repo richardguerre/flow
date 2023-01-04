@@ -14,10 +14,13 @@ describe("Day GraphQL types", () => {
             edges {
               node {
                 date
+                notes {
+                  id
+                }
                 tasks {
                   id
                 }
-                repeatingTasks {
+                routines {
                   id
                 }
               }
@@ -36,6 +39,7 @@ describe("Day GraphQL types", () => {
               date: toDateOnly(startOfDay()),
               tasks: [],
               repeatingTasks: [],
+              routines: [],
             },
           },
         ],

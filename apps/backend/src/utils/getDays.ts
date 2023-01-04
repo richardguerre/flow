@@ -1,67 +1,12 @@
-import { prisma } from "./prisma";
-import { DayObjectType } from "../graphql/Day";
-import { Prisma, PrismaClient } from "@prisma/client";
-
-export const loadOneDay = async (
-  dayString: string,
-  prismaClient: PrismaClient | Prisma.TransactionClient = prisma
-): Promise<DayObjectType> => {
-  const date = new Date(dayString);
-  const [day, routines] = await Promise.all([
-    prismaClient.day.findUnique({ where: { date }, include: { tasks: true, notes: true } }),
-    prismaClient.routine.findMany({
-      where: {
-        isActive: true,
-        repeats: { has: getDayOfWeek(date) },
-        firstDay: { lte: date },
-        OR: [{ lastDay: null }, { lastDay: { gte: date } }],
-      },
-    }),
-  ]);
-
-  // sort tasks using the `day.tasksOrder` array
-  const tasks =
-    day?.tasks.sort((a, b) => {
-      return day.tasksOrder.indexOf(a.id) - day.tasksOrder.indexOf(b.id);
-    }) ?? [];
-
-  const notes = day?.notes ?? [];
-
-  return { date, tasks, notes, routines };
-};
-
-type LoadDayEdgesInput = {
+// TODO: move and rename this file
+type EdgesArgs = {
   first?: number | null | undefined;
   after?: string | null | undefined;
   last?: number | null | undefined;
   before?: string | null | undefined;
 };
-type DayEdge = { cursor: string; node: DayObjectType };
-type LoadDayEdgesOuput = {
-  startCursor: string;
-  endCursor: string;
-  edges: DayEdge[];
-};
 
-export const loadDayEdges = async (input: LoadDayEdgesInput): Promise<LoadDayEdgesOuput> => {
-  const start = getStartFromConnectionArgs(input);
-
-  const dayEdges: DayEdge[] = [];
-  for (const _ of Array.from({ length: input.first ?? input.last ?? 1 })) {
-    const day = toDateOnly(start);
-    const node = await loadOneDay(day);
-    dayEdges.push({ cursor: day, node });
-    start.setDate(start.getDate() + 1); // sets start for the next iteration
-  }
-
-  return {
-    startCursor: dayEdges[0]!.cursor,
-    endCursor: dayEdges[dayEdges.length - 1]!.cursor,
-    edges: dayEdges,
-  };
-};
-
-export const getStartFromConnectionArgs = ({ after, before, last }: LoadDayEdgesInput) => {
+export const getStartFromConnectionArgs = ({ after, before, last }: EdgesArgs) => {
   let start = new Date();
   if (after) {
     const afterDate = new Date(after);
