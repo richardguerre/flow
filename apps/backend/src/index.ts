@@ -2,7 +2,7 @@ import express from "express";
 import { createServer } from "@graphql-yoga/node";
 import { schema } from "./graphql";
 import { externalSources } from "../../../config";
-import { addExternalItems } from "./utils/addExternalItems";
+import { addItems } from "./utils/addItems";
 import { pluralize } from "./utils/pluralize";
 
 const PORT = process.env.PORT || 4000;
@@ -29,11 +29,11 @@ app.post("/webhook/:name", async (req, res) => {
       throw "No external source found with name " + req.params.name + "in config.";
     }
     const externalSource = externalSources[externalSourceName];
-    let externalItems = (await externalSource?.webhook?.onWebhookEvent(req.body)) ?? null;
-    if (!externalItems) throw "Webhook event is not relevant";
-    if (!Array.isArray(externalItems)) externalItems = [externalItems];
+    let items = (await externalSource?.webhook?.onWebhookEvent(req.body)) ?? null;
+    if (!items) throw "Webhook event is not relevant";
+    if (!Array.isArray(items)) items = [items];
 
-    const result = await addExternalItems(externalSourceName, externalItems);
+    const result = await addItems(externalSourceName, items);
     console.log(
       `Added ${result.count} external ${pluralize("item", result.count)} from ${externalSourceName}`
     );

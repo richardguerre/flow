@@ -1,6 +1,6 @@
 import { prisma } from "./prisma";
 
-export const addExternalItems = async (pluginSlug: string, items: ExternalItemInput[]) => {
+export const addItems = async (pluginSlug: string, items: ExternalItemInput[]) => {
   return await prisma.item.createMany({
     skipDuplicates: true,
     data: items.map((item) => ({ ...item, id: undefined, pluginSlug })),

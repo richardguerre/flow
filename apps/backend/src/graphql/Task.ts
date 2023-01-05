@@ -72,8 +72,8 @@ builder.mutationField("createTask", (t) =>
         type: "Date",
         description: "The day (no time required) the task is planned for.",
       }),
-      externalItemId: t.input.globalID({
-        description: "The Relay ID of the ExternalItem that should be linked to the task.",
+      itemId: t.input.globalID({
+        description: "The Relay ID of the Item that should be linked to the task.",
       }),
       templateId: t.input.globalID({
         description: "The Relay ID of the TaskTemplate used to create the task.",
@@ -89,11 +89,8 @@ builder.mutationField("createTask", (t) =>
             status: u(args.input.status),
             durationInMinutes: args.input.durationInMinutes,
             day: { connectOrCreate: { where: { date }, create: { date } } },
-            ...(args.input.externalItemId
-              ? { externalItem: { connect: { id: args.input.externalItemId.id } } }
-              : {}),
-            ...(args.input.templateId
-              ? { fromTemplate: { connect: { id: parseInt(args.input.templateId.id) } } }
+            ...(args.input.itemId
+              ? { item: { connect: { id: parseInt(args.input.itemId.id) } } }
               : {}),
           },
         });

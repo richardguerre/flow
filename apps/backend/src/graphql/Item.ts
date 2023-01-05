@@ -2,7 +2,7 @@ import { builder } from "./builder";
 import { prisma } from "../utils/prisma";
 import { startOfDayScheduledAt, endOfDayScheduledAt } from "../utils/getDays";
 
-// -------------- ExternalItem types --------------
+// -------------- Item types --------------
 
 export const ItemType = builder.prismaNode("Item", {
   id: { field: "id" },
@@ -16,7 +16,7 @@ export const ItemType = builder.prismaNode("Item", {
   }),
 });
 
-// --------------- ExternalItem query types ---------------
+// --------------- Item query types ---------------
 
 builder.queryField("items", (t) =>
   t.prismaConnection({
@@ -46,7 +46,7 @@ Pass the \`where\` argument to override these defaults.`,
   })
 );
 
-export const ItemWhereInput = builder.inputType("ExternalItemWhereInput", {
+export const ItemWhereInput = builder.inputType("ItemWhereInput", {
   fields: (t) => ({
     isRelevant: t.boolean({
       required: false,

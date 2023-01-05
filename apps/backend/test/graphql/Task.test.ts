@@ -32,7 +32,7 @@ describe("Task GraphQL types", () => {
                   durationInMinutes
                   scheduledAt
                   repeats
-                  fromItem {
+                  item {
                     id
                   }
                 }
@@ -56,11 +56,10 @@ describe("Task GraphQL types", () => {
                   title: task.title,
                   status: task.status,
                   date: toDateOnly(task.date),
-                  isPrivate: task.isPrivate,
                   durationInMinutes: task.durationInMinutes, // incorrect it should be item.durationInMinutes
                   scheduledAt: item.scheduledAt?.toJSON() ?? null,
                   repeats: true,
-                  item: null, // incorrect it should be { id: encodeGlobalID("ExternalItem", item.id) }
+                  item: null, // incorrect it should be { id: encodeGlobalID("Item", item.id) }
                   fromTemplate: null, // incorrect it should be { id: encodeGlobalID("TaskTemplate", taskTemplate.id) }
                 },
               ],
@@ -144,7 +143,6 @@ describe("Task GraphQL mutations", () => {
           durationInMinutes: task.durationInMinutes,
           item: null,
           fromTemplate: null,
-          isPrivate: task.isPrivate,
           previousDates: [],
           scheduledAt: task.item?.scheduledAt?.toJSON() ?? null,
         },
@@ -183,7 +181,7 @@ describe("Task GraphQL mutations", () => {
           }
         `,
         variables: {
-          itemId: encodeGlobalID("ExternalItem", item.id),
+          itemId: encodeGlobalID("Item", item.id),
         },
       });
 
@@ -203,10 +201,9 @@ describe("Task GraphQL mutations", () => {
           date: toDateOnly(task.date),
           durationInMinutes: task.durationInMinutes,
           item: {
-            id: encodeGlobalID("ExternalItem", item.id),
+            id: encodeGlobalID("Item", item.id),
           },
           fromTemplate: null,
-          isPrivate: task.isPrivate,
           previousDates: [],
           scheduledAt: task.item?.scheduledAt?.toJSON() ?? null,
         },
@@ -264,7 +261,6 @@ describe("Task GraphQL mutations", () => {
           durationInMinutes: updatedTask.durationInMinutes,
           item: null,
           fromTemplate: null,
-          isPrivate: updatedTask.isPrivate,
           previousDates: [],
           scheduledAt: updatedTask.item?.scheduledAt?.toJSON() ?? null,
         },

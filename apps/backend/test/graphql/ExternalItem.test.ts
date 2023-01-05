@@ -4,27 +4,24 @@ import { graphql, gql } from "../../.vitest/server";
 import { Factory } from "../../.vitest/factory";
 import { encodeGlobalID } from "../../src/graphql/builder";
 
-describe("ExternalItem GraphQL types", () => {
+describe("Item GraphQL types", () => {
   withDb();
 
   it("returns the fields available for an external item", async () => {
-    const { externalItem } = await new Factory().newExternalItem().run();
+    const { item } = await new Factory().newItem().run();
 
     const res = await graphql({
       query: gql`
         query {
-          externalItems {
+          items {
             edges {
               node {
                 id
                 createdAt
                 title
                 isRelevant
-                url
                 scheduledAt
                 durationInMinutes
-                source
-                iconUrl
               }
             }
           }
@@ -34,19 +31,16 @@ describe("ExternalItem GraphQL types", () => {
 
     expect(res.status).toBe(200);
     expect(res.body.data).toEqual({
-      externalItems: {
+      items: {
         edges: [
           {
             node: {
-              id: encodeGlobalID("ExternalItem", externalItem.id),
-              createdAt: externalItem.createdAt.toJSON(),
-              title: externalItem.title,
-              isRelevant: externalItem.isRelevant,
-              url: externalItem.url,
-              scheduledAt: externalItem.scheduledAt?.toJSON() ?? null,
-              durationInMinutes: externalItem.durationInMinutes,
-              source: externalItem.source,
-              iconUrl: null,
+              id: encodeGlobalID("Item", item.id),
+              createdAt: item.createdAt.toJSON(),
+              title: item.title,
+              isRelevant: item.isRelevant,
+              scheduledAt: item.scheduledAt?.toJSON() ?? null,
+              durationInMinutes: item.durationInMinutes,
             },
           },
         ],
@@ -63,7 +57,7 @@ describe("ExternalItem GraphQL types", () => {
       query: gql`
         query {
           node(id: "SomeId") {
-            ... on ExternalItem {
+            ... on Item {
               id
             }
           }
