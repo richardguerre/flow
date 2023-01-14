@@ -65,9 +65,9 @@ If \`last\` (Int) is provided, it will return the current day and the previous d
 If \`before\` (Date) is provided, it will return the days before the given date.`,
     resolve: async (_, args, context, info) => {
       const start = getStartFromConnectionArgs(args);
-      const daysToAdd = args.first ?? args.last ?? 1;
+      const totalDays = args.first ?? args.last ?? 1;
       const end = endOfDay(new Date(start));
-      end.setDate(end.getDate() + daysToAdd);
+      end.setDate(end.getDate() + totalDays - 1);
 
       // In order to dataload the relations of the Day type, we need to create a query object that contains the select and include arguments.
       // Using queryFromInfo creates the query object found when using t.prismaConnection. See https://github.com/hayes/pothos/blob/main/packages/plugin-prisma/src/field-builder.ts#L122-L128
@@ -86,7 +86,7 @@ If \`before\` (Date) is provided, it will return the days before the given date.
       const dayMap = new Map(days.map((day) => [toDateOnly(day.date), day as DayResolutionType]));
       const dayEdges: DayEdge[] = [];
       const dateCursor = new Date(start);
-      for (const _ of Array.from({ length: daysToAdd })) {
+      for (const _ of Array.from({ length: totalDays })) {
         const day = toDateOnly(dateCursor);
         dayEdges.push({
           cursor: day,
