@@ -231,7 +231,7 @@ Any other scenario is not possible by nature of the app, where tasks:
 builder.mutationField("updateTaskDate", (t) =>
   t.fieldWithInput({
     type: [DayType],
-    description: `Update the date of a task and/or order of the day, and get the updated days (as a list in chronological order).
+    description: `Update the date of a task and/or position of the task in the day, and get the updated days (as a list in chronological order).
 
 Input:
 - \`id\`: The ID of the task to update.

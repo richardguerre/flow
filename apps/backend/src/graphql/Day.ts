@@ -1,26 +1,11 @@
 import { prisma } from "../utils/prisma";
 import { builder } from "./builder";
 import { Task, Note, Routine } from "@prisma/client";
-import {
-  endOfDay,
-  getDayOfWeek,
-  getStartFromConnectionArgs,
-  startOfDay,
-  toDateOnly,
-} from "../utils/getDays";
+import { queryFromInfo } from "@pothos/plugin-prisma";
+import { endOfDay, getDayOfWeek, getStartFromConnectionArgs, toDateOnly } from "../utils/getDays";
 
 // -------------- Day types --------------
 
-export type DayObjectType = {
-  date: Date;
-  tasks: Task[];
-  notes: Note[];
-  routines: Routine[];
-};
-/**
- * Maybe refactor to use builder.prismaNode instead
- */
-// const DayObjectRef = builder.objectRef<DayObjectType>("Day");
 export const DayType = builder.prismaNode("Day", {
   id: { resolve: (day) => toDateOnly(day.date) },
   findUnique: (date) => ({ date: new Date(date) }),
@@ -45,6 +30,7 @@ export const DayType = builder.prismaNode("Day", {
       resolve: async (query, day) => {
         return prisma.routine.findMany({
           ...query,
+          orderBy: { time: "asc" },
           where: {
             isActive: true,
             repeats: { has: getDayOfWeek(day.date) },
@@ -59,22 +45,68 @@ export const DayType = builder.prismaNode("Day", {
 
 // -------------- Day query types --------------
 
+type DayResolutionType = {
+  date: Date;
+  tasksOrder: number[];
+  tasks: Task[];
+  notes: Note[];
+  routines: Routine[];
+};
+type DayEdge = { cursor: string; node: DayResolutionType };
+
 builder.queryField("days", (t) =>
-  t.prismaConnection({
-    type: "Day",
-    cursor: "date",
+  t.connection({
+    type: DayType,
     description: `Get days using a Relay connection.
 If no arguments are provided, it will return the current day.
-If \`first\` is provided, it will return the current day and the following days.
-If \`after\` is provided, it will return the days after the given date.
-If \`last\` is provided, it will return the current day and the previous days.
-If \`before\` is provided, it will return the days before the given date.`,
-    resolve: async (query, _parent, args) => {
-      const start = startOfDay(getStartFromConnectionArgs(args));
-      const numberOfDays = args.first ?? args.last ?? 1;
-      const end = endOfDay(start);
-      end.setDate(end.getDate() + numberOfDays - 1);
-      return prisma.day.findMany({ ...query, where: { date: { gte: start, lte: end } } });
+If \`first\` (Int) is provided, it will return the current day and the following days.
+If \`after\` (Date) is provided, it will return the days after the given date.
+If \`last\` (Int) is provided, it will return the current day and the previous days.
+If \`before\` (Date) is provided, it will return the days before the given date.`,
+    resolve: async (_, args, context, info) => {
+      const start = getStartFromConnectionArgs(args);
+      const daysToAdd = args.first ?? args.last ?? 1;
+      const end = endOfDay(new Date(start));
+      end.setDate(end.getDate() + daysToAdd);
+      // Using queryFromInfo creates the query object found when using t.prismaConnection. See https://github.com/hayes/pothos/blob/main/packages/plugin-prisma/src/field-builder.ts#L122-L128
+      const query = queryFromInfo({
+        context,
+        info,
+        select: { date: true },
+        path: ["edges", "node"],
+        typeName: "Day",
+      });
+      const days = await prisma.day.findMany({
+        ...query,
+        where: { date: { gte: start, lte: end } },
+      });
+      const dayMap = new Map(days.map((day) => [toDateOnly(day.date), day]));
+      const dayEdges: DayEdge[] = [];
+      const dateCursor = new Date(start);
+      for (const _ of Array.from({ length: daysToAdd })) {
+        const day = toDateOnly(dateCursor);
+        const emptyNode: DayResolutionType = {
+          date: dateCursor,
+          tasksOrder: [],
+          notes: [],
+          routines: [],
+          tasks: [],
+        };
+        dayEdges.push({
+          cursor: day,
+          node: (dayMap.get(toDateOnly(dateCursor)) as DayResolutionType) ?? emptyNode,
+        });
+        dateCursor.setDate(dateCursor.getDate() + 1); // sets start for the next iteration
+      }
+      return {
+        edges: dayEdges,
+        pageInfo: {
+          hasNextPage: true, // always true because there are infinite days
+          hasPreviousPage: true, // always true because there are infinite days
+          startCursor: toDateOnly(start),
+          endCursor: toDateOnly(end),
+        },
+      };
     },
   })
 );
