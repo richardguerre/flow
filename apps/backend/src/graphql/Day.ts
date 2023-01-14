@@ -68,6 +68,8 @@ If \`before\` (Date) is provided, it will return the days before the given date.
       const daysToAdd = args.first ?? args.last ?? 1;
       const end = endOfDay(new Date(start));
       end.setDate(end.getDate() + daysToAdd);
+
+      // In order to dataload the relations of the Day type, we need to create a query object that contains the select and include arguments.
       // Using queryFromInfo creates the query object found when using t.prismaConnection. See https://github.com/hayes/pothos/blob/main/packages/plugin-prisma/src/field-builder.ts#L122-L128
       const query = queryFromInfo({
         context,
@@ -80,24 +82,19 @@ If \`before\` (Date) is provided, it will return the days before the given date.
         ...query,
         where: { date: { gte: start, lte: end } },
       });
-      const dayMap = new Map(days.map((day) => [toDateOnly(day.date), day]));
+
+      const dayMap = new Map(days.map((day) => [toDateOnly(day.date), day as DayResolutionType]));
       const dayEdges: DayEdge[] = [];
       const dateCursor = new Date(start);
       for (const _ of Array.from({ length: daysToAdd })) {
         const day = toDateOnly(dateCursor);
-        const emptyNode: DayResolutionType = {
-          date: dateCursor,
-          tasksOrder: [],
-          notes: [],
-          routines: [],
-          tasks: [],
-        };
         dayEdges.push({
           cursor: day,
-          node: (dayMap.get(toDateOnly(dateCursor)) as DayResolutionType) ?? emptyNode,
+          node: dayMap.get(day) ?? createEmptyNode({ date: new Date(dateCursor) }), // new Date is required because the below code mutates the dateCursor
         });
         dateCursor.setDate(dateCursor.getDate() + 1); // sets start for the next iteration
       }
+
       return {
         edges: dayEdges,
         pageInfo: {
@@ -110,3 +107,14 @@ If \`before\` (Date) is provided, it will return the days before the given date.
     },
   })
 );
+
+/**
+ * Creates a DayResolutionType object with empty arrays for the relations.
+ */
+const createEmptyNode = ({ date }: { date: Date }): DayResolutionType => ({
+  date,
+  tasksOrder: [],
+  notes: [],
+  routines: [],
+  tasks: [],
+});
