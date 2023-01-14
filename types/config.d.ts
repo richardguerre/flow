@@ -41,13 +41,13 @@ declare global {
     /**
      * Hook triggered before a task is created with an external item.
      * Allows you to perform additional actions when a task is created.
-     * Errors thrown will cancel the task creation and will be exposed as a GraphQLYogaError.
+     * Errors thrown will cancel the task creation and will be exposed as a GraphQLError.
      */
     // onTaskCreate?: (task: ItemInput) => Promise<void>; // TODO
     /**
      * Hook triggered before a task linked to an external item is canceled.
      * Allows you to perform a certain action when a task is canceled.
-     * Errors thrown will cancel the task cancelation and will be exposed as a GraphQLYogaError.
+     * Errors thrown will cancel the task cancelation and will be exposed as a GraphQLError.
      */
     // onTaskCancel?: (task: ItemInput) => Promise<void>; // TODO
     /**
@@ -58,7 +58,7 @@ declare global {
     /**
      * Hook triggered before a task linked to an external item is completed (i.e. status == DONE).
      * Allows you to perform a certain action when a task is completed.
-     * Errors thrown will cancel the task completion and will be exposed as a GraphQLYogaError.
+     * Errors thrown will cancel the task completion and will be exposed as a GraphQLError.
      * This exposes the double checkmark button on task cards of tasks that have this external source.
      */
     // onTaskDone?: (task: ItemInput) => Promise<void>; // TODO

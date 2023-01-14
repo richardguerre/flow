@@ -1,5 +1,5 @@
 import express from "express";
-import { createServer } from "@graphql-yoga/node";
+import { createYoga } from "graphql-yoga";
 import { schema } from "./graphql";
 import { externalSources } from "../../../config";
 import { addItems } from "./utils/addItems";
@@ -11,8 +11,8 @@ app.use(express.json());
 
 // -------------------------- GraphQL ----------------------------
 
-const graphQLServer = createServer({ schema });
-app.use("/graphql", graphQLServer);
+const graphqlAPI = createYoga({ schema });
+app.use("/graphql", graphqlAPI);
 
 // -------------------------- Webhooks ----------------------------
 
