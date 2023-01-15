@@ -1,0 +1,519 @@
+input CreateNoteLabelInput {
+  """The color of the label."""
+  color: String!
+
+  """The name of the label."""
+  name: String!
+
+  """The slug of the label. Defaults to dashcase version of the name."""
+  slug: String
+}
+
+"""
+A date string, such as 2007-12-03, compliant with the `full-date` format outlined in section 5.6 of the RFC 3339 profile of the ISO 8601 standard for representation of dates and times using the Gregorian calendar.
+"""
+scalar Date
+
+"""
+A date-time string at UTC, such as 2007-12-03T10:15:30Z, compliant with the `date-time` format outlined in section 5.6 of the RFC 3339 profile of the ISO 8601 standard for representation of dates and times using the Gregorian calendar.
+"""
+scalar DateTime
+
+"""
+A day a user has planned or already done.\nDays that have not yet been planned are virtually created in the GraphQL API.
+"""
+type Day implements Node {
+  """The date of the day."""
+  date: Date!
+  id: ID!
+
+  """The notes linked to the day."""
+  notes: [Note!]!
+  routines: [Routine!]!
+
+  """The tasks linked to the day."""
+  tasks: [Task!]!
+}
+
+"""
+An item created by the user or a plugin. These items are then turned into tasks.\nIt can be a calendar event, a Trello task, a Linear issue, a GitHub request for review, a notification, etc.
+"""
+type Item implements Node {
+  createdAt: DateTime!
+
+  """The length of time the item is expected to take."""
+  durationInMinutes: Int
+  id: ID!
+
+  """Whether the item is relevant to the user and should be shown."""
+  isRelevant: Boolean!
+
+  """The plugin datas linked to the item"""
+  pluginDatas: [ItemPluginData!]!
+  scheduledAt: DateTime
+
+  """
+  The title of the item.\nIt is used as the initial title when creating a task from the item.
+  """
+  title: String!
+}
+
+"""The data a plugin links to an item."""
+type ItemPluginData implements Node {
+  createdAt: DateTime!
+  full: JSON!
+  id: ID!
+  min: JSON!
+
+  """The slug of the plugin that created the data"""
+  pluginSlug: String!
+  updatedAt: DateTime!
+}
+
+input ItemWhereInput {
+  """If set to true, it will return items where isRelevant is true."""
+  isRelevant: Boolean = true
+
+  """
+  If set to true, it will return items where scheduledAt is today or null.
+  """
+  scheduledFor: Date = "2023-01-14"
+}
+
+"""
+The `JSON` scalar type represents JSON values as specified by [ECMA-404](http://www.ecma-international.org/publications/files/ECMA-ST/ECMA-404.pdf).
+"""
+scalar JSON
+
+"""List of items"""
+type List implements Node {
+  createdAt: DateTime!
+
+  """The description of the list"""
+  description: String
+  id: ID!
+
+  """The items linked to the list"""
+  items(after: ID, before: ID, first: Int, last: Int): ListItemsConnection!
+
+  """The name of the list"""
+  name: String!
+
+  """The slug (i.e. the url-safe version) of the list name"""
+  slug: String!
+}
+
+type ListItemsConnection {
+  edges: [ListItemsConnectionEdge!]!
+  pageInfo: PageInfo!
+}
+
+type ListItemsConnectionEdge {
+  cursor: ID!
+  node: Item!
+}
+
+"""
+A local time string (i.e., with no associated timezone) in 24-hr `HH:mm[:ss[.SSS]]` format, e.g. `14:25` or `14:25:06` or `14:25:06.123`.  This scalar is very similar to the `LocalTime`, with the only difference being that `LocalEndTime` also allows `24:00` as a valid value to indicate midnight of the following day.  This is useful when using the scalar to represent the exclusive upper bound of a time block.
+"""
+scalar LocalEndTime
+
+type Mutation {
+  """Create a setting."""
+  createASetting(input: MutationCreateASettingInput!): Setting!
+
+  """Create a new note."""
+  createNote(input: MutationCreateNoteInput!): Note!
+
+  """Create a new task."""
+  createTask(input: MutationCreateTaskInput!): Task!
+
+  """Update a task."""
+  updateTask(input: MutationUpdateTaskInput!): Task!
+
+  "Update the date of a task and/or position of the task in the day, and get the updated days (as a list in chronological order).\n\nInput:\n- `id`: The ID of the task to update.\n- `date`: The new date of the task.\n- `after`: The ID of the task to place the task after. If `null`, the task will be placed at the beginning of the day.\n\nWhen the task is:\n- already in the desired date, it updates the order and returns the day.\n- moved to today, it updates the date and order but not the status, and returns the original day and today.\n- moved into the past, it updates the date and order, updates the status to `DONE` (if not already),\n  and returns the original day and the new day.\n- moved into the future, it updates the date and order, updates the status to `TODO` (if not already),\n  and returns the original day and the new day.\n    "
+  updateTaskDate(input: MutationUpdateTaskDateInput!): [Day!]!
+
+  "Update the status of a task and get the updated days (as a list in chronological order).\n\nWhen the task is:\n- already in the desired status, it does nothing and returns an empty list.\n- for today, it updates the status and returns the day.\n- for a previous day and changing to `TODO`, it updates the status and\n  returns the original day and today.\n- for a future day and changing to `DONE` or `CANCELED`, it updates the status and\n  returns the original day and today.\n\nAny other scenario is not possible by nature of the app, where tasks:\n- in the past can only be `DONE` or `CANCELED` \n- in the future can only be in `TODO`\n    "
+  updateTaskStatus(input: MutationUpdateTaskStatusInput!): [Day!]!
+}
+
+input MutationCreateASettingInput {
+  key: String!
+  pluginSlug: String!
+  value: JSON!
+}
+
+input MutationCreateNoteInput {
+  """The content of the note."""
+  content: String!
+
+  """The date of the note."""
+  date: Date!
+
+  """
+  The IDs of exsiting labels to be linked to the note. If you want to create a new label, use the `newLabels` input.
+  """
+  labels: [ID!]
+
+  """Create new labels and link them to the note."""
+  newLabels: [CreateNoteLabelInput!]
+
+  """The title of the note."""
+  title: String!
+}
+
+input MutationCreateTaskInput {
+  """The day (no time required) the task is planned for."""
+  date: Date
+
+  """The length of time (in minutes) the task is expected to take."""
+  durationInMinutes: PositiveInt
+
+  """The Relay ID of the Item that should be linked to the task."""
+  itemId: ID
+
+  """The initial status of the task. Defaults to `TODO`."""
+  status: TaskStatus = TODO
+
+  """The Relay ID of the TaskTemplate used to create the task."""
+  templateId: ID
+
+  """The title of the task."""
+  title: String!
+}
+
+input MutationUpdateTaskDateInput {
+  """
+  The ID of the task to place the task after. If `null`, the task will be placed at the beginning of the day.
+  """
+  after: ID
+
+  """The new date of the task."""
+  date: Date!
+
+  """The Relay ID of the task to update."""
+  id: ID!
+}
+
+input MutationUpdateTaskInput {
+  """The length of time (in minutes) the task is expected to take."""
+  durationInMinutes: PositiveInt
+
+  """The Relay ID of the task to update."""
+  id: ID!
+
+  """The title of the task."""
+  title: String
+}
+
+input MutationUpdateTaskStatusInput {
+  """The Relay ID of the task to update."""
+  id: ID!
+
+  """The new status of the task."""
+  status: TaskStatus!
+}
+
+interface Node {
+  id: ID!
+}
+
+"""A note that the user has created."""
+type Note implements Node {
+  """The content of the note in markdown"""
+  content: String!
+  createdAt: DateTime!
+  date: Date!
+  id: ID!
+
+  """The labels of the note"""
+  labels: [NoteLabel!]!
+
+  """The title of the note"""
+  title: String!
+  updatedAt: DateTime!
+}
+
+"""A label that can be applied to a note."""
+type NoteLabel implements Node {
+  """The color of the note label in hex"""
+  color: String!
+  createdAt: DateTime!
+  id: ID!
+
+  """Whether notes with this label should be private. (default: true)"""
+  isPrivate: Boolean!
+
+  """The name of the note label"""
+  name: String!
+
+  """The notes with this label"""
+  notes(after: ID, before: ID, first: Int, last: Int): NoteLabelNotesConnection!
+
+  """The slug (i.e. the url-safe version) of the note label name"""
+  slug: String!
+}
+
+type NoteLabelNotesConnection {
+  edges: [NoteLabelNotesConnectionEdge!]!
+  pageInfo: PageInfo!
+}
+
+type NoteLabelNotesConnectionEdge {
+  cursor: ID!
+  node: Note!
+}
+
+input NoteLabelWhereInput {
+  """Filter by whether the label is for private use."""
+  isPrivate: Boolean
+
+  """Filter by name. Case insensitive."""
+  nameIsLike: String
+}
+
+type PageInfo {
+  endCursor: ID
+  hasNextPage: Boolean!
+  hasPreviousPage: Boolean!
+  startCursor: ID
+}
+
+"""Integers that will have a value greater than 0."""
+scalar PositiveInt
+
+type Query {
+  """
+  Get days using a Relay connection.
+  If no arguments are provided, it will return the current day.
+  If `first` (Int) is provided, it will return the current day and the following days.
+  If `after` (Date) is provided, it will return the days after the given date.
+  If `last` (Int) is provided, it will return the current day and the previous days.
+  If `before` (Date) is provided, it will return the days before the given date.
+  """
+  days(after: ID, before: ID, first: Int, last: Int): QueryDaysConnection!
+
+  """
+  Get all external items. Useuful to get list of items for a specific day to show in a calendar.
+  By default, only items where isRelevant is true and scheduledAt is today.
+  Pass the `where` argument to override these defaults.
+  """
+  items(after: ID, before: ID, first: Int, last: Int, where: ItemWhereInput): QueryItemsConnection!
+
+  """Get all lists."""
+  lists: [List!]!
+  node(id: ID!): Node
+  nodes(ids: [ID!]!): [Node]!
+
+  """
+  Get all note labels ordered by usage in descending order. `before` and `after` cursors are ignored, and `first` and `last` act the same and are limited to 100.
+  """
+  noteLabels(
+    after: ID
+    before: ID
+    first: Int
+    last: Int
+
+    """Filters to use when querying note labels."""
+    where: NoteLabelWhereInput
+  ): QueryNoteLabelsConnection!
+
+  """Get all routines."""
+  routines: [Routine!]!
+
+  """
+  Get all settings. The args (first, last, after, before) don't work yet.
+  """
+  settings(after: ID, before: ID, first: Int, last: Int): QuerySettingsConnection!
+
+  """
+  Get all task labels ordered by usage in descending order. `before` and `after` cursors are ignored, and `first` and `last` act the same and are limited to 100.
+  """
+  taskLabels(
+    after: ID
+    before: ID
+    first: Int
+    last: Int
+
+    """Filters to use when querying task labels."""
+    where: TaskLabelWhereInput
+  ): QueryTaskLabelsConnection!
+}
+
+type QueryDaysConnection {
+  edges: [QueryDaysConnectionEdge!]!
+  pageInfo: PageInfo!
+}
+
+type QueryDaysConnectionEdge {
+  cursor: ID!
+  node: Day!
+}
+
+type QueryItemsConnection {
+  edges: [QueryItemsConnectionEdge!]!
+  pageInfo: PageInfo!
+}
+
+type QueryItemsConnectionEdge {
+  cursor: ID!
+  node: Item!
+}
+
+type QueryNoteLabelsConnection {
+  edges: [QueryNoteLabelsConnectionEdge!]!
+  pageInfo: PageInfo!
+}
+
+type QueryNoteLabelsConnectionEdge {
+  cursor: ID!
+  node: NoteLabel!
+}
+
+type QuerySettingsConnection {
+  edges: [QuerySettingsConnectionEdge!]!
+  pageInfo: PageInfo!
+}
+
+type QuerySettingsConnectionEdge {
+  cursor: ID!
+  node: Setting!
+}
+
+type QueryTaskLabelsConnection {
+  edges: [QueryTaskLabelsConnectionEdge!]!
+  pageInfo: PageInfo!
+}
+
+type QueryTaskLabelsConnectionEdge {
+  cursor: ID!
+  node: TaskLabel!
+}
+
+enum RepetitionPattern {
+  FRIDAY
+  MONDAY
+  SATURDAY
+  SUNDAY
+  THURSDAY
+  TUESDAY
+  WEDNESDAY
+}
+
+"""A routine the user has set up."""
+type Routine implements Node {
+  createdAt: DateTime!
+  id: ID!
+
+  """The name of the routine"""
+  name: String!
+  repeats: [RepetitionPattern!]!
+  steps: [RoutineStep!]!
+  time: LocalEndTime!
+}
+
+scalar RoutineStep
+
+"""
+Settings the user has modified for both Flow and plugins, or configs that plugins have created such as API keys.
+"""
+type Setting implements Node {
+  createdAt: DateTime!
+  id: ID!
+
+  """The key of the setting"""
+  key: String!
+
+  """The slug of the plugin the setting is linked to."""
+  pluginSlug: String!
+  updatedAt: DateTime!
+  value: JSON!
+}
+
+"""A task that the user or a plugin has created."""
+type Task implements Node {
+  createdAt: DateTime!
+  date: Date!
+
+  """The length of time the task is expected to take."""
+  durationInMinutes: Int
+  id: ID!
+
+  """The item linked to the task"""
+  item: Item
+
+  """The labels of the task """
+  labels: [TaskLabel!]!
+
+  """The plugin datas of the task"""
+  pluginDatas: [TaskPluginData!]!
+
+  """
+  The date and time the task is scheduled to start. It is not changeable by the user, but plugins can change it.
+  """
+  scheduledAt: DateTime
+  status: TaskStatus!
+
+  """The title of the task"""
+  title: String!
+}
+
+"""A label that can be applied to a task."""
+type TaskLabel implements Node {
+  """The color of the task label"""
+  color: String!
+  createdAt: DateTime!
+  id: ID!
+
+  """Whether tasks with this label should be private. (default: true)"""
+  isPrivate: Boolean!
+
+  """The name of the task label"""
+  name: String!
+
+  """The slug (i.e. the url-safe version) of the task label name"""
+  slug: String!
+  tasks(after: ID, before: ID, first: Int, last: Int): TaskLabelTasksConnection!
+}
+
+type TaskLabelTasksConnection {
+  edges: [TaskLabelTasksConnectionEdge!]!
+  pageInfo: PageInfo!
+}
+
+type TaskLabelTasksConnectionEdge {
+  cursor: ID!
+  node: Task!
+}
+
+input TaskLabelWhereInput {
+  """Filter by whether the label is for private use."""
+  isPrivate: Boolean
+
+  """Filter by name. Case insensitive."""
+  nameIsLike: String
+}
+
+"""The data required by a plugin to be linked to a task."""
+type TaskPluginData implements Node {
+  createdAt: DateTime!
+  full: JSON!
+  id: ID!
+  min: JSON!
+
+  """The slug of the plugin that created the data"""
+  pluginSlug: String!
+  updatedAt: DateTime!
+}
+
+enum TaskStatus {
+  """When the task was decided not to be done anymore."""
+  CANCELED
+
+  """When the task is done."""
+  DONE
+
+  """When the task is planned or in progress."""
+  TODO
+}
