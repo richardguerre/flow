@@ -75,9 +75,6 @@ builder.mutationField("createTask", (t) =>
       itemId: t.input.globalID({
         description: "The Relay ID of the Item that should be linked to the task.",
       }),
-      templateId: t.input.globalID({
-        description: "The Relay ID of the TaskTemplate used to create the task.",
-      }),
     },
     resolve: (query, _, args) => {
       const date = args.input.date ?? startOfDay(new Date());

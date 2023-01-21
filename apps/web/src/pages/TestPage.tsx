@@ -1,13 +1,11 @@
 import { useEffect } from "react";
-import { useLoaderData } from "react-router-dom";
-import {} from "react-relay";
 
 export const testData = {
   someData: "some data",
 };
 
 export default () => {
-  const { test } = useLoaderData() as { test: typeof testData };
+  const { test } = { test: testData };
   // const state = useExternalScript(
   //   "https://cdn.jsdelivr.net/gh/jquery/jquery@3.2.1/dist/jquery.min.js"
   // );

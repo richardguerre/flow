@@ -9,7 +9,14 @@ import {
 } from "react-relay";
 
 // unwrapped exports of react-relay
-export { RelayEnvironmentProvider, graphql, PreloadedQuery, usePreloadedQuery } from "react-relay";
+export {
+  RelayEnvironmentProvider,
+  graphql,
+  PreloadedQuery,
+  usePreloadedQuery,
+  useFragment,
+  usePaginationFragment,
+} from "react-relay";
 
 // ----------------- wrapped exports of react-relay -----------------
 

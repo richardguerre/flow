@@ -3,6 +3,7 @@
   "schema": "./apps/web/src/relay/schema.graphql",
   "language": "typescript",
   "artifactDirectory": "./apps/web/src/relay/__generated__",
+  "eagerEsModules": true,
   "customScalars": {
     "Date": "string",
     "DateTime": "string",

@@ -58,11 +58,19 @@ builder.queryField("days", (t) =>
   t.connection({
     type: DayType,
     description: `Get days using a Relay connection.
+
 If no arguments are provided, it will return the current day.
+
 If \`first\` (Int) is provided, it will return the current day and the following days.
-If \`after\` (Date) is provided, it will return the days after the given date.
+
+If \`after\` (Date*) is provided, it will return the days after the given date.
+
 If \`last\` (Int) is provided, it will return the current day and the previous days.
-If \`before\` (Date) is provided, it will return the days before the given date.`,
+
+If \`before\` (Date*) is provided, it will return the days before the given date.
+
+*Ignore that the GraphQL type is ID as Pothos doesn't support overriding the type of the connection fields.
+Please input a Date in the format: YYYY-MM-DD`,
     resolve: async (_, args, context, info) => {
       const start = getStartFromConnectionArgs(args);
       const totalDays = args.first ?? args.last ?? 1;

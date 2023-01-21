@@ -2,7 +2,7 @@ import React from "react";
 import { Environment, Store, RecordSource, Network } from "relay-runtime";
 import { RelayEnvironmentProvider as RelayRelayEnvironmentProvider } from "relay";
 
-export const LOCAL_STORAGE_USER_TOKEN_KEY = "user_token";
+export const LOCAL_STORAGE_USER_TOKEN_KEY = "token";
 
 export const environment = new Environment({
   network: Network.create((operation, variables) => {
@@ -21,7 +21,6 @@ export type RelayEnvironmentProviderProps = {
 };
 
 export const RelayEnvironmentProvider: React.FC<RelayEnvironmentProviderProps> = (props) => {
-  console.log(import.meta.env.VITE_GRAPHQL_URL);
   return (
     <RelayRelayEnvironmentProvider environment={environment}>
       {props.children}
