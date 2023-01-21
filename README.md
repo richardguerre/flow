@@ -53,3 +53,25 @@ It is also the language I am most comfortable working with and have the most exp
 ## Contribute
 
 If you have suggestions for how Flow could be improved, or want to report a bug, open an issue! Any and all contributions are welcome.
+
+
+### Don't destructure objects, excepts React with hooks
+
+I've found that destructuring objects can make it harder to read and refactor code. This does not apply to destructuring arrays. Example:
+
+```js
+// ❌ Bad
+const MyComponent = ({ value }) => {
+  return <div>{value}</div>;
+};
+
+// ✅ Good
+const MyComponent = (props) => {
+  // destructuring objects returned by React hooks is fine
+  const { property } = useLocaleCurrency();
+  return <div>{props.myProp} {property}</div>;
+};
+```
+## Why is relay.config.json at the root?
+
+I couldn't get the VS Code extension to work with the relay.config.json file in the `apps/web` directory. This also means that the relay-compiler is run from the root directory, hence why the `relay` script in `apps/web` is `cd ../.. && relay-compiler`.

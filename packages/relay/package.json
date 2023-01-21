@@ -1,0 +1,15 @@
+{
+  "name": "relay",
+  "version": "0.1.0",
+  "description": "Wrapper around react-relay for easier development in Flow",
+  "main": "index.ts",
+  "dependencies": {
+    "react-relay": "^14.1.0"
+  },
+  "peerDependencies": {
+    "react": "*"
+  },
+  "devDependencies": {
+    "@types/react-relay": "^14.1.3"
+  }
+}

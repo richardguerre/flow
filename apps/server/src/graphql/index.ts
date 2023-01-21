@@ -1,5 +1,6 @@
 import { builder } from "./builder";
-import { writeFileSync } from "fs";
+import { writeFileSync } from "node:fs";
+import { join } from "node:path";
 import { printSchema } from "graphql";
 import "./Day";
 import "./Item";
@@ -16,5 +17,5 @@ import "./TaskPluginData";
 
 export const schema = builder.toSchema();
 const schemaAsString = printSchema(schema);
-const cwd = process.cwd();
-writeFileSync(`${cwd}/schema.graphql`, schemaAsString);
+const path = join(__dirname, "../../../web/src/relay/schema.graphql");
+writeFileSync(path, schemaAsString);

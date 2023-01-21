@@ -1,0 +1,15 @@
+{
+  "src": "./apps/web/src",
+  "schema": "./apps/web/src/relay/schema.graphql",
+  "language": "typescript",
+  "artifactDirectory": "./apps/web/src/relay/__generated__",
+  "customScalars": {
+    "Date": "string",
+    "DateTime": "string",
+    "PositiveInt": "number",
+    "JSON": "object",
+    "LocalEndTime": "string",
+    "RoutineStep": "string"
+  },
+  "exclude": ["**/node_modules/**", "**/__mocks__/**", "**/__generated__/**"]
+}
