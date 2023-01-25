@@ -23,7 +23,7 @@ builder.queryField("items", (t) =>
     type: "Item",
     cursor: "id",
     description: `Get all external items. Useuful to get list of items for a specific day to show in a calendar.
-By default, only items where isRelevant is true and scheduledAt is today.
+By default, only items where \`isRelevant\` is true and \`scheduledFor\` is today.
 Pass the \`where\` argument to override these defaults.`,
     args: { where: t.arg({ type: ItemWhereInput, required: false }) },
     resolve: (query, _, args) => {

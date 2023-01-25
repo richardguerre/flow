@@ -1,6 +1,6 @@
-import { TaskCard_task$key } from "@/relay/__generated__/TaskCard_task.graphql";
+import { TaskCard_task$key } from "@flowdev/web/relay/__generated__/TaskCard_task.graphql";
 import { FC } from "react";
-import { graphql, useFragment } from "relay";
+import { graphql, useFragment } from "@flowdev/relay";
 
 type TaskCardProps = {
   task: TaskCard_task$key;

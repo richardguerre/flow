@@ -1,6 +1,6 @@
 import { FC } from "react";
-import { graphql, usePaginationFragment } from "relay";
-import { DayColumnGroup_data$key } from "@/relay/__generated__/DayColumnGroup_data.graphql";
+import { graphql, usePaginationFragment } from "@flowdev/relay";
+import { DayColumnGroup_data$key } from "@flowdev/web/relay/__generated__/DayColumnGroup_data.graphql";
 import { DayColumn } from "./DayColumn";
 
 type DayColumnGroupProps = {
@@ -32,7 +32,7 @@ export const DayColumnGroup: FC<DayColumnGroupProps> = (props) => {
     props.data
   );
   return (
-    <div className="flex">
+    <div className="flex h-full overflow-scroll">
       {data.days.edges.map((edge) => (
         <div key={edge.cursor} className="flex-1">
           <DayColumn day={edge.node} />

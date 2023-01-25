@@ -1,4 +1,4 @@
-import { useQueryLoader } from "relay";
+import { useQueryLoader } from "@flowdev/relay";
 import { IndexViewQuery } from "../relay/__generated__/IndexViewQuery.graphql";
 import { IndexView, indexViewQuery } from "../views/IndexView";
 

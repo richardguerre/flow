@@ -1,0 +1,10 @@
+{
+  "name": "@flowdev/calendar",
+  "version": "0.1.0",
+  "description": "Calendar components for Flow",
+  "private": true,
+  "main": "index.ts",
+  "peerDependencies": {
+    "react": "*"
+  }
+}

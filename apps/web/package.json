@@ -1,5 +1,5 @@
 {
-  "name": "web",
+  "name": "@flowdev/web",
   "private": true,
   "type": "module",
   "scripts": {
@@ -11,10 +11,10 @@
     "preview": "vite preview"
   },
   "dependencies": {
+    "@flowdev/relay": "*",
     "react": "^18.2.0",
     "react-dom": "^18.2.0",
-    "react-router-dom": "^6.6.2",
-    "relay": "*"
+    "react-router-dom": "^6.6.2"
   },
   "devDependencies": {
     "@swc/plugin-relay": "^1.5.36",

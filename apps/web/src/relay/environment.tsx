@@ -1,6 +1,6 @@
 import React from "react";
 import { Environment, Store, RecordSource, Network } from "relay-runtime";
-import { RelayEnvironmentProvider as RelayRelayEnvironmentProvider } from "relay";
+import { RelayEnvironmentProvider as RelayRelayEnvironmentProvider } from "@flowdev/relay";
 
 export const LOCAL_STORAGE_USER_TOKEN_KEY = "token";
 

@@ -1,8 +1,7 @@
 {
-  "name": "server",
+  "name": "@flowdev/server",
   "description": "This is the server of Flow",
-  "license": "MIT",
-  "main": "src/graphql/index.ts",
+  "private": true,
   "scripts": {
     "print-schema": "ts-node --transpile-only src/graphql/index.ts",
     "dev": "NODE_ENV=development ts-node-dev --transpile-only --exit-child --respawn --no-notify src/index.ts",

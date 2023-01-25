@@ -27,7 +27,7 @@ const relay = () =>
 
           const graphqlFileName = `graphql__${crypto.randomBytes(10).toString("hex")}`;
           imports.push(
-            `import ${graphqlFileName} from "@/relay/__generated__/${operationName}.graphql.ts";`
+            `import ${graphqlFileName} from "@flowdev/web/relay/__generated__/${operationName}.graphql.ts";`
           );
           return graphqlFileName;
         });
@@ -46,6 +46,9 @@ export default defineConfig({
     tsconfigPaths(),
     relay(),
     // @ts-ignore as WindiCSS types are not updated to those of Vite 4.0, but the plugin works fine
-    WindiCSS(),
+    WindiCSS({
+      config: "../../windi.config.ts", // windi.config.ts is at the root of the repo so that the VSCode extension can work correctly
+      root: __dirname,
+    }),
   ],
 });

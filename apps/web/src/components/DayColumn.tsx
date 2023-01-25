@@ -1,6 +1,6 @@
 import { FC } from "react";
-import { graphql, useFragment } from "relay";
-import { DayColumn_day$key } from "@/relay/__generated__/DayColumn_day.graphql";
+import { graphql, useFragment } from "@flowdev/relay";
+import { DayColumn_day$key } from "@flowdev/web/relay/__generated__/DayColumn_day.graphql";
 import { TaskCard } from "./TaskCard";
 
 type DayColumnProps = {
@@ -21,7 +21,7 @@ export const DayColumn: FC<DayColumnProps> = (props) => {
     props.day
   );
   return (
-    <div className="w-72">
+    <div className="w-60">
       <h2>{day.date}</h2>
       {day.tasks.map((task) => (
         <div key={task.id}>

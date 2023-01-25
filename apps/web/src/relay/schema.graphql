@@ -77,7 +77,7 @@ input ItemWhereInput {
   """
   If set to true, it will return items where scheduledAt is today or null.
   """
-  scheduledFor: Date = "2023-01-21"
+  scheduledFor: Date = "2023-01-23"
 }
 
 """
@@ -301,13 +301,18 @@ type Query {
 
   """
   Get all external items. Useuful to get list of items for a specific day to show in a calendar.
-  By default, only items where isRelevant is true and scheduledAt is today.
+  By default, only items where `isRelevant` is true and `scheduledFor` is today.
   Pass the `where` argument to override these defaults.
   """
   items(after: ID, before: ID, first: Int, last: Int, where: ItemWhereInput): QueryItemsConnection!
 
   """Get all lists."""
-  lists: [List!]!
+  lists(
+    """
+    The number of lists to return. If not provided, all lists will be returned.
+    """
+    first: PositiveInt
+  ): [List!]!
   node(id: ID!): Node
   nodes(ids: [ID!]!): [Node]!
 
