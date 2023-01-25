@@ -4,6 +4,7 @@ import tsconfigPaths from "vite-tsconfig-paths";
 import WindiCSS from "vite-plugin-windicss";
 import { parse } from "graphql";
 import crypto from "crypto";
+import path from "path";
 
 /**
  * This is a custom implementation of babel-plugin-relay and NextJS's swc relay compiler.
@@ -47,8 +48,10 @@ export default defineConfig({
     relay(),
     // @ts-ignore as WindiCSS types are not updated to those of Vite 4.0, but the plugin works fine
     WindiCSS({
-      config: "../../windi.config.ts", // windi.config.ts is at the root of the repo so that the VSCode extension can work correctly
       root: __dirname,
+      scan: {
+        include: ["../../packages/**/*.tsx"], // allows WindiCSS to scan packages outside of the web app
+      },
     }),
   ],
 });

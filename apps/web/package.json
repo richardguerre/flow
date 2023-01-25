@@ -3,7 +3,7 @@
   "private": true,
   "type": "module",
   "scripts": {
-    "prerelay": "npm run print-schema --workspace=server && mkdir -p src/relay/__generated__",
+    "prerelay": "npm run print-schema --workspace=@flowdev/server && mkdir -p src/relay/__generated__",
     "relay": "cd ../.. && relay-compiler",
     "predev": "npm run relay",
     "dev": "vite",
@@ -12,6 +12,7 @@
   },
   "dependencies": {
     "@flowdev/relay": "*",
+    "@flowdev/calendar": "*",
     "react": "^18.2.0",
     "react-dom": "^18.2.0",
     "react-router-dom": "^6.6.2"
