@@ -1,7 +1,7 @@
 import { FC } from "react";
 import { graphql, PreloadedQuery } from "@flowdev/relay";
 import { IndexViewQuery } from "@flowdev/web/relay/__generated__/IndexViewQuery.graphql";
-import { DayCalendar } from "@flowdev/calendar";
+import { DayTimeGrid } from "@flowdev/calendar";
 // import { DayColumnGroup } from "@flowdev/web/components/DayColumnGroup";
 // import { ListGroup } from "@flowdev/web/components/ListGroup";
 
@@ -21,7 +21,7 @@ export const IndexView: FC<IndexViewProps> = (props) => {
   return (
     <div className="flex">
       <div className="p-8 w-96">
-        <DayCalendar
+        <DayTimeGrid
           artifacts={[
             {
               id: "10",

@@ -192,6 +192,8 @@ model Item {
   durationInMinutes Int?
   /// Whether the item is all-day on the date of `scheduledAt`.
   isAllDay          Boolean   @default(false)
+  /// The color of the item in hex. Used in calendar views.
+  color             String?
 
   /// The tasks linked to the item
   tasks       Task[]

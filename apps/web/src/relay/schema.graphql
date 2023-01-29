@@ -39,16 +39,22 @@ type Day implements Node {
 An item created by the user or a plugin. These items are then turned into tasks.\nIt can be a calendar event, a Trello task, a Linear issue, a GitHub request for review, a notification, etc.
 """
 type Item implements Node {
+  """The color of the item in hex. Used in calendar views."""
+  color: String
   createdAt: DateTime!
 
-  """The length of time the item is expected to take."""
+  """
+  The length of time the item is expected to take. If the item is all-day, this is null.
+  """
   durationInMinutes: Int
   id: ID!
 
   """Whether the item is all-day on the date of `scheduledAt`."""
   isAllDay: Boolean
 
-  """Whether the item is relevant to the user and should be shown."""
+  """
+  Whether the item is relevant to the user and should be shown. (default: true)\nFor example when a plugin creates an item for a Trello task, then later on the user arhives the task, the item is no longer relevant.
+  """
   isRelevant: Boolean!
 
   """The plugin datas linked to the item"""

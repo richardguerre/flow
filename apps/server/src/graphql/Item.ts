@@ -13,6 +13,7 @@ export const ItemType = builder.prismaNode("Item", {
     scheduledAt: t.expose("scheduledAt", { type: "DateTime", nullable: true }),
     durationInMinutes: t.exposeInt("durationInMinutes", { nullable: true }),
     isAllDay: t.exposeBoolean("isAllDay", { nullable: true }),
+    color: t.exposeString("color", { nullable: true }),
     pluginDatas: t.relation("pluginDatas"),
   }),
 });

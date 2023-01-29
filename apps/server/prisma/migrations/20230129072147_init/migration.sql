@@ -102,6 +102,7 @@ CREATE TABLE "Item" (
     "scheduledAt" TIMESTAMP(3),
     "durationInMinutes" INTEGER,
     "isAllDay" BOOLEAN NOT NULL DEFAULT false,
+    "color" TEXT,
     "listId" INTEGER,
 
     CONSTRAINT "Item_pkey" PRIMARY KEY ("id")

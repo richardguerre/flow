@@ -45,7 +45,7 @@ export type DayCalendarProps = {
   heightOf1Hour?: number;
 };
 
-export const DayCalendar: FC<DayCalendarProps> = (props) => {
+export const DayTimeGrid: FC<DayCalendarProps> = (props) => {
   const startHour = props.startHour ?? 0; // start at midnight by default
   const heightOf1Hour = props.heightOf1Hour ?? 96; // 96px by default
   const hours = Array.from({ length: 25 }).map((_, i) => (i + startHour) % 24); // 25 to include the last hour
