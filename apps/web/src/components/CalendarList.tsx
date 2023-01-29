@@ -14,8 +14,8 @@ export const CalendarList: FC<CalendarListProps> = (props) => {
     graphql`
       fragment CalendarList_data on Query
       @refetchable(queryName: "CalendarListQuery")
-      @argumentDefinitions(scheduledFor: { type: "Date!" }, dayId: { type: "ID!" }) {
-        events: items(where: { isRelevant: true, scheduledFor: $scheduledFor }) {
+      @argumentDefinitions(dateInFocus: { type: "Date!" }, dayIdInFocus: { type: "ID!" }) {
+        events: items(where: { isRelevant: true, scheduledFor: $dateInFocus }) {
           edges {
             node {
               id
@@ -27,7 +27,7 @@ export const CalendarList: FC<CalendarListProps> = (props) => {
             }
           }
         }
-        day: node(id: $dayId) {
+        day: node(id: $dayIdInFocus) {
           ... on Day {
             tasks {
               id

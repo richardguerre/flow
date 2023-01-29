@@ -26,7 +26,7 @@ export const Day: FC<DayProps> = (props) => {
     <div className="w-60">
       <div>
         <div>{dayOfWeekArr[dayjs(day.date).day()]}</div>
-        <div>{dayjs(day.date).format("MMM D")}</div>
+        <div>{dayjs(day.date).format("MMMM D")}</div>
       </div>
       <DayAddTaskActionsBar />
       <div>
