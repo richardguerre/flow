@@ -1,5 +1,5 @@
 import { FC } from "react";
-import { graphql, PreloadedQuery, usePreloadedQuery } from "@flowdev/relay";
+import { graphql, PreloadedQuery } from "@flowdev/relay";
 import { IndexViewQuery } from "@flowdev/web/relay/__generated__/IndexViewQuery.graphql";
 import { DayCalendar } from "@flowdev/calendar";
 // import { DayColumnGroup } from "@flowdev/web/components/DayColumnGroup";
@@ -19,17 +19,39 @@ type IndexViewProps = {
 export const IndexView: FC<IndexViewProps> = (props) => {
   // const data = usePreloadedQuery(indexViewQuery, props.queryRef);
   return (
-    <div className="p-8 w-96">
-      <DayCalendar
-        events={[
-          {
-            id: "1",
-            title: "Test",
-            start: new Date(),
-            end: new Date(new Date().setHours(new Date().getHours() + 1)),
-          },
-        ]}
-      />
+    <div className="flex">
+      <div className="p-8 w-96">
+        <DayCalendar
+          artifacts={[
+            {
+              id: "10",
+              at: new Date(),
+              element: (
+                <div className="rounded-full bg-green-500 h-6 transform w-6 -translate-x-1/2 -translate-y-1/2" />
+              ),
+            },
+          ]}
+          events={[
+            {
+              id: "1",
+              title:
+                "Lorem ipsum dolor sit amet, consectetur adipiscing elit. Donec auctor, nisl eget. Sentimentum, nunc enim ultrices nunc, nec.",
+              start: new Date(),
+              durationInMinutes: 15,
+            },
+            {
+              id: "2",
+              title: "Lorem ipsum dolor sit amet, consectetur adipiscing elit.",
+              allDay: true,
+            },
+            {
+              id: "3",
+              title: "Lorem.",
+              allDay: true,
+            },
+          ]}
+        />
+      </div>
     </div>
     // <div className="h-screen w-screen relative">
     //   <DayColumnGroup data={data} />

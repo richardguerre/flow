@@ -1,71 +1,210 @@
-import { FC } from "react";
+import React, { FC, useCallback, useEffect, useMemo, useState } from "react";
 import { Hour } from "./types";
 import colors from "windicss/colors";
 
-export type CalendarEvent = {
+type CalendarEventBase = {
   id: string;
   title: string;
-  start: Date;
-  end: Date;
   textColor?: string;
   backgroundColor?: string;
+};
+
+type AtTime = {
+  start: Date;
+  durationInMinutes: number;
+};
+
+type AllDay = {
+  allDay: true;
+};
+
+export type CalendarEvent = CalendarEventBase & (AtTime | AllDay);
+
+type CalendarEventTransformed = CalendarEventBase &
+  AtTime & {
+    end: Date;
+    height: number;
+    widthPercentage: number;
+  };
+
+export type CalendarArtifact = {
+  id: string;
+  /** The time at which the artifact needs to be shown. */
+  at: Date;
+  /** The element to show. */
+  element: React.ReactNode;
+  /** The offset from the left in percentage. Default is 0 (i.e. all the way left) */
+  leftPercentageOffset?: number;
 };
 
 export type DayCalendarProps = {
   events: CalendarEvent[];
   onEventClick?: (event: CalendarEvent) => void;
+  artifacts?: CalendarArtifact[];
   startHour?: Hour;
   heightOf1Hour?: number;
 };
 
 export const DayCalendar: FC<DayCalendarProps> = (props) => {
   const startHour = props.startHour ?? 0; // start at midnight by default
-  const heightOf1Hour = props.heightOf1Hour ?? 100; // 100px by default
+  const heightOf1Hour = props.heightOf1Hour ?? 96; // 96px by default
   const hours = Array.from({ length: 25 }).map((_, i) => (i + startHour) % 24); // 25 to include the last hour
+
+  const [now, setNow] = useState(new Date());
+  useEffect(() => {
+    const interval = setInterval(() => {
+      setNow(new Date());
+    }, 1000 * 60);
+    return () => clearInterval(interval);
+  }, []);
+
+  const { events, allDayEvents, yOffset } = useMemo(() => {
+    /**
+     * This reduce function will:
+     * - add a widthPercentage property to each event that is not allDay
+     * - add allDay events to a separate array
+     */
+    const result = props.events.reduce(
+      (result, event) => {
+        if ("allDay" in event) {
+          return {
+            eventsMap: result.eventsMap,
+            allDayEvents: [...result.allDayEvents, event],
+          };
+        }
+        const overlappingEvents: CalendarEventTransformed[] = Array.from(
+          result.eventsMap.values()
+        ).filter((otherEvent) => {
+          if (otherEvent === event) return false;
+          if (otherEvent.start <= event.start && otherEvent.end > event.start) return true;
+          if (otherEvent.start < otherEvent.end && otherEvent.end >= otherEvent.end) return true;
+          return false;
+        });
+        const lastOverlappingEvent = overlappingEvents[overlappingEvents.length - 1];
+        const end = new Date(event.start);
+        end.setMinutes(end.getMinutes() + event.durationInMinutes);
+        return {
+          eventsMap: result.eventsMap.set(event.id, {
+            ...event,
+            end,
+            height: (event.durationInMinutes / 60) * heightOf1Hour,
+            widthPercentage: lastOverlappingEvent
+              ? lastOverlappingEvent.widthPercentage * 0.75
+              : 100,
+          }),
+          allDayEvents: result.allDayEvents,
+        };
+      },
+      {
+        eventsMap: new Map<string, CalendarEventTransformed>(),
+        allDayEvents: new Array<CalendarEventBase & AllDay>(),
+      }
+    );
+    const yOffset: number = 30 * result.allDayEvents.length + 4; // 28px = 20px line height of allDay event text-sm + 8px padding + 2px border | 4px = margin
+    return {
+      events: Array.from(result.eventsMap.values()),
+      allDayEvents: result.allDayEvents,
+      yOffset,
+    };
+  }, [JSON.stringify(props.events)]);
+
+  const getTop = useCallback((date: Date) => {
+    return (date.getHours() - startHour + date.getMinutes() / 60) * heightOf1Hour + yOffset;
+  }, []);
+
   return (
     <div className="flex space-x-1">
-      <div className="flex flex-col">
-        {hours.map((hour) => (
-          <div key={hour} className="w-4ch relative" style={{ height: heightOf1Hour }}>
+      <div
+        className="flex flex-col"
+        style={{
+          marginTop: yOffset,
+        }}
+      >
+        {hours.map((hour, i) => (
+          <div key={i} className="w-4ch relative" style={{ height: heightOf1Hour }}>
             <span className="text-xs transform top-0 left-0 text-gray-400 -translate-y-1/2 absolute">
-              {hour < 10 ? "0" : ""}
-              {hour}:00
+              {digits(hour)}:00
             </span>
           </div>
         ))}
       </div>
       <div className="w-full relative">
+        <div className="mb-1">
+          {allDayEvents.map((event) => (
+            <div
+              key={event.id}
+              className="border border-white rounded-md text-sm py-1 px-2 overflow-hidden overflow-ellipsis whitespace-nowrap"
+              style={{
+                color: event.textColor ?? colors.blue["900"],
+                backgroundColor: event.backgroundColor ?? colors.blue["100"],
+              }}
+            >
+              {event.title}
+            </div>
+          ))}
+        </div>
         <div className="flex-col w-full">
           {hours.map((hour, i) => (
             <div
-              key={hour}
-              className={`border-t border-gray-300`} // TODO: change border-gray-300 to design token
+              key={i}
+              className="border-t border-0 border-gray-300" // TODO: change border-gray-300 to design token
               style={{ height: heightOf1Hour }}
             />
           ))}
         </div>
-        {props.events.map((event) => (
+        <div
+          className="bg-red-500 h-[2px] w-full z-20 absolute"
+          style={{
+            top: getTop(now),
+          }}
+        />
+        {props.artifacts?.map((artifact) => (
+          <div
+            key={artifact.id}
+            className="z-10 absolute"
+            style={{
+              top: getTop(artifact.at),
+              left: `${artifact.leftPercentageOffset ?? 0}%`,
+            }}
+          >
+            {artifact.element}
+          </div>
+        ))}
+        {events.map((event) => (
           <div
             key={event.id}
-            className="rounded-md text-base p-2 left-0 w-11/12 absolute"
+            className={`border border-white p-2 rounded-md absolute overflow-hidden ${
+              event.height < minHeight ? "py-0" : ""
+            }`}
             style={{
-              top:
-                (event.start.getHours() - startHour + event.start.getMinutes() / 60) *
-                heightOf1Hour,
-              height:
-                (event.end.getHours() +
-                  event.end.getMinutes() / 60 -
-                  (event.start.getHours() + event.start.getMinutes() / 60)) *
-                heightOf1Hour,
+              top: getTop(event.start),
+              height: event.height,
               color: event.textColor ?? colors.blue["900"],
               backgroundColor: event.backgroundColor ?? colors.blue["100"],
+              width: `calc(${event.widthPercentage}% - 2%)`,
+              left: `calc(${100 - event.widthPercentage}% + 2%)`,
             }}
             onClick={() => props.onEventClick?.(event)}
           >
-            {event.title}
+            <div
+              className={`w-full overflow-hidden overflow-ellipsis whitespace-nowrap ${
+                event.height < minHeight ? "text-sm" : "text-base"
+              }`}
+            >
+              {event.title}
+            </div>
+            <div className="text-sm">
+              {event.start.getHours()}:{digits(event.start.getMinutes())} - {event.end.getHours()}:
+              {digits(event.end.getMinutes())}
+            </div>
           </div>
         ))}
       </div>
     </div>
   );
 };
+
+const minHeight = 32;
+
+const digits = (n: number, digits: number = 2) =>
+  n.toLocaleString("en-US", { minimumIntegerDigits: digits });

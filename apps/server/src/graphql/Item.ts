@@ -57,7 +57,6 @@ export const ItemWhereInput = builder.inputType("ItemWhereInput", {
       type: "Date",
       required: false,
       description: `If set to true, it will return items where scheduledAt is today or null.`,
-      defaultValue: new Date(),
     }),
   }),
 });
