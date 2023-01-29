@@ -15,7 +15,7 @@ type AtTime = {
 };
 
 type AllDay = {
-  allDay: true;
+  isAllDay: true;
 };
 
 export type CalendarEvent = CalendarEventBase & (AtTime | AllDay);
@@ -66,7 +66,7 @@ export const DayCalendar: FC<DayCalendarProps> = (props) => {
      */
     const result = props.events.reduce(
       (result, event) => {
-        if ("allDay" in event) {
+        if ("isAllDay" in event) {
           return {
             eventsMap: result.eventsMap,
             allDayEvents: [...result.allDayEvents, event],

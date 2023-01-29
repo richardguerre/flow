@@ -101,6 +101,7 @@ CREATE TABLE "Item" (
     "isRelevant" BOOLEAN NOT NULL DEFAULT true,
     "scheduledAt" TIMESTAMP(3),
     "durationInMinutes" INTEGER,
+    "isAllDay" BOOLEAN NOT NULL DEFAULT false,
     "listId" INTEGER,
 
     CONSTRAINT "Item_pkey" PRIMARY KEY ("id")

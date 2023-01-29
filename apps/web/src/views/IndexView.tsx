@@ -42,12 +42,12 @@ export const IndexView: FC<IndexViewProps> = (props) => {
             {
               id: "2",
               title: "Lorem ipsum dolor sit amet, consectetur adipiscing elit.",
-              allDay: true,
+              isAllDay: true,
             },
             {
               id: "3",
               title: "Lorem.",
-              allDay: true,
+              isAllDay: true,
             },
           ]}
         />

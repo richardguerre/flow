@@ -12,6 +12,7 @@ export const ItemType = builder.prismaNode("Item", {
     isRelevant: t.exposeBoolean("isRelevant"),
     scheduledAt: t.expose("scheduledAt", { type: "DateTime", nullable: true }),
     durationInMinutes: t.exposeInt("durationInMinutes", { nullable: true }),
+    isAllDay: t.exposeBoolean("isAllDay", { nullable: true }),
     pluginDatas: t.relation("pluginDatas"),
   }),
 });
@@ -23,7 +24,7 @@ builder.queryField("items", (t) =>
     type: "Item",
     cursor: "id",
     description: `Get all external items. Useuful to get list of items for a specific day to show in a calendar.
-By default, only items where \`isRelevant\` is true and \`scheduledFor\` is today.
+By default, only items where \`isRelevant\` is true.
 Pass the \`where\` argument to override these defaults.`,
     args: { where: t.arg({ type: ItemWhereInput, required: false }) },
     resolve: (query, _, args) => {

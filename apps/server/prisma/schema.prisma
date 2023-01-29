@@ -183,12 +183,15 @@ model Item {
   /// The title of the item.
   /// It is used as the initial title when creating a task from the item.
   title             String
-  /// Whether the item is relevant to the user and should be shown.
+  /// Whether the item is relevant to the user and should be shown. (default: true)
+  /// For example when a plugin creates an item for a Trello task, then later on the user arhives the task, the item is no longer relevant.
   isRelevant        Boolean   @default(true)
   /// The date and time the item is scheduled for.
   scheduledAt       DateTime?
-  /// The length of time the item is expected to take.
+  /// The length of time the item is expected to take. If the item is all-day, this is null.
   durationInMinutes Int?
+  /// Whether the item is all-day on the date of `scheduledAt`.
+  isAllDay          Boolean   @default(false)
 
   /// The tasks linked to the item
   tasks       Task[]
