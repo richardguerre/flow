@@ -1,3 +1,28 @@
+enum Color {
+  amber
+  blue
+  cyan
+  emerald
+  fuchsia
+  gray
+  green
+  indigo
+  lime
+  neutral
+  orange
+  pink
+  purple
+  red
+  rose
+  sky
+  slate
+  stone
+  teal
+  violet
+  yellow
+  zinc
+}
+
 input CreateNoteLabelInput {
   """The color of the label."""
   color: String!
@@ -39,8 +64,7 @@ type Day implements Node {
 An item created by the user or a plugin. These items are then turned into tasks.\nIt can be a calendar event, a Trello task, a Linear issue, a GitHub request for review, a notification, etc.
 """
 type Item implements Node {
-  """The color of the item in hex. Used in calendar views."""
-  color: String
+  color: Color
   createdAt: DateTime!
 
   """
@@ -103,7 +127,7 @@ type List implements Node {
   id: ID!
 
   """The items linked to the list"""
-  items(after: ID, before: ID, first: Int, last: Int): ListItemsConnection!
+  items(after: ID, before: ID, first: Int, last: Int, where: ItemWhereInput): ListItemsConnection!
 
   """The name of the list"""
   name: String!
@@ -243,8 +267,7 @@ type Note implements Node {
 
 """A label that can be applied to a note."""
 type NoteLabel implements Node {
-  """The color of the note label in hex"""
-  color: String!
+  color: Color!
   createdAt: DateTime!
   id: ID!
 
@@ -452,6 +475,7 @@ type Setting implements Node {
 
 """A task that the user or a plugin has created."""
 type Task implements Node {
+  completedAt: DateTime
   createdAt: DateTime!
   date: Date!
 
@@ -467,11 +491,6 @@ type Task implements Node {
 
   """The plugin datas of the task"""
   pluginDatas: [TaskPluginData!]!
-
-  """
-  The date and time the task is scheduled to start. It is not changeable by the user, but plugins can change it.
-  """
-  scheduledAt: DateTime
   status: TaskStatus!
 
   """The title of the task"""
@@ -480,8 +499,7 @@ type Task implements Node {
 
 """A label that can be applied to a task."""
 type TaskLabel implements Node {
-  """The color of the task label"""
-  color: String!
+  color: Color!
   createdAt: DateTime!
   id: ID!
 

@@ -4,6 +4,7 @@
   "language": "typescript",
   "artifactDirectory": "./apps/web/src/relay/__generated__",
   "eagerEsModules": true,
+  "noFutureProofEnums": true,
   "customScalars": {
     "Date": "string",
     "DateTime": "string",

@@ -1,5 +1,6 @@
 import { builder, u } from "./builder";
 import { prisma } from "../utils/prisma";
+import { createItemWhere, ItemWhereInput } from "./Item";
 
 // -------------- List types --------------
 
@@ -10,7 +11,14 @@ export const ListType = builder.prismaNode("List", {
     name: t.exposeString("name"),
     slug: t.exposeString("slug"),
     description: t.exposeString("description", { nullable: true }),
-    items: t.relatedConnection("items", { cursor: "id" }),
+    items: t.relatedConnection("items", {
+      cursor: "id",
+      args: { where: t.arg({ type: ItemWhereInput, required: false }) },
+      query: (args) => ({
+        where: createItemWhere(args.where ?? {}),
+        orderBy: { updatedAt: "desc" },
+      }),
+    }),
   }),
 });
 

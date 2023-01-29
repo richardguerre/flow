@@ -12,6 +12,7 @@ export const TaskType = builder.prismaNode("Task", {
     createdAt: t.expose("createdAt", { type: "DateTime" }),
     title: t.exposeString("title"),
     status: t.expose("status", { type: TaskStatusEnum }),
+    completedAt: t.expose("completedAt", { type: "DateTime", nullable: true }),
     date: t.expose("date", { type: "Date" }),
     item: t.relation("item", { nullable: true }),
     durationInMinutes: t.int({
@@ -19,14 +20,6 @@ export const TaskType = builder.prismaNode("Task", {
       description: "The length of time the task is expected to take.",
       select: { item: { select: { durationInMinutes: true } } },
       resolve: (task) => task.item.durationInMinutes ?? task.durationInMinutes,
-    }),
-    scheduledAt: t.field({
-      type: "DateTime",
-      nullable: true,
-      description:
-        "The date and time the task is scheduled to start. It is not changeable by the user, but plugins can change it.",
-      select: { item: { select: { scheduledAt: true } } },
-      resolve: (task) => task.item?.scheduledAt ?? null,
     }),
     labels: t.relation("labels"),
     pluginDatas: t.relation("pluginDatas"),
@@ -123,6 +116,7 @@ builder.mutationField("updateTask", (t) =>
   })
 );
 
+// TODO: add completedAt in the logic
 builder.mutationField("updateTaskStatus", (t) =>
   t.fieldWithInput({
     type: [DayType],
@@ -225,6 +219,7 @@ Any other scenario is not possible by nature of the app, where tasks:
   })
 );
 
+// TODO: add completedAt in the logic
 builder.mutationField("updateTaskDate", (t) =>
   t.fieldWithInput({
     type: [DayType],

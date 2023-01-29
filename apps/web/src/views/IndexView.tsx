@@ -1,22 +1,32 @@
 import { FC } from "react";
-import { graphql, PreloadedQuery } from "@flowdev/relay";
+import { useQueryLoader, graphql, PreloadedQuery } from "@flowdev/relay";
 import { IndexViewQuery } from "@flowdev/web/relay/__generated__/IndexViewQuery.graphql";
 import { DayTimeGrid } from "@flowdev/calendar";
-// import { DayColumnGroup } from "@flowdev/web/components/DayColumnGroup";
-// import { ListGroup } from "@flowdev/web/components/ListGroup";
 
-export const indexViewQuery = graphql`
+const indexViewQuery = graphql`
   query IndexViewQuery($daysAfter: ID, $firstDays: Int) {
-    ...DayColumnGroup_data @arguments(after: $daysAfter, first: $firstDays)
-    ...ListGroup_data
+    ...Days_data @arguments(after: $daysAfter, first: $firstDays)
+    ...Lists_data
   }
 `;
+
+export default () => {
+  const daysAfterDate = new Date();
+  daysAfterDate.setDate(daysAfterDate.getDate() - 7);
+  const daysAfter = daysAfterDate.toISOString().split("T")[0]; // converts to YYYY-MM-DD
+  const { queryRef } = useQueryLoader<IndexViewQuery>(indexViewQuery, {
+    daysAfter,
+    firstDays: 17, // 7 days before and 10 days after today
+  });
+  if (!queryRef) return null;
+  return <IndexViewContent queryRef={queryRef} />;
+};
 
 type IndexViewProps = {
   queryRef: PreloadedQuery<IndexViewQuery>;
 };
 
-export const IndexView: FC<IndexViewProps> = (props) => {
+const IndexViewContent: FC<IndexViewProps> = (props) => {
   // const data = usePreloadedQuery(indexViewQuery, props.queryRef);
   return (
     <div className="flex">
@@ -36,7 +46,7 @@ export const IndexView: FC<IndexViewProps> = (props) => {
               id: "1",
               title:
                 "Lorem ipsum dolor sit amet, consectetur adipiscing elit. Donec auctor, nisl eget. Sentimentum, nunc enim ultrices nunc, nec.",
-              start: new Date(),
+              scheduledAt: new Date(),
               durationInMinutes: 15,
             },
             {
@@ -56,7 +66,7 @@ export const IndexView: FC<IndexViewProps> = (props) => {
     // <div className="h-screen w-screen relative">
     //   <DayColumnGroup data={data} />
     //   <div className="top-0 right-0 absolute">
-    //     <ListGroup data={data} />
+    //     <Lists data={data} />
     //   </div>
     // </div>
   );

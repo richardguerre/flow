@@ -1,5 +1,6 @@
 import { prisma } from "../utils/prisma";
 import { builder } from "./builder";
+import { ColorEnum } from "./Color";
 
 export const NoteLabelType = builder.prismaNode("NoteLabel", {
   id: { field: "id" },
@@ -7,7 +8,7 @@ export const NoteLabelType = builder.prismaNode("NoteLabel", {
     createdAt: t.expose("createdAt", { type: "DateTime" }),
     name: t.exposeString("name"),
     slug: t.exposeString("slug"),
-    color: t.exposeString("color"),
+    color: t.expose("color", { type: ColorEnum }),
     notes: t.relatedConnection("notes", { cursor: "id" }),
     isPrivate: t.exposeBoolean("isPrivate"),
   }),

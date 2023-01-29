@@ -7,9 +7,9 @@ import {
   RelayEnvironmentProvider,
 } from "@flowdev/web/relay/environment";
 
-const IndexPage = React.lazy(() => import("./pages/IndexPage"));
-const TestPage = React.lazy(() => import("./pages/TestPage"));
-const NotFoundPage = React.lazy(() => import("./pages/NotFoundPage"));
+const IndexView = React.lazy(() => import("./views/IndexView"));
+const TestView = React.lazy(() => import("./views/TestView"));
+const NotFoundView = React.lazy(() => import("./views/NotFoundView"));
 
 const router = createBrowserRouter([
   {
@@ -29,11 +29,11 @@ const router = createBrowserRouter([
         <Outlet />
       </RelayEnvironmentProvider>
     ),
-    children: [{ path: "/", element: <IndexPage /> }],
+    children: [{ path: "/", element: <IndexView /> }],
   },
-  { path: "/login", element: <TestPage /> },
-  { path: "/test", element: <TestPage /> },
-  { path: "*", element: <NotFoundPage /> },
+  { path: "/login", element: <TestView /> },
+  { path: "/test", element: <TestView /> },
+  { path: "*", element: <NotFoundView /> },
 ]);
 
 ReactDOM.createRoot(document.getElementById("root") as HTMLElement).render(

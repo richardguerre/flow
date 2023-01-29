@@ -1,6 +1,8 @@
 import { builder } from "./builder";
 import { prisma } from "../utils/prisma";
 import { startOfDayScheduledAt, endOfDayScheduledAt } from "../utils/getDays";
+import { InputFieldRef, InputShapeFromFields } from "@pothos/core";
+import { ColorEnum } from "./Color";
 
 // -------------- Item types --------------
 
@@ -13,7 +15,7 @@ export const ItemType = builder.prismaNode("Item", {
     scheduledAt: t.expose("scheduledAt", { type: "DateTime", nullable: true }),
     durationInMinutes: t.exposeInt("durationInMinutes", { nullable: true }),
     isAllDay: t.exposeBoolean("isAllDay", { nullable: true }),
-    color: t.exposeString("color", { nullable: true }),
+    color: t.expose("color", { type: ColorEnum, nullable: true }),
     pluginDatas: t.relation("pluginDatas"),
   }),
 });
@@ -29,24 +31,33 @@ By default, only items where \`isRelevant\` is true.
 Pass the \`where\` argument to override these defaults.`,
     args: { where: t.arg({ type: ItemWhereInput, required: false }) },
     resolve: (query, _, args) => {
-      const scheduledFor = args.where?.scheduledFor;
       return prisma.item.findMany({
         ...query,
-        where: {
-          isRelevant: args.where?.isRelevant ?? true,
-          ...(scheduledFor
-            ? {
-                scheduledAt: {
-                  gte: startOfDayScheduledAt(scheduledFor),
-                  lte: endOfDayScheduledAt(scheduledFor),
-                },
-              }
-            : { scheduledAt: null }),
-        },
+        where: createItemWhere(args.where ?? {}),
       });
     },
   })
 );
+
+export const createItemWhere = (
+  where: InputShapeFromFields<{
+    isRelevant: InputFieldRef<boolean | null | undefined, "InputObject">;
+    scheduledFor: InputFieldRef<Date | null | undefined, "InputObject">;
+  }>
+) => {
+  const scheduledFor = where.scheduledFor;
+  return {
+    isRelevant: where.isRelevant ?? true,
+    ...(scheduledFor
+      ? {
+          scheduledAt: {
+            gte: startOfDayScheduledAt(scheduledFor),
+            lte: endOfDayScheduledAt(scheduledFor),
+          },
+        }
+      : { scheduledAt: null }),
+  };
+};
 
 export const ItemWhereInput = builder.inputType("ItemWhereInput", {
   fields: (t) => ({

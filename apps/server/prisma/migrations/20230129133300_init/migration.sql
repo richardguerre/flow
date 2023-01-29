@@ -4,6 +4,9 @@ CREATE TYPE "TaskStatus" AS ENUM ('TODO', 'DONE', 'CANCELED');
 -- CreateEnum
 CREATE TYPE "RepetitionPattern" AS ENUM ('MONDAY', 'TUESDAY', 'WEDNESDAY', 'THURSDAY', 'FRIDAY', 'SATURDAY', 'SUNDAY');
 
+-- CreateEnum
+CREATE TYPE "Color" AS ENUM ('slate', 'gray', 'zinc', 'neutral', 'stone', 'red', 'orange', 'amber', 'yellow', 'lime', 'green', 'emerald', 'teal', 'cyan', 'sky', 'blue', 'indigo', 'violet', 'purple', 'fuchsia', 'pink', 'rose');
+
 -- CreateTable
 CREATE TABLE "Day" (
     "date" DATE NOT NULL,
@@ -31,7 +34,7 @@ CREATE TABLE "NoteLabel" (
     "updatedAt" TIMESTAMP(3) NOT NULL,
     "name" TEXT NOT NULL,
     "slug" TEXT NOT NULL,
-    "color" TEXT NOT NULL,
+    "color" "Color" NOT NULL,
     "isPrivate" BOOLEAN NOT NULL DEFAULT true,
 
     CONSTRAINT "NoteLabel_pkey" PRIMARY KEY ("id")
@@ -44,6 +47,7 @@ CREATE TABLE "Task" (
     "updatedAt" TIMESTAMP(3) NOT NULL,
     "title" TEXT NOT NULL,
     "status" "TaskStatus" NOT NULL DEFAULT 'TODO',
+    "completedAt" TIMESTAMP(3),
     "date" DATE NOT NULL,
     "durationInMinutes" INTEGER,
     "itemId" INTEGER,
@@ -58,7 +62,7 @@ CREATE TABLE "TaskLabel" (
     "updatedAt" TIMESTAMP(3) NOT NULL,
     "name" TEXT NOT NULL,
     "slug" TEXT NOT NULL,
-    "color" TEXT NOT NULL,
+    "color" "Color" NOT NULL,
     "isPrivate" BOOLEAN NOT NULL DEFAULT true,
 
     CONSTRAINT "TaskLabel_pkey" PRIMARY KEY ("id")
@@ -102,7 +106,7 @@ CREATE TABLE "Item" (
     "scheduledAt" TIMESTAMP(3),
     "durationInMinutes" INTEGER,
     "isAllDay" BOOLEAN NOT NULL DEFAULT false,
-    "color" TEXT,
+    "color" "Color",
     "listId" INTEGER,
 
     CONSTRAINT "Item_pkey" PRIMARY KEY ("id")

@@ -1,17 +1,17 @@
 import { FC } from "react";
 import { graphql, usePaginationFragment } from "@flowdev/relay";
-import { DayColumnGroup_data$key } from "@flowdev/web/relay/__generated__/DayColumnGroup_data.graphql";
-import { DayColumn } from "./DayColumn";
+import { Days_data$key } from "@flowdev/web/relay/__generated__/Days_data.graphql";
+import { Day } from "./Day";
 
-type DayColumnGroupProps = {
-  data: DayColumnGroup_data$key;
+type DaysProps = {
+  data: Days_data$key;
 };
 
-export const DayColumnGroup: FC<DayColumnGroupProps> = (props) => {
+export const Days: FC<DaysProps> = (props) => {
   const { data, loadPrevious, loadNext } = usePaginationFragment(
     graphql`
-      fragment DayColumnGroup_data on Query
-      @refetchable(queryName: "DayColumnGroupPaginationQuery")
+      fragment Days_data on Query
+      @refetchable(queryName: "DaysPaginationQuery")
       @argumentDefinitions(
         before: { type: "ID" }
         first: { type: "Int" }
@@ -19,11 +19,11 @@ export const DayColumnGroup: FC<DayColumnGroupProps> = (props) => {
         last: { type: "Int" }
       ) {
         days(before: $before, first: $first, after: $after, last: $last)
-          @connection(key: "DayColumnGroup_days") {
+          @connection(key: "Days_days") {
           edges {
             cursor
             node {
-              ...DayColumn_day
+              ...Day_day
             }
           }
         }
@@ -31,11 +31,12 @@ export const DayColumnGroup: FC<DayColumnGroupProps> = (props) => {
     `,
     props.data
   );
+
   return (
     <div className="flex h-full overflow-scroll">
       {data.days.edges.map((edge) => (
         <div key={edge.cursor} className="flex-1">
-          <DayColumn day={edge.node} />
+          <Day day={edge.node} />
         </div>
       ))}
     </div>

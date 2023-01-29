@@ -10,7 +10,7 @@ type CalendarEventBase = {
 };
 
 type AtTime = {
-  start: Date;
+  scheduledAt: Date;
   durationInMinutes: number;
 };
 
@@ -37,7 +37,7 @@ export type CalendarArtifact = {
   leftPercentageOffset?: number;
 };
 
-export type DayCalendarProps = {
+export type DayTimeGridProps = {
   events: CalendarEvent[];
   onEventClick?: (event: CalendarEvent) => void;
   artifacts?: CalendarArtifact[];
@@ -45,7 +45,7 @@ export type DayCalendarProps = {
   heightOf1Hour?: number;
 };
 
-export const DayTimeGrid: FC<DayCalendarProps> = (props) => {
+export const DayTimeGrid: FC<DayTimeGridProps> = (props) => {
   const startHour = props.startHour ?? 0; // start at midnight by default
   const heightOf1Hour = props.heightOf1Hour ?? 96; // 96px by default
   const hours = Array.from({ length: 25 }).map((_, i) => (i + startHour) % 24); // 25 to include the last hour
@@ -76,12 +76,14 @@ export const DayTimeGrid: FC<DayCalendarProps> = (props) => {
           result.eventsMap.values()
         ).filter((otherEvent) => {
           if (otherEvent === event) return false;
-          if (otherEvent.start <= event.start && otherEvent.end > event.start) return true;
-          if (otherEvent.start < otherEvent.end && otherEvent.end >= otherEvent.end) return true;
+          if (otherEvent.scheduledAt <= event.scheduledAt && otherEvent.end > event.scheduledAt)
+            return true;
+          if (otherEvent.scheduledAt < otherEvent.end && otherEvent.end >= otherEvent.end)
+            return true;
           return false;
         });
         const lastOverlappingEvent = overlappingEvents[overlappingEvents.length - 1];
-        const end = new Date(event.start);
+        const end = new Date(event.scheduledAt);
         end.setMinutes(end.getMinutes() + event.durationInMinutes);
         return {
           eventsMap: result.eventsMap.set(event.id, {
@@ -177,7 +179,7 @@ export const DayTimeGrid: FC<DayCalendarProps> = (props) => {
               event.height < minHeight ? "py-0" : ""
             }`}
             style={{
-              top: getTop(event.start),
+              top: getTop(event.scheduledAt),
               height: event.height,
               color: event.textColor ?? colors.blue["900"],
               backgroundColor: event.backgroundColor ?? colors.blue["100"],
@@ -194,8 +196,8 @@ export const DayTimeGrid: FC<DayCalendarProps> = (props) => {
               {event.title}
             </div>
             <div className="text-sm">
-              {event.start.getHours()}:{digits(event.start.getMinutes())} - {event.end.getHours()}:
-              {digits(event.end.getMinutes())}
+              {event.scheduledAt.getHours()}:{digits(event.scheduledAt.getMinutes())} -{" "}
+              {event.end.getHours()}:{digits(event.end.getMinutes())}
             </div>
           </div>
         ))}

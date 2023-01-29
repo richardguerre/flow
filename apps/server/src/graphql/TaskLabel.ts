@@ -1,5 +1,6 @@
 import { prisma } from "../utils/prisma";
 import { builder } from "./builder";
+import { ColorEnum } from "./Color";
 
 export const TaskLabelType = builder.prismaNode("TaskLabel", {
   id: { field: "id" },
@@ -7,7 +8,7 @@ export const TaskLabelType = builder.prismaNode("TaskLabel", {
     createdAt: t.expose("createdAt", { type: "DateTime" }),
     name: t.exposeString("name"),
     slug: t.exposeString("slug"),
-    color: t.exposeString("color"),
+    color: t.expose("color", { type: ColorEnum }),
     tasks: t.relatedConnection("tasks", { cursor: "id" }),
     isPrivate: t.exposeBoolean("isPrivate"),
   }),

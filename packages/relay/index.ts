@@ -16,6 +16,7 @@ export {
   usePreloadedQuery,
   useFragment,
   usePaginationFragment,
+  useRefetchableFragment,
 } from "react-relay";
 
 // ----------------- wrapped exports of react-relay -----------------

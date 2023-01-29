@@ -59,7 +59,7 @@ model NoteLabel {
   /// The slug (i.e. the url-safe version) of the note label name
   slug      String   @unique
   /// The color of the note label in hex
-  color     String
+  color     Color
   /// Whether notes with this label should be private. (default: true)
   isPrivate Boolean  @default(true)
 
@@ -79,6 +79,8 @@ model Task {
   title             String
   /// The status of the task
   status            TaskStatus @default(TODO)
+  /// The date and time the task was completed.
+  completedAt       DateTime?
   /// The day the task is scheduled for
   day               Day        @relation(fields: [date], references: [date])
   /// The date the task is scheduled for
@@ -120,7 +122,7 @@ model TaskLabel {
   /// The slug (i.e. the url-safe version) of the task label name
   slug      String   @unique
   /// The color of the task label
-  color     String
+  color     Color
   /// Whether tasks with this label should be private. (default: true)
   isPrivate Boolean  @default(true)
 
@@ -193,7 +195,7 @@ model Item {
   /// Whether the item is all-day on the date of `scheduledAt`.
   isAllDay          Boolean   @default(false)
   /// The color of the item in hex. Used in calendar views.
-  color             String?
+  color             Color?
 
   /// The tasks linked to the item
   tasks       Task[]
@@ -296,4 +298,31 @@ enum RepetitionPattern {
   // TRIWEEKLY_SUNDAY
   // FIRST_OF_MONTH
   // LAST_OF_MONTH
+}
+
+/// TailwindCSS colors. Useful to generate a foreground and background color from each color,
+/// instead of having independent foreground and background colors
+enum Color {
+  slate
+  gray
+  zinc
+  neutral
+  stone
+  red
+  orange
+  amber
+  yellow
+  lime
+  green
+  emerald
+  teal
+  cyan
+  sky
+  blue
+  indigo
+  violet
+  purple
+  fuchsia
+  pink
+  rose
 }

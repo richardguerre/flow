@@ -3,7 +3,7 @@
   "description": "This is the server of Flow",
   "private": true,
   "scripts": {
-    "print-schema": "ts-node --transpile-only src/graphql/index.ts",
+    "print-schema": "NODE_ENV=development ts-node --transpile-only src/graphql/index.ts",
     "dev": "NODE_ENV=development ts-node-dev --transpile-only --exit-child --respawn --no-notify src/index.ts",
     "start": "ts-node --transpile-only src/index.ts",
     "test": "vitest --config .vitest/config.ts",
