@@ -45,6 +45,9 @@ type Item implements Node {
   durationInMinutes: Int
   id: ID!
 
+  """Whether the item is all-day on the date of `scheduledAt`."""
+  isAllDay: Boolean
+
   """Whether the item is relevant to the user and should be shown."""
   isRelevant: Boolean!
 
@@ -301,7 +304,7 @@ type Query {
 
   """
   Get all external items. Useuful to get list of items for a specific day to show in a calendar.
-  By default, only items where `isRelevant` is true and `scheduledFor` is today.
+  By default, only items where `isRelevant` is true.
   Pass the `where` argument to override these defaults.
   """
   items(after: ID, before: ID, first: Int, last: Int, where: ItemWhereInput): QueryItemsConnection!
