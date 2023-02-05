@@ -124,7 +124,7 @@ export const DayTimeGrid: FC<DayTimeGridProps> = (props) => {
       >
         {hours.map((hour, i) => (
           <div key={i} className="w-4ch relative" style={{ height: heightOf1Hour }}>
-            <span className="text-xs transform top-0 left-0 text-gray-400 -translate-y-1/2 absolute">
+            <span className="text-xs transform top-0 left-0 text-foreground-400 -translate-y-1/2 absolute">
               {digits(hour)}:00
             </span>
           </div>
@@ -149,7 +149,7 @@ export const DayTimeGrid: FC<DayTimeGridProps> = (props) => {
           {hours.map((hour, i) => (
             <div
               key={i}
-              className="border-t border-0 border-gray-300" // TODO: change border-gray-300 to design token
+              className="border-t border-0 border-background-300"
               style={{ height: heightOf1Hour }}
             />
           ))}

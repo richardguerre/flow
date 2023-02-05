@@ -1,50 +1,91 @@
 import { defineConfig } from "windicss/helpers";
+import { Theme } from "windicss/types/interfaces";
 import plugin from "windicss/plugin";
 import colors from "windicss/colors";
 
+// This makes the shades of gray type-safe, so that you don't have to do colors.gray[50]! (! is needed because TS doesn't know if the shade exists)
+const gray = colors.gray as Record<
+  50 | 100 | 200 | 300 | 400 | 500 | 600 | 700 | 800 | 900,
+  string
+>;
+
+type Color = string | Record<string | number, string>;
+
 // Using tips in RefactoringUI to create a color palette
-const flowColors: Record<string, string | Record<string | number, string>> = {
+const flowColors: Record<string, Color> = {
   transparent: "transparent",
   current: "currentColor",
   primary: colors.indigo,
-  gray: colors.gray,
+  background: {
+    50: gray[50],
+    100: gray[100],
+    200: gray[200],
+    300: gray[300],
+  },
+  foreground: {
+    900: gray[900],
+    800: gray[800],
+    700: gray[700],
+    600: gray[600],
+  },
   positive: colors.green,
   negative: colors.red,
   warning: colors.yellow,
 };
 
-const colorPalette: Record<string, string | Record<string, string>> = {};
-for (const [color, shades] of Object.entries(flowColors)) {
-  if (typeof shades === "string") colorPalette[color] = shades;
-  else {
-    const colorGroup: Record<string, string> = {};
-    for (const shade in shades) {
-      colorGroup[shade] = `rgb(var(--color-${color}-${shade}) / var(--tw-bg-opacity, 100))`; // FIXME: use <alpha-value> instead of var(--tw-bg-opacity, 100)
+const convertToCssVars = (
+  key: keyof Theme,
+  value: Record<string, Color>,
+  transform?: (value: any) => string
+) => {
+  const result: Record<string, Color> = {};
+  for (const [k, v] of Object.entries(value)) {
+    if (typeof v === "string") result[k] = v;
+    else {
+      const kResult: Record<string, string> = {};
+      for (const kk in v) {
+        const value = `var(--${key}-${k}-${kk})`;
+        kResult[kk] = transform?.(value) ?? value;
+      }
+      result[k] = kResult;
     }
-    colorPalette[color] = colorGroup;
   }
-}
+  return result;
+};
 
-const rootColors: Record<string, string> = {};
-for (const [color, shades] of Object.entries(flowColors)) {
-  if (typeof shades === "string") rootColors[`--color-${color}`] = shades;
-  else {
-    for (const [shade, value] of Object.entries(shades)) {
-      const rgb = hexToRgb(value);
-      rootColors[`--color-${color}-${shade}`] = `${rgb.r} ${rgb.g} ${rgb.b}`;
+const convertToCssRoot = (
+  key: keyof Theme,
+  value: Record<string, Color>,
+  transform?: (value: any) => string
+) => {
+  const cssVars: Record<string, string> = {};
+  for (const [k, v] of Object.entries(value)) {
+    if (typeof v === "string") cssVars[`--${key}-${k}`] = v;
+    else {
+      for (const [kk, vv] of Object.entries(v)) {
+        cssVars[`--${key}-${k}-${kk}`] = transform?.(vv) ?? vv;
+      }
     }
   }
-}
+  return cssVars;
+};
 
 export default defineConfig({
   theme: {
     screens: {}, // don't know what screens to use, so until I do I'll just leave it empty
-    colors: colorPalette,
+    colors: convertToCssVars(
+      "colors",
+      flowColors,
+      (value) => `rgb(${value} / var(--tw-bg-opacity, 100))` // FIXME: use <alpha-value> instead of var(--tw-bg-opacity, 100),
+    ),
   },
   plugins: [
     plugin(({ addBase }) => {
       addBase({
-        ":root": rootColors,
+        ":root": convertToCssRoot("colors", flowColors, (value) => {
+          const rgb = hexToRgb(value);
+          return `${rgb.r} ${rgb.g} ${rgb.b}`;
+        }),
       });
     }),
   ],

@@ -25,7 +25,7 @@ export const Lists: FC<ListsProps> = (props) => {
   );
 
   return (
-    <div className="flex h-screen bg-gray-100 w-60">
+    <div className="flex h-screen bg-background-100 w-60">
       <div className="flex-1">
         {selectedList ? <List listId={selectedList} /> : <CalendarList data={data} />}
       </div>
@@ -33,7 +33,7 @@ export const Lists: FC<ListsProps> = (props) => {
         {data.lists.map((list) => (
           <div
             title={list.name}
-            className="rounded-full bg-gray-300 h-9 w-9"
+            className="rounded-full bg-background-300 h-9 w-9"
             onClick={() => setSelectedList(list.id)}
           />
         ))}
