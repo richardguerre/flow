@@ -24,9 +24,8 @@ const flowColors: Record<string, Color> = {
   },
   foreground: {
     900: gray[900],
-    800: gray[800],
-    700: gray[700],
-    600: gray[600],
+    800: gray[700],
+    700: gray[500],
   },
   positive: colors.green,
   negative: colors.red,
@@ -73,10 +72,15 @@ const convertToCssRoot = (
 export default defineConfig({
   theme: {
     screens: {}, // don't know what screens to use, so until I do I'll just leave it empty
-    colors: convertToCssVars(
+    textColor: convertToCssVars(
       "colors",
       flowColors,
-      (value) => `rgb(${value} / var(--tw-bg-opacity, 100))` // FIXME: use <alpha-value> instead of var(--tw-bg-opacity, 100),
+      (value) => `rgb(${value} / var(--tw-text-opacity, var(--tw-text-opacity, 100)))` // FIXME: use <alpha-value> instead of var(--tw-bg-opacity, 100),
+    ),
+    backgroundColor: convertToCssVars(
+      "colors",
+      flowColors,
+      (value) => `rgb(${value} / var(--tw-text-opacity, var(--tw-bg-opacity, 100)))` // FIXME: use <alpha-value> instead of var(--tw-bg-opacity, 100),
     ),
   },
   plugins: [

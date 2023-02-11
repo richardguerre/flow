@@ -9,7 +9,6 @@ type ListsProps = {
 };
 
 export const Lists: FC<ListsProps> = (props) => {
-  const [selectedList, setSelectedList] = useState<string | null>(null);
   const data = useFragment(
     graphql`
       fragment Lists_data on Query
@@ -24,14 +23,24 @@ export const Lists: FC<ListsProps> = (props) => {
     props.data
   );
 
+  // if selectedList null, show the calendar
+  const [selectedList, setSelectedList] = useState<string | null>(null);
+
   return (
-    <div className="flex h-screen bg-background-100 w-60">
-      <div className="flex-1">
+    <div className="flex h-full bg-background-50 shadow-xl shadow-2xl z-10">
+      <div className="h-full flex-1 w-72">
         {selectedList ? <List listId={selectedList} /> : <CalendarList data={data} />}
       </div>
-      <div className="space-y-1">
+      <div className="border h-full space-y-3 border-l-background-300 p-4 overflow-y-scroll">
+        <button
+          title="calendar"
+          className="rounded-full bg-background-300 p-3"
+          onClick={() => setSelectedList(null)}
+        >
+          🗓️ {/* TODO: replace with calendar icon */}
+        </button>
         {data.lists.map((list) => (
-          <div
+          <button
             title={list.name}
             className="rounded-full bg-background-300 h-9 w-9"
             onClick={() => setSelectedList(list.id)}

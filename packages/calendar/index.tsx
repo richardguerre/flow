@@ -1,4 +1,4 @@
-import React, { FC, useCallback, useEffect, useMemo, useState } from "react";
+import React, { FC, useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { Hour } from "./types";
 import colors from "windicss/colors";
 
@@ -49,6 +49,7 @@ export const DayTimeGrid: FC<DayTimeGridProps> = (props) => {
   const startHour = props.startHour ?? 0; // start at midnight by default
   const heightOf1Hour = props.heightOf1Hour ?? 96; // 96px by default
   const hours = Array.from({ length: 25 }).map((_, i) => (i + startHour) % 24); // 25 to include the last hour
+  const nowRef = useRef<HTMLDivElement>(null);
 
   const [now, setNow] = useState(new Date());
   useEffect(() => {
@@ -111,8 +112,12 @@ export const DayTimeGrid: FC<DayTimeGridProps> = (props) => {
   }, [JSON.stringify(props.events)]);
 
   const getTop = useCallback((date: Date) => {
-    return (date.getHours() - startHour + date.getMinutes() / 60) * heightOf1Hour + yOffset;
+    return (
+      (((date.getHours() + 24 - startHour) % 24) + date.getMinutes() / 60) * heightOf1Hour + yOffset
+    );
   }, []);
+
+  useEffect(() => {}, []);
 
   return (
     <div className="flex space-x-1">
@@ -124,7 +129,7 @@ export const DayTimeGrid: FC<DayTimeGridProps> = (props) => {
       >
         {hours.map((hour, i) => (
           <div key={i} className="w-4ch relative" style={{ height: heightOf1Hour }}>
-            <span className="text-xs transform top-0 left-0 text-foreground-400 -translate-y-1/2 absolute">
+            <span className="text-xs transform top-0 left-0 text-foreground-700 -translate-y-1/2 absolute">
               {digits(hour)}:00
             </span>
           </div>
@@ -135,7 +140,7 @@ export const DayTimeGrid: FC<DayTimeGridProps> = (props) => {
           {allDayEvents.map((event) => (
             <div
               key={event.id}
-              className="border border-white rounded-md text-sm py-1 px-2 overflow-hidden overflow-ellipsis whitespace-nowrap"
+              className="border rounded-md border-background-50 text-sm py-1 px-2 overflow-hidden overflow-ellipsis whitespace-nowrap"
               style={{
                 color: event.textColor ?? colors.blue["900"],
                 backgroundColor: event.backgroundColor ?? colors.blue["100"],
@@ -146,16 +151,18 @@ export const DayTimeGrid: FC<DayTimeGridProps> = (props) => {
           ))}
         </div>
         <div className="flex-col w-full">
-          {hours.map((hour, i) => (
+          {hours.map((_, i) => (
             <div
               key={i}
-              className="border-t border-0 border-background-300"
+              className="border-t border-l border-0 border-background-300"
               style={{ height: heightOf1Hour }}
             />
           ))}
         </div>
         <div
-          className="bg-red-500 h-[2px] w-full z-20 absolute"
+          ref={nowRef}
+          // #ef4444 is red-500
+          className="bg-[#ef4444] h-[2px] w-full z-20 absolute"
           style={{
             top: getTop(now),
           }}

@@ -1,0 +1,10 @@
+{
+  "name": "@flowdev/jotai",
+  "version": "0.1.0",
+  "description": "A wrapper around Jotai to make it easier to work in flow",
+  "private": true,
+  "main": "index.ts",
+  "dependencies": {
+    "jotai": "^2.0.0"
+  }
+}

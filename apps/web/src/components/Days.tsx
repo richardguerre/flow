@@ -1,4 +1,3 @@
-import { FC } from "react";
 import { graphql, usePaginationFragment } from "@flowdev/relay";
 import { Days_data$key } from "@flowdev/web/relay/__generated__/Days_data.graphql";
 import { Day } from "./Day";
@@ -7,7 +6,7 @@ type DaysProps = {
   data: Days_data$key;
 };
 
-export const Days: FC<DaysProps> = (props) => {
+export const Days = (props: DaysProps) => {
   const { data, loadPrevious, loadNext } = usePaginationFragment(
     graphql`
       fragment Days_data on Query
@@ -33,7 +32,7 @@ export const Days: FC<DaysProps> = (props) => {
   );
 
   return (
-    <div className="flex h-full overflow-scroll">
+    <div className="flex h-full pt-3 pr-3 overflow-x-scroll">
       {data.days.edges.map((edge) => (
         <div key={edge.cursor} className="flex-1">
           <Day day={edge.node} />

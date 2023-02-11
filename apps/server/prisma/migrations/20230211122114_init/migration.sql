@@ -47,6 +47,7 @@ CREATE TABLE "Task" (
     "updatedAt" TIMESTAMP(3) NOT NULL,
     "title" TEXT NOT NULL,
     "status" "TaskStatus" NOT NULL DEFAULT 'TODO',
+    "canBeSuperdone" BOOLEAN NOT NULL DEFAULT false,
     "completedAt" TIMESTAMP(3),
     "date" DATE NOT NULL,
     "durationInMinutes" INTEGER,

@@ -1,0 +1,13 @@
+{
+  "name": "@flowdev/icons",
+  "description": "Flowdev Icons",
+  "version": "0.0.1",
+  "private": true,
+  "main": "index.tsx",
+  "peerDependencies": {
+    "react": "*"
+  },
+  "dependencies": {
+    "react-icons": "^4.7.1"
+  }
+}

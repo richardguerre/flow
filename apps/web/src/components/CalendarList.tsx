@@ -1,8 +1,10 @@
-import { FC, useMemo } from "react";
+import { FC, useEffect, useMemo } from "react";
 import { graphql, useRefetchableFragment } from "@flowdev/relay";
 import { CalendarList_data$key } from "@flowdev/web/relay/__generated__/CalendarList_data.graphql";
 import { DayTimeGrid, CalendarEvent, CalendarArtifact } from "@flowdev/calendar";
 import colors from "windicss/colors";
+import { dayStoreAtom } from "@flowdev/web/stores/dayStore";
+import { useStore } from "@flowdev/jotai";
 
 type CalendarListProps = {
   data: CalendarList_data$key;
@@ -10,7 +12,8 @@ type CalendarListProps = {
 
 export const CalendarList: FC<CalendarListProps> = (props) => {
   // TODO: use React context to get the day the user is looking at and refetch the events with that day
-  const [data] = useRefetchableFragment(
+  const [dayStore] = useStore(dayStoreAtom);
+  const [data, refetch] = useRefetchableFragment(
     graphql`
       fragment CalendarList_data on Query
       @refetchable(queryName: "CalendarListQuery")
@@ -72,5 +75,19 @@ export const CalendarList: FC<CalendarListProps> = (props) => {
     }, [] as CalendarArtifact[]);
   }, [data.day?.tasks]);
 
-  return <DayTimeGrid events={events} artifacts={artifacts} />;
+  useEffect(() => {
+    refetch({
+      dateInFocus: dayStore.dateInFocus,
+      dayIdInFocus: dayStore.dayIdInFocus,
+    });
+  }, [dayStore.dateInFocus, dayStore.dayIdInFocus]);
+
+  return (
+    <div className="flex flex-col h-full">
+      <div className="font-semibold text-xl p-3">Calendar</div>
+      <div className="h-full pt-3 pl-3 overflow-y-scroll">
+        <DayTimeGrid events={events} artifacts={artifacts} startHour={4} />
+      </div>
+    </div>
+  );
 };

@@ -1,0 +1,9 @@
+{
+  "name": "@flowdev/ui",
+  "version": "0.1.0",
+  "description": "UI components for Flow",
+  "private": true,
+  "peerDependencies": {
+    "react": "*"
+  }
+}

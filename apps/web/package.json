@@ -5,6 +5,7 @@
   "scripts": {
     "prerelay": "npm run print-schema --workspace=@flowdev/server && mkdir -p src/relay/__generated__",
     "relay": "cd ../.. && relay-compiler",
+    "relay:watch": "npm run relay -- --watch",
     "predev": "npm run relay",
     "dev": "vite",
     "build": "tsc && vite build",
@@ -12,10 +13,14 @@
   },
   "dependencies": {
     "@flowdev/calendar": "*",
+    "@flowdev/icons": "*",
+    "@flowdev/jotai": "*",
     "@flowdev/relay": "*",
+    "@flowdev/ui": "*",
     "dayjs": "^1.11.7",
     "react": "^18.2.0",
     "react-dom": "^18.2.0",
+    "react-intersection-observer": "^9.4.1",
     "react-router-dom": "^6.6.2"
   },
   "devDependencies": {

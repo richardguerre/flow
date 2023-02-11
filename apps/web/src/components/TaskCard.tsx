@@ -1,9 +1,11 @@
+import React from "react";
 import { TaskCard_task$key } from "@flowdev/web/relay/__generated__/TaskCard_task.graphql";
-import { FC } from "react";
+import { FC, useMemo } from "react";
 import { graphql, useFragment } from "@flowdev/relay";
 import { TaskCardDetails_task$key } from "@flowdev/web/relay/__generated__/TaskCardDetails_task.graphql";
 import { TaskCardActions_task$key } from "@flowdev/web/relay/__generated__/TaskCardActions_task.graphql";
 import { DurationBadge } from "./DurationBadge";
+import { BsCheck, BsCheckAll, BsX } from "@flowdev/icons";
 
 type TaskCardProps = {
   task: TaskCard_task$key;
@@ -15,6 +17,7 @@ export const TaskCard: FC<TaskCardProps> = (props) => {
       fragment TaskCard_task on Task {
         title
         durationInMinutes
+        status
         ...TaskCardDetails_task
         ...TaskCardActions_task
       }
@@ -22,10 +25,17 @@ export const TaskCard: FC<TaskCardProps> = (props) => {
     props.task
   );
 
+  let statusStyles = "";
+  if (task.status !== "TODO") {
+    statusStyles = "bg-background-100 text-foreground-700";
+  } else {
+    statusStyles = "bg-background-50";
+  }
+
   return (
-    <div className="flex flex-col">
+    <div className={`${statusStyles} rounded-md flex space-y-1 flex-col p-3 group cursor-pointer`}>
       <div className="flex">
-        <div>{task.title}</div>
+        <div className="text-sm">{task.title}</div>
         {task.durationInMinutes && <DurationBadge durationInMinutes={task.durationInMinutes} />}
       </div>
       <TaskCardDetails task={task} />
@@ -56,7 +66,7 @@ const TaskCardDetails: FC<TaskCardDetailsProps> = (props) => {
 
   return (
     <div>
-      <div>{task.item?.scheduledAt}</div>
+      <div className="bg-primary-100 text-primary-900">{task.item?.scheduledAt}</div>
     </div>
   );
 };
@@ -70,14 +80,95 @@ const TaskCardActions: FC<TaskCardActionsProps> = (props) => {
     graphql`
       fragment TaskCardActions_task on Task {
         status
+        canBeSuperdone
+        id
       }
     `,
     props.task
   );
 
+  const doneButton = (
+    <button
+      className="rounded-full flex bg-background-200 bg-opacity-50 h-6 text-sm text-foreground-700 w-6 items-center justify-center hover:(bg-opacity-70 bg-background-300) active:(bg-opacity-100 bg-background-300) "
+      onClick={() => {
+        console.log("Done");
+      }}
+    >
+      <BsCheck />
+    </button>
+  );
+
+  const undoDoneButton = (
+    <button
+      className="rounded-full flex bg-positive-100 h-6 text-positive-600 w-6 items-center justify-center hover:bg-positive-200 active:bg-positive-300"
+      onClick={() => {
+        console.log("Undone");
+      }}
+    >
+      <BsCheck />
+    </button>
+  );
+
+  const superdoneButton = (
+    <button
+      className="rounded-full bg-background-200 bg-opacity-50 h-6 text-sm text-foreground-700 w-6 items-center justify-center hidden hover:(bg-opacity-70 bg-background-300) active:(bg-opacity-100 bg-background-300) group-hover:flex "
+      onClick={() => {
+        console.log("Superdone");
+      }}
+    >
+      <BsCheckAll />
+    </button>
+  );
+
+  const undoSuperdoneButton = (
+    <button
+      className="rounded-full flex bg-positive-100 h-6 text-positive-600 w-6 items-center justify-center hover:bg-positive-200 active:bg-positive-300"
+      onClick={() => {
+        console.log("Superdone");
+      }}
+    >
+      <BsCheckAll />
+    </button>
+  );
+
+  const cancelButton = (
+    <button
+      className="rounded-full bg-background-200 bg-opacity-50 h-6 text-sm text-foreground-700 w-6 items-center justify-center hidden hover:(bg-opacity-70 bg-background-300) active:(bg-opacity-100 bg-background-300) group-hover:flex "
+      onClick={() => {
+        console.log("Cancel");
+      }}
+    >
+      <BsX size={20} />
+    </button>
+  );
+
+  const undoCancelButton = (
+    <button
+      className="rounded-full flex bg-negative-100 h-6 text-negative-600 w-6 items-center justify-center hover:bg-negative-200 active:bg-negative-300"
+      onClick={() => {
+        console.log("Cancel");
+      }}
+    >
+      <BsX />
+    </button>
+  );
+
+  const taskStatusActions: Array<React.ReactNode> = useMemo(() => {
+    if (task.status === "TODO") {
+      return [doneButton, ...(task.canBeSuperdone ? [superdoneButton] : []), cancelButton];
+    } else if (task.status === "DONE") {
+      return task.canBeSuperdone ? [undoSuperdoneButton] : [undoDoneButton];
+    } else if (task.status === "CANCELED") {
+      return [undoCancelButton];
+    }
+    return [];
+  }, [task.status]);
+
   return (
-    <div>
-      <div>{task.status}</div>
+    <div className="flex space-x-2">
+      {taskStatusActions.map((action, index) => (
+        <React.Fragment key={index}>{action}</React.Fragment>
+      ))}
     </div>
   );
 };

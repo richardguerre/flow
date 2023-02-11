@@ -12,6 +12,7 @@ export const TaskType = builder.prismaNode("Task", {
     createdAt: t.expose("createdAt", { type: "DateTime" }),
     title: t.exposeString("title"),
     status: t.expose("status", { type: TaskStatusEnum }),
+    canBeSuperdone: t.expose("canBeSuperdone", { type: "Boolean" }),
     completedAt: t.expose("completedAt", { type: "DateTime", nullable: true }),
     date: t.expose("date", { type: "Date" }),
     item: t.relation("item", { nullable: true }),
@@ -188,30 +189,39 @@ Any other scenario is not possible by nature of the app, where tasks:
             data: { tasksOrder: { set: originalDay.tasksOrder.filter((id) => id !== task.id) } },
           });
           days.push(originalDay.date);
-        } else if (task.date < startOfToday && newStatus === "TODO") {
-          // Task is in the past, so we need to move it to today and update the status
-          await tx.task.update({
-            where: { id: task.id },
-            data: {
-              status: newStatus,
-              day: {
-                connectOrCreate: {
-                  where: { date: startOfToday },
-                  create: { date: startOfToday },
+        } else if (task.date < startOfToday) {
+          if (newStatus === "TODO") {
+            // Task is in the past and TODO, so we need to move it to today and update the status
+            await tx.task.update({
+              where: { id: task.id },
+              data: {
+                status: newStatus,
+                day: {
+                  connectOrCreate: {
+                    where: { date: startOfToday },
+                    create: { date: startOfToday },
+                  },
                 },
               },
-            },
-          });
-          await tx.day.update({
-            where: { date: originalDay.date },
-            data: { tasksOrder: { set: originalDay.tasksOrder.filter((id) => id !== task.id) } },
-          });
-          days.push(task.date);
-          await tx.day.update({
-            where: { date: startOfToday },
-            data: { tasksOrder: { push: task.id } },
-          });
-          days.push(startOfToday);
+            });
+            await tx.day.update({
+              where: { date: originalDay.date },
+              data: { tasksOrder: { set: originalDay.tasksOrder.filter((id) => id !== task.id) } },
+            });
+            days.push(task.date);
+            await tx.day.update({
+              where: { date: startOfToday },
+              data: { tasksOrder: { push: task.id } },
+            });
+            days.push(startOfToday);
+          } else {
+            // Task is in the past, so we only need to update the status
+            await tx.task.update({
+              where: { id: task.id },
+              data: { status: newStatus },
+            });
+            days.push(task.date);
+          }
         }
         return prisma.day.findMany({ where: { date: { in: days } }, orderBy: { date: "asc" } });
       });

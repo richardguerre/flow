@@ -475,6 +475,7 @@ type Setting implements Node {
 
 """A task that the user or a plugin has created."""
 type Task implements Node {
+  canBeSuperdone: Boolean!
   completedAt: DateTime
   createdAt: DateTime!
   date: Date!

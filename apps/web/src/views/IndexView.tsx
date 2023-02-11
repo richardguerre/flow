@@ -34,11 +34,9 @@ type IndexViewProps = {
 const IndexViewContent: FC<IndexViewProps> = (props) => {
   const data = usePreloadedQuery(indexViewQuery, props.queryRef);
   return (
-    <div className="h-screen w-screen relative">
+    <div className="flex h-screen">
       <Days data={data} />
-      <div className="top-0 right-0 absolute">
-        <Lists data={data} />
-      </div>
+      <Lists data={data} />
     </div>
   );
 };

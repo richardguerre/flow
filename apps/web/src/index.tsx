@@ -6,6 +6,7 @@ import {
   LOCAL_STORAGE_USER_TOKEN_KEY,
   RelayEnvironmentProvider,
 } from "@flowdev/web/relay/environment";
+import { IconContext } from "@flowdev/icons";
 
 const IndexView = React.lazy(() => import("./views/IndexView"));
 const TestView = React.lazy(() => import("./views/TestView"));
@@ -38,8 +39,10 @@ const router = createBrowserRouter([
 
 ReactDOM.createRoot(document.getElementById("root") as HTMLElement).render(
   <React.StrictMode>
-    <React.Suspense fallback="...">
-      <RouterProvider router={router} />
-    </React.Suspense>
+    <IconContext.Provider value={{ size: "20px" }}>
+      <React.Suspense fallback="...">
+        <RouterProvider router={router} />
+      </React.Suspense>
+    </IconContext.Provider>
   </React.StrictMode>
 );
