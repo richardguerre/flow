@@ -14,7 +14,7 @@
     "---------util---------": "",
     "setup:init": "npm install && npm run setup:env:root && npm run setup:env:packages",
     "setup:env:root": "ts-node --project scripts/tsconfig.json -T scripts/setupEnvRoot.ts",
-    "setup:env:projects": "ts-node --project scripts/tsconfig.json -T scripts/setupEnvProjects.ts",
+    "setup:env:packages": "ts-node --project scripts/tsconfig.json -T scripts/setupEnvProjects.ts",
     "clean": "npm run clean:root && npm run clean:packages",
     "clean:root": "rm -rf ./node_modules",
     "clean:packages": "rm -rf ./packages/**/node_modules",

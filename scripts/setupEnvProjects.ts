@@ -21,11 +21,14 @@ const matcher = /(\${?)(\w+)(}?)/g;
     return value;
   });
 
+
   const projects = packageJson.workspaces;
+
 
   await Promise.all([
     projects.map((it) => {
       if (!it.startsWith(".")) {
+        const test = resolve(process.cwd(), `./${it}/.env`)
         writeFile(resolve(process.cwd(), `./${it}/.env`), outputString);
       }
     }),
