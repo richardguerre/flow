@@ -4,7 +4,7 @@ import { FC, useMemo } from "react";
 import { graphql, useFragment } from "@flowdev/relay";
 import { TaskCardDetails_task$key } from "@flowdev/web/relay/__generated__/TaskCardDetails_task.graphql";
 import { TaskCardActions_task$key } from "@flowdev/web/relay/__generated__/TaskCardActions_task.graphql";
-import { DurationBadge } from "./DurationBadge";
+import { DurationBadge, TimeBadge } from "./Badges";
 import { BsCheck, BsCheckAll, BsX } from "@flowdev/icons";
 
 type TaskCardProps = {
@@ -27,13 +27,13 @@ export const TaskCard: FC<TaskCardProps> = (props) => {
 
   let statusStyles = "";
   if (task.status !== "TODO") {
-    statusStyles = "bg-background-100 text-foreground-700";
-  } else {
-    statusStyles = "bg-background-50";
+    statusStyles = "opacity-50 hover:opacity-100";
   }
 
   return (
-    <div className={`${statusStyles} rounded-md flex space-y-1 flex-col p-3 group cursor-pointer`}>
+    <div
+      className={`${statusStyles} bg-background-50 rounded-md flex space-y-1 flex-col p-3 group cursor-pointer`}
+    >
       <div className="flex">
         <div className="text-sm">{task.title}</div>
         {task.durationInMinutes && <DurationBadge durationInMinutes={task.durationInMinutes} />}
@@ -64,11 +64,7 @@ const TaskCardDetails: FC<TaskCardDetailsProps> = (props) => {
     props.task
   );
 
-  return (
-    <div>
-      <div className="bg-primary-100 text-primary-900">{task.item?.scheduledAt}</div>
-    </div>
-  );
+  return <div>{task.item?.scheduledAt && <TimeBadge time={task.item.scheduledAt} />}</div>;
 };
 
 type TaskCardActionsProps = {
@@ -149,7 +145,7 @@ const TaskCardActions: FC<TaskCardActionsProps> = (props) => {
         console.log("Cancel");
       }}
     >
-      <BsX />
+      <BsX size={20} />
     </button>
   );
 

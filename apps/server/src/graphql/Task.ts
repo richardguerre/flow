@@ -159,9 +159,18 @@ Any other scenario is not possible by nature of the app, where tasks:
           // Hence we keep the `days` arrays empty.
         } else if (task.date >= startOfToday && task.date <= endOfToday) {
           // When the task is for today, we only need to update the status
+          // and the position of the task in the day
           await tx.task.update({
             where: { id: task.id },
             data: { status: newStatus },
+          });
+          await tx.day.update({
+            where: { date: startOfToday },
+            data: {
+              tasksOrder: {
+                set: originalDay.tasksOrder.filter((id) => id !== task.id).concat(task.id), // TODO: maybe refactor? filtering and concatenating can be expensive
+              },
+            },
           });
           days.push(task.date);
         } else if (task.date > endOfToday && (newStatus === "DONE" || newStatus === "CANCELED")) {
@@ -246,8 +255,7 @@ When the task is:
 - moved into the past, it updates the date and order, updates the status to \`DONE\` (if not already),
   and returns the original day and the new day.
 - moved into the future, it updates the date and order, updates the status to \`TODO\` (if not already),
-  and returns the original day and the new day.
-    `,
+  and returns the original day and the new day.`,
     input: {
       id: t.input.globalID({ required: true, description: "The Relay ID of the task to update." }),
       date: t.input.field({
@@ -281,7 +289,7 @@ When the task is:
         newTasksOrder.splice(beforeTaskIndex + 1, 0, task.id);
         const startOfToday = startOfDay();
         const endOfToday = endOfDay();
-        // the only thing that changes in each status is the status each scenario
+        // the only thing that can change is the status
         // if the status doesn't change in a scenario, it's set to null
         /** The new status of the task. It is `null` when it doesn't change. */
         let newStatus: TaskStatus | null = null;

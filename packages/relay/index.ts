@@ -6,6 +6,7 @@ import {
   PreloadedQuery,
   useQueryLoader as useRelayQueryLoader,
   UseQueryLoaderLoadQueryOptions,
+  useMutation as useRelayMutation,
 } from "react-relay";
 
 // unwrapped exports of react-relay
@@ -45,3 +46,5 @@ export function useQueryLoader<TQuery extends OperationType>(
 
   return { queryRef, loadQuery };
 }
+
+export const useMutation = useRelayMutation;

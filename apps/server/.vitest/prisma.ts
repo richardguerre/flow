@@ -29,7 +29,7 @@ const $begin = async (client: PrismaClient, data?: { txId: number }) => {
   });
 
   // opening a transaction to control externally
-  const prismaTranactionResult = client.$transaction((prismaTxClient) => {
+  const prismaTransactionResult = client.$transaction((prismaTxClient) => {
     captureInnerPrismaTxClient(prismaTxClient);
 
     return controlTxPromise.catch((e) => {
@@ -44,11 +44,11 @@ const $begin = async (client: PrismaClient, data?: { txId: number }) => {
     txId: data?.txId,
     $commit: async () => {
       commit();
-      await prismaTranactionResult;
+      await prismaTransactionResult;
     },
     $rollback: async () => {
       rollback();
-      await prismaTranactionResult.catch((err) => {
+      await prismaTransactionResult.catch((err) => {
         if (err.message !== PRISMA_ROLLBACK_MSG) {
           console.log(`Rollback txn, cause: ${err}`);
         }

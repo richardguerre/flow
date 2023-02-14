@@ -3,7 +3,7 @@ import { FC } from "react";
 import { ItemCard_item$key } from "@flowdev/web/relay/__generated__/ItemCard_item.graphql";
 import { ItemCardDetails_item$key } from "@flowdev/web/relay/__generated__/ItemCardDetails_item.graphql";
 import { ItemCardActions_item$key } from "@flowdev/web/relay/__generated__/ItemCardActions_item.graphql";
-import { DurationBadge } from "./DurationBadge";
+import { DurationBadge } from "./Badges";
 
 type ItemCardProps = {
   item: ItemCard_item$key;

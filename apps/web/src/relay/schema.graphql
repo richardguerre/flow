@@ -164,7 +164,22 @@ type Mutation {
   """Update a task."""
   updateTask(input: MutationUpdateTaskInput!): Task!
 
-  "Update the date of a task and/or position of the task in the day, and get the updated days (as a list in chronological order).\n\nInput:\n- `id`: The ID of the task to update.\n- `date`: The new date of the task.\n- `after`: The ID of the task to place the task after. If `null`, the task will be placed at the beginning of the day.\n\nWhen the task is:\n- already in the desired date, it updates the order and returns the day.\n- moved to today, it updates the date and order but not the status, and returns the original day and today.\n- moved into the past, it updates the date and order, updates the status to `DONE` (if not already),\n  and returns the original day and the new day.\n- moved into the future, it updates the date and order, updates the status to `TODO` (if not already),\n  and returns the original day and the new day.\n    "
+  """
+  Update the date of a task and/or position of the task in the day, and get the updated days (as a list in chronological order).
+  
+  Input:
+  - `id`: The ID of the task to update.
+  - `date`: The new date of the task.
+  - `after`: The ID of the task to place the task after. If `null`, the task will be placed at the beginning of the day.
+  
+  When the task is:
+  - already in the desired date, it updates the order and returns the day.
+  - moved to today, it updates the date and order but not the status, and returns the original day and today.
+  - moved into the past, it updates the date and order, updates the status to `DONE` (if not already),
+    and returns the original day and the new day.
+  - moved into the future, it updates the date and order, updates the status to `TODO` (if not already),
+    and returns the original day and the new day.
+  """
   updateTaskDate(input: MutationUpdateTaskDateInput!): [Day!]!
 
   "Update the status of a task and get the updated days (as a list in chronological order).\n\nWhen the task is:\n- already in the desired status, it does nothing and returns an empty list.\n- for today, it updates the status and returns the day.\n- for a previous day and changing to `TODO`, it updates the status and\n  returns the original day and today.\n- for a future day and changing to `DONE` or `CANCELED`, it updates the status and\n  returns the original day and today.\n\nAny other scenario is not possible by nature of the app, where tasks:\n- in the past can only be `DONE` or `CANCELED` \n- in the future can only be in `TODO`\n    "
