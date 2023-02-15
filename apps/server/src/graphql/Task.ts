@@ -1,7 +1,7 @@
 import { TaskStatus } from "@prisma/client";
 import { endOfDay, startOfDay } from "../utils/getDays";
 import { prisma } from "../utils/prisma";
-import { builder, u, uParseInt } from "./builder";
+import { builder, u } from "./builder";
 import { DayType } from "./Day";
 
 // -------------- Task types --------------
@@ -20,7 +20,9 @@ export const TaskType = builder.prismaNode("Task", {
       nullable: true,
       description: "The length of time the task is expected to take.",
       select: { item: { select: { durationInMinutes: true } } },
-      resolve: (task) => task.item.durationInMinutes ?? task.durationInMinutes,
+      resolve: (task) => {
+        return task.item?.durationInMinutes ?? task.durationInMinutes;
+      },
     }),
     labels: t.relation("labels"),
     pluginDatas: t.relation("pluginDatas"),
@@ -85,7 +87,9 @@ builder.mutationField("createTask", (t) =>
               : {}),
           },
         });
-        await tx.day.update({ where: { date }, data: { tasksOrder: { push: task.id } } });
+        const day = await tx.day.findUnique({ where: { date }, select: { tasksOrder: true } });
+        const newTasksOrder = [task.id, ...day!.tasksOrder];
+        await tx.day.update({ where: { date }, data: { tasksOrder: { set: newTasksOrder } } });
         return task;
       });
     },
@@ -119,8 +123,8 @@ builder.mutationField("updateTask", (t) =>
 
 // TODO: add completedAt in the logic
 builder.mutationField("updateTaskStatus", (t) =>
-  t.fieldWithInput({
-    type: [DayType],
+  t.prismaFieldWithInput({
+    type: ["Day"],
     description: `Update the status of a task and get the updated days (as a list in chronological order).
 
 When the task is:
@@ -143,7 +147,7 @@ Any other scenario is not possible by nature of the app, where tasks:
         description: "The new status of the task.",
       }),
     },
-    resolve: (_, args) => {
+    resolve: (query, _, args) => {
       return prisma.$transaction(async (tx) => {
         const days: Date[] = [];
         const newStatus = args.input.status;
@@ -201,7 +205,7 @@ Any other scenario is not possible by nature of the app, where tasks:
         } else if (task.date < startOfToday) {
           if (newStatus === "TODO") {
             // Task is in the past and TODO, so we need to move it to today and update the status
-            await tx.task.update({
+            const updatedTask = await tx.task.update({
               where: { id: task.id },
               data: {
                 status: newStatus,
@@ -212,15 +216,26 @@ Any other scenario is not possible by nature of the app, where tasks:
                   },
                 },
               },
+              select: {
+                day: {
+                  select: { tasks: { select: { id: true, status: true } }, tasksOrder: true },
+                },
+              },
             });
             await tx.day.update({
               where: { date: originalDay.date },
               data: { tasksOrder: { set: originalDay.tasksOrder.filter((id) => id !== task.id) } },
             });
             days.push(task.date);
+            const tasksOrdered = updatedTask.day.tasks.sort(
+              (a, b) =>
+                updatedTask.day.tasksOrder.indexOf(a.id) - updatedTask.day.tasksOrder.indexOf(b.id)
+            );
+            const lastTodoIndex = tasksOrdered.findIndex((t) => t.status === "TODO");
+            const newTasksOrder = updatedTask.day.tasksOrder.splice(lastTodoIndex + 1, 0, task.id);
             await tx.day.update({
               where: { date: startOfToday },
-              data: { tasksOrder: { push: task.id } },
+              data: { tasksOrder: { set: newTasksOrder } },
             });
             days.push(startOfToday);
           } else {
@@ -232,7 +247,11 @@ Any other scenario is not possible by nature of the app, where tasks:
             days.push(task.date);
           }
         }
-        return prisma.day.findMany({ where: { date: { in: days } }, orderBy: { date: "asc" } });
+        return prisma.day.findMany({
+          ...query,
+          where: { date: { in: days } },
+          orderBy: { date: "asc" },
+        });
       });
     },
   })
@@ -263,30 +282,24 @@ When the task is:
         required: true,
         description: "The new date of the task.",
       }),
-      after: t.input.globalID({
-        required: false,
-        description:
-          "The ID of the task to place the task after. If `null`, the task will be placed at the beginning of the day.",
+      newTasksOrder: t.input.globalIDList({
+        required: true,
+        description: "The new order of the tasks in the day the task is moved into.",
       }),
     },
     resolve: (_, args) => {
       return prisma.$transaction(async (tx) => {
         const days: Date[] = [];
         const newDate = args.input.date;
-        const afterTaskId = uParseInt(args.input.after?.id) ?? null;
         const task = await tx.task.findUniqueOrThrow({
           where: { id: parseInt(args.input.id.id) },
           include: { day: { select: { date: true, tasksOrder: true } } },
         });
         const originalDay = task.day;
         const isSameDay = equalDay(task.date, newDate);
-        const newDay = isSameDay
-          ? originalDay
-          : await tx.day.findUnique({ where: { date: newDate }, select: { tasksOrder: true } });
-        const newDayTasksOrder = newDay?.tasksOrder ?? [];
-        const beforeTaskIndex = newDayTasksOrder.findIndex((a) => a === afterTaskId);
-        const newTasksOrder = Array.from(newDayTasksOrder.filter((id) => id !== task.id));
-        newTasksOrder.splice(beforeTaskIndex + 1, 0, task.id);
+        const newDayTasksOrder = args.input.newTasksOrder
+          .filter((id) => id.typename === "Task")
+          .map((id) => parseInt(id.id));
         const startOfToday = startOfDay();
         const endOfToday = endOfDay();
         // the only thing that can change is the status
@@ -326,7 +339,7 @@ When the task is:
           // update just one day as they are the same
           await tx.day.update({
             where: { date: originalDay.date },
-            data: { tasksOrder: { set: newTasksOrder } },
+            data: { tasksOrder: { set: newDayTasksOrder } },
           });
         } else {
           // update the original and new day
@@ -337,14 +350,18 @@ When the task is:
             data: { tasksOrder: { set: originalDay.tasksOrder.filter((id) => id !== task.id) } },
           });
 
+          console.log(newDayTasksOrder);
           // Update the new day (it may be the same as the original day)
           await tx.day.update({
             where: { date: newDate },
-            data: { tasksOrder: { set: newTasksOrder } },
+            data: { tasksOrder: { set: newDayTasksOrder } },
           });
         }
 
-        return prisma.day.findMany({ where: { date: { in: days } }, orderBy: { date: "asc" } });
+        return prisma.day.findMany({
+          where: { date: { in: days } },
+          orderBy: { date: "asc" },
+        });
       });
     },
   })

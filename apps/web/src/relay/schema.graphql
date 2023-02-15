@@ -55,8 +55,6 @@ type Day implements Node {
   """The notes linked to the day."""
   notes: [Note!]!
   routines: [Routine!]!
-
-  """The tasks linked to the day."""
   tasks: [Task!]!
 }
 
@@ -229,16 +227,14 @@ input MutationCreateTaskInput {
 }
 
 input MutationUpdateTaskDateInput {
-  """
-  The ID of the task to place the task after. If `null`, the task will be placed at the beginning of the day.
-  """
-  after: ID
-
   """The new date of the task."""
   date: Date!
 
   """The Relay ID of the task to update."""
   id: ID!
+
+  """The new order of the tasks in the day the task is moved into."""
+  newTasksOrder: [ID!]!
 }
 
 input MutationUpdateTaskInput {

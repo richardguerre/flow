@@ -34,7 +34,7 @@ export const TaskCard: FC<TaskCardProps> = (props) => {
     <div
       className={`${statusStyles} bg-background-50 rounded-md flex space-y-1 flex-col p-3 group cursor-pointer`}
     >
-      <div className="flex">
+      <div className="flex space-x-1">
         <div className="text-sm">{task.title}</div>
         {task.durationInMinutes && <DurationBadge durationInMinutes={task.durationInMinutes} />}
       </div>

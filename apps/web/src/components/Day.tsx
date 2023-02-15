@@ -42,6 +42,11 @@ export const Day: FC<DayProps> = (props) => {
   );
 };
 
+type UpdateTaskDateInfo = {
+  movedTaskId: string;
+  htmlParent: HTMLElement;
+} | null;
+
 type DayContentProps = {
   day: DayContent_day$key;
 };
@@ -69,27 +74,39 @@ const DayContent = (props: DayContentProps) => {
     }
   `);
 
-  const [tasks, setTasks] = useState(
-    structuredClone(Array.from(day.tasks).sort((a) => (a.status === "TODO" ? -1 : 1)))
-  );
+  const [tasks, setTasks] = useState(structuredClone(Array.from(day.tasks)));
+  const [updateTaskDateInfo, setUpdateTaskDateInfo] = useState<UpdateTaskDateInfo>(null);
 
   const handleTaskMove = (e: Sortable.SortableEvent) => {
-    const taskIsAfterTaskId = e.to.children[(e.newIndex ?? 0) - 1]?.id ?? null;
-
-    udpateTaskDate({
-      variables: {
-        input: {
-          id: e.item.id,
-          date: e.to.id,
-          after: taskIsAfterTaskId,
-        },
-      },
+    setUpdateTaskDateInfo({
+      htmlParent: e.to,
+      movedTaskId: e.item.id,
     });
   };
 
   useEffect(() => {
-    setTasks(structuredClone(Array.from(day.tasks).sort((a) => (a.status === "TODO" ? -1 : 1))));
+    setTasks(structuredClone(Array.from(day.tasks)));
   }, [day.tasks]);
+
+  useEffect(() => {
+    if (updateTaskDateInfo) {
+      const newTasksOrder = Array.from(updateTaskDateInfo.htmlParent.children).map(
+        (task) => task.id
+      );
+
+      udpateTaskDate({
+        variables: {
+          input: {
+            id: updateTaskDateInfo.movedTaskId,
+            date: updateTaskDateInfo.htmlParent.id,
+            newTasksOrder,
+          },
+        },
+      });
+
+      setUpdateTaskDateInfo(null);
+    }
+  }, [updateTaskDateInfo]);
 
   return (
     <ReactSortable

@@ -1,7 +1,6 @@
 import { prisma } from "../utils/prisma";
 import { builder } from "./builder";
 import { Task, Note, Routine } from "@prisma/client";
-import { queryFromInfo } from "@pothos/plugin-prisma";
 import { endOfDay, getDayOfWeek, getStartFromConnectionArgs, toDateOnly } from "../utils/getDays";
 
 // -------------- Day types --------------
@@ -13,14 +12,20 @@ export const DayType = builder.prismaNode("Day", {
   fields: (t) => ({
     date: t.expose("date", { type: "Date", description: "The date of the day." }),
     notes: t.relation("notes"),
-    tasks: t.relation("tasks", {
+    tasks: t.prismaField({
+      type: ["Task"],
       resolve: async (query, day) => {
+        const dayInfo = await prisma.day.findUnique({
+          where: { date: day.date },
+          select: { tasksOrder: true },
+        });
+        const order = dayInfo?.tasksOrder ?? day.tasksOrder; // day.tasksOrder might be outdated if the tasksOrder was updated in another request
         const tasks = await prisma.task.findMany({
           ...query,
           where: { date: day.date },
         });
         const tasksOrdered = tasks.sort((a, b) => {
-          return day.tasksOrder.indexOf(a.id) - day.tasksOrder.indexOf(b.id);
+          return order.indexOf(a.id) - order.indexOf(b.id);
         });
         return tasksOrdered;
       },
@@ -79,15 +84,7 @@ Please input a Date in the format: YYYY-MM-DD`,
 
       // In order to dataload the relations of the Day type, we need to create a query object that contains the select and include arguments.
       // Using queryFromInfo creates the query object found when using t.prismaConnection. See https://github.com/hayes/pothos/blob/main/packages/plugin-prisma/src/field-builder.ts#L122-L128
-      const query = queryFromInfo({
-        context,
-        info,
-        select: { date: true },
-        path: ["edges", "node"],
-        typeName: "Day",
-      });
       const days = await prisma.day.findMany({
-        ...query,
         where: { date: { gte: start, lte: end } },
       });
 

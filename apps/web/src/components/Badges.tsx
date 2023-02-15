@@ -7,8 +7,8 @@ type DurationBadge = {
 
 export const DurationBadge: FC<DurationBadge> = (props) => {
   return (
-    <div className="rounded-md h-min bg-primary-100 text-sm py-[2px] px-1 text-primary-700 inline-flex">
-      {(props.durationInMinutes / 60).toFixed(0)}:{props.durationInMinutes % 60}
+    <div className="rounded-md h-min bg-primary-100 text-sm py-[1px] px-1 text-primary-600 inline-flex">
+      {Math.floor(props.durationInMinutes / 60)}:{props.durationInMinutes % 60}
     </div>
   );
 };
@@ -19,7 +19,7 @@ type TimeBadgeProps = {
 
 export const TimeBadge = (props: TimeBadgeProps) => {
   return (
-    <div className="rounded-md h-min bg-primary-100 text-sm py-[2px] px-1 text-primary-700 inline-flex">
+    <div className="rounded-md h-min bg-primary-100 text-sm py-[1px] px-1 text-primary-600 inline-flex">
       {dayjs(props.time).format("HH:mm")}
     </div>
   );
