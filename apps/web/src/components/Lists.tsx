@@ -34,7 +34,7 @@ export const Lists: FC<ListsProps> = (props) => {
       <div className="border h-full space-y-3 border-l-background-300 p-4 overflow-y-scroll">
         <button
           title="calendar"
-          className="rounded-full bg-background-300 p-3"
+          className="rounded-full bg-background-300 h-12 p-3 w-12"
           onClick={() => setSelectedList(null)}
         >
           🗓️ {/* TODO: replace with calendar icon */}

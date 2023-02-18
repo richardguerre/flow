@@ -35,7 +35,7 @@ export const Day: FC<DayProps> = (props) => {
 
   return (
     <div ref={dayRef} className="flex flex-col h-full pl-4 w-64">
-      {/* pl-4 is needed for scrollIntoView to not scroll the day flush to the left */}
+      {/* pl-4 is needed for scrollIntoView to not scroll with the day flush to the left */}
       <div className="mb-3">
         <button
           className="font-semibold text-xl hover:text-primary-400 active:text-primary-600"
