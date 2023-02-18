@@ -146,6 +146,11 @@ Any other scenario is not possible by nature of the app, where tasks:
         required: true,
         description: "The new status of the task.",
       }),
+      superDone: t.input.boolean({
+        required: false,
+        description:
+          "If true, the task will be done within Flow and other systems that plugins have connected to.",
+      }),
     },
     resolve: (query, _, args) => {
       return prisma.$transaction(async (tx) => {
@@ -153,7 +158,7 @@ Any other scenario is not possible by nature of the app, where tasks:
         const newStatus = args.input.status;
         const task = await tx.task.findUniqueOrThrow({
           where: { id: parseInt(args.input.id.id) },
-          include: { day: true },
+          include: { day: { select: { date: true, tasksOrder: true } } },
         });
         const originalDay = task.day;
         const startOfToday = startOfDay();
@@ -168,12 +173,16 @@ Any other scenario is not possible by nature of the app, where tasks:
             where: { id: task.id },
             data: { status: newStatus },
           });
+          const newTasksOrder = originalDay.tasksOrder.filter((id) => id !== task.id);
+          if (newStatus === "TODO") {
+            newTasksOrder.splice(0, 0, task.id);
+          } else {
+            newTasksOrder.push(task.id);
+          }
           await tx.day.update({
             where: { date: startOfToday },
             data: {
-              tasksOrder: {
-                set: originalDay.tasksOrder.filter((id) => id !== task.id).concat(task.id), // TODO: maybe refactor? filtering and concatenating can be expensive
-              },
+              tasksOrder: { set: newTasksOrder },
             },
           });
           days.push(task.date);

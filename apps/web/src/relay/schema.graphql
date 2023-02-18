@@ -254,6 +254,11 @@ input MutationUpdateTaskStatusInput {
 
   """The new status of the task."""
   status: TaskStatus!
+
+  """
+  If true, the task will be done within Flow and other systems that plugins have connected to.
+  """
+  superDone: Boolean
 }
 
 interface Node {

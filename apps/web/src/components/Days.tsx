@@ -57,6 +57,7 @@ export const Days = (props: DaysProps) => {
       const loadDays = 7;
       loadPrevious(loadDays, {
         onComplete: () => {
+          // TODO: refactor this to remove the jerky scroll/flashing behavior on load
           days.current?.scrollTo({
             left: loadPreviousAndStayAt + loadDays * widthOfDay,
             behavior: "auto",

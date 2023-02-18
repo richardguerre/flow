@@ -1,11 +1,15 @@
 import React from "react";
 import { TaskCard_task$key } from "@flowdev/web/relay/__generated__/TaskCard_task.graphql";
 import { FC, useMemo } from "react";
-import { graphql, useFragment } from "@flowdev/relay";
+import { graphql, useFragment, useMutation } from "@flowdev/relay";
 import { TaskCardDetails_task$key } from "@flowdev/web/relay/__generated__/TaskCardDetails_task.graphql";
 import { TaskCardActions_task$key } from "@flowdev/web/relay/__generated__/TaskCardActions_task.graphql";
 import { DurationBadge, TimeBadge } from "./Badges";
 import { BsCheck, BsCheckAll, BsX } from "@flowdev/icons";
+import {
+  TaskCardUpdateTaskStatusMutation,
+  TaskStatus,
+} from "@flowdev/web/relay/__generated__/TaskCardUpdateTaskStatusMutation.graphql";
 
 type TaskCardProps = {
   task: TaskCard_task$key;
@@ -83,12 +87,26 @@ const TaskCardActions: FC<TaskCardActionsProps> = (props) => {
     props.task
   );
 
+  const [_updateTaskStatus] = useMutation<TaskCardUpdateTaskStatusMutation>(graphql`
+    mutation TaskCardUpdateTaskStatusMutation($input: MutationUpdateTaskStatusInput!) {
+      updateTaskStatus(input: $input) {
+        ...Day_day
+      }
+    }
+  `);
+
+  const updateStatus = (status: TaskStatus, superDone?: boolean) => {
+    _updateTaskStatus({
+      variables: {
+        input: { id: task.id, status, superDone },
+      },
+    });
+  };
+
   const doneButton = (
     <button
       className="rounded-full flex bg-background-200 bg-opacity-50 h-6 text-sm text-foreground-700 w-6 items-center justify-center hover:(bg-opacity-70 bg-background-300) active:(bg-opacity-100 bg-background-300) "
-      onClick={() => {
-        console.log("Done");
-      }}
+      onClick={() => updateStatus("DONE")}
     >
       <BsCheck />
     </button>
@@ -97,9 +115,7 @@ const TaskCardActions: FC<TaskCardActionsProps> = (props) => {
   const undoDoneButton = (
     <button
       className="rounded-full flex bg-positive-100 h-6 text-positive-600 w-6 items-center justify-center hover:bg-positive-200 active:bg-positive-300"
-      onClick={() => {
-        console.log("Undone");
-      }}
+      onClick={() => updateStatus("TODO")}
     >
       <BsCheck />
     </button>
@@ -108,9 +124,7 @@ const TaskCardActions: FC<TaskCardActionsProps> = (props) => {
   const superdoneButton = (
     <button
       className="rounded-full bg-background-200 bg-opacity-50 h-6 text-sm text-foreground-700 w-6 items-center justify-center hidden hover:(bg-opacity-70 bg-background-300) active:(bg-opacity-100 bg-background-300) group-hover:flex "
-      onClick={() => {
-        console.log("Superdone");
-      }}
+      onClick={() => updateStatus("DONE", true)}
     >
       <BsCheckAll />
     </button>
@@ -119,9 +133,7 @@ const TaskCardActions: FC<TaskCardActionsProps> = (props) => {
   const undoSuperdoneButton = (
     <button
       className="rounded-full flex bg-positive-100 h-6 text-positive-600 w-6 items-center justify-center hover:bg-positive-200 active:bg-positive-300"
-      onClick={() => {
-        console.log("Superdone");
-      }}
+      onClick={() => updateStatus("TODO")}
     >
       <BsCheckAll />
     </button>
@@ -130,9 +142,7 @@ const TaskCardActions: FC<TaskCardActionsProps> = (props) => {
   const cancelButton = (
     <button
       className="rounded-full bg-background-200 bg-opacity-50 h-6 text-sm text-foreground-700 w-6 items-center justify-center hidden hover:(bg-opacity-70 bg-background-300) active:(bg-opacity-100 bg-background-300) group-hover:flex "
-      onClick={() => {
-        console.log("Cancel");
-      }}
+      onClick={() => updateStatus("CANCELED")}
     >
       <BsX size={20} />
     </button>
@@ -141,9 +151,7 @@ const TaskCardActions: FC<TaskCardActionsProps> = (props) => {
   const undoCancelButton = (
     <button
       className="rounded-full flex bg-negative-100 h-6 text-negative-600 w-6 items-center justify-center hover:bg-negative-200 active:bg-negative-300"
-      onClick={() => {
-        console.log("Cancel");
-      }}
+      onClick={() => updateStatus("TODO")}
     >
       <BsX size={20} />
     </button>
