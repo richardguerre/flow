@@ -24,6 +24,15 @@ export const Day: FC<DayProps> = (props) => {
 
   const dayRef = useRef<HTMLDivElement>(null);
 
+  useEffect(() => {
+    if (dayRef.current) {
+      const today = dayjs().format("YYYY-MM-DD");
+      if (day.date === today) {
+        dayRef.current.scrollIntoView({ inline: "start", behavior: "auto" });
+      }
+    }
+  }, [dayRef]);
+
   return (
     <div ref={dayRef} className="flex flex-col h-full pl-4 w-64">
       {/* pl-4 is needed for scrollIntoView to not scroll the day flush to the left */}

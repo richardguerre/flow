@@ -350,7 +350,6 @@ When the task is:
             data: { tasksOrder: { set: originalDay.tasksOrder.filter((id) => id !== task.id) } },
           });
 
-          console.log(newDayTasksOrder);
           // Update the new day (it may be the same as the original day)
           await tx.day.update({
             where: { date: newDate },

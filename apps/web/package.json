@@ -7,7 +7,7 @@
     "relay": "cd ../.. && relay-compiler",
     "relay:watch": "npm run relay -- --watch",
     "predev": "npm run relay",
-    "dev": "vite",
+    "dev": "vite --port 3000",
     "build": "tsc && vite build",
     "preview": "vite preview"
   },
