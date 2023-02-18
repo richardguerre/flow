@@ -45,7 +45,7 @@ export const Days = (props: DaysProps) => {
       if (!scrollLeft || !scrollWidth) return;
       if (scrollLeft <= widthOfDay) {
         setLoadPreviousAndStayAt(scrollLeft);
-      } else if (scrollLeft >= scrollWidth - 370 - widthOfDay * 3) {
+      } else if (scrollLeft >= scrollWidth - window.screen.width - 370 - widthOfDay * 3) {
         // 370 is the width of the sidebar
         setShouldLoadNext(true);
       }
