@@ -1,5 +1,4 @@
 import { graphql, useFragment } from "@flowdev/relay";
-import { FC } from "react";
 import { ItemCard_item$key } from "@flowdev/web/relay/__generated__/ItemCard_item.graphql";
 import { ItemCardDetails_item$key } from "@flowdev/web/relay/__generated__/ItemCardDetails_item.graphql";
 import { ItemCardActions_item$key } from "@flowdev/web/relay/__generated__/ItemCardActions_item.graphql";
@@ -9,7 +8,7 @@ type ItemCardProps = {
   item: ItemCard_item$key;
 };
 
-export const ItemCard: FC<ItemCardProps> = (props) => {
+export const ItemCard = (props: ItemCardProps) => {
   const item = useFragment(
     graphql`
       fragment ItemCard_item on Item {
@@ -38,7 +37,7 @@ type ItemCardDetailsProps = {
   item: ItemCardDetails_item$key;
 };
 
-const ItemCardDetails: FC<ItemCardDetailsProps> = (props) => {
+const ItemCardDetails = (props: ItemCardDetailsProps) => {
   const item = useFragment(
     graphql`
       fragment ItemCardDetails_item on Item {
@@ -59,7 +58,7 @@ type ItemCardActionsProps = {
   item: ItemCardActions_item$key;
 };
 
-const ItemCardActions: FC<ItemCardActionsProps> = (props) => {
+const ItemCardActions = (props: ItemCardActionsProps) => {
   const item = useFragment(
     graphql`
       fragment ItemCardActions_item on Item {

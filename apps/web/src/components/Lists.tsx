@@ -1,5 +1,5 @@
 import { Lists_data$key } from "@flowdev/web/relay/__generated__/Lists_data.graphql";
-import { FC, useState } from "react";
+import { useState } from "react";
 import { graphql, useFragment } from "@flowdev/relay";
 import { List } from "./List";
 import { CalendarList } from "./CalendarList";
@@ -8,7 +8,7 @@ type ListsProps = {
   data: Lists_data$key;
 };
 
-export const Lists: FC<ListsProps> = (props) => {
+export const Lists = (props: ListsProps) => {
   const data = useFragment(
     graphql`
       fragment Lists_data on Query
@@ -31,7 +31,7 @@ export const Lists: FC<ListsProps> = (props) => {
       <div className="h-full flex-1 w-72">
         {selectedList ? <List listId={selectedList} /> : <CalendarList data={data} />}
       </div>
-      <div className="border h-full space-y-3 border-l-background-300 p-4 overflow-y-scroll">
+      <div className="border-l h-full space-y-3 border-l-background-300 p-4 overflow-y-scroll">
         <button
           title="calendar"
           className="rounded-full bg-background-300 h-12 p-3 w-12"

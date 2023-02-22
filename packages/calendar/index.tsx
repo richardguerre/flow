@@ -1,4 +1,4 @@
-import React, { FC, useCallback, useEffect, useMemo, useRef, useState } from "react";
+import React, { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { Hour } from "./types";
 import colors from "windicss/colors";
 
@@ -45,7 +45,7 @@ export type DayTimeGridProps = {
   heightOf1Hour?: number;
 };
 
-export const DayTimeGrid: FC<DayTimeGridProps> = (props) => {
+export const DayTimeGrid = (props: DayTimeGridProps) => {
   const startHour = props.startHour ?? 0; // start at midnight by default
   const heightOf1Hour = props.heightOf1Hour ?? 96; // 96px by default
   const hours = Array.from({ length: 25 }).map((_, i) => (i + startHour) % 24); // 25 to include the last hour

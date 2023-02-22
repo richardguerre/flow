@@ -1,4 +1,3 @@
-import { FC } from "react";
 import { useQueryLoader, graphql, PreloadedQuery, usePreloadedQuery } from "@flowdev/relay";
 import { IndexViewQuery } from "@flowdev/web/relay/__generated__/IndexViewQuery.graphql";
 import { Days } from "../components/Days";
@@ -31,7 +30,7 @@ type IndexViewProps = {
   queryRef: PreloadedQuery<IndexViewQuery>;
 };
 
-const IndexViewContent: FC<IndexViewProps> = (props) => {
+const IndexViewContent = (props: IndexViewProps) => {
   const data = usePreloadedQuery(indexViewQuery, props.queryRef);
   return (
     <div className="flex h-screen">

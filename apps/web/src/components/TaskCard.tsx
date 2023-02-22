@@ -1,6 +1,6 @@
 import React from "react";
 import { TaskCard_task$key } from "@flowdev/web/relay/__generated__/TaskCard_task.graphql";
-import { FC, useMemo } from "react";
+import { useMemo } from "react";
 import { graphql, useFragment, useMutation } from "@flowdev/relay";
 import { TaskCardDetails_task$key } from "@flowdev/web/relay/__generated__/TaskCardDetails_task.graphql";
 import { TaskCardActions_task$key } from "@flowdev/web/relay/__generated__/TaskCardActions_task.graphql";
@@ -10,12 +10,13 @@ import {
   TaskCardUpdateTaskStatusMutation,
   TaskStatus,
 } from "@flowdev/web/relay/__generated__/TaskCardUpdateTaskStatusMutation.graphql";
+import { TaskTitleInput } from "./TaskTitleInput";
 
 type TaskCardProps = {
   task: TaskCard_task$key;
 };
 
-export const TaskCard: FC<TaskCardProps> = (props) => {
+export const TaskCard = (props: TaskCardProps) => {
   const task = useFragment(
     graphql`
       fragment TaskCard_task on Task {
@@ -24,6 +25,7 @@ export const TaskCard: FC<TaskCardProps> = (props) => {
         status
         ...TaskCardDetails_task
         ...TaskCardActions_task
+        ...TaskTitleInput_task
       }
     `,
     props.task
@@ -39,7 +41,14 @@ export const TaskCard: FC<TaskCardProps> = (props) => {
       className={`${statusStyles} bg-background-50 rounded-md flex space-y-1 flex-col p-3 group cursor-pointer`}
     >
       <div className="flex space-x-1">
-        <div className="text-sm">{task.title}</div>
+        {/* {isEditing ? (
+          <form>
+            <input defaultValue={task.title} />
+          </form>
+        ) : (
+          <div className="text-sm">{task.title}</div>
+        )} */}
+        <TaskTitleInput task={task} />
         {task.durationInMinutes && <DurationBadge durationInMinutes={task.durationInMinutes} />}
       </div>
       <TaskCardDetails task={task} />
@@ -52,7 +61,7 @@ type TaskCardDetailsProps = {
   task: TaskCardDetails_task$key;
 };
 
-const TaskCardDetails: FC<TaskCardDetailsProps> = (props) => {
+const TaskCardDetails = (props: TaskCardDetailsProps) => {
   const task = useFragment(
     graphql`
       fragment TaskCardDetails_task on Task {
@@ -75,7 +84,7 @@ type TaskCardActionsProps = {
   task: TaskCardActions_task$key;
 };
 
-const TaskCardActions: FC<TaskCardActionsProps> = (props) => {
+const TaskCardActions = (props: TaskCardActionsProps) => {
   const task = useFragment(
     graphql`
       fragment TaskCardActions_task on Task {
@@ -105,6 +114,7 @@ const TaskCardActions: FC<TaskCardActionsProps> = (props) => {
 
   const doneButton = (
     <button
+      key="done"
       className="rounded-full flex bg-background-200 bg-opacity-50 h-6 text-sm text-foreground-700 w-6 items-center justify-center hover:(bg-opacity-70 bg-background-300) active:(bg-opacity-100 bg-background-300) "
       onClick={() => updateStatus("DONE")}
     >
@@ -114,6 +124,7 @@ const TaskCardActions: FC<TaskCardActionsProps> = (props) => {
 
   const undoDoneButton = (
     <button
+      key="undoDone"
       className="rounded-full flex bg-positive-100 h-6 text-positive-600 w-6 items-center justify-center hover:bg-positive-200 active:bg-positive-300"
       onClick={() => updateStatus("TODO")}
     >
@@ -123,6 +134,7 @@ const TaskCardActions: FC<TaskCardActionsProps> = (props) => {
 
   const superdoneButton = (
     <button
+      key="superdone"
       className="rounded-full bg-background-200 bg-opacity-50 h-6 text-sm text-foreground-700 w-6 items-center justify-center hidden hover:(bg-opacity-70 bg-background-300) active:(bg-opacity-100 bg-background-300) group-hover:flex "
       onClick={() => updateStatus("DONE", true)}
     >
@@ -132,6 +144,7 @@ const TaskCardActions: FC<TaskCardActionsProps> = (props) => {
 
   const undoSuperdoneButton = (
     <button
+      key="undoSuperdone"
       className="rounded-full flex bg-positive-100 h-6 text-positive-600 w-6 items-center justify-center hover:bg-positive-200 active:bg-positive-300"
       onClick={() => updateStatus("TODO")}
     >
@@ -141,6 +154,7 @@ const TaskCardActions: FC<TaskCardActionsProps> = (props) => {
 
   const cancelButton = (
     <button
+      key="cancel"
       className="rounded-full bg-background-200 bg-opacity-50 h-6 text-sm text-foreground-700 w-6 items-center justify-center hidden hover:(bg-opacity-70 bg-background-300) active:(bg-opacity-100 bg-background-300) group-hover:flex "
       onClick={() => updateStatus("CANCELED")}
     >
@@ -150,6 +164,7 @@ const TaskCardActions: FC<TaskCardActionsProps> = (props) => {
 
   const undoCancelButton = (
     <button
+      key="undoCancel"
       className="rounded-full flex bg-negative-100 h-6 text-negative-600 w-6 items-center justify-center hover:bg-negative-200 active:bg-negative-300"
       onClick={() => updateStatus("TODO")}
     >
@@ -168,11 +183,5 @@ const TaskCardActions: FC<TaskCardActionsProps> = (props) => {
     return [];
   }, [task.status]);
 
-  return (
-    <div className="flex space-x-2">
-      {taskStatusActions.map((action, index) => (
-        <React.Fragment key={index}>{action}</React.Fragment>
-      ))}
-    </div>
-  );
+  return <div className="flex space-x-2">{taskStatusActions.map((action) => action)}</div>;
 };

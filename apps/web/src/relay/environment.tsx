@@ -20,7 +20,7 @@ export type RelayEnvironmentProviderProps = {
   children: React.ReactNode;
 };
 
-export const RelayEnvironmentProvider: React.FC<RelayEnvironmentProviderProps> = (props) => {
+export const RelayEnvironmentProvider = (props: RelayEnvironmentProviderProps) => {
   return (
     <RelayRelayEnvironmentProvider environment={environment}>
       {props.children}

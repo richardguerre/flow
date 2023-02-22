@@ -1,4 +1,4 @@
-import { FC, useEffect, useRef, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { graphql, useFragment, useMutation } from "@flowdev/relay";
 import { Day_day$key } from "@flowdev/web/relay/__generated__/Day_day.graphql";
 import { TaskCard } from "./TaskCard";
@@ -11,7 +11,7 @@ type DayProps = {
   day: Day_day$key;
 };
 
-export const Day: FC<DayProps> = (props) => {
+export const Day = (props: DayProps) => {
   const day = useFragment(
     graphql`
       fragment Day_day on Day {
@@ -148,7 +148,7 @@ const dayOfWeekArr = [
   "Saturday",
 ] as const;
 
-const DayAddTaskActionsBar: FC = (props) => {
+const DayAddTaskActionsBar = () => {
   return (
     <button className="rounded-md bg-background-300 bg-opacity-50 text-sm w-full py-1 px-2 text-foreground-900 hover:bg-opacity-70 active:bg-opacity-100">
       Add task

@@ -1,4 +1,4 @@
-import { FC, useEffect } from "react";
+import { useEffect } from "react";
 import {
   graphql,
   PreloadedQuery,
@@ -25,7 +25,7 @@ type ListProps = {
   listId: string;
 };
 
-export const List: FC<ListProps> = (props) => {
+export const List = (props: ListProps) => {
   const { queryRef, loadQuery } = useQueryLoader<ListQuery>(
     listQuery,
     { listId: props.listId },
@@ -44,7 +44,7 @@ type ListContentProps = {
   queryRef: PreloadedQuery<ListQuery>;
 };
 
-const ListContent: FC<ListContentProps> = (props) => {
+const ListContent = (props: ListContentProps) => {
   const data = usePreloadedQuery(listQuery, props.queryRef);
 
   if (!data.list) {
@@ -63,7 +63,7 @@ type ListItemsProps = {
   list: ListItems_list$key;
 };
 
-const ListItems: FC<ListItemsProps> = (props) => {
+const ListItems = (props: ListItemsProps) => {
   const { data } = usePaginationFragment(
     graphql`
       fragment ListItems_list on List

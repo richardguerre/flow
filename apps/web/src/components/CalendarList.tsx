@@ -1,4 +1,4 @@
-import { FC, useEffect, useMemo } from "react";
+import { useEffect, useMemo } from "react";
 import { graphql, useRefetchableFragment } from "@flowdev/relay";
 import { CalendarList_data$key } from "@flowdev/web/relay/__generated__/CalendarList_data.graphql";
 import { DayTimeGrid, CalendarEvent, CalendarArtifact } from "@flowdev/calendar";
@@ -10,7 +10,7 @@ type CalendarListProps = {
   data: CalendarList_data$key;
 };
 
-export const CalendarList: FC<CalendarListProps> = (props) => {
+export const CalendarList = (props: CalendarListProps) => {
   // TODO: use React context to get the day the user is looking at and refetch the events with that day
   const [dayStore] = useStore(dayStoreAtom);
   const [data, refetch] = useRefetchableFragment(
