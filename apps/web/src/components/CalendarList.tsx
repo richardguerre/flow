@@ -2,7 +2,7 @@ import { useEffect, useMemo } from "react";
 import { graphql, useRefetchableFragment } from "@flowdev/relay";
 import { CalendarList_data$key } from "@flowdev/web/relay/__generated__/CalendarList_data.graphql";
 import { DayTimeGrid, CalendarEvent, CalendarArtifact } from "@flowdev/calendar";
-import colors from "windicss/colors";
+import colors from "tailwindcss/colors";
 import { dayStoreAtom } from "@flowdev/web/stores/dayStore";
 import { useStore } from "@flowdev/jotai";
 

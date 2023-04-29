@@ -75,13 +75,3 @@ const MyComponent = (props) => {
 ## Why is relay.config.json at the root?
 
 I couldn't get the VS Code extension to work with the relay.config.json file in the `apps/web` directory. This also means that the relay-compiler is run from the root directory, hence why the `relay` script in `apps/web` is `cd ../.. && relay-compiler`.
-
-## Using WindiCSS
-
-Install **pre-release** version (v0.23.5+) of the [VS Code extension](https://marketplace.visualstudio.com/items?itemName=voorjaar.windicss-intellisense). The pre-release version reloads the autocomplete suggestions everytime the windi.config.ts file is saved, whilst release version doesn't.
-
-Add the following to your VS Code settings:
-
-```json
-"windicss.sortOnSave": true,
-```

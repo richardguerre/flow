@@ -1,12 +1,12 @@
 import React from "react";
 import ReactDOM from "react-dom/client";
 import { createBrowserRouter, Outlet, redirect, RouterProvider } from "react-router-dom";
-import "virtual:windi.css";
 import {
   LOCAL_STORAGE_USER_TOKEN_KEY,
   RelayEnvironmentProvider,
 } from "@flowdev/web/relay/environment";
 import { IconContext } from "@flowdev/icons";
+import "./index.css";
 
 const IndexView = React.lazy(() => import("./views/IndexView"));
 const TestView = React.lazy(() => import("./views/TestView"));

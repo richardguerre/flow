@@ -1,6 +1,6 @@
 import React, { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { Hour } from "./types";
-import colors from "windicss/colors";
+import colors from "tailwindcss/colors";
 
 type CalendarEventBase = {
   id: string;
