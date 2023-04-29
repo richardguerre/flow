@@ -38,7 +38,7 @@ export const TaskCard = (props: TaskCardProps) => {
 
   return (
     <div
-      className={`${statusStyles} bg-background-50 rounded-md flex space-y-1 flex-col p-3 group cursor-pointer`}
+      className={`${statusStyles} bg-background-50 rounded-md flex flex-col gap-1 p-3 group cursor-pointer`}
     >
       <div className="flex gap-1">
         <TaskTitle task={task} />
@@ -176,5 +176,5 @@ const TaskCardActions = (props: TaskCardActionsProps) => {
     return [];
   }, [task.status]);
 
-  return <div className="flex space-x-2">{taskStatusActions.map((action) => action)}</div>;
+  return <div className="flex gap-2">{taskStatusActions.map((action) => action)}</div>;
 };
