@@ -75,7 +75,7 @@ model Task {
   createdAt         DateTime   @default(now())
   /// The date and time the task was last updated
   updatedAt         DateTime   @updatedAt
-  /// The title of the task
+  /// The title of the task in text or HTML.
   title             String
   /// The status of the task
   status            TaskStatus @default(TODO)

@@ -6,6 +6,8 @@ import dayjs from "dayjs";
 import { ReactSortable, Sortable } from "react-sortablejs";
 import { DayContent_day$key } from "../relay/__generated__/DayContent_day.graphql";
 import { DayUpdateTaskDateMutation } from "../relay/__generated__/DayUpdateTaskDateMutation.graphql";
+import { DayAddTaskActionsBar_day$key } from "../relay/__generated__/DayAddTaskActionsBar_day.graphql";
+import { NewTaskCard } from "./NewTaskCard";
 
 type DayProps = {
   day: Day_day$key;
@@ -17,6 +19,7 @@ export const Day = (props: DayProps) => {
       fragment Day_day on Day {
         date
         ...DayContent_day
+        ...DayAddTaskActionsBar_day
       }
     `,
     props.day
@@ -45,7 +48,7 @@ export const Day = (props: DayProps) => {
         </button>
         <div className="text-sm text-foreground-800">{dayjs(day.date).format("MMMM D")}</div>
       </div>
-      <DayAddTaskActionsBar />
+      <DayAddTaskActionsBar day={day} />
       <DayContent day={day} />
     </div>
   );
@@ -148,10 +151,36 @@ const dayOfWeekArr = [
   "Saturday",
 ] as const;
 
-const DayAddTaskActionsBar = () => {
+type DayAddTaskActionsBarProps = {
+  day: DayAddTaskActionsBar_day$key;
+};
+
+const DayAddTaskActionsBar = (props: DayAddTaskActionsBarProps) => {
+  const day = useFragment(
+    graphql`
+      fragment DayAddTaskActionsBar_day on Day {
+        date
+      }
+    `,
+    props.day
+  );
+  const [showNewTaskCard, setShowNewTaskCard] = useState(false);
+
   return (
-    <button className="rounded-md bg-background-300 bg-opacity-50 text-sm w-full py-1 px-2 text-foreground-900 hover:bg-opacity-70 active:bg-opacity-100">
-      Add task
-    </button>
+    <div className="flex flex-col gap-4">
+      <button
+        className="rounded-md bg-background-300 bg-opacity-50 text-sm w-full py-1 px-2 text-foreground-900 hover:bg-opacity-70 active:bg-opacity-100"
+        onClick={() => setShowNewTaskCard(true)}
+      >
+        Add task
+      </button>
+      {showNewTaskCard && (
+        <NewTaskCard
+          date={day.date}
+          onSave={() => setShowNewTaskCard(false)}
+          onCancel={() => setShowNewTaskCard(false)}
+        />
+      )}
+    </div>
   );
 };

@@ -10,7 +10,7 @@ import {
   TaskCardUpdateTaskStatusMutation,
   TaskStatus,
 } from "@flowdev/web/relay/__generated__/TaskCardUpdateTaskStatusMutation.graphql";
-import { TaskTitleInput } from "./TaskTitleInput";
+import { TaskTitle } from "./TaskTitle";
 
 type TaskCardProps = {
   task: TaskCard_task$key;
@@ -25,7 +25,7 @@ export const TaskCard = (props: TaskCardProps) => {
         status
         ...TaskCardDetails_task
         ...TaskCardActions_task
-        ...TaskTitleInput_task
+        ...TaskTitle_task
       }
     `,
     props.task
@@ -40,15 +40,8 @@ export const TaskCard = (props: TaskCardProps) => {
     <div
       className={`${statusStyles} bg-background-50 rounded-md flex space-y-1 flex-col p-3 group cursor-pointer`}
     >
-      <div className="flex space-x-1">
-        {/* {isEditing ? (
-          <form>
-            <input defaultValue={task.title} />
-          </form>
-        ) : (
-          <div className="text-sm">{task.title}</div>
-        )} */}
-        <TaskTitleInput task={task} />
+      <div className="flex gap-1">
+        <TaskTitle task={task} />
         {task.durationInMinutes && <DurationBadge durationInMinutes={task.durationInMinutes} />}
       </div>
       <TaskCardDetails task={task} />

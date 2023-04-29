@@ -19,6 +19,7 @@ export {
   usePaginationFragment,
   useRefetchableFragment,
 } from "react-relay";
+export { RecordSourceSelectorProxy } from "relay-runtime";
 
 // ----------------- wrapped exports of react-relay -----------------
 
