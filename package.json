@@ -10,7 +10,6 @@
     "packages/*"
   ],
   "scripts": {
-    "dev": "npm run workspace backend dev",
     "---------util---------": "",
     "setup:init": "npm install && npm run setup:env:root && npm run setup:env:packages",
     "setup:env:root": "ts-node --project scripts/tsconfig.json -T scripts/setupEnvRoot.ts",
