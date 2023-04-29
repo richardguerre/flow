@@ -1,1 +1,2 @@
 v18.12.1
+This version is also used in .devcontainer/Dockerfile. Make sure to update it there as well.
