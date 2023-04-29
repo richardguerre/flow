@@ -24,6 +24,8 @@
     "@nrwl/nx-cloud": "latest",
     "dotenv": "^16.0.2",
     "dotenv-expand": "^9.0.0",
-    "nx": "15.4.2"
+    "nx": "15.4.2",
+    "prettier": "^2.8.8",
+    "prettier-plugin-tailwindcss": "^0.2.8"
   }
 }
