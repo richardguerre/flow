@@ -8,9 +8,17 @@
     "start": "ts-node --transpile-only src/index.ts",
     "test": "vitest --config .vitest/config.ts",
     "gen": "prisma generate",
-    "migrate": "prisma migrate dev --create-only",
+    "db:dev": "prisma migrate dev",
+    "db:migrate": "prisma migrate dev --create-only",
+    "db:reset": "prisma migrate reset",
     "setup:db": "psql -c \"CREATE DATABASE flow;\" || echo \"Ignore the above error. Everything is good to go!\"",
-    "setup:db:test": "psql -c \"CREATE DATABASE flow_test;\" || echo \"Ignore the above error. Everything is good to go!\""
+    "setup:db:test": "psql -c \"CREATE DATABASE flow_test;\" || echo \"Ignore the above error. Everything is good to go!\"",
+    "seed": "ts-node -T prisma/seed.ts",
+    "env:example": "cp -n .env.example .env || true",
+    "env:codespaces": "cp .env.codespaces .env"
+  },
+  "prisma": {
+    "seed": "ts-node prisma/seed.ts"
   },
   "devDependencies": {
     "@types/chance": "^1.1.3",

@@ -6,7 +6,6 @@ import { encodeGlobalID } from "../../src/graphql/builder";
 import { addDays, startOfDay, toDateOnly } from "../../src/utils/getDays";
 import { prisma } from "../../src/utils/prisma";
 import { TaskStatus } from "@prisma/client";
-import { DayObjectType } from "../../src/graphql/Day";
 
 describe("Task GraphQL types", () => {
   withDb();

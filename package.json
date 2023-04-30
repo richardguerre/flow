@@ -10,20 +10,20 @@
     "packages/*"
   ],
   "scripts": {
+    "-------codespaces-------": "",
+    "codepsaces": "npm run env:codespaces && npm run db:reset",
+    "env:codespaces": "turbo run env:codespaces",
+    "db:dev": "npm run db:dev -w apps/server",
+    "db:reset": "npm run db:reset -w apps/server",
     "---------util---------": "",
-    "setup:init": "npm install && npm run setup:env:root && npm run setup:env:packages",
-    "setup:env:root": "ts-node --project scripts/tsconfig.json -T scripts/setupEnvRoot.ts",
-    "setup:env:projects": "ts-node --project scripts/tsconfig.json -T scripts/setupEnvProjects.ts",
-    "clean": "npm run clean:root && npm run clean:packages",
+    "clean": "npm run clean:root && npm run clean:apps && npm run clean:packages",
     "clean:root": "rm -rf ./node_modules",
-    "clean:packages": "rm -rf ./packages/**/node_modules",
-    "clean:reset": "npm run clean && npm run install"
+    "clean:apps": "rm -rf ./apps/**/node_modules",
+    "clean:packages": "rm -rf ./packages/**/node_modules"
   },
   "devDependencies": {
-    "@nrwl/nx-cloud": "latest",
     "dotenv": "^16.0.2",
     "dotenv-expand": "^9.0.0",
-    "nx": "15.4.2",
     "prettier": "^2.8.8",
     "prettier-plugin-tailwindcss": "^0.2.8"
   }

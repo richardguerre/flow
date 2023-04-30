@@ -1,0 +1,14 @@
+{
+  "$schema": "https://turbo.build/schema.json",
+  "pipeline": {
+    "env:codespaces": {
+      "outputs": ["./.env"]
+    },
+    "dev": {
+      "cache": false
+    },
+    "seed": {
+      "cache": false
+    }
+  }
+}

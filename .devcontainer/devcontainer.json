@@ -5,15 +5,18 @@
 	"dockerComposeFile": "docker-compose.yml",
 	"service": "app",
 	"workspaceFolder": "/workspaces/${localWorkspaceFolderBasename}",
-	"postCreateCommand": ["npm", "install"], // array to not have it open a terminal and let the postAttachCommand open the terminals.
+	"postCreateCommand": "npm install && npm run codespaces",
 	"forwardPorts": [
 		3000, // apps/web
 		4000, // apps/server
-		5432 // postgres
+		5432, // postgres
+		5555 // prisma studio
 	],
 	"customizations": {
 		"vscode": {
 			"extensions": [
+				// The following were added to make the DX better for everyone,
+				// not by individual preference.
 				"esbenp.prettier-vscode",
 				"Prisma.prisma",
 				"meta.relay",
@@ -23,9 +26,9 @@
 	},
 	"postAttachCommand": {
 		"server": "cd apps/server && npm run dev",
-		"prisma": "cd apps/server && npx prisma studio",
 		"web": "cd apps/web && npm run dev",
-		"relay": "cd apps/web && npm run relay:watch"
+		"prisma": "cd apps/server && npx prisma studio"
+		// "relay": "cd apps/web && npm run relay:watch" // TODO: install watchman as part of docker containre to make this work
 	}
 	
 	// Uncomment to connect as root instead. More info: https://aka.ms/dev-containers-non-root.

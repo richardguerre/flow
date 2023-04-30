@@ -510,7 +510,7 @@ type Task implements Node {
   pluginDatas: [TaskPluginData!]!
   status: TaskStatus!
 
-  """The title of the task"""
+  """The title of the task in text or HTML."""
   title: String!
 }
 
