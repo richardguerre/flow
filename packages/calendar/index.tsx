@@ -117,10 +117,8 @@ export const DayTimeGrid = (props: DayTimeGridProps) => {
     );
   }, []);
 
-  useEffect(() => {}, []);
-
   return (
-    <div className="flex space-x-1">
+    <div className="flex gap-1">
       <div
         className="flex flex-col"
         style={{
@@ -128,19 +126,19 @@ export const DayTimeGrid = (props: DayTimeGridProps) => {
         }}
       >
         {hours.map((hour, i) => (
-          <div key={i} className="w-4ch relative" style={{ height: heightOf1Hour }}>
-            <span className="text-xs transform top-0 left-0 text-foreground-700 -translate-y-1/2 absolute">
+          <div key={i} className="relative w-[4ch]" style={{ height: heightOf1Hour }}>
+            <span className="text-foreground-700 absolute left-0 top-0 -translate-y-1/2 transform text-xs">
               {digits(hour)}:00
             </span>
           </div>
         ))}
       </div>
-      <div className="w-full relative">
+      <div className="relative w-full">
         <div className="mb-1">
           {allDayEvents.map((event) => (
             <div
               key={event.id}
-              className="border rounded-md border-background-50 text-sm py-1 px-2 overflow-hidden overflow-ellipsis whitespace-nowrap"
+              className="border-background-50 overflow-hidden overflow-ellipsis whitespace-nowrap rounded-md border px-2 py-1 text-sm"
               style={{
                 color: event.textColor ?? colors.blue["900"],
                 backgroundColor: event.backgroundColor ?? colors.blue["100"],
@@ -150,11 +148,11 @@ export const DayTimeGrid = (props: DayTimeGridProps) => {
             </div>
           ))}
         </div>
-        <div className="flex-col w-full">
+        <div className="w-full flex-col">
           {hours.map((_, i) => (
             <div
               key={i}
-              className="border-t border-l border-0 border-background-300"
+              className="border-background-300 border-0 border-l border-t"
               style={{ height: heightOf1Hour }}
             />
           ))}
@@ -162,7 +160,7 @@ export const DayTimeGrid = (props: DayTimeGridProps) => {
         <div
           ref={nowRef}
           // #ef4444 is red-500
-          className="bg-[#ef4444] h-[2px] w-full z-20 absolute"
+          className="absolute z-20 h-[2px] w-full bg-[#ef4444]"
           style={{
             top: getTop(now),
           }}
@@ -170,7 +168,7 @@ export const DayTimeGrid = (props: DayTimeGridProps) => {
         {props.artifacts?.map((artifact) => (
           <div
             key={artifact.id}
-            className="z-10 absolute"
+            className="absolute z-10"
             style={{
               top: getTop(artifact.at),
               left: `${artifact.leftPercentageOffset ?? 0}%`,
@@ -182,7 +180,7 @@ export const DayTimeGrid = (props: DayTimeGridProps) => {
         {events.map((event) => (
           <div
             key={event.id}
-            className={`border border-white p-2 rounded-md absolute overflow-hidden ${
+            className={`absolute overflow-hidden rounded-md border border-white p-2 ${
               event.height < minHeight ? "py-0" : ""
             }`}
             style={{

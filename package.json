@@ -10,11 +10,12 @@
     "packages/*"
   ],
   "scripts": {
+    "dev": "turbo run dev",
+    "db:dev": "npm run db:dev -w apps/server",
+    "db:reset": "npm run db:reset -w apps/server",
     "-------codespaces-------": "",
     "codepsaces": "npm run env:codespaces && npm run db:reset",
     "env:codespaces": "turbo run env:codespaces",
-    "db:dev": "npm run db:dev -w apps/server",
-    "db:reset": "npm run db:reset -w apps/server",
     "---------util---------": "",
     "clean": "npm run clean:root && npm run clean:apps && npm run clean:packages",
     "clean:root": "rm -rf ./node_modules",

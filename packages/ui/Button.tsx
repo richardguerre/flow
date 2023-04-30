@@ -30,7 +30,7 @@ export const Button = forwardRef<HTMLButtonElement, ButtonProps>((props, ref) =>
     className += " bg-transparent text-primary-500 hover:text-primary-400 active:text-primary-600";
   } else if (props.secondary) {
     className +=
-      " bg-primary-100 bg-opacity-70 text-primary-500 hover:bg-opacity-100 active:(bg-primary-200 bg-opacity-70)";
+      " bg-primary-100 bg-opacity-70 text-primary-500 hover:bg-opacity-100 active:bg-primary-200 active:bg-opacity-70";
   } else {
     // Default to primary
     className +=
