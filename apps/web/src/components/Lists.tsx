@@ -27,22 +27,23 @@ export const Lists = (props: ListsProps) => {
   const [selectedList, setSelectedList] = useState<string | null>(null);
 
   return (
-    <div className="flex h-full bg-background-50 shadow-xl shadow-2xl z-10">
-      <div className="h-full flex-1 w-72">
+    <div className="z-10 flex h-full bg-background-50 shadow-xl">
+      <div className="h-full w-72 flex-1">
         {selectedList ? <List listId={selectedList} /> : <CalendarList data={data} />}
       </div>
-      <div className="border-l h-full space-y-3 border-l-background-300 p-4 overflow-y-scroll">
+      <div className="border-l-background-300 flex h-full flex-col gap-3 overflow-y-scroll border-l p-4">
         <button
           title="calendar"
-          className="rounded-full bg-background-300 h-12 p-3 w-12"
+          className="h-12 w-12 rounded-full bg-background-300 p-3"
           onClick={() => setSelectedList(null)}
         >
           🗓️ {/* TODO: replace with calendar icon */}
         </button>
         {data.lists.map((list) => (
           <button
+            key={list.id}
             title={list.name}
-            className="rounded-full bg-background-300 h-9 w-9"
+            className="h-9 w-9 rounded-full bg-background-300"
             onClick={() => setSelectedList(list.id)}
           />
         ))}

@@ -19,6 +19,17 @@ const flowColors = {
     800: gray[700],
     700: gray[500],
   },
+  // background: {
+  //   50: gray[600],
+  //   100: gray[700],
+  //   200: gray[800],
+  //   300: gray[900]
+  // },
+  // foreground: {
+  //   900: gray[400],
+  //   800: gray[200],
+  //   700: gray[50]
+  // },
   positive: colors.green,
   negative: colors.red,
   warning: colors.yellow,

@@ -52,7 +52,7 @@ const ListContent = (props: ListContentProps) => {
   }
 
   return (
-    <div className="flex space-x-2 items-center">
+    <div className="flex items-center space-x-2">
       <div className="text-sm">{data.list.name}</div>
       <ListItems list={data.list} />
     </div>
@@ -70,7 +70,7 @@ const ListItems = (props: ListItemsProps) => {
       @refetchable(queryName: "ListItemsPaginationQuery")
       @argumentDefinitions(first: { type: "Int" }, after: { type: "ID" }) {
         name
-        items(first: $first, after: $after, where: { isRelevant: false })
+        items(first: $first, after: $after, where: { isRelevant: true })
           @connection(key: "ListItems_items") {
           edges {
             cursor
