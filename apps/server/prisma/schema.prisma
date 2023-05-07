@@ -20,9 +20,11 @@ model Day {
   tasksOrder Int[]
 
   /// The tasks linked to the day.
-  tasks Task[]
+  tasks             Task[]
   /// The notes linked to the day.
-  notes Note[]
+  notes             Note[]
+  /// The routines completed on the day.
+  routinesCompleted Routine[]
 }
 
 /// A note that the user has created.
@@ -252,26 +254,28 @@ model Setting {
 /// A routine the user has set up.
 model Routine {
   /// The id of the routine
-  id        Int                 @id @default(autoincrement())
+  id              Int                 @id @default(autoincrement())
   /// The date and time of creation of the routine
-  createdAt DateTime            @default(now())
+  createdAt       DateTime            @default(now())
   /// The date and time the routine was last updated
-  updatedAt DateTime            @updatedAt
+  updatedAt       DateTime            @updatedAt
   /// The name of the routine
-  name      String
+  name            String
   /// The time the routine takes place
-  time      DateTime            @db.Time(0)
+  time            DateTime            @db.Time(0)
   /// The pattern(s) the routine repeats on
-  repeats   RepetitionPattern[]
+  repeats         RepetitionPattern[]
   /// The date the routine starts repeating from
-  firstDay  DateTime            @default(now()) @db.Date
+  firstDay        DateTime            @default(now()) @db.Date
   /// The date the routine end repeating on
-  lastDay   DateTime?           @db.Date
-  /// Whether the routine is active
-  isActive  Boolean             @default(true)
+  lastDay         DateTime?           @db.Date
+  /// Whether the routine is active. This can be used to pause a routine.
+  isActive        Boolean             @default(true)
   /// The steps of the routine.
   /// A list of strings in the format `['flow' or pluginSlug]_[stepSlug]_[shouldSkip]`.
-  steps     String[]
+  steps           String[]
+  /// The days the routine has been completed on.
+  daysCompletedOn Day[]
 }
 
 enum RepetitionPattern {

@@ -41,6 +41,7 @@
     "@pothos/plugin-relay": "^3.27.0",
     "@pothos/plugin-with-input": "^3.8.0",
     "@prisma/client": "^4.9.0",
+    "dayjs": "^1.11.7",
     "express": "^4.18.1",
     "graphql": "^16.6.0",
     "graphql-scalars": "^1.18.0",

@@ -156,6 +156,12 @@ CREATE TABLE "Routine" (
 );
 
 -- CreateTable
+CREATE TABLE "_DayToRoutine" (
+    "A" DATE NOT NULL,
+    "B" INTEGER NOT NULL
+);
+
+-- CreateTable
 CREATE TABLE "_NoteToNoteLabel" (
     "A" INTEGER NOT NULL,
     "B" INTEGER NOT NULL
@@ -178,6 +184,12 @@ CREATE UNIQUE INDEX "List_slug_key" ON "List"("slug");
 
 -- CreateIndex
 CREATE UNIQUE INDEX "Setting_key_key" ON "Setting"("key");
+
+-- CreateIndex
+CREATE UNIQUE INDEX "_DayToRoutine_AB_unique" ON "_DayToRoutine"("A", "B");
+
+-- CreateIndex
+CREATE INDEX "_DayToRoutine_B_index" ON "_DayToRoutine"("B");
 
 -- CreateIndex
 CREATE UNIQUE INDEX "_NoteToNoteLabel_AB_unique" ON "_NoteToNoteLabel"("A", "B");
@@ -208,6 +220,12 @@ ALTER TABLE "ItemPluginData" ADD CONSTRAINT "ItemPluginData_itemId_fkey" FOREIGN
 
 -- AddForeignKey
 ALTER TABLE "Item" ADD CONSTRAINT "Item_listId_fkey" FOREIGN KEY ("listId") REFERENCES "List"("id") ON DELETE SET NULL ON UPDATE CASCADE;
+
+-- AddForeignKey
+ALTER TABLE "_DayToRoutine" ADD CONSTRAINT "_DayToRoutine_A_fkey" FOREIGN KEY ("A") REFERENCES "Day"("date") ON DELETE CASCADE ON UPDATE CASCADE;
+
+-- AddForeignKey
+ALTER TABLE "_DayToRoutine" ADD CONSTRAINT "_DayToRoutine_B_fkey" FOREIGN KEY ("B") REFERENCES "Routine"("id") ON DELETE CASCADE ON UPDATE CASCADE;
 
 -- AddForeignKey
 ALTER TABLE "_NoteToNoteLabel" ADD CONSTRAINT "_NoteToNoteLabel_A_fkey" FOREIGN KEY ("A") REFERENCES "Note"("id") ON DELETE CASCADE ON UPDATE CASCADE;

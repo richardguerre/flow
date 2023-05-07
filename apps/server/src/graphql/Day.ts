@@ -32,8 +32,11 @@ export const DayType = builder.prismaNode("Day", {
     }),
     routines: t.prismaField({
       type: ["Routine"],
-      resolve: async (query, day) => {
-        return prisma.routine.findMany({
+      description: "The routines for the day in ascending order.",
+      select: { date: true, routinesCompleted: { select: { id: true } } },
+      resolve: async (query, day, args) => {
+        const completedRoutineIds = new Set(day.routinesCompleted.map((routine) => routine.id));
+        const routines = await prisma.routine.findMany({
           ...query,
           orderBy: { time: "asc" },
           where: {
@@ -43,6 +46,11 @@ export const DayType = builder.prismaNode("Day", {
             OR: [{ lastDay: null }, { lastDay: { gte: day.date } }],
           },
         });
+        return routines.map((routine) => ({
+          ...routine,
+          // see the resolver in Routine.ts to see how this _done field is used
+          _done: completedRoutineIds.has(routine.id),
+        }));
       },
     }),
   }),

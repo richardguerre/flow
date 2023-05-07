@@ -5,14 +5,9 @@ import RelayPlugin from "@pothos/plugin-relay";
 import PrismaPlugin from "@pothos/plugin-prisma";
 import WithInputPlugin from "@pothos/plugin-with-input";
 import type PrismaTypes from "@pothos/plugin-prisma/generated";
-import {
-  DateResolver,
-  DateTimeResolver,
-  PositiveIntResolver,
-  JSONResolver,
-  LocalEndTimeResolver,
-} from "graphql-scalars";
-import { RoutineStep } from "./Routine";
+import { DateResolver, DateTimeResolver, PositiveIntResolver, JSONResolver } from "graphql-scalars";
+import { dayjs } from "../utils/dayjs";
+import { GraphQLError } from "graphql";
 
 export const encodeGlobalID = (typename: string, id: string | number | bigint) => {
   return `${typename}_${id}`;
@@ -30,8 +25,7 @@ export const builder = new SchemaBuilder<{
     DateTime: { Input: Date; Output: Date };
     PositiveInt: { Input: number; Output: number };
     JSON: { Input: Prisma.InputJsonValue; Output: Prisma.JsonValue };
-    LocalEndTime: { Input: Date; Output: Date };
-    RoutineStep: { Input: RoutineStep; Output: RoutineStep | string };
+    Time: { Input: Date; Output: Date };
   };
 }>({
   plugins: [RelayPlugin, PrismaPlugin, WithInputPlugin],
@@ -62,10 +56,21 @@ builder.addScalarType("Date", DateResolver, {});
 builder.addScalarType("DateTime", DateTimeResolver, {});
 builder.addScalarType("PositiveInt", PositiveIntResolver, {}); // only used in input types
 builder.addScalarType("JSON", JSONResolver, {}); // only used in input types
-builder.addScalarType("LocalEndTime", LocalEndTimeResolver, {}); // only used in input types
-builder.scalarType("RoutineStep", {
-  serialize: (value) => value,
-  parseValue: (value) => value as RoutineStep,
+builder.scalarType("Time", {
+  description:
+    "A time of day, represented as a string in the format `HH:mm`. For example, `16:20`.",
+  serialize: (value) => dayjs(value).utc(false).format("HH:mm"),
+  parseValue: (value) => {
+    // All Time scalars are parsed into Date objects with the date set to 1970-01-01 (i.e. UNIX epoch) at UTC.
+    // This corresponds to Prisma's default @db.time(0) type.
+    const dayjsObj = dayjs(`1970-01-01 ${value as string}`, "YYYY-MM-DD HH:mm", true).utc(true);
+    if (!dayjsObj.isValid()) {
+      throw new GraphQLError(
+        `Invalid time "${value}". Should be in the format \`HH:mm\`. For example, \`16:20\`.`
+      );
+    }
+    return dayjsObj.toDate();
+  },
 });
 
 // ----------------- utils -----------------

@@ -9,10 +9,12 @@ import { IconContext } from "@flowdev/icons";
 import "./index.css";
 
 const IndexView = React.lazy(() => import("./views/IndexView"));
+const RoutineView = React.lazy(() => import("./views/RoutineView"));
 const TestView = React.lazy(() => import("./views/TestView"));
 const NotFoundView = React.lazy(() => import("./views/NotFoundView"));
 
 const router = createBrowserRouter([
+  { path: "/plan", element: <div>Plan</div> }, // TODO: implement public route later
   {
     /**
      * This is the parent route for all routes requiring authentication.
@@ -30,7 +32,10 @@ const router = createBrowserRouter([
         <Outlet />
       </RelayEnvironmentProvider>
     ),
-    children: [{ path: "/", element: <IndexView /> }],
+    children: [
+      { path: "/", element: <IndexView /> },
+      { path: "/routine/:routineId/:routineStep", element: <RoutineView /> },
+    ],
   },
   { path: "/login", element: <TestView /> },
   { path: "/test", element: <TestView /> },

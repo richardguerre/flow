@@ -54,6 +54,8 @@ type Day implements Node {
 
   """The notes linked to the day."""
   notes: [Note!]!
+
+  """The routines for the day in ascending order."""
   routines: [Routine!]!
   tasks: [Task!]!
 }
@@ -144,12 +146,9 @@ type ListItemsConnectionEdge {
   node: Item!
 }
 
-"""
-A local time string (i.e., with no associated timezone) in 24-hr `HH:mm[:ss[.SSS]]` format, e.g. `14:25` or `14:25:06` or `14:25:06.123`.  This scalar is very similar to the `LocalTime`, with the only difference being that `LocalEndTime` also allows `24:00` as a valid value to indicate midnight of the following day.  This is useful when using the scalar to represent the exclusive upper bound of a time block.
-"""
-scalar LocalEndTime
-
 type Mutation {
+  completeRoutine(input: MutationCompleteRoutineInput!): Boolean!
+
   """Create a setting."""
   createASetting(input: MutationCreateASettingInput!): Setting!
 
@@ -182,6 +181,14 @@ type Mutation {
 
   "Update the status of a task and get the updated days (as a list in chronological order).\n\nWhen the task is:\n- already in the desired status, it does nothing and returns an empty list.\n- for today, it updates the status and returns the day.\n- for a previous day and changing to `TODO`, it updates the status and\n  returns the original day and today.\n- for a future day and changing to `DONE` or `CANCELED`, it updates the status and\n  returns the original day and today.\n\nAny other scenario is not possible by nature of the app, where tasks:\n- in the past can only be `DONE` or `CANCELED` \n- in the future can only be in `TODO`\n    "
   updateTaskStatus(input: MutationUpdateTaskStatusInput!): [Day!]!
+}
+
+input MutationCompleteRoutineInput {
+  """The date the routine was completed."""
+  date: Date!
+
+  """The ID of the routine that was completed."""
+  routineId: ID!
 }
 
 input MutationCreateASettingInput {
@@ -462,16 +469,43 @@ enum RepetitionPattern {
 """A routine the user has set up."""
 type Routine implements Node {
   createdAt: DateTime!
+
+  """
+  Whether the routine was done for the day. This can be null if the routine is queried outside of a day.
+  """
+  done: Boolean
+
+  """
+  Returns the first step in the routine. If there are no steps in the routine, it returns `null`.
+  """
+  firstStep: String
   id: ID!
+
+  """Whether the routine is active. This can be used to pause a routine."""
+  isActive: Boolean!
 
   """The name of the routine"""
   name: String!
   repeats: [RepetitionPattern!]!
   steps: [RoutineStep!]!
-  time: LocalEndTime!
+  time: Time!
 }
 
-scalar RoutineStep
+"""
+A step in a routine. To know which plugin the step belongs to, see `pluginSlug`.
+"""
+type RoutineStep {
+  """The slug of the plugin that the step belongs to."""
+  pluginSlug: String!
+
+  """
+  Whether the step should be skipped if the previous routine was done (i.e. routine.done = true).
+  """
+  shouldSkip: Boolean!
+
+  """The slug of the step."""
+  stepSlug: String!
+}
 
 """
 Settings the user has modified for both Flow and plugins, or configs that plugins have created such as API keys.
@@ -571,3 +605,8 @@ enum TaskStatus {
   """When the task is planned or in progress."""
   TODO
 }
+
+"""
+A time of day, represented as a string in the format `HH:mm`. For example, `16:20`.
+"""
+scalar Time
