@@ -1,1 +1,1 @@
-console.log("some global value", someGlobalValue);
+export const testFn = () => console.log("some global value", someGlobalValue);
