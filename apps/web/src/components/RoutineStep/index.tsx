@@ -1,13 +1,14 @@
 import { graphql, useFragment } from "@flowdev/relay";
-import { PluginRoutineStepProps, WebPlugin } from "@flowdev/plugin-utils/web";
+import { PluginRoutineStepProps } from "@flowdev/plugin-utils/web";
 import { RoutineStep_step$key } from "@flowdev/web/relay/__generated__/RoutineStep_step.graphql";
 import { useEffect, useState } from "react";
+import { getPlugin } from "@flowdev/web/getPlugin";
 
 type RoutineStepProps = {
   step: RoutineStep_step$key;
 };
 
-const LoadingStep = () => <></>;
+const LoadingStep = () => <>Loading...</>;
 
 export const RoutineStep = (props: RoutineStepProps) => {
   const step = useFragment(
@@ -25,26 +26,20 @@ export const RoutineStep = (props: RoutineStepProps) => {
 
   useEffect(() => {
     (async () => {
-      if (step.pluginSlug === "flow") {
-        const plugin = (
-          await import(
-            // @ts-ignore
-            `https://cdn.jsdelivr.net/gh/richardguerre/flow@main/packages/plugin/out/web.js`
-          )
-        ).default as WebPlugin;
-        setStepComponent(
-          () =>
-            plugin({ components: { Button: () => <button>Plugin Button</button> } }).routineSteps?.[
-              step.stepSlug
-            ].component!
-        );
+      const plugin = await getPlugin({ pluginSlug: step.pluginSlug });
+      if ("_error" in plugin) {
+        console.log(plugin._error);
+        // TODO: surface error to the user
+        return;
+      } else if (!plugin.routineSteps?.[step.stepSlug].component) {
+        console.log(`Plugin ${step.pluginSlug} does not have the requested routine step.`);
+        // TODO: surface error to the user
+        return;
+      } else {
+        setStepComponent(() => plugin.routineSteps?.[step.stepSlug].component!);
       }
     })();
   }, []);
 
   return <StepComponent onNext={() => {}} onBack={() => {}} />;
 };
-
-/**
- * importPlugin()
- */

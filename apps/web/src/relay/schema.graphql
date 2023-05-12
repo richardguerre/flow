@@ -332,6 +332,11 @@ type PageInfo {
   startCursor: ID
 }
 
+type PluginInstallation {
+  slug: String!
+  url: String!
+}
+
 """Integers that will have a value greater than 0."""
 scalar PositiveInt
 
@@ -353,6 +358,9 @@ type Query {
   Please input a Date in the format: YYYY-MM-DD
   """
   days(after: ID, before: ID, first: Int, last: Int): QueryDaysConnection!
+
+  """Get all installed plugins."""
+  getInstalledPlugins: [PluginInstallation!]!
 
   """
   Get all external items. Useuful to get list of items for a specific day to show in a calendar.
@@ -518,7 +526,7 @@ type Setting implements Node {
   key: String!
 
   """The slug of the plugin the setting is linked to."""
-  pluginSlug: String!
+  pluginSlug: String
   updatedAt: DateTime!
   value: JSON!
 }

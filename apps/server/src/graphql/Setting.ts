@@ -1,6 +1,17 @@
 import { prisma } from "../utils/prisma";
 import { builder } from "./builder";
 
+const SettingKeys = {
+  INSTALLED_PLUGINS: "flow-installed-plugins",
+};
+
+type PluginInstallation = {
+  /** The plugin's slug */
+  slug: string;
+  /** The plugin's URL. It can be jsdelivr URL or anything that servers application/javascript static files. */
+  url: string;
+};
+
 export const SettingType = builder.prismaNode("Setting", {
   id: { field: "id" },
   fields: (t) => ({
@@ -8,7 +19,7 @@ export const SettingType = builder.prismaNode("Setting", {
     updatedAt: t.expose("updatedAt", { type: "DateTime" }),
     key: t.exposeString("key"),
     value: t.expose("value", { type: "JSON" }),
-    pluginSlug: t.exposeString("pluginSlug"),
+    pluginSlug: t.exposeString("pluginSlug", { nullable: true }),
   }),
 });
 
@@ -27,6 +38,33 @@ builder.queryField("settings", (t) =>
       });
     },
   })
+);
+
+builder.queryField("getInstalledPlugins", (t) =>
+  t.field({
+    type: [PluginInstallationType],
+    description: "Get all installed plugins.",
+    resolve: async () => {
+      const setting = await prisma.setting.findFirst({
+        where: { key: SettingKeys.INSTALLED_PLUGINS },
+      });
+      if (!setting) {
+        return [];
+      } else {
+        return setting.value as PluginInstallation[];
+      }
+    },
+  })
+);
+
+const PluginInstallationType = builder.objectType(
+  builder.objectRef<PluginInstallation>("PluginInstallation"),
+  {
+    fields: (t) => ({
+      slug: t.exposeString("slug"),
+      url: t.exposeString("url"),
+    }),
+  }
 );
 
 // --------------- Setting mutation types ---------------
