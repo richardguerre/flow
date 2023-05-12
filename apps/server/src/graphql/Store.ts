@@ -2,7 +2,7 @@ import { prisma } from "../utils/prisma";
 import { builder } from "./builder";
 
 const SettingKeys = {
-  INSTALLED_PLUGINS: "flow-installed-plugins",
+  INSTALLED_PLUGINS: "installed-plugins",
 };
 
 type PluginInstallation = {
@@ -12,7 +12,7 @@ type PluginInstallation = {
   url: string;
 };
 
-export const SettingType = builder.prismaNode("Setting", {
+export const SettingType = builder.prismaNode("Store", {
   id: { field: "id" },
   fields: (t) => ({
     createdAt: t.expose("createdAt", { type: "DateTime" }),
@@ -25,14 +25,14 @@ export const SettingType = builder.prismaNode("Setting", {
 
 // --------------- Setting query types ---------------
 
-builder.queryField("settings", (t) =>
+builder.queryField("store", (t) =>
   t.prismaConnection({
-    type: "Setting",
+    type: "Store",
     cursor: "id",
-    description: "Get all settings. The args (first, last, after, before) don't work yet.",
+    description: "Get all store items. The args (first, last, after, before) don't work yet.",
     // TODO: add pagination. See https://github.com/devoxa/prisma-relay-cursor-connection/blob/936a800b8ec4cf62b644bce4c0c0fdf7a90f5e7c/src/index.ts#L12 or https://gist.github.com/ctrlplusb/17b5a1bd1736b5ba547bb15b3dd5be29#file-findmanycursor-ts
     resolve: (query) => {
-      return prisma.setting.findMany({
+      return prisma.store.findMany({
         ...query,
         where: { isSecret: false, isServerOnly: false },
       });
@@ -45,7 +45,7 @@ builder.queryField("installedPlugins", (t) =>
     type: [PluginInstallationType],
     description: "Get all installed plugins.",
     resolve: async () => {
-      const setting = await prisma.setting.findFirst({
+      const setting = await prisma.store.findFirst({
         where: { key: SettingKeys.INSTALLED_PLUGINS },
       });
       if (!setting) {
@@ -69,17 +69,17 @@ const PluginInstallationType = builder.objectType(
 
 // --------------- Setting mutation types ---------------
 
-builder.mutationField("createASetting", (t) =>
+builder.mutationField("createStoreItem", (t) =>
   t.prismaFieldWithInput({
-    type: "Setting",
-    description: "Create a setting.",
+    type: "Store",
+    description: "Create a store item.",
     input: {
       key: t.input.string({ required: true }),
       value: t.input.field({ type: "JSON", required: true }),
       pluginSlug: t.input.string({ required: true }),
     },
     resolve: (query, _, args) => {
-      return prisma.setting.create({
+      return prisma.store.create({
         ...query,
         data: {
           key: args.input.key,

@@ -126,7 +126,7 @@ CREATE TABLE "List" (
 );
 
 -- CreateTable
-CREATE TABLE "Setting" (
+CREATE TABLE "Store" (
     "id" SERIAL NOT NULL,
     "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
     "updatedAt" TIMESTAMP(3) NOT NULL,
@@ -136,7 +136,7 @@ CREATE TABLE "Setting" (
     "isSecret" BOOLEAN NOT NULL DEFAULT false,
     "isServerOnly" BOOLEAN NOT NULL DEFAULT false,
 
-    CONSTRAINT "Setting_pkey" PRIMARY KEY ("id")
+    CONSTRAINT "Store_pkey" PRIMARY KEY ("id")
 );
 
 -- CreateTable
@@ -183,7 +183,7 @@ CREATE UNIQUE INDEX "TaskLabel_slug_key" ON "TaskLabel"("slug");
 CREATE UNIQUE INDEX "List_slug_key" ON "List"("slug");
 
 -- CreateIndex
-CREATE UNIQUE INDEX "Setting_key_key" ON "Setting"("key");
+CREATE UNIQUE INDEX "Store_key_key" ON "Store"("key");
 
 -- CreateIndex
 CREATE UNIQUE INDEX "_DayToRoutine_AB_unique" ON "_DayToRoutine"("A", "B");

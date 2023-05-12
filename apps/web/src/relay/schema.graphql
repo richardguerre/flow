@@ -149,11 +149,11 @@ type ListItemsConnectionEdge {
 type Mutation {
   completeRoutine(input: MutationCompleteRoutineInput!): Boolean!
 
-  """Create a setting."""
-  createASetting(input: MutationCreateASettingInput!): Setting!
-
   """Create a new note."""
   createNote(input: MutationCreateNoteInput!): Note!
+
+  """Create a store item."""
+  createStoreItem(input: MutationCreateStoreItemInput!): Store!
 
   """Create a new task."""
   createTask(input: MutationCreateTaskInput!): Task!
@@ -191,12 +191,6 @@ input MutationCompleteRoutineInput {
   routineId: ID!
 }
 
-input MutationCreateASettingInput {
-  key: String!
-  pluginSlug: String!
-  value: JSON!
-}
-
 input MutationCreateNoteInput {
   """The content of the note."""
   content: String!
@@ -214,6 +208,12 @@ input MutationCreateNoteInput {
 
   """The title of the note."""
   title: String!
+}
+
+input MutationCreateStoreItemInput {
+  key: String!
+  pluginSlug: String!
+  value: JSON!
 }
 
 input MutationCreateTaskInput {
@@ -396,9 +396,9 @@ type Query {
   routines: [Routine!]!
 
   """
-  Get all settings. The args (first, last, after, before) don't work yet.
+  Get all store items. The args (first, last, after, before) don't work yet.
   """
-  settings(after: ID, before: ID, first: Int, last: Int): QuerySettingsConnection!
+  store(after: ID, before: ID, first: Int, last: Int): QueryStoreConnection!
 
   """
   Get all task labels ordered by usage in descending order. `before` and `after` cursors are ignored, and `first` and `last` act the same and are limited to 100.
@@ -444,14 +444,14 @@ type QueryNoteLabelsConnectionEdge {
   node: NoteLabel!
 }
 
-type QuerySettingsConnection {
-  edges: [QuerySettingsConnectionEdge!]!
+type QueryStoreConnection {
+  edges: [QueryStoreConnectionEdge!]!
   pageInfo: PageInfo!
 }
 
-type QuerySettingsConnectionEdge {
+type QueryStoreConnectionEdge {
   cursor: ID!
-  node: Setting!
+  node: Store!
 }
 
 type QueryTaskLabelsConnection {
@@ -516,16 +516,16 @@ type RoutineStep {
 }
 
 """
-Settings the user has modified for both Flow and plugins, or configs that plugins have created such as API keys.
+A key-value store containing settings the user has modified for both Flow and plugins (by convention, the key is prefixed with the plugin's slug), or configs and secrents that plugins have stored such as API keys.
 """
-type Setting implements Node {
+type Store implements Node {
   createdAt: DateTime!
   id: ID!
 
-  """The key of the setting"""
+  """The key of the store item"""
   key: String!
 
-  """The slug of the plugin the setting is linked to."""
+  """The slug of the plugin the store item is linked to."""
   pluginSlug: String
   updatedAt: DateTime!
   value: JSON!

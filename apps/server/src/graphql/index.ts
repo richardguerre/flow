@@ -10,7 +10,7 @@ import "./Note";
 import "./NoteLabel";
 import "./RepetitionPattern";
 import "./Routine";
-import "./Setting";
+import "./Store";
 import "./Task";
 import "./TaskLabel";
 import "./TaskPluginData";

@@ -229,25 +229,26 @@ model List {
   items Item[]
 }
 
-/// Settings the user has modified for both Flow and plugins, or configs that plugins have created such as API keys.
-model Setting {
-  /// The id of the user settings
+/// A key-value store containing settings the user has modified for both Flow and plugins (by convention, the key is prefixed with the plugin's slug), or configs and secrents that plugins have stored such as API keys.
+model Store {
+  /// The id of the store item
   id           Int      @id @default(autoincrement())
-  /// The date and time of creation of the user settings
+  /// The date and time of creation of the store item
   createdAt    DateTime @default(now())
-  /// The date and time the user settings was last updated
+  /// The date and time the store item was last updated
   updatedAt    DateTime @updatedAt
-  /// The key of the setting
+  /// The key of the store item
   key          String   @unique
-  /// The value of the setting
+  /// The value of the store item
   value        Json
-  /// The slug of the plugin the setting is linked to.
+  /// The slug of the plugin the store item is linked to.
   pluginSlug   String?
-  /// Whether the setting is secret.
-  /// Secret settings are server-only and can only be accessed by the plugin with the same pluginSlug.
+  /// Whether the store item is secret.
+  /// Secret items are automatically server-only as well (even if the value of isServerOnly is false)
+  /// and can only be accessed by the plugin with the same pluginSlug.
   isSecret     Boolean  @default(false)
-  /// Whether the setting is server-only.
-  /// Server-only settings are not sent to the client.
+  /// Whether the store item is server-only.
+  /// Server-only items are not sent to the client.
   isServerOnly Boolean  @default(false)
 }
 
