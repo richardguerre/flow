@@ -6,7 +6,8 @@ export default defineConfig({
       name: "flow-plugin-flow",
       entry: { web: "src/web.tsx" },
       formats: ["es"],
-      fileName: (format, entryAlias) => `${entryAlias}.js`,
+      fileName: (_format, entryAlias) => `${entryAlias}.js`,
     },
+    outDir: "out",
   },
 });

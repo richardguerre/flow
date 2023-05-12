@@ -26,7 +26,11 @@ export const RoutineStep = (props: RoutineStepProps) => {
   useEffect(() => {
     (async () => {
       if (step.pluginSlug === "flow") {
-        const plugin = (await import(`@flowdev/web/plugin`)).default as WebPlugin;
+        const plugin = (
+          await import(
+            `https://cdn.jsdelivr.net/gh/richardguerre/flow@main/packages/plugin/dist/web.js`
+          )
+        ).default as WebPlugin;
         setStepComponent(
           () =>
             plugin({ components: { Button: () => <button>Plugin Button</button> } }).routineSteps?.[
