@@ -6,6 +6,8 @@ import { getPlugin } from "@flowdev/web/getPlugin";
 
 type RoutineStepProps = {
   step: RoutineStep_step$key;
+  onNext: () => void;
+  onBack: () => void;
 };
 
 const LoadingStep = () => <>Loading...</>;
@@ -39,7 +41,7 @@ export const RoutineStep = (props: RoutineStepProps) => {
         setStepComponent(() => plugin.routineSteps?.[step.stepSlug].component!);
       }
     })();
-  }, []);
+  }, [props.step]);
 
-  return <StepComponent onNext={() => {}} onBack={() => {}} />;
+  return <StepComponent onNext={props.onNext} onBack={props.onBack} />;
 };

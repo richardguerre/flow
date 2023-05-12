@@ -1,7 +1,7 @@
 import { PreloadedQuery, graphql, usePreloadedQuery, useQueryLoader } from "@flowdev/relay";
 import { useParams } from "react-router-dom";
 import { RoutineViewQuery } from "../relay/__generated__/RoutineViewQuery.graphql";
-import { useMemo } from "react";
+import { useMemo, useState } from "react";
 import dayjs from "dayjs";
 import { RoutineStep } from "../components/RoutineStep";
 
@@ -55,6 +55,12 @@ type RoutineViewProps = {
 const RoutineViewContent = (props: RoutineViewProps) => {
   const data = usePreloadedQuery(routineViewQuery, props.queryRef);
   const params = useParams<"routineStep">();
+  const [
+    /** The current step index in the stepsLeft (not all the steps of the routine) */
+    currentStep,
+    setCurrentStep,
+  ] = useState<number>(0);
+
   const { noSteps, stepsLeft } = useMemo(() => {
     if (!data.routine?.steps?.length) {
       return {
@@ -103,11 +109,19 @@ const RoutineViewContent = (props: RoutineViewProps) => {
     );
   }
 
-  const step = stepsLeft[0];
+  const handleBack = () => {
+    setCurrentStep((prev) => {
+      if (prev === 0) return prev;
+      return prev - 1;
+    });
+  };
 
-  return (
-    <>
-      <RoutineStep key={`${step.pluginSlug}${step.stepSlug}`} step={step} />
-    </>
-  );
+  const handleNext = () => {
+    setCurrentStep((prev) => {
+      if (prev === stepsLeft.length - 1) return prev; // TODO: mark routine as done
+      return prev + 1;
+    });
+  };
+
+  return <RoutineStep step={stepsLeft[currentStep]} onBack={handleBack} onNext={handleNext} />;
 };

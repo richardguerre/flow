@@ -21,7 +21,9 @@ export const getPlugin = async (input: Input) => {
     }
 
     const plugin = (await import(`${pluginInstallation.url}/web.js`)).default as WebPlugin;
-    return plugin({ components: { Button: () => <button>Plugin Button</button> } });
+    return plugin({
+      components: { Button: ({ onClick }) => <button onClick={onClick}>Plugin Button</button> },
+    });
   } catch (e) {
     console.log(e);
     return {
