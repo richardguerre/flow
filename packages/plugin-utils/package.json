@@ -1,0 +1,13 @@
+{
+  "name": "@flowdev/plugin-utils",
+  "version": "0.0.0",
+  "description": "Utilities to build plugins for Flow, such as types and helpers.",
+  "private": false,
+  "main": "index.ts",
+  "peerDependencies": {
+    "react": "^18.2.0"
+  },
+  "devDependencies": {
+    "@types/react": "^18.0.26"
+  }
+}

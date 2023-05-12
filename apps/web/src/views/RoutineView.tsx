@@ -3,6 +3,7 @@ import { useParams } from "react-router-dom";
 import { RoutineViewQuery } from "../relay/__generated__/RoutineViewQuery.graphql";
 import { useMemo } from "react";
 import dayjs from "dayjs";
+import { RoutineStep } from "../components/RoutineStep";
 
 const routineViewQuery = graphql`
   query RoutineViewQuery($previousDayId: ID!, $currentDayId: ID!, $routineId: ID!) {
@@ -29,6 +30,7 @@ const routineViewQuery = graphql`
           pluginSlug
           stepSlug
           shouldSkip
+          ...RoutineStep_step
         }
       }
     }
@@ -101,11 +103,11 @@ const RoutineViewContent = (props: RoutineViewProps) => {
     );
   }
 
+  const step = stepsLeft[0];
+
   return (
     <>
-      {stepsLeft.map(() => (
-        <></>
-      ))}
+      <RoutineStep key={`${step.pluginSlug}${step.stepSlug}`} step={step} />
     </>
   );
 };

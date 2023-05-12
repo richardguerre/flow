@@ -11,10 +11,13 @@ export default () => {
   // );
   useEffect(() => {
     console.log(test);
-    // (async () => {
-    //   const result = await fetch("https://cdn.jsdelivr.net/gh/richardguerre/flow@main/test.js");
-    //   console.log(result);
-    // })();
+    (async () => {
+      const result = await fetch("https://cdn.jsdelivr.net/gh/richardguerre/flow@main/test.js");
+      console.log(result);
+      // @ts-ignore
+      const result2 = await import("https://cdn.jsdelivr.net/gh/richardguerre/flow@main/test2.js");
+      result2.testFn();
+    })();
   }, []);
   return (
     <div>

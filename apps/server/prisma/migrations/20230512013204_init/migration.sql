@@ -132,7 +132,7 @@ CREATE TABLE "Setting" (
     "updatedAt" TIMESTAMP(3) NOT NULL,
     "key" TEXT NOT NULL,
     "value" JSONB NOT NULL,
-    "pluginSlug" TEXT NOT NULL,
+    "pluginSlug" TEXT,
     "isSecret" BOOLEAN NOT NULL DEFAULT false,
     "isServerOnly" BOOLEAN NOT NULL DEFAULT false,
 

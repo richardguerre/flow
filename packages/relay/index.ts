@@ -13,13 +13,13 @@ import {
 export {
   RelayEnvironmentProvider,
   graphql,
-  PreloadedQuery,
+  type PreloadedQuery,
   usePreloadedQuery,
   useFragment,
   usePaginationFragment,
   useRefetchableFragment,
 } from "react-relay";
-export { RecordSourceSelectorProxy } from "relay-runtime";
+export { type RecordSourceSelectorProxy } from "relay-runtime";
 
 // ----------------- wrapped exports of react-relay -----------------
 

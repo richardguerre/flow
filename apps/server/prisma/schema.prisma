@@ -242,7 +242,7 @@ model Setting {
   /// The value of the setting
   value        Json
   /// The slug of the plugin the setting is linked to.
-  pluginSlug   String
+  pluginSlug   String?
   /// Whether the setting is secret.
   /// Secret settings are server-only and can only be accessed by the plugin with the same pluginSlug.
   isSecret     Boolean  @default(false)

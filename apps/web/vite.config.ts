@@ -15,7 +15,7 @@ const relay = () =>
     name: "vite:relay",
     async transform(src, id) {
       let code = src;
-      if (/.(t|j)sx?$/.test(id) && src.includes("graphql`")) {
+      if (/.tsx?$/.test(id) && src.includes("graphql`")) {
         const imports: Array<string> = [];
 
         code = code.replace(/graphql`([\s\S]*?)`/gm, (_, query) => {
