@@ -1,5 +1,5 @@
 import { PreloadedQuery, graphql, usePreloadedQuery, useQueryLoader } from "@flowdev/relay";
-import { useParams } from "react-router-dom";
+import { useNavigate, useParams } from "react-router-dom";
 import { RoutineViewQuery } from "../relay/__generated__/RoutineViewQuery.graphql";
 import { useMemo, useState } from "react";
 import dayjs from "dayjs";
@@ -54,7 +54,8 @@ type RoutineViewProps = {
 
 const RoutineViewContent = (props: RoutineViewProps) => {
   const data = usePreloadedQuery(routineViewQuery, props.queryRef);
-  const params = useParams<"routineStep">();
+  const params = useParams<"routineStep" | "routineId">();
+  const navigate = useNavigate();
   const [
     /** The current step index in the stepsLeft (not all the steps of the routine) */
     currentStep,
@@ -96,7 +97,7 @@ const RoutineViewContent = (props: RoutineViewProps) => {
       /** The steps left to do in this routine from the `routineStep` to the end of the routine. */
       stepsLeft,
     };
-  }, [params.routineStep, data]);
+  }, [data]); // params.routineStep is not a dependency as we don't want to recompute when it changes (i.e. when we replace the route when going to the next step)
 
   if (noSteps) {
     return <div>This routine has no steps. Please add some in your settings.</div>;
@@ -119,6 +120,10 @@ const RoutineViewContent = (props: RoutineViewProps) => {
   const handleNext = () => {
     setCurrentStep((prev) => {
       if (prev === stepsLeft.length - 1) return prev; // TODO: mark routine as done
+      const nextStep = stepsLeft[prev + 1];
+      navigate(`/routine/${params.routineId}/${nextStep.pluginSlug}_${nextStep.stepSlug}`, {
+        replace: true,
+      });
       return prev + 1;
     });
   };

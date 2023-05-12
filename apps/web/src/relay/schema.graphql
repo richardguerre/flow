@@ -360,7 +360,7 @@ type Query {
   days(after: ID, before: ID, first: Int, last: Int): QueryDaysConnection!
 
   """Get all installed plugins."""
-  getInstalledPlugins: [PluginInstallation!]!
+  installedPlugins: [PluginInstallation!]!
 
   """
   Get all external items. Useuful to get list of items for a specific day to show in a calendar.

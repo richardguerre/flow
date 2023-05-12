@@ -40,7 +40,7 @@ builder.queryField("settings", (t) =>
   })
 );
 
-builder.queryField("getInstalledPlugins", (t) =>
+builder.queryField("installedPlugins", (t) =>
   t.field({
     type: [PluginInstallationType],
     description: "Get all installed plugins.",

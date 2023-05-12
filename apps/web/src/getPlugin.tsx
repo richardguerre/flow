@@ -37,7 +37,7 @@ const getInstalledPlugins = async () => {
     environment,
     graphql`
       query getPluginsQuery {
-        getInstalledPlugins {
+        installedPlugins {
           slug
           url
         }
@@ -47,7 +47,7 @@ const getInstalledPlugins = async () => {
     { fetchPolicy: "store-or-network" }
   ).toPromise();
 
-  const plugins = pluginsQuery?.getInstalledPlugins ?? [];
+  const plugins = pluginsQuery?.installedPlugins ?? [];
 
   return Object.fromEntries(plugins.map((plugin) => [plugin.slug, plugin]));
 };
