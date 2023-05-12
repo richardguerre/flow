@@ -28,7 +28,8 @@ export const RoutineStep = (props: RoutineStepProps) => {
       if (step.pluginSlug === "flow") {
         const plugin = (
           await import(
-            `https://cdn.jsdelivr.net/gh/richardguerre/flow@main/packages/plugin/dist/web.js`
+            // @ts-ignore
+            `https://cdn.jsdelivr.net/gh/richardguerre/flow@main/packages/plugin/out/web.js`
           )
         ).default as WebPlugin;
         setStepComponent(

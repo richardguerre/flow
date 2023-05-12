@@ -10,4 +10,7 @@ export default defineConfig({
     },
     outDir: "out",
   },
+  define: {
+    "process.env.NODE_ENV": '"production"',
+  },
 });
