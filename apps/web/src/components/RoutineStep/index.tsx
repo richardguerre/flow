@@ -1,5 +1,5 @@
 import { graphql, useFragment } from "@flowdev/relay";
-import { PluginRoutineStepProps } from "@flowdev/plugin-utils/web";
+import { PluginRoutineStepProps } from "@flowdev/plugin/web";
 import { RoutineStep_step$key } from "@flowdev/web/relay/__generated__/RoutineStep_step.graphql";
 import { useEffect, useState } from "react";
 import { getPlugin } from "@flowdev/web/getPlugin";

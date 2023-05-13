@@ -1,7 +1,7 @@
 /**
  * This is the default plugin installed with the web app.
  */
-import { definePlugin } from "@flowdev/plugin-utils/web";
+import { definePlugin } from "@flowdev/plugin/web";
 
 export default definePlugin((options) => {
   const Flow = options.components;

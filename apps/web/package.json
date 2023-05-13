@@ -19,7 +19,7 @@
     "@flowdev/jotai": "*",
     "@flowdev/relay": "*",
     "@flowdev/ui": "*",
-    "@flowdev/plugin-utils": "*",
+    "@flowdev/plugin": "*",
     "@tiptap/extension-document": "^2.0.0-beta.218",
     "@tiptap/extension-history": "^2.0.0-beta.218",
     "@tiptap/extension-mention": "^2.0.0-beta.218",
