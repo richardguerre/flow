@@ -1,4 +1,4 @@
-import { WebPlugin } from "@flowdev/plugin-utils/web";
+import { WebPlugin } from "@flowdev/plugin/web";
 import { graphql } from "@flowdev/relay";
 import { fetchQuery } from "@flowdev/relay";
 import { getPluginsQuery } from "@flowdev/web/relay/__generated__/getPluginsQuery.graphql";
