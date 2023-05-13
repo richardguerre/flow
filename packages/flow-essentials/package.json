@@ -1,5 +1,5 @@
 {
-  "name": "@flowdev/flow-plugin-flow",
+  "name": "@flowdev/flow-essentials",
   "description": "The official and default plugin for Flow.",
   "version": "0.0.1",
   "private": false,

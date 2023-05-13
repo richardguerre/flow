@@ -10,6 +10,7 @@ export type PluginRoutineStepProps = {
 };
 
 export type WebPlugin = (options: WebPluginOptions) => {
+  slug: string;
   routineSteps?: {
     [stepSlug: string]: {
       component: React.ComponentType<PluginRoutineStepProps>;
