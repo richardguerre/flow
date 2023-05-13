@@ -1,7 +1,7 @@
 {
-  "name": "@flowdev/plugin-utils",
+  "name": "@flowdev/plugin",
   "version": "0.0.0",
-  "description": "Utilities to build plugins for Flow, such as types and helpers.",
+  "description": "Utilities to build plugins for Flow, such as types, helpers, and bundler.",
   "private": false,
   "main": "index.ts",
   "peerDependencies": {
