@@ -1,11 +1,15 @@
 import { graphql, useFragment } from "@flowdev/relay";
-import { PluginRoutineStepProps } from "@flowdev/plugin/web";
 import { RoutineStep_step$key } from "@flowdev/web/relay/__generated__/RoutineStep_step.graphql";
 import { useEffect, useState } from "react";
 import { getPlugin } from "@flowdev/web/getPlugin";
 
 type RoutineStepProps = {
   step: RoutineStep_step$key;
+  onNext: () => void;
+  onBack: () => void;
+};
+
+export type PluginRoutineStepProps = {
   onNext: () => void;
   onBack: () => void;
 };

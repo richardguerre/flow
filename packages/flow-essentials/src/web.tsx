@@ -11,12 +11,12 @@ export default definePlugin((options) => {
       yesterday: {
         component: ({ onNext }) => (
           <div>
-            Yesterday<Flow.Button onClick={onNext}></Flow.Button>
+            Yesterday<Flow.Button onClick={onNext}>Some button</Flow.Button>
           </div>
         ),
       },
       "retro-on-yesterday": {
-        component: () => <div>Retro on yesterday</div>,
+        component: () => <div>Retro on yesterday test change</div>,
       },
       today: {
         component: () => <div>Today</div>,

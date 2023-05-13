@@ -1,0 +1,26 @@
+{
+  // copied from @flowdev/web/tsconfig.json
+  "compilerOptions": {
+    "target": "ESNext",
+    "useDefineForClassFields": true,
+    "lib": ["DOM", "DOM.Iterable", "ESNext"],
+    "allowJs": false,
+    "skipLibCheck": true,
+    "esModuleInterop": false,
+    "allowSyntheticDefaultImports": true,
+    "strict": true,
+    "forceConsistentCasingInFileNames": true,
+    "module": "ESNext",
+    "moduleResolution": "Node",
+    "resolveJsonModule": true,
+    "isolatedModules": true,
+    "noEmit": true,
+    "noUnusedLocals": true /* Enable error reporting when local variables aren't read. */,
+    "jsx": "react-jsx",
+    "baseUrl": ".",
+    "paths": {
+      "@flowdev/web/*": ["src/*"]
+    }
+  },
+  "include": ["web", "server"]
+}

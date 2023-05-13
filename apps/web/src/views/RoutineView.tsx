@@ -122,7 +122,7 @@ const RoutineViewContent = (props: RoutineViewProps) => {
       if (prev === stepsLeft.length - 1) return prev; // TODO: mark routine as done
       const nextStep = stepsLeft[prev + 1];
       navigate(`/routine/${params.routineId}/${nextStep.pluginSlug}_${nextStep.stepSlug}`, {
-        replace: true,
+        replace: false,
       });
       return prev + 1;
     });

@@ -3,6 +3,7 @@ import { graphql } from "@flowdev/relay";
 import { fetchQuery } from "@flowdev/relay";
 import { getPluginsQuery } from "@flowdev/web/relay/__generated__/getPluginsQuery.graphql";
 import { environment } from "@flowdev/web/relay/environment";
+import { pluginOptions } from "./pluginOptions";
 
 type Input = {
   pluginSlug: string;
@@ -20,10 +21,14 @@ export const getPlugin = async (input: Input) => {
       };
     }
 
-    const plugin = (await import(`${pluginInstallation.url}/web.js`)).default as WebPlugin;
-    return plugin({
-      components: { Button: ({ onClick }) => <button onClick={onClick}>Plugin Button</button> },
-    });
+    // This is to make it easier to develop the flow-essentials plugin
+    // TODO: Remove this when the plugin is published
+    const importPromise = import.meta.env.DEV
+      ? import("@flowdev/flow-essentials/src/web")
+      : import(/* @vite-ignore */ `${pluginInstallation.url}/web.js`);
+
+    const plugin = (await importPromise).default as WebPlugin;
+    return plugin(pluginOptions);
   } catch (e) {
     console.log(e);
     return {

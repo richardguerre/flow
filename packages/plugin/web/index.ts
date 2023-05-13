@@ -1,13 +1,6 @@
-type WebPluginOptions = {
-  components: {
-    Button: React.ComponentType<{ onClick?: () => void }>;
-  };
-};
-
-export type PluginRoutineStepProps = {
-  onBack: () => void;
-  onNext: () => void;
-};
+// ‼️ only import types from the web package, not runtime code
+import type { WebPluginOptions } from "@flowdev/web/src/getPlugin/pluginOptions";
+import type { PluginRoutineStepProps } from "@flowdev/web/src/components/RoutineStep";
 
 export type WebPlugin = (options: WebPluginOptions) => {
   slug: string;

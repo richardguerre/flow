@@ -3,7 +3,6 @@
   "description": "The official and default plugin for Flow.",
   "version": "0.0.1",
   "private": false,
-  "main": "dist/index.js",
   "scripts": {
     "build": "tsc && vite build"
   },
