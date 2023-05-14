@@ -2,16 +2,18 @@
  * This is the default script for seeding the database.
  *
  * This script will do the following:
- * 1. Create a list called "Bucket list".
- * 1. Create item "Go skydiving" in list "Bucket list".
- * 1. Create item "Make new friends" in list "Bucket list" with a scheduled time for today.
- * 1. Add a completed task for today.
- * 1. Add an incomplete task for today linked to the item "Make new friends".
- * 1. Add a canceled task for today.
- * 1. Add a completed task for yesterday.
- * 1. Add a canceled task for yesterday.
- * 1. Add an incomplete task for tomorrow.
- * 1. Add an incomplete task for the day after tomorrow.
+ * - Create a list called "Bucket list".
+ * - Create item "Go skydiving" in list "Bucket list".
+ * - Create item "Make new friends" in list "Bucket list" with a scheduled time for today.
+ * - Add a completed task for today.
+ * - Add an incomplete task for today linked to the item "Make new friends".
+ * - Add a canceled task for today.
+ * - Add a completed task for yesterday.
+ * - Add a canceled task for yesterday.
+ * - Add an incomplete task for tomorrow.
+ * - Add an incomplete task for the day after tomorrow.
+ * - Install the flow-essentials plugin
+ * - Adds a morning routine using the flow-essential steps
  */
 
 import { PrismaClient } from "@prisma/client";
@@ -133,6 +135,36 @@ async function script() {
             },
           ],
         },
+      },
+    },
+  });
+
+  await prisma.store.create({
+    data: {
+      key: "installed-plugins",
+      value: [
+        {
+          slug: "flow-essentials",
+          url: "https://cdn.jsdelivr.net/gh/richardguerre/flow@main/packages/flow-essentials/out",
+        },
+      ],
+    },
+  });
+
+  await prisma.routine.create({
+    data: {
+      name: "Morning routine",
+      time: "1970-01-01T08:00:00.000Z",
+      steps: {
+        set: [
+          "flow-essentials_intro-to-yesterday_true",
+          "flow-essentials_retro-on-yesterday_true",
+          "flow-essentials_intro-to-today_false",
+          "flow-essentials_plan-for-today_false",
+          "flow-essentials_today-tomorrow-next-week_false",
+          "flow-essentials_decide-shutdown-time_false",
+          "flow-essentials_todays-plan_false",
+        ],
       },
     },
   });

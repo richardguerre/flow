@@ -33,7 +33,7 @@ export default definePlugin((options) => {
   return {
     slug: "flow-essentials",
     routineSteps: {
-      yesterday: {
+      "intro-to-yesterday": {
         component: (props) => <TextTransitionStep {...props}>Yesterday</TextTransitionStep>,
       },
       "retro-on-yesterday": {
@@ -88,8 +88,20 @@ export default definePlugin((options) => {
           );
         },
       },
-      today: {
+      "intro-to-today": {
         component: (props) => <TextTransitionStep {...props}>Today</TextTransitionStep>,
+      },
+      "plan-for-today": {
+        component: (props) => <></>,
+      },
+      "today-tomorrow-next-week": {
+        component: (props) => <></>,
+      },
+      "decide-shutdown-time": {
+        component: (props) => <></>,
+      },
+      "todays-plan": {
+        component: (props) => <></>,
       },
     },
   };
