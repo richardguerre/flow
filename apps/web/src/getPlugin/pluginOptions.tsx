@@ -12,12 +12,24 @@ import { OrderedList } from "@tiptap/extension-ordered-list";
 import { ListItem } from "@tiptap/extension-list-item";
 import { NoteEditor } from "../components/NoteEditor";
 import dayjs from "dayjs";
+import { getDays, getDaysMax10 } from "./getDays";
 
 export const pluginOptions = {
   components: {
     Button,
     NoteEditor,
   },
+  /**
+   * Get days between 2 dates (inclusive) by passing `from` and `to` as part of the options.
+   * If you want to get specific/discreate days, use `getDaysMax10` instead.
+   */
+  getDays,
+  /**
+   * Get specific/discrete days by passing an array of Date objects (maximum 10).
+   * If you want to get more than 10 days, use `getDays` instead or make multiple calls to `getDaysMax10`.
+   * If you want to get a range of days (i.e. get all days between 2 dates), use `getDays` instead.
+   */
+  getDaysMax10,
   /**
    * The framer-motion package.
    * This prevents double-bundling it in both the web app and in individual plugins.

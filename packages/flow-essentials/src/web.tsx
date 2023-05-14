@@ -43,7 +43,7 @@ export default definePlugin((options) => {
 
           useEffect(() => {
             (async () => {
-              const days = await props.getDays({
+              const days = await options.getDays({
                 from: yesterday.toDate(),
                 to: yesterday.toDate(),
                 include: { tasks: true },
