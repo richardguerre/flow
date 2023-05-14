@@ -21,6 +21,7 @@ CREATE TABLE "Note" (
     "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
     "updatedAt" TIMESTAMP(3) NOT NULL,
     "date" DATE NOT NULL,
+    "slug" TEXT NOT NULL,
     "title" TEXT NOT NULL,
     "content" TEXT NOT NULL,
 
@@ -172,6 +173,9 @@ CREATE TABLE "_TaskToTaskLabel" (
     "A" INTEGER NOT NULL,
     "B" INTEGER NOT NULL
 );
+
+-- CreateIndex
+CREATE UNIQUE INDEX "Note_slug_key" ON "Note"("slug");
 
 -- CreateIndex
 CREATE UNIQUE INDEX "NoteLabel_slug_key" ON "NoteLabel"("slug");

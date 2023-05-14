@@ -1,5 +1,6 @@
 import plugin from "tailwindcss/plugin";
 import colors from "tailwindcss/colors";
+import typography from "@tailwindcss/typography";
 
 const gray = colors.gray;
 
@@ -93,6 +94,7 @@ export default {
     extend: {},
   },
   plugins: [
+    typography,
     plugin(({ addBase }) => {
       addBase({
         ":root": convertToCssRoot("colors", flowColors, (value) => {

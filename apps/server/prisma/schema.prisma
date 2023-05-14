@@ -39,9 +39,13 @@ model Note {
   date      DateTime @db.Date
   /// The day the note was created
   day       Day      @relation(fields: [date], references: [date])
+  /// The slug of the note which needs to be unique.
+  /// It can be used to retrieve the note and update it.
+  slug      String   @unique
   /// The title of the note
   title     String
-  /// The content of the note in markdown
+  /// The content of the note in HTML. If it's text (i.e. one line),
+  /// it will most likely be converted to HTML by the TipTap editor.
   content   String
 
   /// The labels of the note

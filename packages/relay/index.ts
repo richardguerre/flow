@@ -1,5 +1,5 @@
 import { useEffect } from "react";
-import { OperationType } from "relay-runtime";
+import { OperationType, type MutationParameters } from "relay-runtime";
 import {
   GraphQLTaggedNode,
   PreloadableConcreteRequest,
@@ -8,6 +8,7 @@ import {
   UseQueryLoaderLoadQueryOptions,
   useMutation as useRelayMutation,
   fetchQuery as relayFetchQuery,
+  type UseMutationConfig,
 } from "react-relay";
 
 // unwrapped exports of react-relay
@@ -19,6 +20,7 @@ export {
   useFragment,
   usePaginationFragment,
   useRefetchableFragment,
+  useLazyLoadQuery,
 } from "react-relay";
 export { type RecordSourceSelectorProxy } from "relay-runtime";
 
@@ -50,5 +52,33 @@ export function useQueryLoader<TQuery extends OperationType>(
 }
 
 export const useMutation = useRelayMutation;
+export function useMutationPromise<TMutation extends MutationParameters>(
+  mutation: GraphQLTaggedNode
+): [(config: UseMutationConfig<TMutation>) => Promise<TMutation["response"]>, boolean] {
+  const [mutate, ...rest] = useRelayMutation(mutation);
+
+  const newMutate = (mutationConfig: UseMutationConfig<TMutation>) =>
+    new Promise<TMutation["response"]>((resolve, reject) => {
+      mutate({
+        ...mutationConfig,
+        onCompleted: (response, errors) => {
+          if (errors) {
+            console.log("useMutation.onCompleted error:", errors);
+            reject(errors);
+            return;
+          }
+          resolve(response);
+          mutationConfig.onCompleted?.(response, errors);
+        },
+        onError: (error) => {
+          console.log("useMutation.onError error:", error);
+          reject(error);
+          mutationConfig.onError?.(error);
+        },
+      });
+    });
+
+  return [newMutate, ...rest];
+}
 
 export const fetchQuery = relayFetchQuery;

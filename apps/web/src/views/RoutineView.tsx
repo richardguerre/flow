@@ -128,5 +128,13 @@ const RoutineViewContent = (props: RoutineViewProps) => {
     });
   };
 
-  return <RoutineStep step={stepsLeft[currentStep]} onBack={handleBack} onNext={handleNext} />;
+  return (
+    <RoutineStep
+      step={stepsLeft[currentStep]}
+      onBack={handleBack}
+      onNext={handleNext}
+      hasPrevious={currentStep > 0}
+      hasNext={currentStep < stepsLeft.length - 1}
+    />
+  );
 };

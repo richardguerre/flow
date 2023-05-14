@@ -149,8 +149,10 @@ type ListItemsConnectionEdge {
 type Mutation {
   completeRoutine(input: MutationCompleteRoutineInput!): Boolean!
 
-  """Create a new note."""
-  createNote(input: MutationCreateNoteInput!): Note!
+  """
+  Updates a note if one exists with the passed in `slug`, otherwise creates a new note.
+  """
+  createOrUpdateNote(input: MutationCreateOrUpdateNoteInput!): Note!
 
   """Create a store item."""
   createStoreItem(input: MutationCreateStoreItemInput!): Store!
@@ -191,7 +193,7 @@ input MutationCompleteRoutineInput {
   routineId: ID!
 }
 
-input MutationCreateNoteInput {
+input MutationCreateOrUpdateNoteInput {
   """The content of the note."""
   content: String!
 
@@ -205,6 +207,12 @@ input MutationCreateNoteInput {
 
   """Create new labels and link them to the note."""
   newLabels: [CreateNoteLabelInput!]
+
+  """The IDs of labels to be unlinked from the note."""
+  removedLabels: [ID!]
+
+  """The slug of the note. Used for retrieving the note back."""
+  slug: String!
 
   """The title of the note."""
   title: String!
@@ -274,7 +282,9 @@ interface Node {
 
 """A note that the user has created."""
 type Note implements Node {
-  """The content of the note in markdown"""
+  """
+  The content of the note in HTML. If it's text (i.e. one line),\nit will most likely be converted to HTML by the TipTap editor.
+  """
   content: String!
   createdAt: DateTime!
   date: Date!
@@ -282,6 +292,11 @@ type Note implements Node {
 
   """The labels of the note"""
   labels: [NoteLabel!]!
+
+  """
+  The slug of the note which needs to be unique.\nIt can be used to retrieve the note and update it.
+  """
+  slug: String!
 
   """The title of the note"""
   title: String!
@@ -378,6 +393,12 @@ type Query {
   ): [List!]!
   node(id: ID!): Node
   nodes(ids: [ID!]!): [Node]!
+
+  """Get a note by its `slug`."""
+  note(
+    """The slug of the note."""
+    slug: String!
+  ): Note
 
   """
   Get all note labels ordered by usage in descending order. `before` and `after` cursors are ignored, and `first` and `last` act the same and are limited to 100.

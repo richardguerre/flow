@@ -40,7 +40,7 @@ export const Button = forwardRef<HTMLButtonElement, ButtonProps>((props, ref) =>
   if (props.sm) {
     className += " px-2 py-1";
   } else if (props.lg) {
-    className += " px-4 py-2";
+    className += " px-4 py-3";
   } else {
     // Default to medium
     className += " px-3 py-2";
