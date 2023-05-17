@@ -4,7 +4,7 @@ import { StarterKit } from "@tiptap/starter-kit";
 import { Suspense, useEffect, useRef } from "react";
 import { NoteEditorQuery } from "@flowdev/web/relay/__generated__/NoteEditorQuery.graphql";
 import { NoteEditorUpsertNoteMutation } from "@flowdev/web/relay/__generated__/NoteEditorUpsertNoteMutation.graphql";
-import dayjs from "dayjs";
+import { dayjs } from "@flowdev/web/dayjs";
 // import { CreateNoteLabelInput } from "@flowdev/web/relay/__generated__/RoutineStepSaveNoteMutation.graphql";
 
 type NoteEditorProps = {

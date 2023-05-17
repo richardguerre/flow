@@ -13,6 +13,8 @@
     "dev": "turbo run dev",
     "db:dev": "npm run db:dev -w apps/server",
     "db:reset": "npm run db:reset -w apps/server",
+    "---------patch---------": "",
+    "postinstall": "patch-package",
     "-------codespaces-------": "",
     "codepsaces": "npm run env:codespaces && npm run db:reset",
     "env:codespaces": "turbo run env:codespaces",
@@ -25,6 +27,7 @@
   "devDependencies": {
     "dotenv": "^16.0.2",
     "dotenv-expand": "^9.0.0",
+    "patch-package": "^7.0.0",
     "prettier": "^2.8.8",
     "prettier-plugin-tailwindcss": "^0.2.8"
   }

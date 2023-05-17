@@ -2,7 +2,7 @@ import { useEffect, useRef, useState } from "react";
 import { graphql, useFragment, useMutation } from "@flowdev/relay";
 import { Day_day$key } from "@flowdev/web/relay/__generated__/Day_day.graphql";
 import { TaskCard } from "./TaskCard";
-import dayjs from "dayjs";
+import { dayjs } from "@flowdev/web/dayjs";
 import { ReactSortable, Sortable } from "react-sortablejs";
 import { DayContent_day$key } from "../relay/__generated__/DayContent_day.graphql";
 import { DayUpdateTaskDateMutation } from "../relay/__generated__/DayUpdateTaskDateMutation.graphql";
@@ -11,6 +11,7 @@ import { NewTaskCard } from "./NewTaskCard";
 
 type DayProps = {
   day: Day_day$key;
+  label?: string;
 };
 
 export const Day = (props: DayProps) => {
@@ -37,14 +38,15 @@ export const Day = (props: DayProps) => {
   }, [dayRef]);
 
   return (
-    <div ref={dayRef} className="flex flex-col h-full pl-4 w-64">
+    <div ref={dayRef} className="flex h-full w-64 flex-col pl-4">
       {/* pl-4 is needed for scrollIntoView to not scroll with the day flush to the left */}
       <div className="mb-3">
         <button
-          className="font-semibold text-xl hover:text-primary-400 active:text-primary-600"
+          className="text-xl font-semibold hover:text-primary-400 active:text-primary-600"
           onClick={() => dayRef.current?.scrollIntoView({ inline: "start", behavior: "smooth" })}
+          disabled={!!props.label}
         >
-          {dayOfWeekArr[dayjs(day.date).day()]}
+          {props.label ?? dayOfWeekArr[dayjs(day.date).day()]}
         </button>
         <div className="text-sm text-foreground-800">{dayjs(day.date).format("MMMM D")}</div>
       </div>
@@ -63,7 +65,7 @@ type DayContentProps = {
   day: DayContent_day$key;
 };
 
-const DayContent = (props: DayContentProps) => {
+export const DayContent = (props: DayContentProps) => {
   const day = useFragment(
     graphql`
       fragment DayContent_day on Day {
@@ -123,7 +125,7 @@ const DayContent = (props: DayContentProps) => {
   return (
     <ReactSortable
       id={day.date}
-      className="flex flex-col flex-auto mt-4 overflow-y-auto overflow-x-hidden"
+      className="mt-4 flex flex-auto flex-col overflow-y-auto overflow-x-hidden"
       list={tasks}
       setList={setTasks} // TOOD: use mutation optimistic updater instead
       animation={150}
@@ -169,7 +171,7 @@ const DayAddTaskActionsBar = (props: DayAddTaskActionsBarProps) => {
   return (
     <div className="flex flex-col gap-4">
       <button
-        className="rounded-md bg-background-300 bg-opacity-50 text-sm w-full py-1 px-2 text-foreground-900 hover:bg-opacity-70 active:bg-opacity-100"
+        className="w-full rounded-md bg-background-300 bg-opacity-50 px-2 py-1 text-sm text-foreground-900 hover:bg-opacity-70 active:bg-opacity-100"
         onClick={() => setShowNewTaskCard(true)}
       >
         Add task

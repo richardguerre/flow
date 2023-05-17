@@ -1,5 +1,5 @@
 import { store } from "@flowdev/jotai";
-import dayjs from "dayjs";
+import { dayjs } from "@flowdev/web/dayjs";
 
 type DayStore = {
   dateInFocus: string;

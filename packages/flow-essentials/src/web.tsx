@@ -92,10 +92,59 @@ export default definePlugin((options) => {
         component: (props) => <TextTransitionStep {...props}>Today</TextTransitionStep>,
       },
       "plan-for-today": {
-        component: (props) => <></>,
+        component: (props) => {
+          const today = options.dayjs();
+          const [days, loadingDays] = options.hooks.useAsyncLoader(async () => {
+            return await options.getDays({
+              from: today.toDate(),
+              to: today.toDate(),
+              toRender: { Day: true },
+            });
+          });
+
+          const day = days?.[0];
+
+          if (loadingDays) {
+            return <>Loading...</>;
+          }
+
+          return (
+            <div>
+              <div>
+                <props.BackButton />
+                <props.NextButton />
+              </div>
+              <Flow.Day day={day} label="Today" />
+            </div>
+          );
+        },
       },
       "today-tomorrow-next-week": {
-        component: (props) => <></>,
+        component: (props) => {
+          const today = options.dayjs();
+          const tomorrow = today.add(1, "day");
+          const nextWeek = today.weekday(7);
+          const [days, loadingDays] = options.hooks.useAsyncLoader(async () => {
+            return await options.getDaysMax10({
+              dates: [today.toDate(), tomorrow.toDate(), nextWeek.toDate()],
+              toRender: { Day: true },
+            });
+          });
+
+          if (loadingDays) {
+            return <>Loading...</>;
+          }
+
+          console.log(days);
+
+          return (
+            <div>
+              <Flow.Day day={days?.[0]} label="Today" />
+              <Flow.Day day={days?.[1]} label="Tomorrow" />
+              <Flow.Day day={days?.[2]} label="Next week" />
+            </div>
+          );
+        },
       },
       "decide-shutdown-time": {
         component: (props) => <></>,

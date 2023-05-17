@@ -10,14 +10,43 @@ import { History } from "@tiptap/extension-history";
 import { BulletList } from "@tiptap/extension-bullet-list";
 import { OrderedList } from "@tiptap/extension-ordered-list";
 import { ListItem } from "@tiptap/extension-list-item";
-import { NoteEditor } from "../components/NoteEditor";
-import dayjs from "dayjs";
+import { dayjs } from "@flowdev/web/dayjs";
 import { getDays, getDaysMax10 } from "./getDays";
+import { NoteEditor } from "../components/NoteEditor";
+import { Day, DayContent } from "../components/Day";
+import { TaskCard } from "../components/TaskCard";
+import { ItemCard } from "../components/ItemCard";
+import { useAsyncLoader } from "../useAsyncLoader";
 
 export const pluginOptions = {
+  /**
+   * Components that Flow uses you can re-use in your plugin views to feel more integrated.
+   *
+   * Some components will change appearance depending on the theme the user chooses.
+   */
   components: {
     Button,
     NoteEditor,
+    /**
+     * Shows a Day along with actions to create tasks within the day.
+     * If you just want to render the day's content (i.e. it's tasks),
+     * use `DayContent` instead.
+     */
+    Day,
+    /**
+     * Shows a Day's content (i.e. it's tasks) with no actions to create tasks.
+     * If you want to render the day along with actions to create tasks within the day,
+     * use `Day` instead.
+     */
+    DayContent,
+    TaskCard,
+    ItemCard,
+  },
+  hooks: {
+    /**
+     * This hook is useful to do an async process on initial load.
+     */
+    useAsyncLoader,
   },
   /**
    * Get days between 2 dates (inclusive) by passing `from` and `to` as part of the options.

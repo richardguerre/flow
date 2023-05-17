@@ -1,5 +1,5 @@
 import { fetchQuery, graphql } from "@flowdev/relay";
-import dayjs from "dayjs";
+import { dayjs } from "@flowdev/web/dayjs";
 import { environment } from "@flowdev/web/relay/environment";
 import { getDaysDaysQuery } from "@flowdev/web/relay/__generated__/getDaysDaysQuery.graphql";
 import { getDaysDaysMax10Query } from "@flowdev/web/relay/__generated__/getDaysDaysMax10Query.graphql";
@@ -12,7 +12,7 @@ graphql`
     id
     date
     tasks @include(if: $includeTasks) {
-      ...TaskCard_task @include(if: $renderTask)
+      ...TaskCard_task @include(if: $renderTaskCard)
       id
       date
       title
@@ -22,6 +22,7 @@ graphql`
       durationInMinutes
       status
       item @include(if: $includeItem) {
+        ...ItemCard_item @include(if: $renderItemCard)
         id
         createdAt
         scheduledAt
@@ -72,6 +73,7 @@ type GetDaysOptions = {
     Day: true;
     DayContent: true;
     TaskCard: true;
+    ItemCard: true;
   }>;
   /**
    * Whether to include the `tasks` or `notes` in the days.
@@ -141,8 +143,14 @@ export const getDays = async (opts: GetDaysOptions): GetDaysResult => {
   const after = dayjs(opts.from).subtract(1, "day").format("YYYY-MM-DD");
   const first = dayjs(opts.to).diff(dayjs(opts.from), "day") + 1;
 
-  const renderTask: boolean = Boolean(opts.toRender?.TaskCard);
-  const includeTasks: boolean = Boolean(renderTask || opts.include?.tasks);
+  const renderItemCard: boolean = Boolean(opts.toRender?.ItemCard);
+  const includeItem: boolean = Boolean(
+    renderItemCard ||
+      // @ts-ignore check types in GetDaysOptions instead as that's what is expected from the plugin
+      opts.include?.tasks?.item
+  );
+  const renderTaskCard: boolean = Boolean(opts.toRender?.TaskCard);
+  const includeTasks: boolean = Boolean(renderItemCard || renderTaskCard || opts.include?.tasks);
 
   const daysQuery = await fetchQuery<getDaysDaysQuery>(
     environment,
@@ -154,9 +162,10 @@ export const getDays = async (opts: GetDaysOptions): GetDaysResult => {
         $renderDay: Boolean!
         $renderDayContent: Boolean!
         $includeTasks: Boolean!
-        $renderTask: Boolean!
+        $renderTaskCard: Boolean!
         $includeNotes: Boolean!
         $includeItem: Boolean!
+        $renderItemCard: Boolean!
         $includeTaskPluginDatas: Boolean!
         $includeTaskPluginDatasFull: Boolean!
         $includeItemPluginDatas: Boolean!
@@ -178,11 +187,11 @@ export const getDays = async (opts: GetDaysOptions): GetDaysResult => {
       renderDays: Boolean(opts.toRender?.Days),
       renderDay: Boolean(opts.toRender?.Day),
       renderDayContent: Boolean(opts.toRender?.DayContent),
-      renderTask,
+      renderTaskCard,
       includeTasks,
       includeNotes: Boolean(opts.include?.notes),
-      // @ts-ignore check types in GetDaysOptions instead as that's what is expected from the plugin
-      includeItem: Boolean(opts.include?.tasks?.item),
+      renderItemCard,
+      includeItem,
       // @ts-ignore check types in GetDaysOptions instead as that's what is expected from the plugin
       includeTaskPluginDatas: Boolean(opts.include?.tasks?.pluginDatas),
       // @ts-ignore check types in GetDaysOptions instead as that's what is expected from the plugin
@@ -225,6 +234,7 @@ type GetDaysMax10Options = {
     Day: true;
     DayContent: true;
     TaskCard: true;
+    ItemCard: true;
   }>;
   /**
    * Whether to include the `tasks` or `notes` in the days.
@@ -243,8 +253,14 @@ type GetDaysMax10Options = {
 };
 
 export const getDaysMax10 = async (opts: GetDaysMax10Options) => {
-  const renderTask: boolean = Boolean(opts.toRender?.TaskCard);
-  const includeTasks: boolean = Boolean(renderTask || opts.include?.tasks);
+  const renderItemCard: boolean = Boolean(opts.toRender?.ItemCard);
+  const includeItem: boolean = Boolean(
+    renderItemCard ||
+      // @ts-ignore check types in GetDaysMax10Options instead as that's what is expected from the plugin
+      opts.include?.tasks?.item
+  );
+  const renderTaskCard: boolean = Boolean(opts.toRender?.TaskCard);
+  const includeTasks: boolean = Boolean(renderItemCard || renderTaskCard || opts.include?.tasks);
 
   const daysQuery = await fetchQuery<getDaysDaysMax10Query>(
     environment,
@@ -273,9 +289,10 @@ export const getDaysMax10 = async (opts: GetDaysMax10Options) => {
         $renderDay: Boolean!
         $renderDayContent: Boolean!
         $includeTasks: Boolean!
-        $renderTask: Boolean!
+        $renderTaskCard: Boolean!
         $includeNotes: Boolean!
         $includeItem: Boolean!
+        $renderItemCard: Boolean!
         $includeTaskPluginDatas: Boolean!
         $includeTaskPluginDatasFull: Boolean!
         $includeItemPluginDatas: Boolean!
@@ -314,40 +331,40 @@ export const getDaysMax10 = async (opts: GetDaysMax10Options) => {
       }
     `,
     {
-      includeDay0: Boolean(opts.dates[9]),
-      day0: toDayId(opts.dates[9]),
-      includeDay1: Boolean(opts.dates[0]),
-      day1: toDayId(opts.dates[0]),
-      includeDay2: Boolean(opts.dates[1]),
-      day2: toDayId(opts.dates[1]),
-      includeDay3: Boolean(opts.dates[2]),
-      day3: toDayId(opts.dates[2]),
-      includeDay4: Boolean(opts.dates[3]),
-      day4: toDayId(opts.dates[3]),
-      includeDay5: Boolean(opts.dates[4]),
-      day5: toDayId(opts.dates[4]),
-      includeDay6: Boolean(opts.dates[5]),
-      day6: toDayId(opts.dates[5]),
-      includeDay7: Boolean(opts.dates[6]),
-      day7: toDayId(opts.dates[6]),
-      includeDay8: Boolean(opts.dates[7]),
-      day8: toDayId(opts.dates[7]),
-      includeDay9: Boolean(opts.dates[8]),
-      day9: toDayId(opts.dates[8]),
+      includeDay0: Boolean(opts.dates[0]),
+      day0: toDayId(opts.dates[0]),
+      includeDay1: Boolean(opts.dates[1]),
+      day1: toDayId(opts.dates[1]),
+      includeDay2: Boolean(opts.dates[2]),
+      day2: toDayId(opts.dates[2]),
+      includeDay3: Boolean(opts.dates[3]),
+      day3: toDayId(opts.dates[3]),
+      includeDay4: Boolean(opts.dates[4]),
+      day4: toDayId(opts.dates[4]),
+      includeDay5: Boolean(opts.dates[5]),
+      day5: toDayId(opts.dates[5]),
+      includeDay6: Boolean(opts.dates[6]),
+      day6: toDayId(opts.dates[6]),
+      includeDay7: Boolean(opts.dates[7]),
+      day7: toDayId(opts.dates[7]),
+      includeDay8: Boolean(opts.dates[8]),
+      day8: toDayId(opts.dates[8]),
+      includeDay9: Boolean(opts.dates[9]),
+      day9: toDayId(opts.dates[9]),
       renderDay: Boolean(opts.toRender?.Day),
       renderDayContent: Boolean(opts.toRender?.DayContent),
-      renderTask,
+      renderTaskCard,
       includeTasks,
       includeNotes: Boolean(opts.include?.notes),
-      // @ts-ignore check types in GetDaysOptions instead as that's what is expected from the plugin
-      includeItem: Boolean(opts.include?.tasks?.item),
-      // @ts-ignore check types in GetDaysOptions instead as that's what is expected from the plugin
+      renderItemCard,
+      includeItem,
+      // @ts-ignore check types in GetDaysMax10Options instead as that's what is expected from the plugin
       includeTaskPluginDatas: Boolean(opts.include?.tasks?.pluginDatas),
-      // @ts-ignore check types in GetDaysOptions instead as that's what is expected from the plugin
+      // @ts-ignore check types in GetDaysMax10Options instead as that's what is expected from the plugin
       includeTaskPluginDatasFull: Boolean(opts.include?.tasks?.pluginDatas?.full),
-      // @ts-ignore check types in GetDaysOptions instead as that's what is expected from the plugin
+      // @ts-ignore check types in GetDaysMax10Options instead as that's what is expected from the plugin
       includeItemPluginDatas: Boolean(opts.include?.tasks?.item?.pluginDatas),
-      // @ts-ignore check types in GetDaysOptions instead as that's what is expected from the plugin
+      // @ts-ignore check types in GetDaysMax10Options instead as that's what is expected from the plugin
       includeItemPluginDatasFull: Boolean(opts.include?.tasks?.item?.pluginDatas?.full),
     }
   ).toPromise();

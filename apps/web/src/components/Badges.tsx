@@ -1,4 +1,4 @@
-import dayjs from "dayjs";
+import { dayjs } from "@flowdev/web/dayjs";
 
 type DurationBadgeProps = {
   durationInMinutes: number;

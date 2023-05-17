@@ -2,7 +2,7 @@ import { useQueryLoader, graphql, PreloadedQuery, usePreloadedQuery } from "@flo
 import { IndexViewQuery } from "@flowdev/web/relay/__generated__/IndexViewQuery.graphql";
 import { Days } from "../components/Days";
 import { Lists } from "../components/Lists";
-import dayjs from "dayjs";
+import { dayjs } from "@flowdev/web/dayjs";
 
 const indexViewQuery = graphql`
   query IndexViewQuery($daysAfter: ID, $firstDays: Int, $dateInFocus: Date!, $dayIdInFocus: ID!) {

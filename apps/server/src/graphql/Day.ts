@@ -2,13 +2,19 @@ import { prisma } from "../utils/prisma";
 import { builder } from "./builder";
 import { Task, Note, Routine } from "@prisma/client";
 import { endOfDay, getDayOfWeek, getStartFromConnectionArgs, toDateOnly } from "../utils/getDays";
+import { queryFromInfo } from "@pothos/plugin-prisma";
 
 // -------------- Day types --------------
 
 export const DayType = builder.prismaNode("Day", {
   id: { resolve: (day) => toDateOnly(day.date) },
   findUnique: (date) => ({ date: new Date(date) }),
-  // description: "A day in the calendar. Contains tasks and repeating tasks for that day",
+  nullable: true,
+  extensions: {
+    // this resolves the day to an empty node if it doesn't exist in the database so that the `node` query for a day doesn't return null.
+    // the @pothos/plugin-prisma package had to be patched to support this. see the /patches folder at the root.
+    resolveWhenNull: (findUniqueRes: any) => createEmptyNode(findUniqueRes),
+  },
   fields: (t) => ({
     date: t.expose("date", { type: "Date", description: "The date of the day." }),
     notes: t.relation("notes"),
@@ -32,9 +38,9 @@ export const DayType = builder.prismaNode("Day", {
     }),
     routines: t.prismaField({
       type: ["Routine"],
-      description: "The routines for the day in ascending order.",
+      description: "The routines for the day in chronological order.",
       select: { date: true, routinesCompleted: { select: { id: true } } },
-      resolve: async (query, day, args) => {
+      resolve: async (query, day) => {
         const completedRoutineIds = new Set(day.routinesCompleted.map((routine) => routine.id));
         const routines = await prisma.routine.findMany({
           ...query,
@@ -59,17 +65,23 @@ export const DayType = builder.prismaNode("Day", {
 // -------------- Day query types --------------
 
 type DayResolutionType = {
+  __typename: "Day";
+  id: `Day_${string}`;
   date: Date;
   tasksOrder: number[];
   tasks: Task[];
   notes: Note[];
   routines: Routine[];
+  routinesCompleted: { id: string }[];
 };
 type DayEdge = { cursor: string; node: DayResolutionType };
 
 builder.queryField("days", (t) =>
   t.connection({
     type: DayType,
+    extensions: {
+      pothosPrismaFallback: () => console.log("fallback"),
+    },
     description: `Get days using a Relay connection.
 
 If no arguments are provided, it will return the current day.
@@ -93,6 +105,7 @@ Please input a Date in the format: YYYY-MM-DD`,
       // In order to dataload the relations of the Day type, we need to create a query object that contains the select and include arguments.
       // Using queryFromInfo creates the query object found when using t.prismaConnection. See https://github.com/hayes/pothos/blob/main/packages/plugin-prisma/src/field-builder.ts#L122-L128
       const days = await prisma.day.findMany({
+        ...queryFromInfo({ context, info, typeName: "Day", path: ["edges", "node"] }),
         where: { date: { gte: start, lte: end } },
       });
 
@@ -125,9 +138,12 @@ Please input a Date in the format: YYYY-MM-DD`,
  * Creates a DayResolutionType object with empty arrays for the relations.
  */
 const createEmptyNode = ({ date }: { date: Date }): DayResolutionType => ({
+  __typename: "Day",
+  id: `Day_${toDateOnly(date)}`,
   date,
   tasksOrder: [],
   notes: [],
   routines: [],
+  routinesCompleted: [],
   tasks: [],
 });

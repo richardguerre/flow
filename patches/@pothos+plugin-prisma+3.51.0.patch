@@ -1,0 +1,13 @@
+diff --git a/node_modules/@pothos/plugin-prisma/lib/schema-builder.js b/node_modules/@pothos/plugin-prisma/lib/schema-builder.js
+index 77e8b81..7e83410 100644
+--- a/node_modules/@pothos/plugin-prisma/lib/schema-builder.js
++++ b/node_modules/@pothos/plugin-prisma/lib/schema-builder.js
+@@ -123,7 +123,7 @@ schemaBuilderProto.prismaNode = function prismaNode(type, { id: { field , resolv
+                 }
+             }));
+             (0, _core.brandWithType)(record, typeName);
+-            return record;
++            return record ?? options.extensions.resolveWhenNull?.(rawFindUnique(id, context)) ?? null;
+         }
+     };
+     const ref = this.prismaObject(type, extendedOptions);

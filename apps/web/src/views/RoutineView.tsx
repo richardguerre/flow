@@ -2,7 +2,7 @@ import { PreloadedQuery, graphql, usePreloadedQuery, useQueryLoader } from "@flo
 import { useNavigate, useParams } from "react-router-dom";
 import { RoutineViewQuery } from "../relay/__generated__/RoutineViewQuery.graphql";
 import { useMemo, useState } from "react";
-import dayjs from "dayjs";
+import { dayjs } from "@flowdev/web/dayjs";
 import { RoutineStep } from "../components/RoutineStep";
 
 const routineViewQuery = graphql`

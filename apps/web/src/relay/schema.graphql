@@ -55,7 +55,7 @@ type Day implements Node {
   """The notes linked to the day."""
   notes: [Note!]!
 
-  """The routines for the day in ascending order."""
+  """The routines for the day in chronological order."""
   routines: [Routine!]!
   tasks: [Task!]!
 }
