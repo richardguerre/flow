@@ -17,6 +17,8 @@ import { Day, DayContent } from "../components/Day";
 import { TaskCard } from "../components/TaskCard";
 import { ItemCard } from "../components/ItemCard";
 import { useAsyncLoader } from "../useAsyncLoader";
+import { createItem } from "./createItem";
+import { createTask } from "./createTask";
 
 export const pluginOptions = {
   /**
@@ -59,6 +61,14 @@ export const pluginOptions = {
    * If you want to get a range of days (i.e. get all days between 2 dates), use `getDays` instead.
    */
   getDaysMax10,
+  /**
+   * Create an item and pluginDatas that should be linked to the item.
+   */
+  createItem,
+  /**
+   * Create a task.
+   */
+  createTask,
   /**
    * The framer-motion package.
    * This prevents double-bundling it in both the web app and in individual plugins.

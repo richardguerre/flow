@@ -1,5 +1,5 @@
 import { useEffect } from "react";
-import { OperationType, type MutationParameters } from "relay-runtime";
+import { OperationType, type MutationParameters, type MutationConfig } from "relay-runtime";
 import {
   GraphQLTaggedNode,
   PreloadableConcreteRequest,
@@ -9,6 +9,8 @@ import {
   useMutation as useRelayMutation,
   fetchQuery as relayFetchQuery,
   type UseMutationConfig,
+  commitMutation as relayCommitMutation,
+  Environment,
 } from "react-relay";
 
 // unwrapped exports of react-relay
@@ -62,18 +64,18 @@ export function useMutationPromise<TMutation extends MutationParameters>(
       mutate({
         ...mutationConfig,
         onCompleted: (response, errors) => {
+          mutationConfig.onCompleted?.(response, errors);
           if (errors) {
             console.log("useMutation.onCompleted error:", errors);
             reject(errors);
             return;
           }
           resolve(response);
-          mutationConfig.onCompleted?.(response, errors);
         },
         onError: (error) => {
           console.log("useMutation.onError error:", error);
-          reject(error);
           mutationConfig.onError?.(error);
+          reject(error);
         },
       });
     });
@@ -82,3 +84,31 @@ export function useMutationPromise<TMutation extends MutationParameters>(
 }
 
 export const fetchQuery = relayFetchQuery;
+
+export const commitMutation = relayCommitMutation;
+export const commitMutationPromise = async <
+  TOperation extends MutationParameters = MutationParameters
+>(
+  environemnt: Environment,
+  config: MutationConfig<TOperation>
+) => {
+  return new Promise<TOperation["response"]>((resolve, reject) => {
+    commitMutation(environemnt, {
+      ...config,
+      onCompleted: (response, errors) => {
+        config.onCompleted?.(response, errors);
+        if (errors) {
+          console.log("commitMutation.onCompleted errors:", errors);
+          reject(errors);
+          return;
+        }
+        resolve(response);
+      },
+      onError: (error) => {
+        console.log("commitMutation.onError error:", error);
+        config.onError?.(error);
+        reject(error);
+      },
+    });
+  });
+};

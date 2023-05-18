@@ -89,7 +89,7 @@ const RoutineViewContent = (props: RoutineViewProps) => {
       !!wasPreviousRoutineInCurrentDayDone || !!wasLastRoutineInPreviousDayDone;
 
     const stepsLeft = data.routine.steps
-      .slice(routineStepIndex)
+      .slice(routineStepIndex === -1 ? 0 : routineStepIndex)
       // filter out steps with `shouldSkip` set to true and `skipStepsWithShouldSkipTrue` is true
       .filter((step) => !(skipStepsWithShouldSkipTrue && step.shouldSkip));
 

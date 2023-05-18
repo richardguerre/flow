@@ -1,3 +1,4 @@
+import { Prisma } from "@prisma/client";
 import { builder } from "./builder";
 
 export const ItemPluginDataType = builder.prismaNode("ItemPluginData", {
@@ -10,3 +11,15 @@ export const ItemPluginDataType = builder.prismaNode("ItemPluginData", {
     pluginSlug: t.exposeString("pluginSlug"),
   }),
 });
+
+export const ItemPluginDataInput = builder.inputType(
+  builder.inputRef<Omit<Prisma.ItemPluginDataCreateInput, "item">>("ItemPluginDataInput"),
+  {
+    fields: (t) => ({
+      pluginSlug: t.string({ required: true }),
+      originalId: t.string({ required: false }),
+      min: t.field({ type: "JSON", required: true }),
+      full: t.field({ type: "JSON", required: true }),
+    }),
+  }
+);

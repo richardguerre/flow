@@ -135,22 +135,78 @@ export default definePlugin((options) => {
             return <>Loading...</>;
           }
 
-          console.log(days);
-
           return (
             <div>
-              <Flow.Day day={days?.[0]} label="Today" />
-              <Flow.Day day={days?.[1]} label="Tomorrow" />
-              <Flow.Day day={days?.[2]} label="Next week" />
+              <div>
+                <props.BackButton />
+                <props.NextButton />
+              </div>
+              <div className="flex">
+                <Flow.Day day={days?.[0]} label="Today" />
+                <Flow.Day day={days?.[1]} label="Tomorrow" />
+                <Flow.Day day={days?.[2]} label="Next week" />
+              </div>
             </div>
           );
         },
       },
-      "decide-shutdown-time": {
-        component: (props) => <></>,
-      },
+      // TODO: Implement `decide-shutdown-time` step
+      // "decide-shutdown-time": {
+      //   component: (props) => {
+      //     const handleSetShutdownTime =
+      //     return (<></>)},
+      // },
       "todays-plan": {
-        component: (props) => <></>,
+        component: (props) => {
+          const [initialValue, setInitialValue] = useState<string | null>(null);
+          const today = options.dayjs();
+
+          useEffect(() => {
+            (async () => {
+              const days = await options.getDays({
+                from: today.toDate(),
+                to: today.toDate(),
+                include: { tasks: true },
+              });
+              if (!days.length) {
+                setInitialValue("");
+                return;
+              }
+              const day = days[0];
+              /**
+               * Example output:
+               * <ul>
+               *  <li>✅ Task 1</li>
+               *  <li>❌ Task 2</li>
+               *  <li>Task 3</li>
+               * </ul>
+               */
+              setInitialValue(
+                `<ul>${day.tasks
+                  .map(
+                    (task) =>
+                      `<li>${
+                        task.status === "DONE" ? "✅ " : task.status === "CANCELED" ? "❌ " : ""
+                      }${task.title}</li>`
+                  )
+                  .join("")}</ul>`
+              );
+            })();
+          }, []);
+
+          return (
+            <div>
+              <Flow.NoteEditor
+                slug={`flow-essentials_retro-${today.format("YYYY-MM-DD")}`}
+                title={`Retro of ${today.format("MMMM D")}`}
+                loading={initialValue === null}
+                initialValue={initialValue ?? ""}
+              />
+              <props.BackButton />
+              <props.NextButton />
+            </div>
+          );
+        },
       },
     },
   };

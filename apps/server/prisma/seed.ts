@@ -162,7 +162,7 @@ async function script() {
           "flow-essentials_intro-to-today_false",
           "flow-essentials_plan-for-today_false",
           "flow-essentials_today-tomorrow-next-week_false",
-          "flow-essentials_decide-shutdown-time_false",
+          // "flow-essentials_decide-shutdown-time_false", // TODO: add this step
           "flow-essentials_todays-plan_false",
         ],
       },

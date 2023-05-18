@@ -103,6 +103,13 @@ type ItemPluginData implements Node {
   updatedAt: DateTime!
 }
 
+input ItemPluginDataInput {
+  full: JSON!
+  min: JSON!
+  originalId: String
+  pluginSlug: String!
+}
+
 input ItemWhereInput {
   """If set to true, it will return items where isRelevant is true."""
   isRelevant: Boolean = true
@@ -149,6 +156,9 @@ type ListItemsConnectionEdge {
 type Mutation {
   completeRoutine(input: MutationCompleteRoutineInput!): Boolean!
 
+  """Create an item."""
+  createItem(input: MutationCreateItemInput!): Item!
+
   """
   Updates a note if one exists with the passed in `slug`, otherwise creates a new note.
   """
@@ -191,6 +201,25 @@ input MutationCompleteRoutineInput {
 
   """The ID of the routine that was completed."""
   routineId: ID!
+}
+
+input MutationCreateItemInput {
+  color: Color
+  durationInMinutes: Int
+  isAllDay: Boolean
+
+  """
+  If set to true, it will return items where `isRelevant` is true. 
+  
+  `isRelevant` is used in the List component to only show relevant items. If the item becomes irrelevant (e.g. because the trello task was already completed), you can update the item to make this `isRelevant = false`
+  """
+  isRelevant: Boolean
+  listId: ID
+  pluginDatas: [ItemPluginDataInput!]
+  scheduledAt: DateTime
+
+  """The title of the item."""
+  title: String!
 }
 
 input MutationCreateOrUpdateNoteInput {
