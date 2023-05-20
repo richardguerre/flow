@@ -24,7 +24,7 @@ export const getPlugin = async (input: Input) => {
     // This is to make it easier to develop the flow-essentials plugin
     // TODO: Remove this when the plugin is published
     const importPromise = import.meta.env.DEV
-      ? import("@flowdev/flow-essentials/src/web")
+      ? import("@flowdev/essentials/src/web")
       : import(/* @vite-ignore */ `${pluginInstallation.url}/web.js`);
 
     const plugin = (await importPromise).default as WebPlugin;

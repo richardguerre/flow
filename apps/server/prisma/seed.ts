@@ -155,6 +155,7 @@ async function script() {
     data: {
       name: "Morning routine",
       time: "1970-01-01T08:00:00.000Z",
+      repeats: ["MONDAY", "TUESDAY", "WEDNESDAY", "THURSDAY", "FRIDAY", "SATURDAY", "SUNDAY"],
       steps: {
         set: [
           "flow-essentials_intro-to-yesterday_true",

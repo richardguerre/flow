@@ -1,6 +1,6 @@
 {
-  "name": "@flowdev/flow-essentials",
-  "description": "The official and default plugin for Flow.",
+  "name": "@flowdev/essentials",
+  "description": "The official and default plugin for Flow containing essential features such as a morning routine and a shutdown routine.",
   "version": "0.0.1",
   "private": false,
   "scripts": {
