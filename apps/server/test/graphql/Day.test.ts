@@ -37,8 +37,8 @@ describe("Day GraphQL types", () => {
           {
             node: {
               date: toDateOnly(startOfDay()),
+              notes: [],
               tasks: [],
-              repeatingTasks: [],
               routines: [],
             },
           },
@@ -55,7 +55,7 @@ describe("Day GraphQL types", () => {
     const res = await graphql({
       query: gql`
         query {
-          node(id: "SomeId") {
+          node(id: "Day_1970-01-01") {
             ... on Day {
               id
             }

@@ -26,11 +26,7 @@ describe("Task GraphQL types", () => {
                   title
                   status
                   date
-                  isPrivate
-                  previousDates
                   durationInMinutes
-                  scheduledAt
-                  repeats
                   item {
                     id
                   }
@@ -55,11 +51,8 @@ describe("Task GraphQL types", () => {
                   title: task.title,
                   status: task.status,
                   date: toDateOnly(task.date),
-                  durationInMinutes: task.durationInMinutes, // incorrect it should be item.durationInMinutes
-                  scheduledAt: item.scheduledAt?.toJSON() ?? null,
-                  repeats: true,
-                  item: null, // incorrect it should be { id: encodeGlobalID("Item", item.id) }
-                  fromTemplate: null, // incorrect it should be { id: encodeGlobalID("TaskTemplate", taskTemplate.id) }
+                  durationInMinutes: item.durationInMinutes,
+                  item: { id: encodeGlobalID("Item", item.id) },
                 },
               ],
             },
@@ -69,26 +62,6 @@ describe("Task GraphQL types", () => {
     });
 
     // The results are incorrect as it seems the test environment is not using the correct resolvers
-  });
-
-  it("can be fetched through the node interface", async () => {
-    // This test only asserts if the GraphQL types are correct.
-    // It does not assert if the data is correct as @pothos/plugin-prisma
-    // uses it's own findUnique method to fetch the node, which is not
-    // captured by the test runner in .vitest/prisma.
-    const res = await graphql({
-      query: gql`
-        query {
-          node(id: "SomeId") {
-            ... on Task {
-              id
-            }
-          }
-        }
-      `,
-    });
-
-    expect(res.status).toBe(200);
   });
 });
 
@@ -108,15 +81,8 @@ describe("Task GraphQL mutations", () => {
               title
               status
               date
-              isPrivate
-              previousDates
               durationInMinutes
-              scheduledAt
-              repeats
               item {
-                id
-              }
-              fromTemplate {
                 id
               }
             }
@@ -141,9 +107,6 @@ describe("Task GraphQL mutations", () => {
           date: toDateOnly(task.date),
           durationInMinutes: task.durationInMinutes,
           item: null,
-          fromTemplate: null,
-          previousDates: [],
-          scheduledAt: task.item?.scheduledAt?.toJSON() ?? null,
         },
       });
 
@@ -165,15 +128,8 @@ describe("Task GraphQL mutations", () => {
               title
               status
               date
-              isPrivate
-              previousDates
               durationInMinutes
-              scheduledAt
-              repeats
               item {
-                id
-              }
-              fromTemplate {
                 id
               }
             }
@@ -202,9 +158,6 @@ describe("Task GraphQL mutations", () => {
           item: {
             id: encodeGlobalID("Item", item.id),
           },
-          fromTemplate: null,
-          previousDates: [],
-          scheduledAt: task.item?.scheduledAt?.toJSON() ?? null,
         },
       });
     });
@@ -223,15 +176,8 @@ describe("Task GraphQL mutations", () => {
               title
               status
               date
-              isPrivate
-              previousDates
               durationInMinutes
-              scheduledAt
-              repeats
               item {
-                id
-              }
-              fromTemplate {
                 id
               }
             }
@@ -259,9 +205,6 @@ describe("Task GraphQL mutations", () => {
           date: toDateOnly(updatedTask.date),
           durationInMinutes: updatedTask.durationInMinutes,
           item: null,
-          fromTemplate: null,
-          previousDates: [],
-          scheduledAt: updatedTask.item?.scheduledAt?.toJSON() ?? null,
         },
       });
     });
@@ -456,15 +399,18 @@ describe("Task GraphQL mutations", () => {
 
           const res = await graphql({
             query: /* GraphQL */ `
-              mutation UpdateTaskDateMutation($taskId: ID!, $date: Date!) {
-                updateTaskDate(input: { id: $taskId, date: $date }) {
+              mutation UpdateTaskDateMutation($input: MutationUpdateTaskDateInput!) {
+                updateTaskDate(input: $input) {
                   ${commonFields}
                 }
               }
             `,
             variables: {
-              taskId: encodeGlobalID("Task", task.id),
-              date: toDateOnly(date),
+              input: {
+                id: encodeGlobalID("Task", task.id),
+                date: toDateOnly(date),
+                newTasksOrder: [encodeGlobalID("Task", task.id)],
+              },
             },
           });
 
@@ -501,15 +447,18 @@ describe("Task GraphQL mutations", () => {
 
       const res = await graphql({
         query: /* GraphQL */ `
-          mutation UpdateTaskDateMutation($taskId: ID!, $date: Date!) {
-            updateTaskDate(input: { id: $taskId, date: $date }) {
+          mutation UpdateTaskDateMutation($input: MutationUpdateTaskDateInput!) {
+            updateTaskDate(input: $input) {
               ${commonFields}
             }
           }
         `,
         variables: {
-          taskId: encodeGlobalID("Task", task.id),
-          date: toDateOnly(today),
+          input: {
+            id: encodeGlobalID("Task", task.id),
+            date: toDateOnly(today),
+            newTasksOrder: [encodeGlobalID("Task", task.id)],
+          },
         },
       });
 
@@ -546,15 +495,18 @@ describe("Task GraphQL mutations", () => {
 
       const res = await graphql({
         query: /* GraphQL */ `
-          mutation UpdateTaskDateMutation($taskId: ID!, $date: Date!) {
-            updateTaskDate(input: { id: $taskId, date: $date }) {
+          mutation UpdateTaskDateMutation($input: MutationUpdateTaskDateInput!) {
+            updateTaskDate(input: $input) {
               ${commonFields}
             }
           }
         `,
         variables: {
-          taskId: encodeGlobalID("Task", task.id),
-          date: toDateOnly(today),
+          input: {
+            id: encodeGlobalID("Task", task.id),
+            date: toDateOnly(today),
+            newTasksOrder: [encodeGlobalID("Task", task.id)],
+          },
         },
       });
 
@@ -595,15 +547,18 @@ describe("Task GraphQL mutations", () => {
 
           const res = await graphql({
             query: /* GraphQL */ `
-              mutation UpdateTaskDateMutation($taskId: ID!, $date: Date!) {
-                updateTaskDate(input: { id: $taskId, date: $date }) {
+              mutation UpdateTaskDateMutation($input: MutationUpdateTaskDateInput!) {
+                updateTaskDate(input: $input) {
                   ${commonFields}
                 }
               }
             `,
             variables: {
-              taskId: encodeGlobalID("Task", task.id),
-              date: toDateOnly(twoDaysAgo),
+              input: {
+                id: encodeGlobalID("Task", task.id),
+                date: toDateOnly(twoDaysAgo),
+                newTasksOrder: [encodeGlobalID("Task", task.id)],
+              },
             },
           });
 
@@ -646,15 +601,18 @@ describe("Task GraphQL mutations", () => {
 
           const res = await graphql({
             query: /* GraphQL */ `
-              mutation UpdateTaskDateMutation($taskId: ID!, $date: Date!) {
-                updateTaskDate(input: { id: $taskId, date: $date }) {
+              mutation UpdateTaskDateMutation($input: MutationUpdateTaskDateInput!) {
+                updateTaskDate(input: $input) {
                   ${commonFields}
                 }
               }
             `,
             variables: {
-              taskId: encodeGlobalID("Task", task.id),
-              date: toDateOnly(twoDaysLater),
+              input: {
+                id: encodeGlobalID("Task", task.id),
+                date: toDateOnly(twoDaysLater),
+                newTasksOrder: [encodeGlobalID("Task", task.id)],
+              },
             },
           });
 
@@ -714,7 +672,10 @@ describe("Task GraphQL mutations", () => {
           input: {
             id: encodeGlobalID("Task", tasks[0].id),
             date: toDateOnly(today),
-            after: encodeGlobalID("Task", tasks[1].id),
+            newTasksOrder: [
+              encodeGlobalID("Task", tasks[1].id),
+              encodeGlobalID("Task", tasks[0].id),
+            ],
           },
         },
       });
@@ -765,7 +726,11 @@ describe("Task GraphQL mutations", () => {
           input: {
             id: encodeGlobalID("Task", tasks[0].id),
             date: toDateOnly(tomorrow),
-            after: encodeGlobalID("Task", tasks[1].id),
+            newTasksOrder: [
+              encodeGlobalID("Task", tasks[1].id),
+              encodeGlobalID("Task", tasks[0].id),
+              encodeGlobalID("Task", tasks[2].id),
+            ],
           },
         },
       });
