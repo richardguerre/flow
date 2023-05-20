@@ -1,13 +1,5 @@
 import { describe, it, expect } from "vitest";
-import {
-  getStartFromConnectionArgs,
-  startOfDay,
-  getDayOfWeek,
-  toDateOnly,
-  addDays,
-} from "../../src/utils/getDays";
-import { withDb } from "../../.vitest/prisma";
-import { Factory } from "../../.vitest/factory";
+import { getStartFromConnectionArgs, startOfDay, addDays } from "../../src/utils/getDays";
 
 describe("getStartFromConnectionArgs", () => {
   it("returns today if no arguments are passed", () => {

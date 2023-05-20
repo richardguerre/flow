@@ -653,7 +653,7 @@ describe("Task GraphQL mutations", () => {
         .run();
       await prisma.day.update({
         where: { date },
-        data: { tasksOrder: { set: [tasks[0].id, tasks[1].id] } },
+        data: { tasksOrder: { set: [tasks[0]!.id, tasks[1]!.id] } },
       });
 
       // move task 0 after task 1
@@ -670,11 +670,11 @@ describe("Task GraphQL mutations", () => {
         `,
         variables: {
           input: {
-            id: encodeGlobalID("Task", tasks[0].id),
+            id: encodeGlobalID("Task", tasks[0]!.id),
             date: toDateOnly(today),
             newTasksOrder: [
-              encodeGlobalID("Task", tasks[1].id),
-              encodeGlobalID("Task", tasks[0].id),
+              encodeGlobalID("Task", tasks[1]!.id),
+              encodeGlobalID("Task", tasks[0]!.id),
             ],
           },
         },
@@ -690,8 +690,8 @@ describe("Task GraphQL mutations", () => {
           {
             date: toDateOnly(today),
             tasks: [
-              { id: encodeGlobalID("Task", tasks[1].id) },
-              { id: encodeGlobalID("Task", tasks[0].id) },
+              { id: encodeGlobalID("Task", tasks[1]!.id) },
+              { id: encodeGlobalID("Task", tasks[0]!.id) },
             ],
           },
         ],
@@ -706,11 +706,11 @@ describe("Task GraphQL mutations", () => {
         .run();
       await prisma.day.update({
         where: { date: today },
-        data: { tasksOrder: { set: [tasks[0].id] } },
+        data: { tasksOrder: { set: [tasks[0]!.id] } },
       });
       await prisma.day.update({
         where: { date: tomorrow },
-        data: { tasksOrder: { set: [tasks[1].id, tasks[2].id] } },
+        data: { tasksOrder: { set: [tasks[1]!.id, tasks[2]!.id] } },
       });
 
       // move task 0 to tomorrow and in between task 1 and 2
@@ -724,12 +724,12 @@ describe("Task GraphQL mutations", () => {
         `,
         variables: {
           input: {
-            id: encodeGlobalID("Task", tasks[0].id),
+            id: encodeGlobalID("Task", tasks[0]!.id),
             date: toDateOnly(tomorrow),
             newTasksOrder: [
-              encodeGlobalID("Task", tasks[1].id),
-              encodeGlobalID("Task", tasks[0].id),
-              encodeGlobalID("Task", tasks[2].id),
+              encodeGlobalID("Task", tasks[1]!.id),
+              encodeGlobalID("Task", tasks[0]!.id),
+              encodeGlobalID("Task", tasks[2]!.id),
             ],
           },
         },
@@ -748,19 +748,19 @@ describe("Task GraphQL mutations", () => {
             tasks: [
               {
                 __typename: "Task",
-                id: encodeGlobalID("Task", tasks[1].id),
+                id: encodeGlobalID("Task", tasks[1]!.id),
                 date: toDateOnly(tomorrow),
                 status: "TODO",
               },
               {
                 __typename: "Task",
-                id: encodeGlobalID("Task", tasks[0].id),
+                id: encodeGlobalID("Task", tasks[0]!.id),
                 date: toDateOnly(tomorrow),
                 status: "TODO",
               },
               {
                 __typename: "Task",
-                id: encodeGlobalID("Task", tasks[2].id),
+                id: encodeGlobalID("Task", tasks[2]!.id),
                 date: toDateOnly(tomorrow),
                 status: "TODO",
               },

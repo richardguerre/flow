@@ -18,13 +18,15 @@ export class Factory {
    */
   async run() {
     for (const { addAs, promise } of this.promises) {
-      this[addAs] = await promise;
-      this[addAs + "s"].push(this[addAs]);
+      const thisKey = addAs as keyof typeof this;
+      this[thisKey] = await promise;
+      (this[(addAs + "s") as keyof typeof this] as Array<any>).push(this[thisKey]);
     }
     this.promises = [];
     return this;
   }
 
+  // @ts-ignore as the tests will fail anyway if it's undefined
   day: Day;
   days: Day[] = [];
   newDay(overrides?: P<Prisma.DayCreateInput>) {
@@ -38,6 +40,7 @@ export class Factory {
     return this;
   }
 
+  // @ts-ignore as the tests will fail anyway if it's undefined
   task: Task;
   tasks: Task[] = [];
   newTask(overrides?: P<Prisma.TaskCreateInput> & { date?: Date }) {
@@ -54,6 +57,7 @@ export class Factory {
     return this;
   }
 
+  // @ts-ignore as the tests will fail anyway if it's undefined
   item: Item;
   items: Item[] = [];
   newItem(overrides?: P<Prisma.ItemCreateInput>) {
