@@ -12,7 +12,7 @@
  * - Add a canceled task for yesterday.
  * - Add an incomplete task for tomorrow.
  * - Add an incomplete task for the day after tomorrow.
- * - Install the flow-essentials plugin
+ * - Install the essentials plugin
  * - Adds a morning routine using the flow-essential steps
  */
 
@@ -144,8 +144,8 @@ async function script() {
       key: "installed-plugins",
       value: [
         {
-          slug: "flow-essentials",
-          url: "https://cdn.jsdelivr.net/gh/richardguerre/flow@main/packages/flow-essentials/out",
+          slug: "essentials",
+          url: "https://cdn.jsdelivr.net/gh/richardguerre/flow@main/packages/essentials/out",
         },
       ],
     },
@@ -158,13 +158,13 @@ async function script() {
       repeats: ["MONDAY", "TUESDAY", "WEDNESDAY", "THURSDAY", "FRIDAY", "SATURDAY", "SUNDAY"],
       steps: {
         set: [
-          "flow-essentials_intro-to-yesterday_true",
-          "flow-essentials_retro-on-yesterday_true",
-          "flow-essentials_intro-to-today_false",
-          "flow-essentials_plan-for-today_false",
-          "flow-essentials_today-tomorrow-next-week_false",
-          // "flow-essentials_decide-shutdown-time_false", // TODO: add this step
-          "flow-essentials_todays-plan_false",
+          "essentials_intro-to-yesterday_true",
+          "essentials_retro-on-yesterday_true",
+          "essentials_intro-to-today_false",
+          "essentials_plan-for-today_false",
+          "essentials_today-tomorrow-next-week_false",
+          // "essentials_decide-shutdown-time_false", // TODO: add this step
+          "essentials_todays-plan_false",
         ],
       },
     },

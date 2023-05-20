@@ -170,6 +170,9 @@ type Mutation {
   """Create a new task."""
   createTask(input: MutationCreateTaskInput!): Task!
 
+  """Install a plugin."""
+  installPlugin(input: MutationInstallPluginInput!): [PluginInstallation!]!
+
   """Update a task."""
   updateTask(input: MutationUpdateTaskInput!): Task!
 
@@ -268,6 +271,11 @@ input MutationCreateTaskInput {
 
   """The title of the task."""
   title: String!
+}
+
+input MutationInstallPluginInput {
+  slug: String!
+  url: String!
 }
 
 input MutationUpdateTaskDateInput {
