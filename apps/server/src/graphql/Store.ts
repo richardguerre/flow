@@ -1,3 +1,4 @@
+import { installServerPlugin } from "../utils/getPlugins";
 import { prisma } from "../utils/prisma";
 import { builder } from "./builder";
 
@@ -46,7 +47,12 @@ builder.queryField("installedPlugins", (t) =>
     description: "Get all installed plugins.",
     resolve: async () => {
       const setting = await prisma.store.findFirst({
-        where: { key: SettingKeys.INSTALLED_PLUGINS },
+        where: {
+          key: SettingKeys.INSTALLED_PLUGINS,
+          isSecret: false,
+          isServerOnly: false,
+          pluginSlug: null,
+        },
       });
       if (!setting) {
         return [];
@@ -89,6 +95,50 @@ builder.mutationField("createStoreItem", (t) =>
           isServerOnly: false,
         },
       });
+    },
+  })
+);
+
+builder.mutationField("installPlugin", (t) =>
+  t.fieldWithInput({
+    type: [PluginInstallationType],
+    description: "Install a plugin.",
+    input: {
+      url: t.input.string({ required: true }),
+      slug: t.input.string({ required: true }),
+    },
+    resolve: async (_, args) => {
+      const currSetting = await prisma.store.findFirst({
+        where: {
+          key: SettingKeys.INSTALLED_PLUGINS,
+          isSecret: false,
+          isServerOnly: false,
+          pluginSlug: null,
+        },
+      });
+      const installedPluginsSet = new Set((currSetting?.value ?? []) as PluginInstallation[]);
+      installedPluginsSet.add({ slug: args.input.slug, url: args.input.url });
+
+      await installServerPlugin({
+        url: args.input.url,
+        pluginSlug: args.input.slug,
+      });
+
+      const newSetting = await prisma.store.upsert({
+        where: {
+          key: SettingKeys.INSTALLED_PLUGINS,
+        },
+        update: {
+          value: Array.from(installedPluginsSet),
+        },
+        create: {
+          key: SettingKeys.INSTALLED_PLUGINS,
+          value: Array.from(installedPluginsSet),
+          isSecret: false,
+          isServerOnly: false,
+        },
+      });
+      return newSetting.value as PluginInstallation[];
     },
   })
 );

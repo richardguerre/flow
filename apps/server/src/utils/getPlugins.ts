@@ -1,3 +1,4 @@
+import { GraphQLError } from "graphql";
 import fs from "node:fs/promises";
 import path from "node:path";
 
@@ -31,6 +32,9 @@ type Options = {
 export const installServerPlugin = async (opts: Options) => {
   const res = await fetch(`${opts.url}/server.js`);
   const text = await res.text();
+  if (text.startsWith("Couldn't find the requested file")) {
+    throw new GraphQLError(`Couldn't find the plugin at "${opts.url}"`);
+  }
   await fs.writeFile(path.join(pathToPlugins, `${opts.pluginSlug}.js`), text);
   const plugin = require(path.join(pathToPlugins, opts.pluginSlug));
   cache.set(opts.pluginSlug, plugin);
