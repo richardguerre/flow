@@ -116,24 +116,27 @@ builder.mutationField("installPlugin", (t) =>
           pluginSlug: null,
         },
       });
-      const installedPluginsSet = new Set((currSetting?.value ?? []) as PluginInstallation[]);
-      installedPluginsSet.add({ slug: args.input.slug, url: args.input.url });
+      let installedPlugins = (currSetting?.value ?? []) as PluginInstallation[];
+      // remove old plugin installation if it exists
+      installedPlugins = installedPlugins.filter((p) => p.slug !== args.input.slug);
+      // add new plugin installation
+      installedPlugins.push({
+        slug: args.input.slug,
+        url: args.input.url,
+      });
 
+      // replace old plugin installation with new one
       await installServerPlugin({
         url: args.input.url,
         pluginSlug: args.input.slug,
       });
 
       const newSetting = await prisma.store.upsert({
-        where: {
-          key: SettingKeys.INSTALLED_PLUGINS,
-        },
-        update: {
-          value: Array.from(installedPluginsSet),
-        },
+        where: { key: SettingKeys.INSTALLED_PLUGINS },
+        update: { value: installedPlugins },
         create: {
           key: SettingKeys.INSTALLED_PLUGINS,
-          value: Array.from(installedPluginsSet),
+          value: installedPlugins,
           isSecret: false,
           isServerOnly: false,
         },
