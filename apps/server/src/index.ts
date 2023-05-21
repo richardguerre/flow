@@ -4,8 +4,9 @@ import { schema } from "./graphql";
 import { externalSources } from "../../../config";
 import { addItems } from "./utils/addItems";
 import { pluralize } from "./utils/pluralize";
+import { getPlugins } from "./utils/getPlugins";
 
-const PORT = process.env.PORT || 4000;
+const PORT = process.env.PORT ?? 4000;
 export const app = express();
 app.use(express.json());
 
@@ -15,6 +16,24 @@ const graphqlAPI = createYoga({ schema });
 app.use("/graphql", graphqlAPI);
 
 // -------------------------- Webhooks ----------------------------
+
+app.use("/api/:pluginSlug", async (req, res, next) => {
+  const pluginSlug = req.params.pluginSlug;
+  const installedPlugins = await getPlugins();
+  const plugin = installedPlugins[pluginSlug];
+  if (!plugin) {
+    res.status(404).send(`Plugin ${pluginSlug} not found`);
+    return;
+  }
+  if (!plugin.onRequest) {
+    res
+      .status(404)
+      .send(`Plugin ${pluginSlug} has no \`onRequest\` function to handle the request.`);
+    return;
+  }
+  plugin.onRequest(req, res);
+  next();
+});
 
 app.post("/webhook/:name", async (req, res) => {
   console.log("Received webhook", req.params.name, req.body);
@@ -47,7 +66,7 @@ app.post("/webhook/:name", async (req, res) => {
 
 if (process.env.NODE_ENV !== "test") {
   app.listen(PORT, () => {
-    console.log(`\nServer started on port ${PORT}`);
+    console.log(`\n✅ Server started on port ${PORT}`);
     console.log(`GraphQL API: http://localhost:${PORT}/graphql`);
     for (const name in externalSources) {
       console.log(

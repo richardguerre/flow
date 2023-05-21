@@ -29,13 +29,6 @@ export const getPluginOptions = (slug: string) => ({
     list: prisma.list,
     routine: prisma.routine,
     store: {
-      findUnique: <T extends Prisma.StoreFindUniqueArgs>(
-        args: Prisma.SelectSubset<T, Prisma.StoreFindUniqueArgs>
-      ) =>
-        prisma.store.findUnique({
-          ...args,
-          where: { key: args.where?.key },
-        }),
       findFirst: <T extends Prisma.StoreFindFirstArgs>(
         args: Prisma.SelectSubset<T, Prisma.StoreFindFirstArgs>
       ) => {
@@ -43,6 +36,7 @@ export const getPluginOptions = (slug: string) => ({
           ...args,
           where: {
             ...args.where,
+            OR: [{ pluginSlug: slug }, { isSecret: false }],
           },
         });
       },
