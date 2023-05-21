@@ -1,5 +1,6 @@
 module.exports = {
-  default: () => ({
+  default: {
     slug: "essentials",
-  }),
+    plugin: () => {},
+  },
 };
