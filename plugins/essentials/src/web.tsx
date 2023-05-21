@@ -4,7 +4,7 @@
 import { definePlugin, PluginRoutineStepProps } from "@flowdev/plugin/web";
 import { useEffect, useState } from "react";
 
-export default definePlugin((options) => {
+export default definePlugin("essentials", (options) => {
   const Flow = options.components;
   const { motion } = options.framerMotion;
 
@@ -31,7 +31,6 @@ export default definePlugin((options) => {
   };
 
   return {
-    slug: "flow-essentials",
     routineSteps: {
       // Morning routine steps
       "intro-to-yesterday": {

@@ -1,4 +1,4 @@
-var y = { exports: {} }, h = {}, j = { exports: {} }, r = {};
+var N = { exports: {} }, D = {}, C = { exports: {} }, c = {};
 /**
  * @license React
  * react.production.min.js
@@ -8,258 +8,257 @@ var y = { exports: {} }, h = {}, j = { exports: {} }, r = {};
  * This source code is licensed under the MIT license found in the
  * LICENSE file in the root directory of this source tree.
  */
-var d = Symbol.for("react.element"), L = Symbol.for("react.portal"), U = Symbol.for("react.fragment"), A = Symbol.for("react.strict_mode"), N = Symbol.for("react.profiler"), V = Symbol.for("react.provider"), q = Symbol.for("react.context"), B = Symbol.for("react.forward_ref"), M = Symbol.for("react.suspense"), z = Symbol.for("react.memo"), H = Symbol.for("react.lazy"), x = Symbol.iterator;
-function W(e) {
-  return e === null || typeof e != "object" ? null : (e = x && e[x] || e["@@iterator"], typeof e == "function" ? e : null);
+var h = Symbol.for("react.element"), A = Symbol.for("react.portal"), Y = Symbol.for("react.fragment"), F = Symbol.for("react.strict_mode"), U = Symbol.for("react.profiler"), q = Symbol.for("react.provider"), W = Symbol.for("react.context"), z = Symbol.for("react.forward_ref"), H = Symbol.for("react.suspense"), J = Symbol.for("react.memo"), G = Symbol.for("react.lazy"), $ = Symbol.iterator;
+function K(t) {
+  return t === null || typeof t != "object" ? null : (t = $ && t[$] || t["@@iterator"], typeof t == "function" ? t : null);
 }
-var C = { isMounted: function() {
+var B = { isMounted: function() {
   return !1;
 }, enqueueForceUpdate: function() {
 }, enqueueReplaceState: function() {
 }, enqueueSetState: function() {
-} }, O = Object.assign, P = {};
-function p(e, t, n) {
-  this.props = e, this.context = t, this.refs = P, this.updater = n || C;
+} }, M = Object.assign, O = {};
+function x(t, e, f) {
+  this.props = t, this.context = e, this.refs = O, this.updater = f || B;
 }
-p.prototype.isReactComponent = {};
-p.prototype.setState = function(e, t) {
-  if (typeof e != "object" && typeof e != "function" && e != null)
+x.prototype.isReactComponent = {};
+x.prototype.setState = function(t, e) {
+  if (typeof t != "object" && typeof t != "function" && t != null)
     throw Error("setState(...): takes an object of state variables to update or a function which returns an object of state variables.");
-  this.updater.enqueueSetState(this, e, t, "setState");
+  this.updater.enqueueSetState(this, t, e, "setState");
 };
-p.prototype.forceUpdate = function(e) {
-  this.updater.enqueueForceUpdate(this, e, "forceUpdate");
+x.prototype.forceUpdate = function(t) {
+  this.updater.enqueueForceUpdate(this, t, "forceUpdate");
 };
-function g() {
+function T() {
 }
-g.prototype = p.prototype;
-function E(e, t, n) {
-  this.props = e, this.context = t, this.refs = P, this.updater = n || C;
+T.prototype = x.prototype;
+function E(t, e, f) {
+  this.props = t, this.context = e, this.refs = O, this.updater = f || B;
 }
-var R = E.prototype = new g();
-R.constructor = E;
-O(R, p.prototype);
-R.isPureReactComponent = !0;
-var $ = Array.isArray, I = Object.prototype.hasOwnProperty, k = { current: null }, T = { key: !0, ref: !0, __self: !0, __source: !0 };
-function D(e, t, n) {
-  var o, u = {}, i = null, s = null;
-  if (t != null)
-    for (o in t.ref !== void 0 && (s = t.ref), t.key !== void 0 && (i = "" + t.key), t)
-      I.call(t, o) && !T.hasOwnProperty(o) && (u[o] = t[o]);
-  var f = arguments.length - 2;
-  if (f === 1)
-    u.children = n;
-  else if (1 < f) {
-    for (var c = Array(f), a = 0; a < f; a++)
-      c[a] = arguments[a + 2];
-    u.children = c;
+var g = E.prototype = new T();
+g.constructor = E;
+M(g, x.prototype);
+g.isPureReactComponent = !0;
+var R = Array.isArray, L = Object.prototype.hasOwnProperty, k = { current: null }, P = { key: !0, ref: !0, __self: !0, __source: !0 };
+function I(t, e, f) {
+  var a, i = {}, r = null, o = null;
+  if (e != null)
+    for (a in e.ref !== void 0 && (o = e.ref), e.key !== void 0 && (r = "" + e.key), e)
+      L.call(e, a) && !P.hasOwnProperty(a) && (i[a] = e[a]);
+  var s = arguments.length - 2;
+  if (s === 1)
+    i.children = f;
+  else if (1 < s) {
+    for (var u = Array(s), l = 0; l < s; l++)
+      u[l] = arguments[l + 2];
+    i.children = u;
   }
-  if (e && e.defaultProps)
-    for (o in f = e.defaultProps, f)
-      u[o] === void 0 && (u[o] = f[o]);
-  return { $$typeof: d, type: e, key: i, ref: s, props: u, _owner: k.current };
+  if (t && t.defaultProps)
+    for (a in s = t.defaultProps, s)
+      i[a] === void 0 && (i[a] = s[a]);
+  return { $$typeof: h, type: t, key: r, ref: o, props: i, _owner: k.current };
 }
-function Y(e, t) {
-  return { $$typeof: d, type: e.type, key: t, ref: e.ref, props: e.props, _owner: e._owner };
+function Q(t, e) {
+  return { $$typeof: h, type: t.type, key: e, ref: t.ref, props: t.props, _owner: t._owner };
 }
-function w(e) {
-  return typeof e == "object" && e !== null && e.$$typeof === d;
+function S(t) {
+  return typeof t == "object" && t !== null && t.$$typeof === h;
 }
-function J(e) {
-  var t = { "=": "=0", ":": "=2" };
-  return "$" + e.replace(/[=:]/g, function(n) {
-    return t[n];
+function X(t) {
+  var e = { "=": "=0", ":": "=2" };
+  return "$" + t.replace(/[=:]/g, function(f) {
+    return e[f];
   });
 }
 var b = /\/+/g;
-function S(e, t) {
-  return typeof e == "object" && e !== null && e.key != null ? J("" + e.key) : t.toString(36);
+function w(t, e) {
+  return typeof t == "object" && t !== null && t.key != null ? X("" + t.key) : e.toString(36);
 }
-function v(e, t, n, o, u) {
-  var i = typeof e;
-  (i === "undefined" || i === "boolean") && (e = null);
-  var s = !1;
-  if (e === null)
-    s = !0;
+function _(t, e, f, a, i) {
+  var r = typeof t;
+  (r === "undefined" || r === "boolean") && (t = null);
+  var o = !1;
+  if (t === null)
+    o = !0;
   else
-    switch (i) {
+    switch (r) {
       case "string":
       case "number":
-        s = !0;
+        o = !0;
         break;
       case "object":
-        switch (e.$$typeof) {
-          case d:
-          case L:
-            s = !0;
+        switch (t.$$typeof) {
+          case h:
+          case A:
+            o = !0;
         }
     }
-  if (s)
-    return s = e, u = u(s), e = o === "" ? "." + S(s, 0) : o, $(u) ? (n = "", e != null && (n = e.replace(b, "$&/") + "/"), v(u, t, n, "", function(a) {
-      return a;
-    })) : u != null && (w(u) && (u = Y(u, n + (!u.key || s && s.key === u.key ? "" : ("" + u.key).replace(b, "$&/") + "/") + e)), t.push(u)), 1;
-  if (s = 0, o = o === "" ? "." : o + ":", $(e))
-    for (var f = 0; f < e.length; f++) {
-      i = e[f];
-      var c = o + S(i, f);
-      s += v(i, t, n, c, u);
+  if (o)
+    return o = t, i = i(o), t = a === "" ? "." + w(o, 0) : a, R(i) ? (f = "", t != null && (f = t.replace(b, "$&/") + "/"), _(i, e, f, "", function(l) {
+      return l;
+    })) : i != null && (S(i) && (i = Q(i, f + (!i.key || o && o.key === i.key ? "" : ("" + i.key).replace(b, "$&/") + "/") + t)), e.push(i)), 1;
+  if (o = 0, a = a === "" ? "." : a + ":", R(t))
+    for (var s = 0; s < t.length; s++) {
+      r = t[s];
+      var u = a + w(r, s);
+      o += _(r, e, f, u, i);
     }
-  else if (c = W(e), typeof c == "function")
-    for (e = c.call(e), f = 0; !(i = e.next()).done; )
-      i = i.value, c = o + S(i, f++), s += v(i, t, n, c, u);
-  else if (i === "object")
-    throw t = String(e), Error("Objects are not valid as a React child (found: " + (t === "[object Object]" ? "object with keys {" + Object.keys(e).join(", ") + "}" : t) + "). If you meant to render a collection of children, use an array instead.");
-  return s;
+  else if (u = K(t), typeof u == "function")
+    for (t = u.call(t), s = 0; !(r = t.next()).done; )
+      r = r.value, u = a + w(r, s++), o += _(r, e, f, u, i);
+  else if (r === "object")
+    throw e = String(t), Error("Objects are not valid as a React child (found: " + (e === "[object Object]" ? "object with keys {" + Object.keys(t).join(", ") + "}" : e) + "). If you meant to render a collection of children, use an array instead.");
+  return o;
 }
-function _(e, t, n) {
-  if (e == null)
-    return e;
-  var o = [], u = 0;
-  return v(e, o, "", "", function(i) {
-    return t.call(n, i, u++);
-  }), o;
-}
-function G(e) {
-  if (e._status === -1) {
-    var t = e._result;
-    t = t(), t.then(function(n) {
-      (e._status === 0 || e._status === -1) && (e._status = 1, e._result = n);
-    }, function(n) {
-      (e._status === 0 || e._status === -1) && (e._status = 2, e._result = n);
-    }), e._status === -1 && (e._status = 0, e._result = t);
-  }
-  if (e._status === 1)
-    return e._result.default;
-  throw e._result;
-}
-var l = { current: null }, m = { transition: null }, K = { ReactCurrentDispatcher: l, ReactCurrentBatchConfig: m, ReactCurrentOwner: k };
-r.Children = { map: _, forEach: function(e, t, n) {
-  _(e, function() {
-    t.apply(this, arguments);
-  }, n);
-}, count: function(e) {
-  var t = 0;
-  return _(e, function() {
-    t++;
-  }), t;
-}, toArray: function(e) {
-  return _(e, function(t) {
+function j(t, e, f) {
+  if (t == null)
     return t;
+  var a = [], i = 0;
+  return _(t, a, "", "", function(r) {
+    return e.call(f, r, i++);
+  }), a;
+}
+function Z(t) {
+  if (t._status === -1) {
+    var e = t._result;
+    e = e(), e.then(function(f) {
+      (t._status === 0 || t._status === -1) && (t._status = 1, t._result = f);
+    }, function(f) {
+      (t._status === 0 || t._status === -1) && (t._status = 2, t._result = f);
+    }), t._status === -1 && (t._status = 0, t._result = e);
+  }
+  if (t._status === 1)
+    return t._result.default;
+  throw t._result;
+}
+var d = { current: null }, v = { transition: null }, tt = { ReactCurrentDispatcher: d, ReactCurrentBatchConfig: v, ReactCurrentOwner: k };
+c.Children = { map: j, forEach: function(t, e, f) {
+  j(t, function() {
+    e.apply(this, arguments);
+  }, f);
+}, count: function(t) {
+  var e = 0;
+  return j(t, function() {
+    e++;
+  }), e;
+}, toArray: function(t) {
+  return j(t, function(e) {
+    return e;
   }) || [];
-}, only: function(e) {
-  if (!w(e))
+}, only: function(t) {
+  if (!S(t))
     throw Error("React.Children.only expected to receive a single React element child.");
-  return e;
+  return t;
 } };
-r.Component = p;
-r.Fragment = U;
-r.Profiler = N;
-r.PureComponent = E;
-r.StrictMode = A;
-r.Suspense = M;
-r.__SECRET_INTERNALS_DO_NOT_USE_OR_YOU_WILL_BE_FIRED = K;
-r.cloneElement = function(e, t, n) {
-  if (e == null)
-    throw Error("React.cloneElement(...): The argument must be a React element, but you passed " + e + ".");
-  var o = O({}, e.props), u = e.key, i = e.ref, s = e._owner;
-  if (t != null) {
-    if (t.ref !== void 0 && (i = t.ref, s = k.current), t.key !== void 0 && (u = "" + t.key), e.type && e.type.defaultProps)
-      var f = e.type.defaultProps;
-    for (c in t)
-      I.call(t, c) && !T.hasOwnProperty(c) && (o[c] = t[c] === void 0 && f !== void 0 ? f[c] : t[c]);
+c.Component = x;
+c.Fragment = Y;
+c.Profiler = U;
+c.PureComponent = E;
+c.StrictMode = F;
+c.Suspense = H;
+c.__SECRET_INTERNALS_DO_NOT_USE_OR_YOU_WILL_BE_FIRED = tt;
+c.cloneElement = function(t, e, f) {
+  if (t == null)
+    throw Error("React.cloneElement(...): The argument must be a React element, but you passed " + t + ".");
+  var a = M({}, t.props), i = t.key, r = t.ref, o = t._owner;
+  if (e != null) {
+    if (e.ref !== void 0 && (r = e.ref, o = k.current), e.key !== void 0 && (i = "" + e.key), t.type && t.type.defaultProps)
+      var s = t.type.defaultProps;
+    for (u in e)
+      L.call(e, u) && !P.hasOwnProperty(u) && (a[u] = e[u] === void 0 && s !== void 0 ? s[u] : e[u]);
   }
-  var c = arguments.length - 2;
-  if (c === 1)
-    o.children = n;
-  else if (1 < c) {
-    f = Array(c);
-    for (var a = 0; a < c; a++)
-      f[a] = arguments[a + 2];
-    o.children = f;
+  var u = arguments.length - 2;
+  if (u === 1)
+    a.children = f;
+  else if (1 < u) {
+    s = Array(u);
+    for (var l = 0; l < u; l++)
+      s[l] = arguments[l + 2];
+    a.children = s;
   }
-  return { $$typeof: d, type: e.type, key: u, ref: i, props: o, _owner: s };
+  return { $$typeof: h, type: t.type, key: i, ref: r, props: a, _owner: o };
 };
-r.createContext = function(e) {
-  return e = { $$typeof: q, _currentValue: e, _currentValue2: e, _threadCount: 0, Provider: null, Consumer: null, _defaultValue: null, _globalName: null }, e.Provider = { $$typeof: V, _context: e }, e.Consumer = e;
+c.createContext = function(t) {
+  return t = { $$typeof: W, _currentValue: t, _currentValue2: t, _threadCount: 0, Provider: null, Consumer: null, _defaultValue: null, _globalName: null }, t.Provider = { $$typeof: q, _context: t }, t.Consumer = t;
 };
-r.createElement = D;
-r.createFactory = function(e) {
-  var t = D.bind(null, e);
-  return t.type = e, t;
+c.createElement = I;
+c.createFactory = function(t) {
+  var e = I.bind(null, t);
+  return e.type = t, e;
 };
-r.createRef = function() {
+c.createRef = function() {
   return { current: null };
 };
-r.forwardRef = function(e) {
-  return { $$typeof: B, render: e };
+c.forwardRef = function(t) {
+  return { $$typeof: z, render: t };
 };
-r.isValidElement = w;
-r.lazy = function(e) {
-  return { $$typeof: H, _payload: { _status: -1, _result: e }, _init: G };
+c.isValidElement = S;
+c.lazy = function(t) {
+  return { $$typeof: G, _payload: { _status: -1, _result: t }, _init: Z };
 };
-r.memo = function(e, t) {
-  return { $$typeof: z, type: e, compare: t === void 0 ? null : t };
+c.memo = function(t, e) {
+  return { $$typeof: J, type: t, compare: e === void 0 ? null : e };
 };
-r.startTransition = function(e) {
-  var t = m.transition;
-  m.transition = {};
+c.startTransition = function(t) {
+  var e = v.transition;
+  v.transition = {};
   try {
-    e();
+    t();
   } finally {
-    m.transition = t;
+    v.transition = e;
   }
 };
-r.unstable_act = function() {
+c.unstable_act = function() {
   throw Error("act(...) is not supported in production builds of React.");
 };
-r.useCallback = function(e, t) {
-  return l.current.useCallback(e, t);
+c.useCallback = function(t, e) {
+  return d.current.useCallback(t, e);
 };
-r.useContext = function(e) {
-  return l.current.useContext(e);
+c.useContext = function(t) {
+  return d.current.useContext(t);
 };
-r.useDebugValue = function() {
+c.useDebugValue = function() {
 };
-r.useDeferredValue = function(e) {
-  return l.current.useDeferredValue(e);
+c.useDeferredValue = function(t) {
+  return d.current.useDeferredValue(t);
 };
-r.useEffect = function(e, t) {
-  return l.current.useEffect(e, t);
+c.useEffect = function(t, e) {
+  return d.current.useEffect(t, e);
 };
-r.useId = function() {
-  return l.current.useId();
+c.useId = function() {
+  return d.current.useId();
 };
-r.useImperativeHandle = function(e, t, n) {
-  return l.current.useImperativeHandle(e, t, n);
+c.useImperativeHandle = function(t, e, f) {
+  return d.current.useImperativeHandle(t, e, f);
 };
-r.useInsertionEffect = function(e, t) {
-  return l.current.useInsertionEffect(e, t);
+c.useInsertionEffect = function(t, e) {
+  return d.current.useInsertionEffect(t, e);
 };
-r.useLayoutEffect = function(e, t) {
-  return l.current.useLayoutEffect(e, t);
+c.useLayoutEffect = function(t, e) {
+  return d.current.useLayoutEffect(t, e);
 };
-r.useMemo = function(e, t) {
-  return l.current.useMemo(e, t);
+c.useMemo = function(t, e) {
+  return d.current.useMemo(t, e);
 };
-r.useReducer = function(e, t, n) {
-  return l.current.useReducer(e, t, n);
+c.useReducer = function(t, e, f) {
+  return d.current.useReducer(t, e, f);
 };
-r.useRef = function(e) {
-  return l.current.useRef(e);
+c.useRef = function(t) {
+  return d.current.useRef(t);
 };
-r.useState = function(e) {
-  return l.current.useState(e);
+c.useState = function(t) {
+  return d.current.useState(t);
 };
-r.useSyncExternalStore = function(e, t, n) {
-  return l.current.useSyncExternalStore(e, t, n);
+c.useSyncExternalStore = function(t, e, f) {
+  return d.current.useSyncExternalStore(t, e, f);
 };
-r.useTransition = function() {
-  return l.current.useTransition();
+c.useTransition = function() {
+  return d.current.useTransition();
 };
-r.version = "18.2.0";
-(function(e) {
-  e.exports = r;
-})(j);
+c.version = "18.2.0";
+C.exports = c;
+var p = C.exports;
 /**
  * @license React
  * react-jsx-runtime.production.min.js
@@ -269,43 +268,242 @@ r.version = "18.2.0";
  * This source code is licensed under the MIT license found in the
  * LICENSE file in the root directory of this source tree.
  */
-var Q = j.exports, X = Symbol.for("react.element"), Z = Symbol.for("react.fragment"), ee = Object.prototype.hasOwnProperty, te = Q.__SECRET_INTERNALS_DO_NOT_USE_OR_YOU_WILL_BE_FIRED.ReactCurrentOwner, re = { key: !0, ref: !0, __self: !0, __source: !0 };
-function F(e, t, n) {
-  var o, u = {}, i = null, s = null;
-  n !== void 0 && (i = "" + n), t.key !== void 0 && (i = "" + t.key), t.ref !== void 0 && (s = t.ref);
-  for (o in t)
-    ee.call(t, o) && !re.hasOwnProperty(o) && (u[o] = t[o]);
-  if (e && e.defaultProps)
-    for (o in t = e.defaultProps, t)
-      u[o] === void 0 && (u[o] = t[o]);
-  return { $$typeof: X, type: e, key: i, ref: s, props: u, _owner: te.current };
+var et = p, rt = Symbol.for("react.element"), nt = Symbol.for("react.fragment"), ot = Object.prototype.hasOwnProperty, ut = et.__SECRET_INTERNALS_DO_NOT_USE_OR_YOU_WILL_BE_FIRED.ReactCurrentOwner, st = { key: !0, ref: !0, __self: !0, __source: !0 };
+function V(t, e, f) {
+  var a, i = {}, r = null, o = null;
+  f !== void 0 && (r = "" + f), e.key !== void 0 && (r = "" + e.key), e.ref !== void 0 && (o = e.ref);
+  for (a in e)
+    ot.call(e, a) && !st.hasOwnProperty(a) && (i[a] = e[a]);
+  if (t && t.defaultProps)
+    for (a in e = t.defaultProps, e)
+      i[a] === void 0 && (i[a] = e[a]);
+  return { $$typeof: rt, type: t, key: r, ref: o, props: i, _owner: ut.current };
 }
-h.Fragment = Z;
-h.jsx = F;
-h.jsxs = F;
-(function(e) {
-  e.exports = h;
-})(y);
-const ne = (e) => e, oe = ne((e) => {
-  const t = e.components;
+D.Fragment = nt;
+D.jsx = V;
+D.jsxs = V;
+N.exports = D;
+var n = N.exports;
+const at = (t, e) => ({ slug: t, plugin: e }), it = at("essentials", (t) => {
+  const e = t.components, { motion: f } = t.framerMotion, a = 5, i = (r) => (p.useEffect(() => {
+    const o = setTimeout(r.onNext, a * 1e3);
+    return () => clearTimeout(o);
+  }, []), /* @__PURE__ */ n.jsx(
+    "div",
+    {
+      className: "flex h-screen w-screen items-center justify-center bg-gray-100",
+      onClick: r.onNext,
+      children: /* @__PURE__ */ n.jsx(
+        f.div,
+        {
+          className: "text-6xl font-semibold",
+          animate: { opacity: [0, 1, 0] },
+          transition: { duration: a, times: [0, 0.7, 1] },
+          children: r.children
+        }
+      )
+    }
+  ));
   return {
-    slug: "flow-essentials",
     routineSteps: {
-      yesterday: {
-        component: ({ onNext: n }) => /* @__PURE__ */ y.exports.jsxs("div", { children: [
-          "Yesterday",
-          /* @__PURE__ */ y.exports.jsx(t.Button, { onClick: n })
-        ] })
+      // Morning routine steps
+      "intro-to-yesterday": {
+        component: (r) => /* @__PURE__ */ n.jsx(i, { ...r, children: "Yesterday" })
       },
       "retro-on-yesterday": {
-        component: () => /* @__PURE__ */ y.exports.jsx("div", { children: "Retro on yesterday" })
+        component: (r) => {
+          const [o, s] = p.useState(null), u = t.dayjs().subtract(1, "day");
+          return p.useEffect(() => {
+            (async () => {
+              const l = await t.getDays({
+                from: u.toDate(),
+                to: u.toDate(),
+                include: { tasks: !0 }
+              });
+              if (!l.length) {
+                s("");
+                return;
+              }
+              const m = l[0];
+              s(
+                `<ul>${m.tasks.map(
+                  (y) => `<li>${y.status === "DONE" ? "✅" : y.status === "CANCELED" ? "❌" : "⏳"} ${y.title}</li>`
+                ).join("")}</ul>`
+              );
+            })();
+          }, []), /* @__PURE__ */ n.jsxs("div", { children: [
+            /* @__PURE__ */ n.jsx(
+              e.NoteEditor,
+              {
+                slug: `flow-essentials_retro-${u.format("YYYY-MM-DD")}`,
+                title: `Retro of ${u.format("MMMM D")}`,
+                loading: o === null,
+                initialValue: o ?? ""
+              }
+            ),
+            /* @__PURE__ */ n.jsx(r.BackButton, {}),
+            /* @__PURE__ */ n.jsx(r.NextButton, {})
+          ] });
+        }
       },
-      today: {
-        component: () => /* @__PURE__ */ y.exports.jsx("div", { children: "Today" })
+      "intro-to-today": {
+        component: (r) => /* @__PURE__ */ n.jsx(i, { ...r, children: "Today" })
+      },
+      "plan-for-today": {
+        component: (r) => {
+          const o = t.dayjs(), [s, u] = t.hooks.useAsyncLoader(async () => await t.getDays({
+            from: o.toDate(),
+            to: o.toDate(),
+            toRender: { Day: !0 }
+          })), l = s == null ? void 0 : s[0];
+          return u ? /* @__PURE__ */ n.jsx(n.Fragment, { children: "Loading..." }) : /* @__PURE__ */ n.jsxs("div", { children: [
+            /* @__PURE__ */ n.jsxs("div", { children: [
+              /* @__PURE__ */ n.jsx(r.BackButton, {}),
+              /* @__PURE__ */ n.jsx(r.NextButton, {})
+            ] }),
+            /* @__PURE__ */ n.jsx(e.Day, { day: l, label: "Today" })
+          ] });
+        }
+      },
+      "today-tomorrow-next-week": {
+        component: (r) => {
+          const o = t.dayjs(), s = o.add(1, "day"), u = o.weekday(7), [l, m] = t.hooks.useAsyncLoader(async () => await t.getDaysMax10({
+            dates: [o.toDate(), s.toDate(), u.toDate()],
+            toRender: { Day: !0 }
+          }));
+          return m ? /* @__PURE__ */ n.jsx(n.Fragment, { children: "Loading..." }) : /* @__PURE__ */ n.jsxs("div", { children: [
+            /* @__PURE__ */ n.jsxs("div", { children: [
+              /* @__PURE__ */ n.jsx(r.BackButton, {}),
+              /* @__PURE__ */ n.jsx(r.NextButton, {})
+            ] }),
+            /* @__PURE__ */ n.jsxs("div", { className: "flex", children: [
+              /* @__PURE__ */ n.jsx(e.Day, { day: l == null ? void 0 : l[0], label: "Today" }),
+              /* @__PURE__ */ n.jsx(e.Day, { day: l == null ? void 0 : l[1], label: "Tomorrow" }),
+              /* @__PURE__ */ n.jsx(e.Day, { day: l == null ? void 0 : l[2], label: "Next week" })
+            ] })
+          ] });
+        }
+      },
+      // TODO: Implement `decide-shutdown-time` step
+      // "decide-shutdown-time": {
+      //   component: (props) => {
+      //     const handleSetShutdownTime =
+      //     return (<></>)},
+      // },
+      "todays-plan": {
+        component: (r) => {
+          const [o, s] = p.useState(null), u = t.dayjs();
+          return p.useEffect(() => {
+            (async () => {
+              const l = await t.getDays({
+                from: u.toDate(),
+                to: u.toDate(),
+                include: { tasks: !0 }
+              });
+              if (!l.length) {
+                s("");
+                return;
+              }
+              const m = l[0];
+              s(
+                `<ul>${m.tasks.map(
+                  (y) => `<li>${y.status === "DONE" ? "✅ " : y.status === "CANCELED" ? "❌ " : ""}${y.title}</li>`
+                ).join("")}</ul>`
+              );
+            })();
+          }, []), /* @__PURE__ */ n.jsxs("div", { children: [
+            /* @__PURE__ */ n.jsx(
+              e.NoteEditor,
+              {
+                slug: `flow-essentials_retro-${u.format("YYYY-MM-DD")}`,
+                title: `Retro of ${u.format("MMMM D")}`,
+                loading: o === null,
+                initialValue: o ?? ""
+              }
+            ),
+            /* @__PURE__ */ n.jsx(r.BackButton, {}),
+            /* @__PURE__ */ n.jsx(r.NextButton, {})
+          ] });
+        }
+      },
+      // Shutdown routine steps
+      "intro-to-todays-shutdown": {
+        component: (r) => /* @__PURE__ */ n.jsx(i, { ...r, children: "Let's reflect on what you did today" })
+      },
+      "clean-up-today": {
+        component: (r) => {
+          const o = t.dayjs(), [s, u] = t.hooks.useAsyncLoader(async () => await t.getDays({
+            from: o.toDate(),
+            to: o.toDate(),
+            toRender: { Day: !0 }
+          })), l = s == null ? void 0 : s[0];
+          return u ? /* @__PURE__ */ n.jsx(n.Fragment, { children: "Loading..." }) : /* @__PURE__ */ n.jsxs("div", { children: [
+            /* @__PURE__ */ n.jsxs("div", { children: [
+              /* @__PURE__ */ n.jsx(r.BackButton, {}),
+              /* @__PURE__ */ n.jsx(r.NextButton, {})
+            ] }),
+            /* @__PURE__ */ n.jsx(e.Day, { day: l, label: "Today" })
+          ] });
+        }
+      },
+      "retro-on-today": {
+        component: (r) => {
+          const [o, s] = p.useState(null), u = t.dayjs();
+          return p.useEffect(() => {
+            (async () => {
+              const l = await t.getDays({
+                from: u.toDate(),
+                to: u.toDate(),
+                include: { tasks: !0 }
+              });
+              if (!l.length) {
+                s("");
+                return;
+              }
+              const m = l[0];
+              s(
+                `<ul>${m.tasks.map(
+                  (y) => `<li>${y.status === "DONE" ? "✅ " : y.status === "CANCELED" ? "❌ " : ""}${y.title}</li>`
+                ).join("")}</ul>`
+              );
+            })();
+          }, []), /* @__PURE__ */ n.jsxs("div", { children: [
+            /* @__PURE__ */ n.jsx(
+              e.NoteEditor,
+              {
+                slug: `flow-essentials_retro-${u.format("YYYY-MM-DD")}`,
+                title: `Retro of ${u.format("MMMM D")}`,
+                loading: o === null,
+                initialValue: o ?? ""
+              }
+            ),
+            /* @__PURE__ */ n.jsx(r.BackButton, {}),
+            /* @__PURE__ */ n.jsx(r.NextButton, {})
+          ] });
+        }
+      },
+      "intro-to-tomorrow": {
+        component: (r) => /* @__PURE__ */ n.jsx(i, { ...r, children: "Tomorrow" })
+      },
+      "plan-for-tomorrow": {
+        component: (r) => {
+          const o = t.dayjs().add(1, "day"), [s, u] = t.hooks.useAsyncLoader(async () => await t.getDays({
+            from: o.toDate(),
+            to: o.toDate(),
+            toRender: { Day: !0 }
+          })), l = s == null ? void 0 : s[0];
+          return u ? /* @__PURE__ */ n.jsx(n.Fragment, { children: "Loading..." }) : /* @__PURE__ */ n.jsxs("div", { children: [
+            /* @__PURE__ */ n.jsxs("div", { children: [
+              /* @__PURE__ */ n.jsx(r.BackButton, {}),
+              /* @__PURE__ */ n.jsx(r.NextButton, {})
+            ] }),
+            /* @__PURE__ */ n.jsx(e.Day, { day: l, label: "Tomorrow" })
+          ] });
+        }
       }
     }
   };
 });
 export {
-  oe as default
+  it as default
 };

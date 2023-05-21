@@ -1,4 +1,4 @@
-import { WebPlugin } from "@flowdev/plugin/web";
+import { DefineWebPluginOutput } from "@flowdev/plugin/web";
 import { graphql } from "@flowdev/relay";
 import { fetchQuery } from "@flowdev/relay";
 import { getPluginsQuery } from "@flowdev/web/relay/__generated__/getPluginsQuery.graphql";
@@ -27,7 +27,8 @@ export const getPlugin = async (input: Input) => {
       ? import("@flowdev/essentials/src/web")
       : import(/* @vite-ignore */ `${pluginInstallation.url}/web.js`);
 
-    const plugin = (await importPromise).default as WebPlugin;
+    // TODO: use plugin's slug if needed
+    const { plugin } = (await importPromise).default as DefineWebPluginOutput;
     return plugin(pluginOptions);
   } catch (e) {
     console.log(e);

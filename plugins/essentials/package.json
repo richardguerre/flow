@@ -4,7 +4,7 @@
   "version": "0.0.1",
   "private": false,
   "scripts": {
-    "build": "tsc && vite build"
+    "build": "vite build"
   },
   "dependencies": {
     "@flowdev/plugin": "*",

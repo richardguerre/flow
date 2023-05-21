@@ -5,6 +5,8 @@
   "private": false,
   "main": "index.ts",
   "peerDependencies": {
+    "@flowdev/web": "*",
+    "@flowdev/server": "*",
     "react": "^18.2.0"
   },
   "devDependencies": {

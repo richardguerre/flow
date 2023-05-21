@@ -3,7 +3,7 @@
     "target": "ESNext",
     "useDefineForClassFields": true,
     "lib": ["DOM", "DOM.Iterable", "ESNext"],
-    "allowJs": false,
+    "allowJs": true,
     "skipLibCheck": true,
     "esModuleInterop": false,
     "allowSyntheticDefaultImports": true,
@@ -16,10 +16,25 @@
     "noEmit": true,
     "noUnusedLocals": true /* Enable error reporting when local variables aren't read. */,
     "jsx": "react-jsx",
-    "baseUrl": ".",
-    "paths": {
-      "@flowdev/web/*": ["src/*"]
-    }
+    "disableSourceOfProjectReferenceRedirect": false
   },
   "include": ["src"],
+  // TODO: try to ignore the import of @flowdev/web (it's only used for types)
+  "exclude": [
+    "node_modules",
+    "build",
+    "dist",
+    "apps/web",
+    "@flowdev/web",
+    "../../../apps/web",
+    "../../apps/web",
+    "../../apps/web/src/relay/environment.tsx",
+    "../../packages/plugin",
+    "@flowdev/plugin",
+    "../../apps/web/**",
+    "**/apps/web",
+    "../apps/web",
+    "../**/apps/web",
+    "../../**/apps/web"
+  ]
 }

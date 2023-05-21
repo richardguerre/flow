@@ -5,7 +5,6 @@ import type { PluginRoutineStepProps } from "@flowdev/web/src/components/Routine
 export type { WebPluginOptions, PluginRoutineStepProps };
 
 export type WebPlugin = (options: WebPluginOptions) => {
-  slug: string;
   routineSteps?: {
     [stepSlug: string]: {
       component: React.ComponentType<PluginRoutineStepProps>;
@@ -13,4 +12,6 @@ export type WebPlugin = (options: WebPluginOptions) => {
   };
 };
 
-export const definePlugin = (plugin: WebPlugin) => plugin;
+export const definePlugin = (slug: string, plugin: WebPlugin) => ({ slug, plugin });
+
+export type DefineWebPluginOutput = ReturnType<typeof definePlugin>;
