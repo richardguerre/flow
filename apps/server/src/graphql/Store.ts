@@ -102,10 +102,11 @@ builder.mutationField("createStoreItem", (t) =>
 builder.mutationField("installPlugin", (t) =>
   t.fieldWithInput({
     type: [PluginInstallationType],
-    description: "Install a plugin.",
+    description:
+      "Install a plugin. If a plugin with the same slug exists, it will throw an error, unless `override` is set to true.",
     input: {
       url: t.input.string({ required: true }),
-      slug: t.input.string({ required: true }),
+      override: t.input.boolean({ required: false }),
     },
     resolve: async (_, args) => {
       const currSetting = await prisma.store.findFirst({
@@ -117,18 +118,23 @@ builder.mutationField("installPlugin", (t) =>
         },
       });
       let installedPlugins = (currSetting?.value ?? []) as PluginInstallation[];
-      // remove old plugin installation if it exists
-      installedPlugins = installedPlugins.filter((p) => p.slug !== args.input.slug);
-      // add new plugin installation
-      installedPlugins.push({
-        slug: args.input.slug,
+
+      // this will throw GraphQLErrors if there are any problems with the plugin
+      // installation. If there exists a plugin with the same slug, it will throw.
+      // the user can choose to override the existing plugin by setting the `override`
+      // arg to true.
+      const newPluginSlug = await installServerPlugin({
         url: args.input.url,
+        installedPluginSlugs: installedPlugins.map((p) => p.slug),
+        override: args.input.override ?? false,
       });
 
-      // replace old plugin installation with new one
-      await installServerPlugin({
+      // remove old plugin installation if it exists
+      installedPlugins = installedPlugins.filter((p) => p.slug !== newPluginSlug);
+      // add new plugin installation
+      installedPlugins.push({
         url: args.input.url,
-        pluginSlug: args.input.slug,
+        slug: newPluginSlug,
       });
 
       const newSetting = await prisma.store.upsert({
