@@ -14,4 +14,4 @@ export type WebPlugin = (options: WebPluginOptions) => {
 
 export const definePlugin = (slug: string, plugin: WebPlugin) => ({ slug, plugin });
 
-export type DefineWebPluginOutput = ReturnType<typeof definePlugin>;
+export type DefineWebPluginReturn = ReturnType<typeof definePlugin>;

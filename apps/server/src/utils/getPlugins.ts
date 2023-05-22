@@ -38,9 +38,6 @@ type Options = {
   override?: boolean;
 };
 
-// this is a generator function so that we can cancel installing the plugin if it
-// has the same slug as an already installed plugin. We can ask the user if they
-// want to overwrite the existing plugin.
 export async function installServerPlugin(opts: Options) {
   const res = await fetch(`${opts.url}/server.js`);
   const text = await res.text();
