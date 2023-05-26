@@ -190,6 +190,9 @@ CREATE UNIQUE INDEX "List_slug_key" ON "List"("slug");
 CREATE UNIQUE INDEX "Store_key_key" ON "Store"("key");
 
 -- CreateIndex
+CREATE UNIQUE INDEX "Store_pluginSlug_key_key" ON "Store"("pluginSlug", "key");
+
+-- CreateIndex
 CREATE UNIQUE INDEX "_DayToRoutine_AB_unique" ON "_DayToRoutine"("A", "B");
 
 -- CreateIndex

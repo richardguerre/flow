@@ -254,6 +254,8 @@ model Store {
   /// Whether the store item is server-only.
   /// Server-only items are not sent to the client.
   isServerOnly Boolean  @default(false)
+
+  @@unique([pluginSlug, key], name: "pluginSlug_key_unique")
 }
 
 /// A routine the user has set up.

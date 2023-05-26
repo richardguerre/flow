@@ -1,8 +1,10 @@
+import { Prisma } from ".prisma/client";
 import { dayjs } from "./dayjs";
 import { prisma } from "./prisma";
-import { Prisma } from "@prisma/client";
 
-export const getPluginOptions = (slug: string) => ({
+type PrismaJsonInput = string | number | boolean | Prisma.JsonObject | Prisma.JsonArray;
+
+export const getPluginOptions = (pluginSlug: string) => ({
   /**
    * The dayjs package. This prevents the dayjs package from being bundled with the plugin, so that installs are faster.
    * It has some dayjs extensions already loaded:
@@ -28,18 +30,91 @@ export const getPluginOptions = (slug: string) => ({
     item: prisma.item,
     list: prisma.list,
     routine: prisma.routine,
-    store: {
-      findFirst: <T extends Prisma.StoreFindFirstArgs>(
-        args: Prisma.SelectSubset<T, Prisma.StoreFindFirstArgs>
-      ) => {
-        return prisma.store.findFirst({
-          ...args,
-          where: {
-            ...args.where,
-            OR: [{ pluginSlug: slug }, { isSecret: false }],
-          },
-        });
-      },
+  },
+  /**
+   * A key-value store plugins can use to store data, user preferences, settings, configurations, etc.
+   *
+   * If store item needs to be secret (e.g. API keys) use `setSecret`, if not use `setItem`.
+   */
+  store: {
+    /**
+     * Set an item in the store. If the item already exists, it will be overwritten.
+     *
+     * If the item is secret, use `setSecretItem` instead. If the item is server-only, use `setServerOnlyItem` instead.
+     */
+    setItem: async (key: string, value: PrismaJsonInput) => {
+      if (typeof value === "symbol" || typeof value === "function") {
+        throw new Error("Cannot store symbols or functions in the store.");
+      }
+      return prisma.store.upsert({
+        where: { pluginSlug_key_unique: { pluginSlug, key } },
+        update: { value },
+        create: { pluginSlug, key, value },
+      });
+    },
+    /**
+     * Set a secret item in the store. If the item already exists, it will be overwritten.
+     *
+     * If the item is not secret, use `setItem` instead. If the item is server-only, use `setServerOnlyItem` instead.
+     */
+    setSecretItem: async (key: string, value: PrismaJsonInput) => {
+      if (typeof value === "symbol" || typeof value === "function") {
+        throw new Error("Cannot store symbols or functions in the store.");
+      }
+      return prisma.store.upsert({
+        where: { pluginSlug_key_unique: { pluginSlug, key } },
+        update: { value },
+        create: { pluginSlug, key, value, isSecret: true, isServerOnly: true },
+      });
+    },
+    /**
+     * Set a server-only item in the store. If the item already exists, it will be overwritten.
+     *
+     * If the item is not server-only, use `setItem` instead. If the item is secret, use `setSecretItem` instead.
+     */
+    setServerOnlyItem: async (key: string, value: PrismaJsonInput) => {
+      if (typeof value === "symbol" || typeof value === "function") {
+        throw new Error("Cannot store symbols or functions in the store.");
+      }
+      return prisma.store.upsert({
+        where: { pluginSlug_key_unique: { pluginSlug, key } },
+        update: { value },
+        create: { pluginSlug, key, value, isServerOnly: true },
+      });
+    },
+    /**
+     * Delete any item from the store that was created by the plugin (secret or not, server-only or not).
+     *
+     * It will not delete items created by other plugins.
+     */
+    deleteItem: async (key: string) => {
+      return prisma.store.delete({
+        where: { pluginSlug_key_unique: { pluginSlug, key } },
+      });
+    },
+    /**
+     * Get any item from the store that was created by the plugin. It will not get items created by other plugins.
+     *
+     * If the item does not exist, `undefined` will be returned.
+     */
+    getPluginItem: async (key: string) => {
+      return prisma.store.findFirst({
+        where: { key, pluginSlug },
+      });
+    },
+    /**
+     * Get any item from the store that is not secret nor server-only. It will get items created by other plugins.
+     *
+     * You can specify the plugin slug if the key is not unique across plugins and you're targetting a specific one (i.e. it's a generic key like `theme`).
+     *
+     * Flow store items do not have a plugin slug, so you can omit it when getting Flow store items, like settings and user preferences.
+     *
+     * If the item does not exist, `undefined` will be returned.
+     */
+    getItem: async (key: string, pluginSlug?: string) => {
+      return prisma.store.findFirst({
+        where: { key, pluginSlug, isSecret: false, isServerOnly: false },
+      });
     },
   },
 });
