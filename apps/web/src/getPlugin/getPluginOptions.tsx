@@ -19,8 +19,9 @@ import { ItemCard } from "../components/ItemCard";
 import { useAsyncLoader } from "../useAsyncLoader";
 import { createItem } from "./createItem";
 import { createTask } from "./createTask";
+import { getStoreUtils } from "./getStoreUtils";
 
-export const pluginOptions = {
+export const getPluginOptions = (slug: string) => ({
   /**
    * Components that Flow uses you can re-use in your plugin views to feel more integrated.
    *
@@ -50,9 +51,7 @@ export const pluginOptions = {
      */
     useAsyncLoader,
   },
-  store: {
-    // TODO: add `get` and `useStore` functions here
-  },
+  store: getStoreUtils(slug),
   /**
    * Get days between 2 dates (inclusive) by passing `from` and `to` as part of the options.
    * If you want to get specific/discreate days, use `getDaysMax10` instead.
@@ -104,6 +103,6 @@ export const pluginOptions = {
    * The dayjs package. This prevents double bundling it in both the web app and in individual plugins.
    */
   dayjs,
-};
+});
 
-export type WebPluginOptions = typeof pluginOptions;
+export type WebPluginOptions = ReturnType<typeof getPluginOptions>;

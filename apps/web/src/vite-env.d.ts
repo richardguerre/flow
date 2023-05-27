@@ -7,3 +7,5 @@ interface ImportMetaEnv {
 interface ImportMeta {
   readonly env: ImportMetaEnv;
 }
+
+type JsonValue = string | number | boolean | { [Key in string]?: JsonValue } | Array<JsonValue>;

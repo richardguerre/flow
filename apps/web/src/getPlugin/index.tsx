@@ -3,7 +3,7 @@ import { graphql } from "@flowdev/relay";
 import { fetchQuery } from "@flowdev/relay";
 import { getPluginsQuery } from "@flowdev/web/relay/__generated__/getPluginsQuery.graphql";
 import { environment } from "@flowdev/web/relay/environment";
-import { pluginOptions } from "./pluginOptions";
+import { getPluginOptions } from "./getPluginOptions";
 
 type Input = {
   pluginSlug: string;
@@ -28,8 +28,8 @@ export const getPlugin = async (input: Input) => {
       : import(/* @vite-ignore */ `${pluginInstallation.url}/web.js`);
 
     // TODO: use plugin's slug if needed
-    const { plugin } = (await importPromise).default as DefineWebPluginReturn;
-    return plugin(pluginOptions);
+    const { plugin, slug } = (await importPromise).default as DefineWebPluginReturn;
+    return plugin(getPluginOptions(slug));
   } catch (e) {
     console.log(e);
     return {

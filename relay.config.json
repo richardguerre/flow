@@ -9,7 +9,7 @@
     "Date": "string",
     "DateTime": "string",
     "PositiveInt": "number",
-    "JSON": "object",
+    "JSON": "JsonValue",
     "Time": "string"
   },
   "exclude": ["**/node_modules/**", "**/__mocks__/**", "**/__generated__/**"]

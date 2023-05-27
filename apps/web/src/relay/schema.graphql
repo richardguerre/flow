@@ -164,9 +164,6 @@ type Mutation {
   """
   createOrUpdateNote(input: MutationCreateOrUpdateNoteInput!): Note!
 
-  """Create a store item."""
-  createStoreItem(input: MutationCreateStoreItemInput!): Store!
-
   """Create a new task."""
   createTask(input: MutationCreateTaskInput!): Task!
 
@@ -198,6 +195,11 @@ type Mutation {
 
   "Update the status of a task and get the updated days (as a list in chronological order).\n\nWhen the task is:\n- already in the desired status, it does nothing and returns an empty list.\n- for today, it updates the status and returns the day.\n- for a previous day and changing to `TODO`, it updates the status and\n  returns the original day and today.\n- for a future day and changing to `DONE` or `CANCELED`, it updates the status and\n  returns the original day and today.\n\nAny other scenario is not possible by nature of the app, where tasks:\n- in the past can only be `DONE` or `CANCELED` \n- in the future can only be in `TODO`\n    "
   updateTaskStatus(input: MutationUpdateTaskStatusInput!): [Day!]!
+
+  """
+  Creates a store item. If a store item with the same key exists, it will be updated.
+  """
+  upsertStoreItem(input: MutationUpsertStoreItemInput!): Store!
 }
 
 input MutationCompleteRoutineInput {
@@ -250,12 +252,6 @@ input MutationCreateOrUpdateNoteInput {
 
   """The title of the note."""
   title: String!
-}
-
-input MutationCreateStoreItemInput {
-  key: String!
-  pluginSlug: String!
-  value: JSON!
 }
 
 input MutationCreateTaskInput {
@@ -313,6 +309,14 @@ input MutationUpdateTaskStatusInput {
   If true, the task will be done within Flow and other systems that plugins have connected to.
   """
   superDone: Boolean
+}
+
+input MutationUpsertStoreItemInput {
+  isSecret: Boolean
+  isServerOnly: Boolean
+  key: String!
+  pluginSlug: String
+  value: JSON!
 }
 
 interface Node {
@@ -456,9 +460,11 @@ type Query {
   routines: [Routine!]!
 
   """
-  Get all store items. The args (first, last, after, before) don't work yet.
+  Get store items.
+  
+  Pass the `pluginSlug` if you want to get items created by a specific plugin. Not passing the `pluginSlug` will return items created by flow.
   """
-  store(after: ID, before: ID, first: Int, last: Int): QueryStoreConnection!
+  storeItems(input: QueryStoreItemsInput): [Store!]!
 
   """
   Get all task labels ordered by usage in descending order. `before` and `after` cursors are ignored, and `first` and `last` act the same and are limited to 100.
@@ -504,14 +510,9 @@ type QueryNoteLabelsConnectionEdge {
   node: NoteLabel!
 }
 
-type QueryStoreConnection {
-  edges: [QueryStoreConnectionEdge!]!
-  pageInfo: PageInfo!
-}
-
-type QueryStoreConnectionEdge {
-  cursor: ID!
-  node: Store!
+input QueryStoreItemsInput {
+  keys: [String!]
+  pluginSlug: String
 }
 
 type QueryTaskLabelsConnection {

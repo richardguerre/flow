@@ -1,5 +1,5 @@
 // ‼️ only import **types** from the @flowdev/web package, not runtime code otherwise it will be a cyclic dependency
-import type { WebPluginOptions } from "@flowdev/web/src/getPlugin/pluginOptions";
+import type { WebPluginOptions } from "@flowdev/web/src/getPlugin/getPluginOptions";
 import type { PluginRoutineStepProps } from "@flowdev/web/src/components/RoutineStep";
 
 export type { WebPluginOptions, PluginRoutineStepProps };
@@ -37,6 +37,7 @@ export const definePlugin = (slug: string, plugin: WebPlugin) => ({ slug, plugin
 
 export type DefineWebPluginReturn = ReturnType<typeof definePlugin>;
 
+// copied from prisma types
 type JsonValue = string | number | boolean | { [Key in string]?: JsonValue } | Array<JsonValue>;
 
 type SettingField =
