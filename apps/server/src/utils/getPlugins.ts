@@ -38,6 +38,7 @@ type Options = {
   override?: boolean;
 };
 
+/** Used when installating and updating a plugin. */
 export async function installServerPlugin(opts: Options) {
   const res = await fetch(`${opts.url}/server.js`);
   const text = await res.text();
@@ -69,7 +70,10 @@ export async function installServerPlugin(opts: Options) {
     );
   }
   await fs.rename(pathToTemp, path.join(pathToPlugins, `${defaultExport.slug}.js`));
-  cache.set(defaultExport.slug, defaultExport.plugin(getPluginOptions(defaultExport.slug)));
+  const plugin = defaultExport.plugin(getPluginOptions(defaultExport.slug));
+  cache.set(defaultExport.slug, plugin);
+
+  await plugin.onInstall?.();
 
   return defaultExport.slug;
 }

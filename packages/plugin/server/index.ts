@@ -3,6 +3,13 @@ import { type ServerPluginOptions } from "@flowdev/server/src/utils/getPluginOpt
 import { Request, Response } from "express";
 
 export type ServerPlugin = (options: ServerPluginOptions) => {
+  /** Hook called just after installating the plugin. This is also called when updating a plugin. */
+  onInstall?: () => Promise<void>;
+  /**
+   * Hook called when a request is made at `/api/$pluginSlug`.
+   *
+   * The `req.path` is the path after that. For example if the request is made at `/api/$pluginSlug/foo/bar`, then `req.path` will be `/foo/bar`.
+   */
   onRequest?: (req: Request, res: Response) => void;
 };
 
