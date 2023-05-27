@@ -50,6 +50,9 @@ export const pluginOptions = {
      */
     useAsyncLoader,
   },
+  store: {
+    // TODO: add `get` and `useStore` functions here
+  },
   /**
    * Get days between 2 dates (inclusive) by passing `from` and `to` as part of the options.
    * If you want to get specific/discreate days, use `getDaysMax10` instead.

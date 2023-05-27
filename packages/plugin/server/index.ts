@@ -1,6 +1,6 @@
 // ‼️ only import types from the @flowdev/server package, not runtime code otherwise it will be a cyclic dependency
 import { type ServerPluginOptions } from "@flowdev/server/src/utils/getPluginOptions";
-import { Request, Response } from "express";
+import type { Request, Response } from "express";
 
 export type ServerPlugin = (options: ServerPluginOptions) => {
   /** Hook called just after installating the plugin. This is also called when updating a plugin. */

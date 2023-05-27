@@ -41,6 +41,10 @@ export const getPluginOptions = (pluginSlug: string) => ({
      * Set an item in the store. If the item already exists, it will be overwritten.
      *
      * If the item is secret, use `setSecretItem` instead. If the item is server-only, use `setServerOnlyItem` instead.
+     * @example
+     * ```ts
+     * await store.setItem("myKey", "myValue");
+     * ```
      */
     setItem: async (key: string, value: PrismaJsonInput) => {
       if (typeof value === "symbol" || typeof value === "function") {
