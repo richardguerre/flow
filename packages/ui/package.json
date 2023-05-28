@@ -5,5 +5,9 @@
   "private": true,
   "peerDependencies": {
     "react": "*"
+  },
+  "dependencies": {
+    "@radix-ui/react-label": "^2.0.2",
+    "clsx": "^1.2.1"
   }
 }

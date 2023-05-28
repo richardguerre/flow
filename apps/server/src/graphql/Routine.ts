@@ -97,6 +97,21 @@ export const RoutineStepType = builder.objectType(
   }
 );
 
+const RoutineStepInput = builder.inputType(
+  builder.inputRef<{
+    pluginSlug: string;
+    stepSlug: string;
+    shouldSkip: boolean;
+  }>("RoutineStepInput"),
+  {
+    fields: (t) => ({
+      pluginSlug: t.string({ required: true }),
+      stepSlug: t.string({ required: true }),
+      shouldSkip: t.boolean({ required: true }),
+    }),
+  }
+);
+
 // --------------- Routine query types ---------------
 
 builder.queryField("routines", (t) =>
@@ -108,6 +123,34 @@ builder.queryField("routines", (t) =>
 );
 
 // --------------- Routine mutation types ---------------
+
+builder.mutationField("updateRoutineSteps", (t) =>
+  t.prismaFieldWithInput({
+    type: "Routine",
+    input: {
+      routineId: t.input.globalID({
+        description: "The ID of the routine to update.",
+        required: true,
+      }),
+      steps: t.input.field({
+        type: [RoutineStepInput],
+        description: "The steps to update the routine with.",
+        required: true,
+      }),
+    },
+    resolve: (query, _, args) => {
+      return prisma.routine.update({
+        ...query,
+        where: { id: parseInt(args.input.routineId.id) },
+        data: {
+          steps: args.input.steps.map(
+            (step) => `${step.pluginSlug}_${step.stepSlug}_${step.shouldSkip}`
+          ),
+        },
+      });
+    },
+  })
+);
 
 builder.mutationField("completeRoutine", (t) =>
   t.fieldWithInput({

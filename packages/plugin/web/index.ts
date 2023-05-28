@@ -4,12 +4,21 @@ import type { PluginRoutineStepProps } from "@flowdev/web/src/components/Routine
 
 export type { WebPluginOptions, PluginRoutineStepProps };
 
+export type WebPluginRoutineStep = {
+  /** The name of the step. */
+  name: string;
+  /** The description of the step. Showed in the settings view for the user to understand what the step is for. */
+  description: string;
+  /** The component to render for the step. */
+  component: React.ComponentType<PluginRoutineStepProps>;
+};
+
 export type WebPlugin = (options: WebPluginOptions) => {
+  /** The name of your plugin. */
+  name: string;
   /** Routine steps the user can choose to add to their routines. */
   routineSteps?: {
-    [stepSlug: string]: {
-      component: React.ComponentType<PluginRoutineStepProps>;
-    };
+    [stepSlug: string]: WebPluginRoutineStep;
   };
   /**
    * Setting the user can change about your plugin.

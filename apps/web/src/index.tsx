@@ -9,6 +9,7 @@ import { IconContext } from "@flowdev/icons";
 import "./index.css";
 
 const IndexView = React.lazy(() => import("./views/IndexView"));
+const SettingsView = React.lazy(() => import("./views/SettingsView"));
 const RoutineView = React.lazy(() => import("./views/RoutineView"));
 const TestView = React.lazy(() => import("./views/TestView"));
 const NotFoundView = React.lazy(() => import("./views/NotFoundView"));
@@ -34,6 +35,7 @@ const router = createBrowserRouter([
     ),
     children: [
       { path: "/", element: <IndexView /> },
+      { path: "/settings", element: <SettingsView /> },
       { path: "/routine/:routineId/:routineStep", element: <RoutineView /> },
     ],
   },

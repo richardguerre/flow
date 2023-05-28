@@ -31,12 +31,18 @@ export default definePlugin("essentials", (options) => {
   };
 
   return {
+    name: "Essentials",
     routineSteps: {
       // Morning routine steps
       "intro-to-yesterday": {
+        name: "Intro to yesterday",
+        description: "Animated screen to get you in the mood to retrospect on yesterday.",
         component: (props) => <TextTransitionStep {...props}>Yesterday</TextTransitionStep>,
       },
       "retro-on-yesterday": {
+        name: "Retro on yesterday",
+        description:
+          "Retro on yesterday by writing down a note. The default template is a list of tasks you did yesterday, and headers for what went well and what didn't go well.",
         component: (props) => {
           const [initialValue, setInitialValue] = useState<string | null>(null);
           const yesterday = options.dayjs().subtract(1, "day");
@@ -89,9 +95,14 @@ export default definePlugin("essentials", (options) => {
         },
       },
       "intro-to-today": {
+        name: "Intro to today",
+        description: "Animated screen to get you in the mood to plan for today.",
         component: (props) => <TextTransitionStep {...props}>Today</TextTransitionStep>,
       },
       "plan-for-today": {
+        name: "Plan for today",
+        description:
+          "Plan for today by dragging items from your different lists into today's list.",
         component: (props) => {
           const today = options.dayjs();
           const [days, loadingDays] = options.hooks.useAsyncLoader(async () => {
@@ -120,6 +131,9 @@ export default definePlugin("essentials", (options) => {
         },
       },
       "today-tomorrow-next-week": {
+        name: "Today, tomorrow, next week",
+        description:
+          "Choose to move tasks from today to tomorrow or next week if you have too many.",
         component: (props) => {
           const today = options.dayjs();
           const tomorrow = today.add(1, "day");
@@ -157,6 +171,9 @@ export default definePlugin("essentials", (options) => {
       //     return (<></>)},
       // },
       "todays-plan": {
+        name: "Today's plan",
+        description:
+          "Write down your plan for today so you can share it with others. By default, it's a list of tasks you plan to do today.",
         component: (props) => {
           const [initialValue, setInitialValue] = useState<string | null>(null);
           const today = options.dayjs();
@@ -210,11 +227,15 @@ export default definePlugin("essentials", (options) => {
       },
       // Shutdown routine steps
       "intro-to-todays-shutdown": {
+        name: "Intro to today's shutdown",
+        description: "Animated screen to get you in the mood to shutdown and retrospect on today.",
         component: (props) => (
           <TextTransitionStep {...props}>Let's reflect on what you did today</TextTransitionStep>
         ),
       },
       "clean-up-today": {
+        name: "Clean up today",
+        description: "Clean up today by marking tasks as done or canceling tasks.",
         component: (props) => {
           const today = options.dayjs();
           const [days, loadingDays] = options.hooks.useAsyncLoader(async () => {
@@ -243,6 +264,9 @@ export default definePlugin("essentials", (options) => {
         },
       },
       "retro-on-today": {
+        name: "Retro on today",
+        description:
+          "Retro on today by writing down a note. The default template is a list of tasks you did today, and headers for what went well and what didn't go well.",
         component: (props) => {
           const [initialValue, setInitialValue] = useState<string | null>(null);
           const today = options.dayjs();
@@ -295,9 +319,14 @@ export default definePlugin("essentials", (options) => {
         },
       },
       "intro-to-tomorrow": {
+        name: "Intro to tomorrow",
+        description: "Animated screen to get you in the mood to plan for tomorrow.",
         component: (props) => <TextTransitionStep {...props}>Tomorrow</TextTransitionStep>,
       },
       "plan-for-tomorrow": {
+        name: "Plan for tomorrow",
+        description:
+          "Plan for tomorrow by dragging items from your different lists into tomorrow's list.",
         component: (props) => {
           const tomorrow = options.dayjs().add(1, "day");
           const [days, loadingDays] = options.hooks.useAsyncLoader(async () => {
