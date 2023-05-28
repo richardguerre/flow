@@ -9,6 +9,7 @@ export type ButtonProps = {
   sm?: boolean;
   lg?: boolean;
   fullWidth?: boolean;
+  loading?: boolean;
 };
 
 /**

@@ -171,6 +171,9 @@ type Mutation {
   Install a plugin. If a plugin with the same slug exists, it will throw an error, unless `override` is set to true.
   """
   installPlugin(input: MutationInstallPluginInput!): [PluginInstallation!]!
+
+  """Uninstall a plugin."""
+  uninstallPlugin(input: MutationUninstallPluginInput!): [PluginInstallation!]!
   updateRoutineSteps(input: MutationUpdateRoutineStepsInput!): Routine!
 
   """Update a task."""
@@ -275,6 +278,10 @@ input MutationCreateTaskInput {
 input MutationInstallPluginInput {
   override: Boolean
   url: String!
+}
+
+input MutationUninstallPluginInput {
+  slug: String!
 }
 
 input MutationUpdateRoutineStepsInput {

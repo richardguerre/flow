@@ -16,9 +16,7 @@ export const getPlugin = async (input: Input) => {
     const pluginInstallation = plugins[input.pluginSlug];
 
     if (!pluginInstallation) {
-      return {
-        _error: "PLUGIN_NOT_INSTALLED",
-      };
+      return { _error: "PLUGIN_NOT_INSTALLED" } as const;
     }
 
     // This is to make it easier to develop the flow-essentials plugin
@@ -32,9 +30,7 @@ export const getPlugin = async (input: Input) => {
     return plugin(getPluginOptions(slug));
   } catch (e) {
     console.log(e);
-    return {
-      _error: "PLUGIN_LOAD_ERROR",
-    };
+    return { _error: "PLUGIN_LOAD_ERROR" } as const;
   }
 };
 
