@@ -12,6 +12,7 @@ const settingsViewQuery = graphql`
     ...FlowSettings_data
     installedPlugins {
       slug
+      ...PluginSettings_pluginInstallation
     }
   }
 `;
@@ -34,9 +35,9 @@ const SettingsViewContent = (props: SettingsViewProps) => {
   const data = usePreloadedQuery(settingsViewQuery, props.queryRef);
   const [
     /** If selectedTab is null, then it defaults to the flow settings tab. */
-    selectedPluginSlug,
-    setSelectedPluginSlug,
-  ] = useState<string | null>(null);
+    selectedPlugin,
+    setSelectedPlugin,
+  ] = useState<SettingsViewQuery["response"]["installedPlugins"][number] | null>(null);
 
   return (
     <div className="flex">
@@ -50,14 +51,14 @@ const SettingsViewContent = (props: SettingsViewProps) => {
             <SettingsViewPluginTab
               key={plugin.slug}
               slug={plugin.slug}
-              onClick={() => setSelectedPluginSlug(plugin.slug)}
+              onClick={() => setSelectedPlugin(plugin)}
             />
           ))}
         </div>
       </div>
       <div>
-        {selectedPluginSlug ? (
-          <PluginSettings slug={selectedPluginSlug} />
+        {selectedPlugin ? (
+          <PluginSettings pluginInstallation={selectedPlugin} />
         ) : (
           <FlowSettings data={data} />
         )}

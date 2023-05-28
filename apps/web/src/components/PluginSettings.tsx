@@ -1,13 +1,25 @@
 import { Button } from "@flowdev/ui/Button";
 import { getPlugin } from "../getPlugin";
 import { useAsyncLoader } from "../useAsyncLoader";
-import { graphql, useMutation } from "@flowdev/relay";
+import { graphql, useFragment, useMutation } from "@flowdev/relay";
+import { PluginSettings_pluginInstallation$key } from "../relay/__generated__/PluginSettings_pluginInstallation.graphql";
+import { UpdatePluginButton } from "./UpdatePluginButton";
 
 type PluginSettingsProps = {
-  slug: string;
+  pluginInstallation: PluginSettings_pluginInstallation$key;
 };
 
 export const PluginSettings = (props: PluginSettingsProps) => {
+  const pluginInstallation = useFragment(
+    graphql`
+      fragment PluginSettings_pluginInstallation on PluginInstallation {
+        slug
+        url
+        ...UpdatePluginButton_pluginInstallation
+      }
+    `,
+    props.pluginInstallation
+  );
   const [uninstallPlugin, isUninstallingPlugin] = useMutation(graphql`
     mutation PluginSettingsUninstallPluginMutation($input: MutationUninstallPluginInput!) {
       uninstallPlugin(input: $input) {
@@ -15,7 +27,9 @@ export const PluginSettings = (props: PluginSettingsProps) => {
       }
     }
   `);
-  const [plugin, loading] = useAsyncLoader(async () => getPlugin({ pluginSlug: props.slug }));
+  const [plugin, loading] = useAsyncLoader(async () =>
+    getPlugin({ pluginSlug: pluginInstallation.slug })
+  );
 
   // TODO: show proper loading indicator
   if (loading) return <div>Loading...</div>;
@@ -26,7 +40,7 @@ export const PluginSettings = (props: PluginSettingsProps) => {
   const settings = Object.entries(plugin.settings ?? {});
 
   const handleUninstallPlugin = () => {
-    uninstallPlugin({ variables: { input: { pluginSlug: props.slug } } });
+    uninstallPlugin({ variables: { input: { pluginSlug: pluginInstallation.slug } } });
   };
 
   return (
@@ -34,6 +48,7 @@ export const PluginSettings = (props: PluginSettingsProps) => {
       <Button onClick={handleUninstallPlugin} loading={isUninstallingPlugin}>
         Uninstall
       </Button>
+      <UpdatePluginButton pluginInstallation={pluginInstallation} />
       <div>
         {settings.length
           ? settings.map(([key, setting]) => (
