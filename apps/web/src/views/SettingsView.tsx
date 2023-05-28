@@ -6,6 +6,7 @@ import { useAsyncLoader } from "../useAsyncLoader";
 import { Button } from "@flowdev/ui/Button";
 import { PluginSettings } from "../components/PluginSettings";
 import { FlowSettings } from "../components/FlowSettings";
+import { BrowsePlugins } from "../components/BrowsePlugins";
 
 const settingsViewQuery = graphql`
   query SettingsViewQuery {
@@ -35,9 +36,11 @@ const SettingsViewContent = (props: SettingsViewProps) => {
   const data = usePreloadedQuery(settingsViewQuery, props.queryRef);
   const [
     /** If selectedTab is null, then it defaults to the flow settings tab. */
-    selectedPlugin,
-    setSelectedPlugin,
-  ] = useState<SettingsViewQuery["response"]["installedPlugins"][number] | null>(null);
+    selectedView,
+    setSelectedView,
+  ] = useState<SettingsViewQuery["response"]["installedPlugins"][number] | "browse-plugins" | null>(
+    null
+  );
 
   return (
     <div className="flex">
@@ -51,16 +54,21 @@ const SettingsViewContent = (props: SettingsViewProps) => {
             <SettingsViewPluginTab
               key={plugin.slug}
               slug={plugin.slug}
-              onClick={() => setSelectedPlugin(plugin)}
+              onClick={() => setSelectedView(plugin)}
             />
           ))}
+          <Button onClick={() => setSelectedView("browse-plugins")}>
+            Browse community plugins
+          </Button>
         </div>
       </div>
       <div>
-        {selectedPlugin ? (
-          <PluginSettings pluginInstallation={selectedPlugin} />
-        ) : (
+        {!selectedView ? (
           <FlowSettings data={data} />
+        ) : selectedView === "browse-plugins" ? (
+          <BrowsePlugins />
+        ) : (
+          <PluginSettings pluginInstallation={selectedView} />
         )}
       </div>
     </div>
