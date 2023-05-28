@@ -1,4 +1,4 @@
-import { installServerPlugin } from "../utils/getPlugins";
+import { installServerPlugin, uninstallServerPlugin } from "../utils/getPlugins";
 import { prisma } from "../utils/prisma";
 import { builder } from "./builder";
 
@@ -159,6 +159,45 @@ builder.mutationField("installPlugin", (t) =>
         url: args.input.url,
         slug: newPluginSlug,
       });
+
+      const newSetting = await prisma.store.upsert({
+        where: { key: SettingKeys.INSTALLED_PLUGINS },
+        update: { value: installedPlugins },
+        create: {
+          key: SettingKeys.INSTALLED_PLUGINS,
+          value: installedPlugins,
+          isSecret: false,
+          isServerOnly: false,
+        },
+      });
+      return newSetting.value as PluginInstallation[];
+    },
+  })
+);
+
+builder.mutationField("uninstallPlugin", (t) =>
+  t.fieldWithInput({
+    type: [PluginInstallationType],
+    description: "Uninstall a plugin.",
+    input: {
+      slug: t.input.string({ required: true }),
+    },
+    resolve: async (_, args) => {
+      const currSetting = await prisma.store.findFirst({
+        where: {
+          key: SettingKeys.INSTALLED_PLUGINS,
+          isSecret: false,
+          isServerOnly: false,
+          pluginSlug: null,
+        },
+      });
+      let installedPlugins = (currSetting?.value ?? []) as PluginInstallation[];
+
+      // uninstall the plugin on the server's file system
+      await uninstallServerPlugin(args.input.slug);
+
+      // remove old plugin installation if it exists
+      installedPlugins = installedPlugins.filter((p) => p.slug !== args.input.slug);
 
       const newSetting = await prisma.store.upsert({
         where: { key: SettingKeys.INSTALLED_PLUGINS },

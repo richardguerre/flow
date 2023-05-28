@@ -38,7 +38,11 @@ type Options = {
   override?: boolean;
 };
 
-/** Used when installating and updating a plugin. */
+/**
+ * Install a plugin on the server's file system and return the plugin's slug. This does not update the db.
+ *
+ * Used when installating and updating a plugin.
+ */
 export async function installServerPlugin(opts: Options) {
   const res = await fetch(`${opts.url}/server.js`);
   const text = await res.text();
@@ -76,4 +80,10 @@ export async function installServerPlugin(opts: Options) {
   await plugin.onInstall?.();
 
   return defaultExport.slug;
+}
+
+/** Uninstall a plugin on the server's file system. */
+export async function uninstallServerPlugin(slug: string) {
+  await fs.unlink(path.join(pathToPlugins, `${slug}.js`));
+  cache.delete(slug);
 }
