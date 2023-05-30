@@ -81,16 +81,7 @@ export default {
   content: ["./index.html", "../**/*.{ts,tsx}", "../../packages/**/*.{ts,tsx}"],
   theme: {
     screens: {}, // don't know what screens to use, so until I do I'll just leave it empty
-    textColor: convertToCssVars(
-      "colors",
-      flowColors,
-      (value) => `rgb(${value} / var(--tw-text-opacity, var(--tw-text-opacity, 100)))` // FIXME: use <alpha-value> instead of var(--tw-bg-opacity, 100),
-    ),
-    backgroundColor: convertToCssVars(
-      "colors",
-      flowColors,
-      (value) => `rgb(${value} / var(--tw-text-opacity, var(--tw-bg-opacity, 100)))` // FIXME: use <alpha-value> instead of var(--tw-bg-opacity, 100),
-    ),
+    colors: convertToCssVars("colors", flowColors, (value) => `rgb(${value} / <alpha-value>)`),
     extend: {},
   },
   plugins: [

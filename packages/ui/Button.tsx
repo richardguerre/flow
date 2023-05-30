@@ -1,4 +1,6 @@
 import React, { forwardRef } from "react";
+import { Spinner } from "./Spinner";
+import clsx from "clsx";
 
 export type ButtonProps = {
   children: React.ReactNode;
@@ -23,37 +25,29 @@ export type ButtonProps = {
  * - `sm?` - Small variant of the button
  * - `lg?` - Large variant of the button
  * - `fullWidth?` - Whether the button should take up the full width of its container
+ * - `loading?` - Whether the button is in a loading state
  */
 export const Button = forwardRef<HTMLButtonElement, ButtonProps>((props, ref) => {
-  let className = "rounded-md text-sm ";
-
-  if (props.tertiary) {
-    className += " bg-transparent text-primary-500 hover:text-primary-400 active:text-primary-600";
-  } else if (props.secondary) {
-    className +=
-      " bg-primary-100 bg-opacity-70 text-primary-500 hover:bg-opacity-100 active:bg-primary-200 active:bg-opacity-70";
-  } else {
-    // Default to primary
-    className +=
-      " bg-primary-500 bg-opacity-100 text-background-50 hover:bg-primary-600 active:bg-primary-700";
-  }
-
-  if (props.sm) {
-    className += " px-2 py-1";
-  } else if (props.lg) {
-    className += " px-4 py-3";
-  } else {
-    // Default to medium
-    className += " px-3 py-2";
-  }
-
-  if (props.fullWidth) {
-    className += " w-full";
-  }
-
   return (
-    <button ref={ref} onClick={props.onClick} className={className}>
+    <button
+      ref={ref}
+      onClick={props.onClick}
+      className={clsx(
+        "relative rounded-md text-sm ",
+        props.secondary
+          ? "bg-primary-100 text-primary-500 active:bg-primary-200 bg-opacity-70 hover:bg-opacity-100 active:bg-opacity-70"
+          : props.tertiary
+          ? "text-primary-500 hover:text-primary-400 active:text-primary-600 bg-transparent"
+          : "bg-primary-500 text-background-50 hover:bg-primary-600 active:bg-primary-700 bg-opacity-100",
+        props.sm ? "px-2 py-1" : props.lg ? "px-4 py-3" : "px-3 py-2"
+      )}
+    >
       {props.children}
+      {props.loading && (
+        <div className="bg-background-50 absolute bottom-0 left-0 right-0 top-0 flex items-center justify-center opacity-50">
+          <Spinner sm />
+        </div>
+      )}
     </button>
   );
 });
