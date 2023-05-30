@@ -84,6 +84,12 @@ async function script() {
         createMany: {
           data: [
             {
+              status: "TODO",
+              title: "Make a new friend",
+              durationInMinutes: 120,
+              itemId: item.id,
+            },
+            {
               status: "DONE",
               title: "Task 1 with a long title that will wrap to the next line",
               durationInMinutes: 30,
@@ -92,12 +98,6 @@ async function script() {
               status: "CANCELED",
               title: "Task 3 which was initially canceled",
               durationInMinutes: 60,
-            },
-            {
-              status: "TODO",
-              title: "Make a new friend",
-              durationInMinutes: 120,
-              itemId: item.id,
             },
           ],
         },
