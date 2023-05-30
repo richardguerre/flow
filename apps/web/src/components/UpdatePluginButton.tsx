@@ -34,9 +34,7 @@ export const UpdatePluginButton = (props: UpdatePluginButtonProps) => {
       const [, owner, repo, version] = pluginInstallation.url.match(
         /https:\/\/cdn\.jsdelivr\.net\/gh\/([^/]+)\/([^/@]+)@([^/]+)/
       )!;
-      const res = await fetch(
-        `https://data.jsdelivr.com/v1/gh/packages/gh/${owner}/${repo}/resolved`
-      );
+      const res = await fetch(`https://data.jsdelivr.com/v1/packages/gh/${owner}/${repo}/resolved`);
       const metadata = (await res.json()) as Metadata;
       return {
         currentVersion: version,

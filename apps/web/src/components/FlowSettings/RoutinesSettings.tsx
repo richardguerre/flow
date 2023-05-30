@@ -73,17 +73,11 @@ export const getRepeatsText = (repeats: readonly RepetitionPattern[]) => {
 };
 
 const repeatsEveryDay = (repeats: readonly RepetitionPattern[]) => {
-  return (
-    repeats.length === 7 &&
-    repeatsEveryWeekDay(repeats) &&
-    repeats.includes("SATURDAY") &&
-    repeats.includes("SUNDAY")
-  );
+  return repeatsEveryWeekDay(repeats) && repeats.includes("SATURDAY") && repeats.includes("SUNDAY");
 };
 
 const repeatsEveryWeekDay = (repeats: readonly RepetitionPattern[]) => {
   return (
-    repeats.length === 5 &&
     repeats.includes("MONDAY") &&
     repeats.includes("TUESDAY") &&
     repeats.includes("WEDNESDAY") &&

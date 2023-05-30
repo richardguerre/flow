@@ -6,6 +6,7 @@ import { useEffect, useRef, useState } from "react";
 import { getPlugin } from "@flowdev/web/getPlugin";
 import { WebPluginRoutineStep } from "@flowdev/plugin/web";
 import { ReactSortable } from "react-sortablejs";
+import { RoutineSettingsUpdateRoutineStepsMutation } from "@flowdev/web/relay/__generated__/RoutineSettingsUpdateRoutineStepsMutation.graphql";
 
 type RoutineSettingsProps = {
   routine: RoutineSettings_data$key;
@@ -37,13 +38,14 @@ export const RoutineSettings = (props: RoutineSettingsProps) => {
     `,
     props.routine
   );
-  const [updateRoutineSteps, isSavingChanges] = useMutation(graphql`
-    mutation RoutineSettingsUpdateRoutineStepsMutation($input: MutationUpdateRoutineStepsInput!) {
-      updateRoutineSteps(input: $input) {
-        ...RoutineSettings_data
+  const [updateRoutineSteps, isSavingChanges] =
+    useMutation<RoutineSettingsUpdateRoutineStepsMutation>(graphql`
+      mutation RoutineSettingsUpdateRoutineStepsMutation($input: MutationUpdateRoutineStepsInput!) {
+        updateRoutineSteps(input: $input) {
+          ...RoutineSettings_data
+        }
       }
-    }
-  `);
+    `);
   const [pluginsRoutineSteps, setPluginsRoutineSteps] = useState<PluginRoutineStep[]>([]);
   const [numOfPluginsLoaded, setNumOfPluginsLoaded] = useState(0);
   const [routineSteps, setRoutineSteps] = useState(
@@ -97,14 +99,14 @@ export const RoutineSettings = (props: RoutineSettingsProps) => {
           list={routineSteps}
           setList={setRoutineSteps}
           onEnd={handleStepsChange}
-          className="flex flex-col"
+          className="flex flex-col bg-primary-50"
           group={{
             name: "routine-steps",
             pull: "clone",
           }}
         >
           {routineSteps.map((step) => (
-            <div key={`${step.stepSlug}`}>
+            <div key={step.id}>
               <div>{step.pluginSlug}</div>
               <div>{step.stepSlug}</div>
               <div>{step.shouldSkip}</div>
@@ -116,14 +118,15 @@ export const RoutineSettings = (props: RoutineSettingsProps) => {
         <ReactSortable
           list={pluginsRoutineSteps}
           setList={setPluginsRoutineSteps}
+          sort={false}
           group={{
             name: "routine-steps",
             // we don't want to clone the steps into this list
-            pull: false,
+            put: false,
           }}
         >
           {pluginsRoutineSteps.map((step) => (
-            <div key={step.key}>
+            <div key={step.id}>
               <div>{step.name}</div>
               <div>{step.description}</div>
               <div>{step.pluginName}</div>

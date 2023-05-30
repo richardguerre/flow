@@ -4,6 +4,7 @@ import { useAsyncLoader } from "../useAsyncLoader";
 import { graphql, useFragment, useMutation } from "@flowdev/relay";
 import { PluginSettings_pluginInstallation$key } from "../relay/__generated__/PluginSettings_pluginInstallation.graphql";
 import { UpdatePluginButton } from "./UpdatePluginButton";
+import { PluginSettingsUninstallPluginMutation } from "../relay/__generated__/PluginSettingsUninstallPluginMutation.graphql";
 
 type PluginSettingsProps = {
   pluginInstallation: PluginSettings_pluginInstallation$key;
@@ -20,13 +21,14 @@ export const PluginSettings = (props: PluginSettingsProps) => {
     `,
     props.pluginInstallation
   );
-  const [uninstallPlugin, isUninstallingPlugin] = useMutation(graphql`
-    mutation PluginSettingsUninstallPluginMutation($input: MutationUninstallPluginInput!) {
-      uninstallPlugin(input: $input) {
-        slug
+  const [uninstallPlugin, isUninstallingPlugin] =
+    useMutation<PluginSettingsUninstallPluginMutation>(graphql`
+      mutation PluginSettingsUninstallPluginMutation($input: MutationUninstallPluginInput!) {
+        uninstallPlugin(input: $input) {
+          slug
+        }
       }
-    }
-  `);
+    `);
   const [plugin, loading] = useAsyncLoader(async () =>
     getPlugin({ pluginSlug: pluginInstallation.slug })
   );
@@ -40,7 +42,7 @@ export const PluginSettings = (props: PluginSettingsProps) => {
   const settings = Object.entries(plugin.settings ?? {});
 
   const handleUninstallPlugin = () => {
-    uninstallPlugin({ variables: { input: { pluginSlug: pluginInstallation.slug } } });
+    uninstallPlugin({ variables: { input: { slug: pluginInstallation.slug } } });
   };
 
   return (

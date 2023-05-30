@@ -46,7 +46,7 @@ const SettingsViewContent = (props: SettingsViewProps) => {
     <div className="flex">
       <div className="flex flex-col gap-8">
         <div>
-          <Button>Settings</Button>
+          <Button onClick={() => setSelectedView(null)}>Settings</Button>
         </div>
         <div className="flex flex-col gap-2">
           <div>Installed plugins</div>
