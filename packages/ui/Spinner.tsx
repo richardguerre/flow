@@ -10,8 +10,8 @@ export const Spinner = (props: SpinnerProps) => {
     <div className="flex items-center justify-center">
       <div
         className={clsx(
-          "border-t-primary-700 animate-spin rounded-full border-4 border-white",
-          props.sm ? "h-6 w-6" : props.lg ? "h-10 w-10" : "h-8 w-8"
+          "border-t-primary-700 border-background-50 animate-spin rounded-full",
+          props.sm ? "h-6 w-6 border-2" : props.lg ? "h-10 w-10 border-4" : "h-8 w-8 border-4"
         )}
       />
     </div>
