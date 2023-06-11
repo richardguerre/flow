@@ -1,4 +1,5 @@
 import { defineConfig } from "vite";
+import react from "@vitejs/plugin-react";
 
 export default defineConfig({
   build: {
@@ -7,23 +8,12 @@ export default defineConfig({
     lib: {
       name: "flow-essentials",
       entry: "src/web.tsx",
-      formats: ["umd"],
+      formats: ["es"],
       fileName: () => "web.js",
-    },
-    rollupOptions: {
-      external: [
-        // react is a UMD global from the script tag in index.html
-        "react",
-      ],
-      output: {
-        globals: {
-          react: "React",
-        },
-      },
     },
   },
   define: {
     "process.env.NODE_ENV": '"production"',
-    'require("react")': "React", // makes the bundle even smaller
   },
+  plugins: [react({ jsxRuntime: "classic" })],
 });
