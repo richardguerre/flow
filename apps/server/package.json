@@ -3,8 +3,10 @@
   "description": "This is the server of Flow",
   "private": true,
   "scripts": {
+    "deps": "echo 'Getting minimum dependencies to build @flowdev/server only' && npm ci --worksapce=@flowdev/server",
     "print-schema": "NODE_ENV=development ts-node --transpile-only src/graphql/index.ts",
     "dev": "NODE_ENV=development ts-node-dev --transpile-only --ignore-watch=plugins --exit-child --respawn --no-notify src/index.ts",
+    "build": "tsc --build tsconfig.prod.json",
     "start": "ts-node --transpile-only src/index.ts",
     "test": "vitest --config .vitest/config.ts",
     "gen": "prisma generate",
@@ -27,6 +29,7 @@
     "@types/supertest": "^2.0.12",
     "camel-case": "^4.1.2",
     "chance": "^1.1.8",
+    "patch-package": "^7.0.0",
     "prisma": "^4.9.0",
     "supertest": "^6.2.4",
     "ts-node": "^10.9.1",

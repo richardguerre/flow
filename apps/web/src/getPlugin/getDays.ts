@@ -120,8 +120,8 @@ type GetDaysResult = Promise<
             createdAt: string;
             updatedAt: string | null;
             pluginSlug: string;
-            min: object | null;
-            full?: object | null;
+            min: JsonValue;
+            full?: JsonValue;
           };
         };
       };
@@ -131,8 +131,8 @@ type GetDaysResult = Promise<
           createdAt: string;
           updatedAt: string | null;
           pluginSlug: string;
-          min: object | null;
-          full?: object | null;
+          min: JsonValue;
+          full?: JsonValue;
         };
       };
     }[];

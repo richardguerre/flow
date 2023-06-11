@@ -2,7 +2,6 @@
 import { PrismaClient } from "@prisma/client";
 import { afterEach, beforeEach, vi } from "vitest";
 import * as prismaUtils from "../src/utils/prisma";
-import packageJson from "../../../package.json";
 
 type CtorParams<C> = C extends new (...args: infer P) => any ? P[0] : never;
 type TxClient = Parameters<Parameters<PrismaClient["$transaction"]>[0]>[0];
@@ -68,6 +67,7 @@ const $begin = async (client: PrismaClient, data?: { txId: number }) => {
 // patches the prisma client with a $begin method
 function getTxClient(options?: CtorParams<typeof PrismaClient>) {
   const client = new PrismaClient(options);
+  console.log("Connected to", options?.datasources?.db?.url);
 
   return Object.assign(client, {
     $begin: () => $begin(client),
@@ -77,7 +77,7 @@ function getTxClient(options?: CtorParams<typeof PrismaClient>) {
 const prismaTestClient = getTxClient({
   datasources: {
     db: {
-      url: process.env.DATABASE_URL?.replace(packageJson.name, `${packageJson.name}_test`) ?? "",
+      url: process.env.DATABASE_URL?.replace("flow", "flow_test") ?? "",
     },
   },
 });
