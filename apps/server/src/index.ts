@@ -2,6 +2,8 @@ import express from "express";
 import { createYoga } from "graphql-yoga";
 import { schema } from "./graphql";
 import { getPlugins } from "./utils/getPlugins";
+import { prisma } from "./utils/prisma";
+import path from "node:path";
 
 const PORT = process.env.PORT ?? 4000;
 export const app = express();
@@ -12,7 +14,7 @@ app.use(express.json());
 const graphqlAPI = createYoga({ schema });
 app.use("/graphql", graphqlAPI);
 
-// -------------------------- Webhooks ----------------------------
+// ---------------------- Plugin endpoints -----------------------
 
 app.use("/api/:pluginSlug", async (req, res, next) => {
   const pluginSlug = req.params.pluginSlug;
@@ -32,6 +34,13 @@ app.use("/api/:pluginSlug", async (req, res, next) => {
   next();
 });
 
+// -------------------------- Web app -----------------------------
+
+app.use(express.static("web"));
+app.get("*", (_req, res) => {
+  res.sendFile(path.join(__dirname, "./web/index.html"));
+});
+
 // -------------------------- Server ------------------------------
 
 if (process.env.NODE_ENV !== "test") {
@@ -44,3 +53,15 @@ if (process.env.NODE_ENV !== "test") {
   // this prevents errors stating that the port is already in use
   // more info here: https://stackoverflow.com/questions/54422849/jest-testing-multiple-test-file-port-3000-already-in-use
 }
+
+process.on("SIGINT", () => {
+  prisma
+    .$disconnect()
+    .then(() => {
+      process.exit(0);
+    })
+    .catch((e) => {
+      console.error(e);
+      process.exit(1);
+    });
+});

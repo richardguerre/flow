@@ -2,7 +2,7 @@
  * This is the default plugin installed with the web app.
  */
 import { definePlugin, PluginRoutineStepProps } from "@flowdev/plugin/web";
-import { useEffect, useState } from "react";
+const { useEffect, useState } = React;
 
 export default definePlugin("essentials", (options) => {
   const Flow = options.components;
