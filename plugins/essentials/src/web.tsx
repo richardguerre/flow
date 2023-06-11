@@ -6,11 +6,11 @@ import { definePlugin, PluginRoutineStepProps } from "@flowdev/plugin/web";
 export default definePlugin("essentials", (options) => {
   const Flow = options.components;
   const { motion } = options.framerMotion;
-  const { useEffect, useState } = options.React;
+  const React = options.React;
 
   const animationDuration = 5;
   const TextTransitionStep = (props: PluginRoutineStepProps & { children: React.ReactNode }) => {
-    useEffect(() => {
+    React.useEffect(() => {
       const timer = setTimeout(props.onNext, animationDuration * 1000);
       return () => clearTimeout(timer);
     }, []);
@@ -44,10 +44,10 @@ export default definePlugin("essentials", (options) => {
         description:
           "Retro on yesterday by writing down a note. The default template is a list of tasks you did yesterday, and headers for what went well and what didn't go well.",
         component: (props) => {
-          const [initialValue, setInitialValue] = useState<string | null>(null);
+          const [initialValue, setInitialValue] = React.useState<string | null>(null);
           const yesterday = options.dayjs().subtract(1, "day");
 
-          useEffect(() => {
+          React.useEffect(() => {
             (async () => {
               const days = await options.getDays({
                 from: yesterday.toDate(),
@@ -175,10 +175,10 @@ export default definePlugin("essentials", (options) => {
         description:
           "Write down your plan for today so you can share it with others. By default, it's a list of tasks you plan to do today.",
         component: (props) => {
-          const [initialValue, setInitialValue] = useState<string | null>(null);
+          const [initialValue, setInitialValue] = React.useState<string | null>(null);
           const today = options.dayjs();
 
-          useEffect(() => {
+          React.useEffect(() => {
             (async () => {
               const days = await options.getDays({
                 from: today.toDate(),
@@ -268,10 +268,10 @@ export default definePlugin("essentials", (options) => {
         description:
           "Retro on today by writing down a note. The default template is a list of tasks you did today, and headers for what went well and what didn't go well.",
         component: (props) => {
-          const [initialValue, setInitialValue] = useState<string | null>(null);
+          const [initialValue, setInitialValue] = React.useState<string | null>(null);
           const today = options.dayjs();
 
-          useEffect(() => {
+          React.useEffect(() => {
             (async () => {
               const days = await options.getDays({
                 from: today.toDate(),

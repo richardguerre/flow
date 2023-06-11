@@ -1,21 +1,21 @@
-const R = (a, l) => ({ slug: a, plugin: l }), f = R("essentials", (a) => {
-  const l = a.components, { motion: y } = a.framerMotion, { useEffect: i, useState: u } = a.React, m = 5, d = (t) => (i(() => {
-    const n = setTimeout(t.onNext, m * 1e3);
-    return () => clearTimeout(n);
-  }, []), /* @__PURE__ */ React.createElement(
+const y = (a, s) => ({ slug: a, plugin: s }), f = y("essentials", (a) => {
+  const s = a.components, { motion: m } = a.framerMotion, t = a.React, u = 5, c = (e) => (t.useEffect(() => {
+    const o = setTimeout(e.onNext, u * 1e3);
+    return () => clearTimeout(o);
+  }, []), /* @__PURE__ */ t.createElement(
     "div",
     {
       className: "flex h-screen w-screen items-center justify-center bg-gray-100",
-      onClick: t.onNext
+      onClick: e.onNext
     },
-    /* @__PURE__ */ React.createElement(
-      y.div,
+    /* @__PURE__ */ t.createElement(
+      m.div,
       {
         className: "text-6xl font-semibold",
         animate: { opacity: [0, 1, 0] },
-        transition: { duration: m, times: [0, 0.7, 1] }
+        transition: { duration: u, times: [0, 0.7, 1] }
       },
-      t.children
+      e.children
     )
   ));
   return {
@@ -25,68 +25,68 @@ const R = (a, l) => ({ slug: a, plugin: l }), f = R("essentials", (a) => {
       "intro-to-yesterday": {
         name: "Intro to yesterday",
         description: "Animated screen to get you in the mood to retrospect on yesterday.",
-        component: (t) => /* @__PURE__ */ React.createElement(d, { ...t }, "Yesterday")
+        component: (e) => /* @__PURE__ */ t.createElement(c, { ...e }, "Yesterday")
       },
       "retro-on-yesterday": {
         name: "Retro on yesterday",
         description: "Retro on yesterday by writing down a note. The default template is a list of tasks you did yesterday, and headers for what went well and what didn't go well.",
-        component: (t) => {
-          const [n, o] = u(null), r = a.dayjs().subtract(1, "day");
-          return i(() => {
+        component: (e) => {
+          const [o, r] = t.useState(null), l = a.dayjs().subtract(1, "day");
+          return t.useEffect(() => {
             (async () => {
-              const e = await a.getDays({
-                from: r.toDate(),
-                to: r.toDate(),
+              const n = await a.getDays({
+                from: l.toDate(),
+                to: l.toDate(),
                 include: { tasks: !0 }
               });
-              if (!e.length) {
-                o("");
+              if (!n.length) {
+                r("");
                 return;
               }
-              const s = e[0];
-              o(
-                `<ul>${s.tasks.map(
-                  (c) => `<li>${c.status === "DONE" ? "✅" : c.status === "CANCELED" ? "❌" : "⏳"} ${c.title}</li>`
+              const d = n[0];
+              r(
+                `<ul>${d.tasks.map(
+                  (i) => `<li>${i.status === "DONE" ? "✅" : i.status === "CANCELED" ? "❌" : "⏳"} ${i.title}</li>`
                 ).join("")}</ul>`
               );
             })();
-          }, []), /* @__PURE__ */ React.createElement("div", null, /* @__PURE__ */ React.createElement(
-            l.NoteEditor,
+          }, []), /* @__PURE__ */ t.createElement("div", null, /* @__PURE__ */ t.createElement(
+            s.NoteEditor,
             {
-              slug: `flow-essentials_retro-${r.format("YYYY-MM-DD")}`,
-              title: `Retro of ${r.format("MMMM D")}`,
-              loading: n === null,
-              initialValue: n ?? ""
+              slug: `flow-essentials_retro-${l.format("YYYY-MM-DD")}`,
+              title: `Retro of ${l.format("MMMM D")}`,
+              loading: o === null,
+              initialValue: o ?? ""
             }
-          ), /* @__PURE__ */ React.createElement(t.BackButton, null), /* @__PURE__ */ React.createElement(t.NextButton, null));
+          ), /* @__PURE__ */ t.createElement(e.BackButton, null), /* @__PURE__ */ t.createElement(e.NextButton, null));
         }
       },
       "intro-to-today": {
         name: "Intro to today",
         description: "Animated screen to get you in the mood to plan for today.",
-        component: (t) => /* @__PURE__ */ React.createElement(d, { ...t }, "Today")
+        component: (e) => /* @__PURE__ */ t.createElement(c, { ...e }, "Today")
       },
       "plan-for-today": {
         name: "Plan for today",
         description: "Plan for today by dragging items from your different lists into today's list.",
-        component: (t) => {
-          const n = a.dayjs(), [o, r] = a.hooks.useAsyncLoader(async () => await a.getDays({
-            from: n.toDate(),
-            to: n.toDate(),
+        component: (e) => {
+          const o = a.dayjs(), [r, l] = a.hooks.useAsyncLoader(async () => await a.getDays({
+            from: o.toDate(),
+            to: o.toDate(),
             toRender: { Day: !0 }
-          })), e = o == null ? void 0 : o[0];
-          return r ? /* @__PURE__ */ React.createElement(React.Fragment, null, "Loading...") : /* @__PURE__ */ React.createElement("div", null, /* @__PURE__ */ React.createElement("div", null, /* @__PURE__ */ React.createElement(t.BackButton, null), /* @__PURE__ */ React.createElement(t.NextButton, null)), /* @__PURE__ */ React.createElement(l.Day, { day: e, label: "Today" }));
+          })), n = r == null ? void 0 : r[0];
+          return l ? /* @__PURE__ */ t.createElement(t.Fragment, null, "Loading...") : /* @__PURE__ */ t.createElement("div", null, /* @__PURE__ */ t.createElement("div", null, /* @__PURE__ */ t.createElement(e.BackButton, null), /* @__PURE__ */ t.createElement(e.NextButton, null)), /* @__PURE__ */ t.createElement(s.Day, { day: n, label: "Today" }));
         }
       },
       "today-tomorrow-next-week": {
         name: "Today, tomorrow, next week",
         description: "Choose to move tasks from today to tomorrow or next week if you have too many.",
-        component: (t) => {
-          const n = a.dayjs(), o = n.add(1, "day"), r = n.weekday(7), [e, s] = a.hooks.useAsyncLoader(async () => await a.getDaysMax10({
-            dates: [n.toDate(), o.toDate(), r.toDate()],
+        component: (e) => {
+          const o = a.dayjs(), r = o.add(1, "day"), l = o.weekday(7), [n, d] = a.hooks.useAsyncLoader(async () => await a.getDaysMax10({
+            dates: [o.toDate(), r.toDate(), l.toDate()],
             toRender: { Day: !0 }
           }));
-          return s ? /* @__PURE__ */ React.createElement(React.Fragment, null, "Loading...") : /* @__PURE__ */ React.createElement("div", null, /* @__PURE__ */ React.createElement("div", null, /* @__PURE__ */ React.createElement(t.BackButton, null), /* @__PURE__ */ React.createElement(t.NextButton, null)), /* @__PURE__ */ React.createElement("div", { className: "flex" }, /* @__PURE__ */ React.createElement(l.Day, { day: e == null ? void 0 : e[0], label: "Today" }), /* @__PURE__ */ React.createElement(l.Day, { day: e == null ? void 0 : e[1], label: "Tomorrow" }), /* @__PURE__ */ React.createElement(l.Day, { day: e == null ? void 0 : e[2], label: "Next week" })));
+          return d ? /* @__PURE__ */ t.createElement(t.Fragment, null, "Loading...") : /* @__PURE__ */ t.createElement("div", null, /* @__PURE__ */ t.createElement("div", null, /* @__PURE__ */ t.createElement(e.BackButton, null), /* @__PURE__ */ t.createElement(e.NextButton, null)), /* @__PURE__ */ t.createElement("div", { className: "flex" }, /* @__PURE__ */ t.createElement(s.Day, { day: n == null ? void 0 : n[0], label: "Today" }), /* @__PURE__ */ t.createElement(s.Day, { day: n == null ? void 0 : n[1], label: "Tomorrow" }), /* @__PURE__ */ t.createElement(s.Day, { day: n == null ? void 0 : n[2], label: "Next week" })));
         }
       },
       // TODO: Implement `decide-shutdown-time` step
@@ -98,104 +98,104 @@ const R = (a, l) => ({ slug: a, plugin: l }), f = R("essentials", (a) => {
       "todays-plan": {
         name: "Today's plan",
         description: "Write down your plan for today so you can share it with others. By default, it's a list of tasks you plan to do today.",
-        component: (t) => {
-          const [n, o] = u(null), r = a.dayjs();
-          return i(() => {
+        component: (e) => {
+          const [o, r] = t.useState(null), l = a.dayjs();
+          return t.useEffect(() => {
             (async () => {
-              const e = await a.getDays({
-                from: r.toDate(),
-                to: r.toDate(),
+              const n = await a.getDays({
+                from: l.toDate(),
+                to: l.toDate(),
                 include: { tasks: !0 }
               });
-              if (!e.length) {
-                o("");
+              if (!n.length) {
+                r("");
                 return;
               }
-              const s = e[0];
-              o(
-                `<ul>${s.tasks.map(
-                  (c) => `<li>${c.status === "DONE" ? "✅ " : c.status === "CANCELED" ? "❌ " : ""}${c.title}</li>`
+              const d = n[0];
+              r(
+                `<ul>${d.tasks.map(
+                  (i) => `<li>${i.status === "DONE" ? "✅ " : i.status === "CANCELED" ? "❌ " : ""}${i.title}</li>`
                 ).join("")}</ul>`
               );
             })();
-          }, []), /* @__PURE__ */ React.createElement("div", null, /* @__PURE__ */ React.createElement(
-            l.NoteEditor,
+          }, []), /* @__PURE__ */ t.createElement("div", null, /* @__PURE__ */ t.createElement(
+            s.NoteEditor,
             {
-              slug: `flow-essentials_retro-${r.format("YYYY-MM-DD")}`,
-              title: `Retro of ${r.format("MMMM D")}`,
-              loading: n === null,
-              initialValue: n ?? ""
+              slug: `flow-essentials_retro-${l.format("YYYY-MM-DD")}`,
+              title: `Retro of ${l.format("MMMM D")}`,
+              loading: o === null,
+              initialValue: o ?? ""
             }
-          ), /* @__PURE__ */ React.createElement(t.BackButton, null), /* @__PURE__ */ React.createElement(t.NextButton, null));
+          ), /* @__PURE__ */ t.createElement(e.BackButton, null), /* @__PURE__ */ t.createElement(e.NextButton, null));
         }
       },
       // Shutdown routine steps
       "intro-to-todays-shutdown": {
         name: "Intro to today's shutdown",
         description: "Animated screen to get you in the mood to shutdown and retrospect on today.",
-        component: (t) => /* @__PURE__ */ React.createElement(d, { ...t }, "Let's reflect on what you did today")
+        component: (e) => /* @__PURE__ */ t.createElement(c, { ...e }, "Let's reflect on what you did today")
       },
       "clean-up-today": {
         name: "Clean up today",
         description: "Clean up today by marking tasks as done or canceling tasks.",
-        component: (t) => {
-          const n = a.dayjs(), [o, r] = a.hooks.useAsyncLoader(async () => await a.getDays({
-            from: n.toDate(),
-            to: n.toDate(),
+        component: (e) => {
+          const o = a.dayjs(), [r, l] = a.hooks.useAsyncLoader(async () => await a.getDays({
+            from: o.toDate(),
+            to: o.toDate(),
             toRender: { Day: !0 }
-          })), e = o == null ? void 0 : o[0];
-          return r ? /* @__PURE__ */ React.createElement(React.Fragment, null, "Loading...") : /* @__PURE__ */ React.createElement("div", null, /* @__PURE__ */ React.createElement("div", null, /* @__PURE__ */ React.createElement(t.BackButton, null), /* @__PURE__ */ React.createElement(t.NextButton, null)), /* @__PURE__ */ React.createElement(l.Day, { day: e, label: "Today" }));
+          })), n = r == null ? void 0 : r[0];
+          return l ? /* @__PURE__ */ t.createElement(t.Fragment, null, "Loading...") : /* @__PURE__ */ t.createElement("div", null, /* @__PURE__ */ t.createElement("div", null, /* @__PURE__ */ t.createElement(e.BackButton, null), /* @__PURE__ */ t.createElement(e.NextButton, null)), /* @__PURE__ */ t.createElement(s.Day, { day: n, label: "Today" }));
         }
       },
       "retro-on-today": {
         name: "Retro on today",
         description: "Retro on today by writing down a note. The default template is a list of tasks you did today, and headers for what went well and what didn't go well.",
-        component: (t) => {
-          const [n, o] = u(null), r = a.dayjs();
-          return i(() => {
+        component: (e) => {
+          const [o, r] = t.useState(null), l = a.dayjs();
+          return t.useEffect(() => {
             (async () => {
-              const e = await a.getDays({
-                from: r.toDate(),
-                to: r.toDate(),
+              const n = await a.getDays({
+                from: l.toDate(),
+                to: l.toDate(),
                 include: { tasks: !0 }
               });
-              if (!e.length) {
-                o("");
+              if (!n.length) {
+                r("");
                 return;
               }
-              const s = e[0];
-              o(
-                `<ul>${s.tasks.map(
-                  (c) => `<li>${c.status === "DONE" ? "✅ " : c.status === "CANCELED" ? "❌ " : ""}${c.title}</li>`
+              const d = n[0];
+              r(
+                `<ul>${d.tasks.map(
+                  (i) => `<li>${i.status === "DONE" ? "✅ " : i.status === "CANCELED" ? "❌ " : ""}${i.title}</li>`
                 ).join("")}</ul>`
               );
             })();
-          }, []), /* @__PURE__ */ React.createElement("div", null, /* @__PURE__ */ React.createElement(
-            l.NoteEditor,
+          }, []), /* @__PURE__ */ t.createElement("div", null, /* @__PURE__ */ t.createElement(
+            s.NoteEditor,
             {
-              slug: `flow-essentials_retro-${r.format("YYYY-MM-DD")}`,
-              title: `Retro of ${r.format("MMMM D")}`,
-              loading: n === null,
-              initialValue: n ?? ""
+              slug: `flow-essentials_retro-${l.format("YYYY-MM-DD")}`,
+              title: `Retro of ${l.format("MMMM D")}`,
+              loading: o === null,
+              initialValue: o ?? ""
             }
-          ), /* @__PURE__ */ React.createElement(t.BackButton, null), /* @__PURE__ */ React.createElement(t.NextButton, null));
+          ), /* @__PURE__ */ t.createElement(e.BackButton, null), /* @__PURE__ */ t.createElement(e.NextButton, null));
         }
       },
       "intro-to-tomorrow": {
         name: "Intro to tomorrow",
         description: "Animated screen to get you in the mood to plan for tomorrow.",
-        component: (t) => /* @__PURE__ */ React.createElement(d, { ...t }, "Tomorrow")
+        component: (e) => /* @__PURE__ */ t.createElement(c, { ...e }, "Tomorrow")
       },
       "plan-for-tomorrow": {
         name: "Plan for tomorrow",
         description: "Plan for tomorrow by dragging items from your different lists into tomorrow's list.",
-        component: (t) => {
-          const n = a.dayjs().add(1, "day"), [o, r] = a.hooks.useAsyncLoader(async () => await a.getDays({
-            from: n.toDate(),
-            to: n.toDate(),
+        component: (e) => {
+          const o = a.dayjs().add(1, "day"), [r, l] = a.hooks.useAsyncLoader(async () => await a.getDays({
+            from: o.toDate(),
+            to: o.toDate(),
             toRender: { Day: !0 }
-          })), e = o == null ? void 0 : o[0];
-          return r ? /* @__PURE__ */ React.createElement(React.Fragment, null, "Loading...") : /* @__PURE__ */ React.createElement("div", null, /* @__PURE__ */ React.createElement("div", null, /* @__PURE__ */ React.createElement(t.BackButton, null), /* @__PURE__ */ React.createElement(t.NextButton, null)), /* @__PURE__ */ React.createElement(l.Day, { day: e, label: "Tomorrow" }));
+          })), n = r == null ? void 0 : r[0];
+          return l ? /* @__PURE__ */ t.createElement(t.Fragment, null, "Loading...") : /* @__PURE__ */ t.createElement("div", null, /* @__PURE__ */ t.createElement("div", null, /* @__PURE__ */ t.createElement(e.BackButton, null), /* @__PURE__ */ t.createElement(e.NextButton, null)), /* @__PURE__ */ t.createElement(s.Day, { day: n, label: "Tomorrow" }));
         }
       }
     }
