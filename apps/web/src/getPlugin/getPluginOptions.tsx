@@ -20,8 +20,13 @@ import { useAsyncLoader } from "../useAsyncLoader";
 import { createItem } from "./createItem";
 import { createTask } from "./createTask";
 import { getStoreUtils } from "./getStoreUtils";
+import React from "react";
 
 export const getPluginOptions = (slug: string) => ({
+  /**
+   * React version that Flow uses.
+   */
+  React,
   /**
    * Components that Flow uses you can re-use in your plugin views to feel more integrated.
    *

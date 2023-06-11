@@ -2,11 +2,11 @@
  * This is the default plugin installed with the web app.
  */
 import { definePlugin, PluginRoutineStepProps } from "@flowdev/plugin/web";
-const { useEffect, useState } = React;
 
 export default definePlugin("essentials", (options) => {
   const Flow = options.components;
   const { motion } = options.framerMotion;
+  const { useEffect, useState } = options.React;
 
   const animationDuration = 5;
   const TextTransitionStep = (props: PluginRoutineStepProps & { children: React.ReactNode }) => {
