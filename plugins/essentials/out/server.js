@@ -1,6 +1,1 @@
-module.exports = {
-  default: {
-    slug: "essentials",
-    plugin: () => {},
-  },
-};
+"use strict";const s={slug:"essentials",plugin:()=>{}};module.exports=s;
