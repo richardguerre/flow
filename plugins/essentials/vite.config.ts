@@ -2,6 +2,7 @@ import { defineConfig } from "vite";
 
 export default defineConfig({
   build: {
+    outDir: "out",
     lib: {
       name: "flow-essentials",
       entry: { web: "src/web.tsx", server: "src/server.ts" },
@@ -16,7 +17,14 @@ export default defineConfig({
         return `_ignore_${entryAlias}.js`;
       },
     },
-    outDir: "out",
+    rollupOptions: {
+      external: ["react"],
+      output: {
+        globals: {
+          react: "React",
+        },
+      },
+    },
   },
   define: {
     "process.env.NODE_ENV": '"production"',
