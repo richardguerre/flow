@@ -4,58 +4,94 @@
 
 ## What is flow?
 
-Flow is a daily planner to keep you in the flow. It's an open-source project you can self-host, so you can change anything about it.
+Flow is a personal daily planner to keep you in the flow. 
 
-## Flow vs Sunsama
+Features:
 
-If you've used Sunsama, you'll notice that Flow is very similar. The main difference is that Flow is an open-source project you self-host. This means that you can run your own instance of Flow and have full control over it and your data.
+- 📊 Kanban board: drag and drop tasks between days.
+- 🧾 Lists & items: add items to lists and drag them into your day once you're ready to do them.
+- 📕 Routines: start your day the right way with a morning routine.
+- 🧩 Plugin-based: you can install and create plugins to extend Flow's functionality.
+- 💯 Open source: Flow is open source project, so you can contribute to it and make it better.
 
-It was primarily created as Sunsama does not have a Linear integration and I wanted to be able to easily import Linear issues into my daily plan.
+# Contributing
 
-### Differences
-
-The following are the main differences Flow has with Sunsama:
-
-- It allows you to cancel a task instead of deleting it.
-- It has a Linear integration.
-- Regular tasks can't be scheduled. Instead you can create calendar events to schedule them.
-
-## Initial Release
-
-The intial release of Flow includes the following features:
-
-- Being able to create and manage regular tasks
-- Being able to create recurring tasks (e.g. every Monday)
-- Create tasks from external items such as Linear issues or Google Calendar events.
-- Having daily rituals, one to start the day and one to end the day.
-
-## Roadmap
-
-The following are features I plan to add to Flow:
-
-- Simplify setting it up
-- Slack integration to sync changes back to Slack.
-- Being able to create and manage calendar events from within Flow.
-- Hook to automatically create tasks from external items
-- Notifications aggregator (e.g. it automatically creates tasks like "Review 3 notifications in GitHub")
-
-## Why Typescript?
-
-Typescript, although not the most loved language, strikes a good balance of:
-
-- Being a good first language to learn, making it easy to onboard new contributors that may not have much experience with programming.
-- Being typesafe, which makes it easier to refactor with peace in mind.
-- Having a decent ecosystem of tools and libraries.
-- Being a good language to write a web application in, for both the frontend and backend.
-
-It is also the language I am most comfortable working with and have the most experience with.
-
-## Contribute
-
-If you have suggestions for how Flow could be improved, or want to report a bug, open an issue! Any and all contributions are welcome.
+If you have suggestions for how Flow could be improved, or want to report a bug, [open an issue](https://github.com/richardguerre/flow/issues/new)! All contributions are welcome.
 
 
-### Don't destructure objects, excepts React with hooks
+## Getting started with GitHub Codespaces
+
+You can create a GitHub Codespace from this repository by clicking the green button at the top of the page and selecting "New codespace". This will create a Codespace with with everything you need to start developing on Flow:
+
+- Starts a Postgres database on port 5432
+- Seeds the database with some data (go to apps/server/prisma/seed.ts to see what it creates).
+- Starts the `server` app in watch on port 4000
+- Starts the `web` app in watch on port 3000 and connects to the `server` app on port 4000
+
+## Getting started
+
+1. Fork and clone the repository
+2. Install dependencies:
+   ```bash
+   npm install
+   ```
+3. Start a Postgres database
+4. Copy the `.env.example` file in `apps/server` into a `.env` file and modify the `DATABASE_URL` environment variable to point to your database
+   ```bash
+    cp apps/server/.env.example apps/server/.env
+    ```
+5. Run the migrations
+   ```bash
+   npm run db:dev
+   ```
+   or reset it if you have already run it before. This will also seed the database with some data so you can skip the next step.
+   ```bash
+   npm run db:reset
+   ```
+6. (optional) Seed the database
+   ```bash
+   npm run db:seed
+   ```
+7. Copy the `.env.example` file in `apps/web` into a `.env` file. No need to modify anything.
+   ```bash
+    cp apps/web/.env.example apps/web/.env
+    ```
+8. Start the `server` and `web` app
+   ```bash
+   npm run dev
+   ```
+
+## VS Code Extensions
+
+If you are using VS Code, you will be prompted to install the recommended extensions, which you can find in `.vscode/extensions.json`. These extensions are:
+
+- [Prettier](https://marketplace.visualstudio.com/items?itemName=esbenp.prettier-vscode) for formatting.
+- [Relay](https://marketplace.visualstudio.com/items?itemName=meta.relay) for [Relay GraphQL](https://relay.dev) support.
+- [Tailwind CSS IntelliSense](https://marketplace.visualstudio.com/items?itemName=bradlc.vscode-tailwindcss) for [Tailwind CSS](https://tailwindcss.com) support.
+- [Prisma](https://marketplace.visualstudio.com/items?itemName=Prisma.prisma) for [Prisma](https://www.prisma.io) support.
+
+## Running tests
+
+To run tests, run the following command:
+
+```bash
+npm run test
+```
+
+For now there are only tests in the `server` app, so you can also run them directly from the `server` app:
+
+```bash
+cd apps/server
+npm run test
+```
+
+# FAQ/Pointers
+
+## Why is relay.config.json at the root?
+
+I couldn't get the VS Code extension to work with the `relay.config.json` file in the `apps/web` directory. This also means that the relay-compiler is run from the root directory, hence why the `relay` script in `apps/web` is `cd ../.. && relay-compiler`.
+
+## Don't destructure objects, except React with hooks
 
 I've found that destructuring objects can make it harder to read and refactor code. This does not apply to destructuring arrays. Example:
 
@@ -72,6 +108,3 @@ const MyComponent = (props) => {
   return <div>{props.myProp} {property}</div>;
 };
 ```
-## Why is relay.config.json at the root?
-
-I couldn't get the VS Code extension to work with the relay.config.json file in the `apps/web` directory. This also means that the relay-compiler is run from the root directory, hence why the `relay` script in `apps/web` is `cd ../.. && relay-compiler`.

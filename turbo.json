@@ -10,6 +10,9 @@
     "seed": {
       "cache": false
     },
+    "test": {
+      "cache": false
+    },
     "build": {
       "outputs": ["./dist"]
     }
