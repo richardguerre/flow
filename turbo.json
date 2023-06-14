@@ -9,6 +9,9 @@
     },
     "seed": {
       "cache": false
+    },
+    "build": {
+      "outputs": ["./dist"]
     }
   }
 }
