@@ -47,6 +47,18 @@ export async function installServerPlugin(opts: Options) {
   if (text.startsWith("Couldn't find the requested file")) {
     throw new GraphQLError(`Couldn't find the plugin at "${opts.url}/server.js"`);
   }
+
+  // the following creates the plugins folder if it doesn't exist.
+  try {
+    await fs.readdir(pathToPlugins);
+  } catch (err: any) {
+    if (err.code !== "ENOENT") {
+      throw err;
+    }
+    await fs.mkdir(pathToPlugins, { recursive: true });
+  }
+  // the above creates the plugins folder if it doesn't exist.
+
   await fs.writeFile(pathToTemp, text); // we can keep overwriting this file because we only need it to get the plugin's slug.
   const exported = require(pathToTemp) as DefineServerPluginReturn | undefined;
   if (typeof exported !== "object" || Object.keys(exported).length === 0) {
