@@ -5,25 +5,23 @@ import { DefineServerPluginReturn, ServerPluginReturn } from "@flowdev/plugin/se
 import { getPluginOptions } from "./getPluginOptions";
 
 const cache = new Map<string, ServerPluginReturn>();
-const pathToPlugins = path.join(__dirname, "../../plugins");
+const pathToPlugins = path.join(__dirname, process.env.PATH_TO_PLUGINS ?? "../../plugins");
 const pathToTemp = path.join(pathToPlugins, "__temp.js"); // this __temp.js is used to get the plugin's slug. see installServerPlugin below.
 
 export const getPlugins = async (): Promise<Record<string, ServerPluginReturn>> => {
   const plugins = (await fs.readdir(pathToPlugins))
     .filter((p) => p.endsWith(".js") && p !== "__temp.js")
     .map((p) => p.replace(".js", ""));
-  if (plugins.length === cache.size && plugins.every((plugin) => cache.has(plugin))) {
+  const unCachedPlugins = plugins.filter((plugin) => !cache.has(plugin));
+  if (unCachedPlugins.length === 0) {
     return Object.fromEntries(cache);
   }
-  for (const pluginSlug of plugins) {
-    const { plugin } = require(path.join(pathToPlugins, pluginSlug))
-      .default as DefineServerPluginReturn;
+  for (const pluginSlug of unCachedPlugins) {
+    const { plugin } = require(path.join(pathToPlugins, pluginSlug)) as DefineServerPluginReturn;
     cache.set(pluginSlug, plugin(getPluginOptions(pluginSlug)));
   }
   return Object.fromEntries(cache);
 };
-
-export const getPluginSlug = async () => {};
 
 type Options = {
   /**
@@ -50,36 +48,33 @@ export async function installServerPlugin(opts: Options) {
     throw new GraphQLError(`Couldn't find the plugin at "${opts.url}/server.js"`);
   }
   await fs.writeFile(pathToTemp, text); // we can keep overwriting this file because we only need it to get the plugin's slug.
-  const defaultExport = require(pathToTemp).default as DefineServerPluginReturn | undefined;
-  if (!defaultExport) {
+  const exported = require(pathToTemp) as DefineServerPluginReturn | undefined;
+  if (typeof exported !== "object" || Object.keys(exported).length === 0) {
+    throw new GraphQLError(`Couldn't find any exports at "${opts.url}/server.js"`);
+  } else if (typeof exported.plugin !== "function") {
     throw new GraphQLError(
-      `Couldn't find the \`default\` export in the plugin at "${opts.url}/server.js"`
+      `The exports of "${opts.url}/server.js" must have a \`plugin\` property which is a function. Please use \`definePlugin\` from \`@flowdev/plugin/server\`.`
     );
-  } else if (typeof defaultExport.plugin !== "function") {
-    console.log(typeof defaultExport.plugin);
+  } else if (typeof exported.slug !== "string") {
     throw new GraphQLError(
-      `The \`default\` export in the plugin at "${opts.url}/server.js" must have a \`plugin\` property which is a function. Please use \`definePlugin\` from \`@flowdev/plugin/server\`.`
-    );
-  } else if (typeof defaultExport.slug !== "string") {
-    throw new GraphQLError(
-      `The \`default\` export in the plugin at "${opts.url}/server.js" must have a \`slug\` property. Please use \`definePlugin\` from \`@flowdev/plugin/server\`.`
+      `The exports of "${opts.url}/server.js" must have a \`slug\` property which is a string. Please use \`definePlugin\` from \`@flowdev/plugin/server\`.`
     );
   }
   if (
     !opts.override &&
-    (cache.has(defaultExport.slug) || opts.installedPluginSlugs.includes(defaultExport.slug))
+    (cache.has(exported.slug) || opts.installedPluginSlugs.includes(exported.slug))
   ) {
     throw new GraphQLError(
-      `PLUGIN_WITH_SAME_SLUG: A plugin with the slug "${defaultExport.slug}" is already installed. Use the \`override\` option to override the existing plugin.`
+      `PLUGIN_WITH_SAME_SLUG: A plugin with the slug "${exported.slug}" is already installed. Use the \`override\` option to override the existing plugin.`
     );
   }
-  await fs.rename(pathToTemp, path.join(pathToPlugins, `${defaultExport.slug}.js`));
-  const plugin = defaultExport.plugin(getPluginOptions(defaultExport.slug));
-  cache.set(defaultExport.slug, plugin);
+  await fs.rename(pathToTemp, path.join(pathToPlugins, `${exported.slug}.js`));
+  const plugin = exported.plugin(getPluginOptions(exported.slug));
+  cache.set(exported.slug, plugin);
 
   await plugin.onInstall?.();
 
-  return defaultExport.slug;
+  return exported.slug;
 }
 
 /** Uninstall a plugin on the server's file system. */
