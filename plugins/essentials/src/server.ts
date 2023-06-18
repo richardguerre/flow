@@ -1,4 +1,5 @@
-export default {
-  slug: "essentials",
-  plugin: () => {},
-};
+import { definePlugin } from "@flowdev/plugin/server";
+
+export default definePlugin("essentials", (opts) => {
+  return {};
+});
