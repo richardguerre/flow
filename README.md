@@ -91,7 +91,7 @@ npm run test
 
 I couldn't get the VS Code extension to work with the `relay.config.json` file in the `apps/web` directory. This also means that the relay-compiler is run from the root directory, hence why the `relay` script in `apps/web` is `cd ../.. && relay-compiler`.
 
-## Don't destructure objects, except React with hooks
+## Don't destructure objects, except with React hooks
 
 I've found that destructuring objects can make it harder to read and refactor code. This does not apply to destructuring arrays. Example:
 
@@ -104,7 +104,7 @@ const MyComponent = ({ value }) => {
 // ✅ Good
 const MyComponent = (props) => {
   // destructuring objects returned by React hooks is fine
-  const { property } = useLocaleCurrency();
-  return <div>{props.myProp} {property}</div>;
+  const { symbol } = useLocaleCurrency();
+  return <div>{props.myProp} {symbol}</div>;
 };
 ```
