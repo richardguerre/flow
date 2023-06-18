@@ -5,16 +5,14 @@
       "outputs": ["./.env"]
     },
     "dev": {
-      "cache": false
-    },
-    "seed": {
+      "persistent": true,
       "cache": false
     },
     "test": {
       "cache": false
     },
     "build": {
-      "outputs": ["./dist"]
+      "outputs": ["./dist/**", "./out/**"]
     }
   }
 }

@@ -3,7 +3,7 @@
   "private": true,
   "type": "module",
   "scripts": {
-    "prerelay": "npm run print-schema --workspace=@flowdev/server && mkdir -p src/relay/__generated__",
+    "prerelay": "npm run print-schema -w=@flowdev/server && mkdir -p src/relay/__generated__",
     "relay": "cd ../.. && relay-compiler",
     "relay:watch": "npm run relay -- --watch",
     "predev": "npm run relay",
