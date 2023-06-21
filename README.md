@@ -28,6 +28,15 @@ You can create a GitHub Codespace from this repository by clicking the green but
 - Starts the `server` app in watch on port 4000
 - Starts the `web` app in watch on port 3000 and connects to the `server` app on port 4000
 
+When you open the web app in the browser, you may see nothing or "Hello world". To fix this you will need to:
+
+1. Open the web app at http://localhost:3000
+2. Add a `token` as an item in localStorage and refresh. The value can be any string (authentication is not done yet). This is used to authenticate the user. You can do this in the browser console:
+    ```js
+    localStorage.setItem('token', 'my-token');
+    ```
+3. You should now see the app with some tasks already created.
+
 ## Getting started
 
 1. Fork and clone the repository
@@ -60,6 +69,12 @@ You can create a GitHub Codespace from this repository by clicking the green but
    ```bash
    npm run dev
    ```
+9. Open the web app at http://localhost:3000
+10. Add a `token` as an item in localStorage and refresh. The value can be any string (authentication is not done yet). This is used to authenticate the user. You can do this in the browser console:
+    ```js
+    localStorage.setItem('token', 'my-token');
+    ```
+11. You should now see the app with some tasks already created.
 
 ## VS Code Extensions
 
