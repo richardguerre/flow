@@ -42,13 +42,13 @@ export const Day = (props: DayProps) => {
       {/* pl-4 is needed for scrollIntoView to not scroll with the day flush to the left */}
       <div className="mb-3">
         <button
-          className="text-xl font-semibold hover:text-primary-400 active:text-primary-600"
+          className="hover:text-primary-400 active:text-primary-600 text-xl font-semibold"
           onClick={() => dayRef.current?.scrollIntoView({ inline: "start", behavior: "smooth" })}
           disabled={!!props.label}
         >
           {props.label ?? dayOfWeekArr[dayjs(day.date).day()]}
         </button>
-        <div className="text-sm text-foreground-800">{dayjs(day.date).format("MMMM D")}</div>
+        <div className="text-foreground-800 text-sm">{dayjs(day.date).format("MMMM D")}</div>
       </div>
       <DayAddTaskActionsBar day={day} />
       <DayContent day={day} />
@@ -171,7 +171,7 @@ const DayAddTaskActionsBar = (props: DayAddTaskActionsBarProps) => {
   return (
     <div className="flex flex-col gap-4">
       <button
-        className="w-full rounded-md bg-background-300 bg-opacity-50 px-2 py-1 text-sm text-foreground-900 hover:bg-opacity-70 active:bg-opacity-100"
+        className="bg-background-300 text-foreground-900 w-full rounded-md bg-opacity-50 px-2 py-1 text-sm hover:bg-opacity-70 active:bg-opacity-100"
         onClick={() => setShowNewTaskCard(true)}
       >
         Add task

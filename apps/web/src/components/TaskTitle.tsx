@@ -123,7 +123,7 @@ export const TaskTitleInput = (props: TaskTitleInputProps) => {
 
   return (
     <EditorContent
-      className="w-full p-0 TaskTitleInput"
+      className="TaskTitleInput w-full p-0"
       editor={editorRef.current}
       onClick={handleClick}
     />

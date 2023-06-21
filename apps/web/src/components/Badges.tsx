@@ -6,7 +6,7 @@ type DurationBadgeProps = {
 
 export const DurationBadge = (props: DurationBadgeProps) => {
   return (
-    <div className="inline-flex h-min rounded-md bg-primary-100 px-1 py-[1px] text-sm text-primary-600">
+    <div className="bg-primary-100 text-primary-600 inline-flex h-min rounded-md px-1 py-[1px] text-sm">
       {twoDigits(Math.floor(props.durationInMinutes / 60))}:
       {twoDigits(props.durationInMinutes % 60)}
     </div>
@@ -22,7 +22,7 @@ type TimeBadgeProps = {
 
 export const TimeBadge = (props: TimeBadgeProps) => {
   return (
-    <div className="inline-flex h-min rounded-md bg-primary-100 px-1 py-[1px] text-sm text-primary-600">
+    <div className="bg-primary-100 text-primary-600 inline-flex h-min rounded-md px-1 py-[1px] text-sm">
       {dayjs(props.time).format("HH:mm")}
     </div>
   );

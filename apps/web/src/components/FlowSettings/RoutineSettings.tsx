@@ -99,7 +99,7 @@ export const RoutineSettings = (props: RoutineSettingsProps) => {
           list={routineSteps}
           setList={setRoutineSteps}
           onEnd={handleStepsChange}
-          className="flex flex-col bg-primary-50"
+          className="bg-primary-50 flex flex-col"
           group={{
             name: "routine-steps",
             pull: "clone",

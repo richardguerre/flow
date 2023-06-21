@@ -1,0 +1,19 @@
+name: checks
+on: push
+
+# test    (npm run test -w apps/server)
+# build   (npm run build)
+# format  (npm run format:check)
+
+jobs:
+  unit-test:
+    name: unit tests
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+      - uses: actions/setup-node@v3
+        with:
+          node-version: 18
+          cache: "npm"
+      - run: npm ci
+      - run: npm test

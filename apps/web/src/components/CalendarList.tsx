@@ -67,7 +67,7 @@ export const CalendarList = (props: CalendarListProps) => {
           id: task.id,
           at: new Date(task.completedAt),
           element: (
-            <div className="rounded-full bg-green-500 h-6 transform w-6 -translate-x-1/2 -translate-y-1/2" />
+            <div className="h-6 w-6 -translate-x-1/2 -translate-y-1/2 transform rounded-full bg-green-500" />
           ),
         });
       }
@@ -83,9 +83,9 @@ export const CalendarList = (props: CalendarListProps) => {
   }, [dayStore.dateInFocus, dayStore.dayIdInFocus]);
 
   return (
-    <div className="flex flex-col h-full">
-      <div className="font-semibold text-xl p-3">Calendar</div>
-      <div className="h-full pt-3 pl-3 overflow-y-scroll">
+    <div className="flex h-full flex-col">
+      <div className="p-3 text-xl font-semibold">Calendar</div>
+      <div className="h-full overflow-y-scroll pl-3 pt-3">
         <DayTimeGrid events={events} artifacts={artifacts} startHour={4} />
       </div>
     </div>

@@ -38,7 +38,7 @@ export const TaskCard = (props: TaskCardProps) => {
 
   return (
     <div
-      className={`${statusStyles} group flex cursor-pointer flex-col gap-1 rounded-md bg-background-50 p-3`}
+      className={`${statusStyles} bg-background-50 group flex cursor-pointer flex-col gap-1 rounded-md p-3`}
     >
       <div className="flex gap-1">
         <TaskTitle task={task} />
@@ -108,7 +108,7 @@ const TaskCardActions = (props: TaskCardActionsProps) => {
   const doneButton = (
     <button
       key="done"
-      className="flex h-6 w-6 items-center justify-center rounded-full bg-background-200 bg-opacity-50 text-sm text-foreground-700 hover:bg-background-300 hover:bg-opacity-70 active:bg-background-300 active:bg-opacity-100"
+      className="bg-background-200 text-foreground-700 hover:bg-background-300 active:bg-background-300 flex h-6 w-6 items-center justify-center rounded-full bg-opacity-50 text-sm hover:bg-opacity-70 active:bg-opacity-100"
       onClick={() => updateStatus("DONE")}
     >
       <BsCheck />
@@ -118,7 +118,7 @@ const TaskCardActions = (props: TaskCardActionsProps) => {
   const undoDoneButton = (
     <button
       key="undoDone"
-      className="flex h-6 w-6 items-center justify-center rounded-full bg-positive-100 text-positive-600 hover:bg-positive-200 active:bg-positive-300"
+      className="bg-positive-100 text-positive-600 hover:bg-positive-200 active:bg-positive-300 flex h-6 w-6 items-center justify-center rounded-full"
       onClick={() => updateStatus("TODO")}
     >
       <BsCheck />
@@ -128,7 +128,7 @@ const TaskCardActions = (props: TaskCardActionsProps) => {
   const superdoneButton = (
     <button
       key="superdone"
-      className="hidden h-6 w-6 items-center justify-center rounded-full bg-background-200 bg-opacity-50 text-sm text-foreground-700 hover:bg-background-300 hover:bg-opacity-70 active:bg-background-300 active:bg-opacity-100 group-hover:flex"
+      className="bg-background-200 text-foreground-700 hover:bg-background-300 active:bg-background-300 hidden h-6 w-6 items-center justify-center rounded-full bg-opacity-50 text-sm hover:bg-opacity-70 active:bg-opacity-100 group-hover:flex"
       onClick={() => updateStatus("DONE", true)}
     >
       <BsCheckAll />
@@ -138,7 +138,7 @@ const TaskCardActions = (props: TaskCardActionsProps) => {
   const undoSuperdoneButton = (
     <button
       key="undoSuperdone"
-      className="flex h-6 w-6 items-center justify-center rounded-full bg-positive-100 text-positive-600 hover:bg-positive-200 active:bg-positive-300"
+      className="bg-positive-100 text-positive-600 hover:bg-positive-200 active:bg-positive-300 flex h-6 w-6 items-center justify-center rounded-full"
       onClick={() => updateStatus("TODO")}
     >
       <BsCheckAll />
@@ -148,7 +148,7 @@ const TaskCardActions = (props: TaskCardActionsProps) => {
   const cancelButton = (
     <button
       key="cancel"
-      className="hidden h-6 w-6 items-center justify-center rounded-full bg-background-200 bg-opacity-50 text-sm text-foreground-700 hover:bg-background-300 hover:bg-opacity-70 active:bg-background-300 active:bg-opacity-100 group-hover:flex"
+      className="bg-background-200 text-foreground-700 hover:bg-background-300 active:bg-background-300 hidden h-6 w-6 items-center justify-center rounded-full bg-opacity-50 text-sm hover:bg-opacity-70 active:bg-opacity-100 group-hover:flex"
       onClick={() => updateStatus("CANCELED")}
     >
       <BsX size={20} />
@@ -158,7 +158,7 @@ const TaskCardActions = (props: TaskCardActionsProps) => {
   const undoCancelButton = (
     <button
       key="undoCancel"
-      className="flex h-6 w-6 items-center justify-center rounded-full bg-negative-100 text-negative-600 hover:bg-negative-200 active:bg-negative-300"
+      className="bg-negative-100 text-negative-600 hover:bg-negative-200 active:bg-negative-300 flex h-6 w-6 items-center justify-center rounded-full"
       onClick={() => updateStatus("TODO")}
     >
       <BsX size={20} />

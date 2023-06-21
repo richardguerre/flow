@@ -16,6 +16,8 @@
     "db:reset": "npm run db:reset -w apps/server",
     "db:seed": "npm run db:seed -w apps/server",
     "build": "turbo run build && npm run get-web -w apps/server",
+    "format": "prettier --write .",
+    "format:check": "prettier --check .",
     "---------patch---------": "",
     "postinstall": "patch-package",
     "-------codespaces-------": "",
@@ -33,5 +35,8 @@
     "patch-package": "^7.0.0",
     "prettier": "^2.8.8",
     "prettier-plugin-tailwindcss": "^0.2.8"
+  },
+  "prettier": {
+    "printWidth": 100
   }
 }

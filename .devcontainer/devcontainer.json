@@ -1,36 +1,36 @@
 // For format details, see https://aka.ms/devcontainer.json. For config options, see the
 // README at: https://github.com/devcontainers/templates/tree/main/src/javascript-node-postgres
 {
-	"name": "Default", // this is the default container for working in the project
-	"dockerComposeFile": "docker-compose.yml",
-	"service": "app",
-	"workspaceFolder": "/workspaces/${localWorkspaceFolderBasename}",
-	"postCreateCommand": "npm install && npm run codespaces",
-	"forwardPorts": [
-		3000, // apps/web
-		4000, // apps/server
-		5432, // postgres
-		5555 // prisma studio
-	],
-	"customizations": {
-		"vscode": {
-			"extensions": [
-				// The following were added to make the DX better for everyone,
-				// not by individual preference.
-				"esbenp.prettier-vscode",
-				"Prisma.prisma",
-				"meta.relay",
-				"bradlc.vscode-tailwindcss"
-			]
-		}
-	},
-	"postAttachCommand": {
-		"server": "cd apps/server && npm run dev",
-		"web": "cd apps/web && npm run dev",
-		"prisma": "cd apps/server && npx prisma studio"
-		// "relay": "cd apps/web && npm run relay:watch" // TODO: install watchman as part of docker containre to make this work
-	}
-	
-	// Uncomment to connect as root instead. More info: https://aka.ms/dev-containers-non-root.
-	// "remoteUser": "root"
+  "name": "Default", // this is the default container for working in the project
+  "dockerComposeFile": "docker-compose.yml",
+  "service": "app",
+  "workspaceFolder": "/workspaces/${localWorkspaceFolderBasename}",
+  "postCreateCommand": "npm install && npm run codespaces",
+  "forwardPorts": [
+    3000, // apps/web
+    4000, // apps/server
+    5432, // postgres
+    5555 // prisma studio
+  ],
+  "customizations": {
+    "vscode": {
+      "extensions": [
+        // The following were added to make the DX better for everyone,
+        // not by individual preference.
+        "esbenp.prettier-vscode",
+        "Prisma.prisma",
+        "meta.relay",
+        "bradlc.vscode-tailwindcss"
+      ]
+    }
+  },
+  "postAttachCommand": {
+    "server": "cd apps/server && npm run dev",
+    "web": "cd apps/web && npm run dev",
+    "prisma": "cd apps/server && npx prisma studio"
+    // "relay": "cd apps/web && npm run relay:watch" // TODO: install watchman as part of docker containre to make this work
+  }
+
+  // Uncomment to connect as root instead. More info: https://aka.ms/dev-containers-non-root.
+  // "remoteUser": "root"
 }

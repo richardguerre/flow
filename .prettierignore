@@ -1,0 +1,52 @@
+node_modules
+
+# local env files
+.env
+.env.local
+.env.development.local
+.env.test.local
+.env.production.local
+
+# Logs
+logs
+*.log
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+pnpm-debug.log*
+
+dist
+dist-ssr
+*.local
+
+# Editor directories and files
+.vscode/*
+!.vscode/extensions.json
+.idea
+.DS_Store
+*.suo
+*.ntvs*
+*.njsproj
+*.sln
+*.sw?
+
+# .md files are not formatted as there issues with tables and code blocks (reading it unrendered is more difficult when formatted)
+*.md
+
+# monorepo setup with turbo
+.turbo
+build/**
+dist/**
+
+# ignoring generated output of plugins
+plugins/**/out/**
+
+# server installed plugins
+apps/server/plugins/*
+!apps/server/plugins/.gitkeep
+
+# ignoring schema.graphql as it's genrated from the server and doesn't need to be formatted
+apps/web/src/relay/schema.graphql
+
+# ignoring generated files from relay-compiler (copied from apps/web/.gitignore)
+apps/web/src/relay/__generated__
