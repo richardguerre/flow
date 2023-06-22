@@ -5,7 +5,7 @@
   "scripts": {
     "print-schema": "NODE_ENV=development ts-node --transpile-only src/graphql/index.ts",
     "dev": "NODE_ENV=development ts-node-dev --transpile-only --ignore-watch=plugins --exit-child --respawn --no-notify src/index.ts",
-    "type-check": "tsc --noEmit && echo '✅ Type checking passed!'",
+    "type-check": "npm run gen && tsc --noEmit && echo '✅ Type checking passed!'",
     "build": "npm run type-check && ncc build src/index.ts -o dist",
     "copy-web": "cp -r ../web/dist ./dist/web && echo '✅ apps/web/dist copied to apps/server/dist/web'",
     "move-prisma-binary": "mv dist/client/* dist || echo '🔵 Ignore above error. Prisma binary was already moved.' && rm -r dist/client || echo '🔵 Ignore above error. dist/client was already removed.' && echo '✅ Prisma binary successfully moved from dist/client to dist'",
@@ -13,7 +13,7 @@
     "build:prod": "npm run build && npm run post-build && echo '✅ Successfully built for prod!",
     "start": "npm run build -W && npm run get-web && cd dist && node index.js",
     "test": "vitest --config .vitest/config.ts",
-    "gen": "prisma generate",
+    "gen": "prisma generate && echo '✅ Prisma client successfully generated!'",
     "db:dev": "prisma migrate dev",
     "db:migrate": "prisma migrate dev --create-only",
     "db:reset": "prisma migrate reset",
