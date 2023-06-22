@@ -4,10 +4,11 @@
   "type": "module",
   "scripts": {
     "prerelay": "npm run print-schema -w=@flowdev/server && mkdir -p src/relay/__generated__",
-    "relay": "cd ../.. && relay-compiler",
+    "relay": "cd ../.. && relay-compiler && echo '✅ Relay compiled!'",
     "relay:watch": "npm run relay -- --watch",
     "predev": "npm run relay",
     "dev": "vite --port 3000",
+    "prebuild": "npm run relay",
     "build": "tsc && vite build",
     "preview": "vite preview",
     "env:example": "cp -n .env.example .env || true",
