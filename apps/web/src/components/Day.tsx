@@ -59,6 +59,7 @@ export const Day = (props: DayProps) => {
 type UpdateTaskDateInfo = {
   movedTaskId: string;
   htmlParent: HTMLElement;
+  from: HTMLElement;
 } | null;
 
 type DayContentProps = {
@@ -95,6 +96,7 @@ export const DayContent = (props: DayContentProps) => {
     setUpdateTaskDateInfo({
       htmlParent: e.to,
       movedTaskId: e.item.id,
+      from: e.from,
     });
   };
 
@@ -116,6 +118,29 @@ export const DayContent = (props: DayContentProps) => {
             newTasksOrder,
           },
         },
+        optimisticUpdater: (store) => {
+          // get the previous date of the task
+          const {from, movedTaskId, htmlParent  } = updateTaskDateInfo;
+          const fromLocation = store.get(`Day_${from.id}`);
+          //get all tasks for the previous data
+          const fromTasks = fromLocation?.getLinkedRecords("tasks");
+          // remove the task from the current date
+          const newFromTasks = fromTasks?.filter(
+            (t) => t.getDataID() !== updateTaskDateInfo.movedTaskId
+          );
+          fromLocation?.setLinkedRecords(newFromTasks, "tasks");
+          //get the task you are moving
+          const taskToMove = fromTasks?.find(
+            (t) => t.getDataID() === movedTaskId
+          );
+          //get the date you ingtend to move it to
+          const to = store.get(`Day_${htmlParent.id}`);
+          //get the tasks that are already under the intended date
+          const toTasks = to?.getLinkedRecords("tasks");
+          // move the task to the new date
+          const newToTasks = !!taskToMove ? [taskToMove, ...(toTasks ?? [])] : toTasks;
+          to?.setLinkedRecords(newToTasks, "tasks");
+        },
       });
 
       setUpdateTaskDateInfo(null);
@@ -127,7 +152,7 @@ export const DayContent = (props: DayContentProps) => {
       id={day.date}
       className="mt-4 flex flex-auto flex-col overflow-y-auto overflow-x-hidden"
       list={tasks}
-      setList={setTasks} // TOOD: use mutation optimistic updater instead
+      setList={() => {}}
       animation={150}
       delayOnTouchOnly
       delay={100}
