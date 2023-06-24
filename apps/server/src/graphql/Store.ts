@@ -1,19 +1,19 @@
-import { installServerPlugin, uninstallServerPlugin } from "../utils/getPlugins";
+import { getPluginsInStore, installServerPlugin, uninstallServerPlugin } from "../utils/getPlugins";
 import { prisma } from "../utils/prisma";
 import { builder } from "./builder";
 
-const SettingKeys = {
+export const StoreKeys = {
   INSTALLED_PLUGINS: "installed-plugins",
 };
 
-type PluginInstallation = {
+export type PluginInstallation = {
   /** The plugin's slug */
   slug: string;
   /** The plugin's URL. It can be jsdelivr URL or anything that servers application/javascript static files. */
   url: string;
 };
 
-export const SettingType = builder.prismaNode("Store", {
+export const StoreType = builder.prismaNode("Store", {
   id: { field: "id" },
   fields: (t) => ({
     createdAt: t.expose("createdAt", { type: "DateTime" }),
@@ -58,21 +58,7 @@ builder.queryField("installedPlugins", (t) =>
   t.field({
     type: [PluginInstallationType],
     description: "Get all installed plugins.",
-    resolve: async () => {
-      const setting = await prisma.store.findFirst({
-        where: {
-          key: SettingKeys.INSTALLED_PLUGINS,
-          isSecret: false,
-          isServerOnly: false,
-          pluginSlug: null,
-        },
-      });
-      if (!setting) {
-        return [];
-      } else {
-        return setting.value as PluginInstallation[];
-      }
-    },
+    resolve: getPluginsInStore,
   })
 );
 
@@ -132,15 +118,7 @@ builder.mutationField("installPlugin", (t) =>
       override: t.input.boolean({ required: false }),
     },
     resolve: async (_, args) => {
-      const currSetting = await prisma.store.findFirst({
-        where: {
-          key: SettingKeys.INSTALLED_PLUGINS,
-          isSecret: false,
-          isServerOnly: false,
-          pluginSlug: null,
-        },
-      });
-      let installedPlugins = (currSetting?.value ?? []) as PluginInstallation[];
+      let installedPlugins = await getPluginsInStore();
 
       // this will throw GraphQLErrors if there are any problems with the plugin
       // installation. If there exists a plugin with the same slug, it will throw.
@@ -161,10 +139,10 @@ builder.mutationField("installPlugin", (t) =>
       });
 
       const newSetting = await prisma.store.upsert({
-        where: { key: SettingKeys.INSTALLED_PLUGINS },
+        where: { key: StoreKeys.INSTALLED_PLUGINS },
         update: { value: installedPlugins },
         create: {
-          key: SettingKeys.INSTALLED_PLUGINS,
+          key: StoreKeys.INSTALLED_PLUGINS,
           value: installedPlugins,
           isSecret: false,
           isServerOnly: false,
@@ -183,15 +161,7 @@ builder.mutationField("uninstallPlugin", (t) =>
       slug: t.input.string({ required: true }),
     },
     resolve: async (_, args) => {
-      const currSetting = await prisma.store.findFirst({
-        where: {
-          key: SettingKeys.INSTALLED_PLUGINS,
-          isSecret: false,
-          isServerOnly: false,
-          pluginSlug: null,
-        },
-      });
-      let installedPlugins = (currSetting?.value ?? []) as PluginInstallation[];
+      let installedPlugins = await getPluginsInStore();
 
       // uninstall the plugin on the server's file system
       await uninstallServerPlugin(args.input.slug);
@@ -200,10 +170,10 @@ builder.mutationField("uninstallPlugin", (t) =>
       installedPlugins = installedPlugins.filter((p) => p.slug !== args.input.slug);
 
       const newSetting = await prisma.store.upsert({
-        where: { key: SettingKeys.INSTALLED_PLUGINS },
+        where: { key: StoreKeys.INSTALLED_PLUGINS },
         update: { value: installedPlugins },
         create: {
-          key: SettingKeys.INSTALLED_PLUGINS,
+          key: StoreKeys.INSTALLED_PLUGINS,
           value: installedPlugins,
           isSecret: false,
           isServerOnly: false,

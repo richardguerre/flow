@@ -4,6 +4,7 @@ import { schema } from "./graphql";
 import { getPlugins } from "./utils/getPlugins";
 import { prisma } from "./utils/prisma";
 import path from "node:path";
+import { getPluginsInStore, installServerPlugin } from "./utils/getPlugins";
 
 const PORT = process.env.PORT ?? 4000;
 export const app = express();
@@ -21,7 +22,11 @@ app.use("/api/:pluginSlug", async (req, res, next) => {
   const installedPlugins = await getPlugins();
   const plugin = installedPlugins[pluginSlug];
   if (!plugin) {
-    res.status(404).send(`Plugin ${pluginSlug} not found`);
+    res
+      .status(404)
+      .send(
+        `Plugin ${pluginSlug} not found. It may be in the process of being installed. Please try again later.`
+      );
     return;
   }
   if (!plugin.onRequest) {
@@ -41,6 +46,32 @@ app.get("*", (_req, res) => {
   res.sendFile(path.join(__dirname, "./web/index.html"));
 });
 
+// ---------------------- Install plugins -------------------------
+
+(async () => {
+  // try installing plugins before starting the server so that requests
+  // to the plugin endpoints don't fail
+  try {
+    const installedPlugins = await getPluginsInStore().catch(() => {
+      console.log("Failed to get plugins from DB.");
+      return [];
+    });
+    await Promise.all(
+      installedPlugins.map((plugin) =>
+        installServerPlugin({
+          url: plugin.url,
+          installedPluginSlugs: installedPlugins.map((p) => p.slug),
+          override: true,
+        }).catch((e) => console.log(`Failed to install ${plugin.slug}: ${e}`))
+      )
+    );
+  } catch (e) {
+    // this should never happen, but better be safe than sorry
+    console.log("Failed to install plugins from DB.");
+    console.error(e);
+  }
+})();
+
 // -------------------------- Server ------------------------------
 
 if (process.env.NODE_ENV !== "test") {
@@ -53,6 +84,8 @@ if (process.env.NODE_ENV !== "test") {
   // this prevents errors stating that the port is already in use
   // more info here: https://stackoverflow.com/questions/54422849/jest-testing-multiple-test-file-port-3000-already-in-use
 }
+
+// -------------------------- Cleanup -----------------------------
 
 process.on("SIGINT", () => {
   prisma

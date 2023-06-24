@@ -3,6 +3,8 @@ import fs from "node:fs/promises";
 import path from "node:path";
 import { DefineServerPluginReturn, ServerPluginReturn } from "@flowdev/plugin/server";
 import { getPluginOptions } from "./getPluginOptions";
+import { PluginInstallation, StoreKeys } from "../graphql/Store";
+import { prisma } from "./prisma";
 
 const cache = new Map<string, ServerPluginReturn>();
 const pathToPlugins = path.join(__dirname, process.env.PATH_TO_PLUGINS ?? "../../plugins");
@@ -21,6 +23,18 @@ export const getPlugins = async (): Promise<Record<string, ServerPluginReturn>> 
     cache.set(pluginSlug, plugin(getPluginOptions(pluginSlug)));
   }
   return Object.fromEntries(cache);
+};
+
+export const getPluginsInStore = async () => {
+  const storeItem = await prisma.store.findFirst({
+    where: {
+      key: StoreKeys.INSTALLED_PLUGINS,
+      isSecret: false,
+      isServerOnly: false,
+      pluginSlug: null,
+    },
+  });
+  return (storeItem?.value ?? []) as PluginInstallation[];
 };
 
 type Options = {
