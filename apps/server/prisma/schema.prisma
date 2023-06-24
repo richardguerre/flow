@@ -86,7 +86,7 @@ model Task {
   title             String
   /// The status of the task
   status            TaskStatus @default(TODO)
-  /// Whether the task can be superdone (i.e. setting the task to done in Flow + in external services)
+  /// Whether the task can be superdone (i.e. setting the task to done in Flow + setting the item linked to the task to done using the plugin).
   canBeSuperdone    Boolean    @default(false)
   /// The date and time the task was completed.
   completedAt       DateTime?
@@ -269,6 +269,8 @@ model Routine {
   updatedAt       DateTime            @updatedAt
   /// The name of the routine
   name            String
+  /// Action name used on the button to start the routine
+  actionName      String
   /// The time the routine takes place
   time            DateTime            @db.Time(0)
   /// The pattern(s) the routine repeats on

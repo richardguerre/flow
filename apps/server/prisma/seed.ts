@@ -154,8 +154,11 @@ async function script() {
   await prisma.routine.create({
     data: {
       name: "Morning routine",
+      actionName: "Plan",
       time: "1970-01-01T08:00:00.000Z",
       repeats: ["MONDAY", "TUESDAY", "WEDNESDAY", "THURSDAY", "FRIDAY", "SATURDAY", "SUNDAY"],
+      isActive: true,
+      firstDay: new Date(),
       steps: {
         set: [
           "essentials_intro-to-yesterday_true",

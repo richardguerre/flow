@@ -146,6 +146,7 @@ CREATE TABLE "Routine" (
     "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
     "updatedAt" TIMESTAMP(3) NOT NULL,
     "name" TEXT NOT NULL,
+    "actionName" TEXT NOT NULL,
     "time" TIME(0) NOT NULL,
     "repeats" "RepetitionPattern"[],
     "firstDay" DATE NOT NULL DEFAULT CURRENT_TIMESTAMP,

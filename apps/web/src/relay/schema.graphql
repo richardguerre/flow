@@ -163,6 +163,7 @@ type Mutation {
   Updates a note if one exists with the passed in `slug`, otherwise creates a new note.
   """
   createOrUpdateNote(input: MutationCreateOrUpdateNoteInput!): Note!
+  createRoutine(input: MutationCreateRoutineInput!): Routine!
 
   """Create a new task."""
   createTask(input: MutationCreateTaskInput!): Task!
@@ -256,6 +257,14 @@ input MutationCreateOrUpdateNoteInput {
 
   """The title of the note."""
   title: String!
+}
+
+input MutationCreateRoutineInput {
+  actionName: String!
+  name: String!
+  repeats: [RepetitionPattern!]!
+  steps: [RoutineStepInput!]!
+  time: Time!
 }
 
 input MutationCreateTaskInput {
@@ -553,6 +562,8 @@ enum RepetitionPattern {
 
 """A routine the user has set up."""
 type Routine implements Node {
+  """Action name used on the button to start the routine"""
+  actionName: String!
   createdAt: DateTime!
 
   """

@@ -43,6 +43,7 @@ export const RoutineType = builder.prismaNode("Routine", {
   fields: (t) => ({
     createdAt: t.expose("createdAt", { type: "DateTime" }),
     name: t.exposeString("name"),
+    actionName: t.exposeString("actionName"),
     time: t.expose("time", { type: "Time" }),
     repeats: t.expose("repeats", { type: [RepetitionPatternEnum] }),
     steps: t.field({
@@ -123,6 +124,35 @@ builder.queryField("routines", (t) =>
 );
 
 // --------------- Routine mutation types ---------------
+
+builder.mutationField("createRoutine", (t) =>
+  t.prismaFieldWithInput({
+    type: "Routine",
+    input: {
+      name: t.input.string({ required: true }),
+      actionName: t.input.string({ required: true }),
+      time: t.input.field({ type: "Time", required: true }),
+      repeats: t.input.field({ type: [RepetitionPatternEnum], required: true }),
+      steps: t.input.field({ type: [RoutineStepInput], required: true }),
+    },
+    resolve: (query, _, args) => {
+      return prisma.routine.create({
+        ...query,
+        data: {
+          name: args.input.name,
+          actionName: args.input.actionName,
+          time: args.input.time,
+          repeats: args.input.repeats,
+          firstDay: new Date(), // FIXME: refactor this to have the correct date according to the user's timezone
+          isActive: true,
+          steps: args.input.steps.map(
+            (step) => `${step.pluginSlug}_${step.stepSlug}_${step.shouldSkip}`
+          ),
+        },
+      });
+    },
+  })
+);
 
 builder.mutationField("updateRoutineSteps", (t) =>
   t.prismaFieldWithInput({
