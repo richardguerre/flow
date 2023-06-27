@@ -42,7 +42,10 @@ export default defineConfig({
   plugins: [
     react(),
     // @ts-ignore as tsconfigPaths types are not updated to those of Vite 4.0, but the plugin works fine
-    tsconfigPaths(),
+    tsconfigPaths({
+      // root is required for vite to detect the tsconfig.json file
+      root: __dirname,
+    }),
     relay(),
   ],
 });
