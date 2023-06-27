@@ -61,8 +61,13 @@ app.get("*", (_req, res) => {
         installServerPlugin({
           url: plugin.url,
           installedPluginSlugs: installedPlugins.map((p) => p.slug),
-          override: true,
-        }).catch((e) => console.log(`Failed to install ${plugin.slug}: ${e}`))
+        }).catch((e) => {
+          if (e.message.includes("PLUGIN_WITH_SAME_SLUG")) {
+            console.log(`Plugin ${plugin.slug} already installed.`);
+            return;
+          }
+          console.log(`Failed to install ${plugin.slug}: ${e}`);
+        })
       )
     );
   } catch (e) {

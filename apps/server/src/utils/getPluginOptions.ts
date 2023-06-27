@@ -38,9 +38,9 @@ export const getPluginOptions = (pluginSlug: string) => ({
    */
   store: {
     /**
-     * Set an item in the store. If the item already exists, it will be overwritten.
+     * Set an item in the store that can be seen by other plugins. If the item already exists, it will be overwritten.
      *
-     * If the item is secret, use `setSecretItem` instead. If the item is server-only, use `setServerOnlyItem` instead.
+     * If the item is secret and should not be seen by other plugins, use `setSecretItem` instead. If the item is server-only but cna still be seen by other plugins in the server, use `setServerOnlyItem` instead.
      * @example
      * ```ts
      * await store.setItem("myKey", "myValue");
@@ -60,6 +60,10 @@ export const getPluginOptions = (pluginSlug: string) => ({
      * Set a secret item in the store. If the item already exists, it will be overwritten.
      *
      * If the item is not secret, use `setItem` instead. If the item is server-only, use `setServerOnlyItem` instead.
+     * @example
+     * ```ts
+     * await store.setSecretItem("mySecretKey", "mySecretValue");
+     * ```
      */
     setSecretItem: async (key: string, value: PrismaJsonInput) => {
       if (typeof value === "symbol" || typeof value === "function") {
@@ -75,6 +79,10 @@ export const getPluginOptions = (pluginSlug: string) => ({
      * Set a server-only item in the store. If the item already exists, it will be overwritten.
      *
      * If the item is not server-only, use `setItem` instead. If the item is secret, use `setSecretItem` instead.
+     * @example
+     * ```ts
+     * await store.setServerOnlyItem("myKey", "myServerOnlyValue");
+     * ```
      */
     setServerOnlyItem: async (key: string, value: PrismaJsonInput) => {
       if (typeof value === "symbol" || typeof value === "function") {
@@ -90,6 +98,10 @@ export const getPluginOptions = (pluginSlug: string) => ({
      * Delete any item from the store that was created by the plugin (secret or not, server-only or not).
      *
      * It will not delete items created by other plugins.
+     * @example
+     * ```ts
+     * await store.deleteItem("myKey");
+     * ```
      */
     deleteItem: async (key: string) => {
       return prisma.store.delete({
@@ -97,9 +109,15 @@ export const getPluginOptions = (pluginSlug: string) => ({
       });
     },
     /**
-     * Get any item from the store that was created by the plugin. It will not get items created by other plugins.
+     * Get any item from the store that was created by the plugin (including secret ones).
+     *
+     * It will not get items created by other plugins. If you want to get items created by other plugins that are not secret, use `getItem` instead.
      *
      * If the item does not exist, `undefined` will be returned.
+     * @example
+     * ```ts
+     * await store.getPluginItem("myKey");
+     * ```
      */
     getPluginItem: async (key: string) => {
       return prisma.store.findFirst({
@@ -107,17 +125,25 @@ export const getPluginOptions = (pluginSlug: string) => ({
       });
     },
     /**
-     * Get any item from the store that is not secret nor server-only. It will get items created by other plugins.
+     * Get any item from the store that is not secret. It will get items created by other plugins. If you want to get secret items created by the plugin, use `getPluginItem` instead.
      *
      * You can specify the plugin slug if the key is not unique across plugins and you're targetting a specific one (i.e. it's a generic key like `theme`).
      *
      * Flow store items do not have a plugin slug, so you can omit it when getting Flow store items, like settings and user preferences.
      *
      * If the item does not exist, `undefined` will be returned.
+     * @example
+     * ```ts
+     * await store.getItem("myKey");
+     * ```
+     * @example
+     * ```ts
+     * await store.getItem("myKey", { pluginSlug: "somePluginSlug" }); // pluginSlug is optional, and can be of another plugin.
+     * ```
      */
-    getItem: async (key: string, pluginSlug?: string) => {
+    getItem: async (key: string, opts?: { pluginSlug?: string }) => {
       return prisma.store.findFirst({
-        where: { key, pluginSlug, isSecret: false, isServerOnly: false },
+        where: { key, pluginSlug: opts?.pluginSlug, isSecret: false },
       });
     },
   },
