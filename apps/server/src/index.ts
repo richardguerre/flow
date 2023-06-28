@@ -17,7 +17,7 @@ app.use("/graphql", graphqlAPI);
 
 // ---------------------- Plugin endpoints -----------------------
 
-app.use("/api/:pluginSlug", async (req, res, next) => {
+app.use("/api/plugin/:pluginSlug", async (req, res) => {
   const pluginSlug = req.params.pluginSlug;
   const installedPlugins = await getPlugins();
   const plugin = installedPlugins[pluginSlug];
@@ -35,8 +35,10 @@ app.use("/api/:pluginSlug", async (req, res, next) => {
       .send(`Plugin ${pluginSlug} has no \`onRequest\` function to handle the request.`);
     return;
   }
-  plugin.onRequest(req, res);
-  next();
+  const success = await plugin.onRequest(req, res);
+  if (!success) {
+    return res.status(404).send(`Plugin ${pluginSlug} has no endpoint for ${req.path}.`);
+  }
 });
 
 // -------------------------- Web app -----------------------------
@@ -46,44 +48,49 @@ app.get("*", (_req, res) => {
   res.sendFile(path.join(__dirname, "./web/index.html"));
 });
 
-// ---------------------- Install plugins -------------------------
-
-(async () => {
-  // try installing plugins before starting the server so that requests
-  // to the plugin endpoints don't fail
-  try {
-    const installedPlugins = await getPluginsInStore().catch(() => {
-      console.log("Failed to get plugins from DB.");
-      return [];
-    });
-    await Promise.all(
-      installedPlugins.map((plugin) =>
-        installServerPlugin({
-          url: plugin.url,
-          installedPluginSlugs: installedPlugins.map((p) => p.slug),
-        }).catch((e) => {
-          if (e.message.includes("PLUGIN_WITH_SAME_SLUG")) {
-            console.log(`Plugin ${plugin.slug} already installed.`);
-            return;
-          }
-          console.log(`Failed to install ${plugin.slug}: ${e}`);
-        })
-      )
-    );
-  } catch (e) {
-    // this should never happen, but better be safe than sorry
-    console.log("Failed to install plugins from DB.");
-    console.error(e);
-  }
-})();
-
-// -------------------------- Server ------------------------------
-
 if (process.env.NODE_ENV !== "test") {
-  app.listen(PORT, () => {
-    console.log(`\n✅ Server started on port ${PORT}`);
-    console.log(`🟣 GraphQL API: http://localhost:${PORT}/graphql`);
-  });
+  (async () => {
+    if (process.env.NODE_ENV !== "development") {
+      // ---------------------- Install plugins -------------------------
+
+      // Try installing plugins before starting the server so that requests
+      // to the plugin endpoints don't fail. Only if this is production (not development)
+      // as during development plugins can be installed manually.
+      try {
+        const installedPlugins = await getPluginsInStore().catch(() => {
+          console.log("Failed to get plugins from DB.");
+          return [];
+        });
+        const installedPluginSlugs = installedPlugins.map((p) => p.slug);
+        await getPlugins(); // this will refresh the plugin cache to make sure it's up to date before installing plugins
+        await Promise.all(
+          installedPlugins.map((plugin) =>
+            installServerPlugin({
+              url: plugin.url,
+              installedPluginSlugs,
+            }).catch((e) => {
+              if (e.message.includes("PLUGIN_WITH_SAME_SLUG")) {
+                console.log(`Plugin ${plugin.slug} already installed.`);
+                return;
+              }
+              console.log(`Failed to install ${plugin.slug}: ${e}`);
+            })
+          )
+        );
+      } catch (e) {
+        // this should never happen, but better be safe than sorry
+        console.log("Failed to install plugins from DB.");
+        console.error(e);
+      }
+    }
+
+    // -------------------------- Server ------------------------------
+
+    app.listen(PORT, () => {
+      console.log(`\n✅ Server started on port ${PORT}`);
+      console.log(`🟣 GraphQL API: http://localhost:${PORT}/graphql`);
+    });
+  })();
 } else {
   // express will default to port 0 which will randomly assign a port
   // this prevents errors stating that the port is already in use

@@ -88,7 +88,8 @@ export async function installServerPlugin(opts: Options) {
   }
   if (
     !opts.override &&
-    (cache.has(exported.slug) || opts.installedPluginSlugs.includes(exported.slug))
+    cache.has(exported.slug) &&
+    opts.installedPluginSlugs.includes(exported.slug)
   ) {
     throw new GraphQLError(
       `PLUGIN_WITH_SAME_SLUG: A plugin with the slug "${exported.slug}" is already installed. Use the \`override\` option to override the existing plugin.`

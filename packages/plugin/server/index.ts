@@ -10,7 +10,7 @@ export type ServerPlugin = (options: ServerPluginOptions) => {
    *
    * The `req.path` is the path after that. For example if the request is made at `/api/$pluginSlug/foo/bar`, then `req.path` will be `/foo/bar`.
    */
-  onRequest?: (req: Request, res: Response) => void;
+  onRequest?: (req: Request, res: Response) => Promise<any>;
 };
 
 export type ServerPluginReturn = ReturnType<ServerPlugin>;
