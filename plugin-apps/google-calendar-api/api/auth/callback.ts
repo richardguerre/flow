@@ -26,7 +26,7 @@ export default async (request: Request) => {
     code,
     client_id: process.env.CLIENT_ID!,
     client_secret: process.env.CLIENT_SECRET!,
-    redirect_uri: `${requestUrl.origin}/oauth/callback`,
+    redirect_uri: `${requestUrl.origin}/api/auth/callback`,
     grant_type: "authorization_code",
   });
 
@@ -41,7 +41,9 @@ export default async (request: Request) => {
   const tokenData = await tokenResponse.json();
 
   if (tokenData.error) {
-    return new Response(tokenData.error_description, { status: 400 });
+    return new Response(`Err: ${tokenData.error} - ${tokenData.error_description}`, {
+      status: 400,
+    });
   }
 
   const storeTokenResponse = await fetch(apiEndpoint, {

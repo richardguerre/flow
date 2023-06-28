@@ -44,8 +44,22 @@ app.use("/api/plugin/:pluginSlug", async (req, res) => {
 // -------------------------- Web app -----------------------------
 
 app.use(express.static("web"));
-app.get("*", (_req, res) => {
-  res.sendFile(path.join(__dirname, "./web/index.html"));
+app.get("*", (req, res) => {
+  res.sendFile(path.join(__dirname, "./web/index.html"), async () => {
+    if (process.env.NODE_ENV === "development") {
+      const developmentPath = `http://localhost:3000${req.path}`;
+      try {
+        const result = await fetch(developmentPath);
+        if (result.ok) {
+          return res.redirect(developmentPath);
+        }
+      } catch {
+        return res.status(404).send("Local frontend is not running on port 3000.");
+      }
+    }
+    // in prouduction the web app is served from the web folder so it should never get here
+    return res.status(404).send("404 Not Found");
+  });
 });
 
 if (process.env.NODE_ENV !== "test") {

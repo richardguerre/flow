@@ -22,7 +22,8 @@ export default (request: Request) => {
       "https://www.googleapis.com/auth/calendar",
       "https://www.googleapis.com/auth/calendar.events",
     ].join(" "),
-    redirect_uri: `${requestUrl.origin}/oauth/callback`,
+    redirect_uri: `${requestUrl.origin}/api/auth/callback`,
+    prompt: "select_account",
     state,
   });
 
