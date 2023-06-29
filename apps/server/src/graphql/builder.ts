@@ -55,7 +55,7 @@ builder.mutationType(); // this initializes the mutation type, so that builder.m
 builder.addScalarType("Date", DateResolver, {});
 builder.addScalarType("DateTime", DateTimeResolver, {});
 builder.addScalarType("PositiveInt", PositiveIntResolver, {}); // only used in input types
-builder.addScalarType("JSON", JSONResolver, {}); // only used in input types
+builder.addScalarType("JSON", JSONResolver, {});
 builder.scalarType("Time", {
   description:
     "A time of day, represented as a string in the format `HH:mm`. For example, `16:20`.",

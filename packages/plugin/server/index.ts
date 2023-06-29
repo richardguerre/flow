@@ -11,6 +11,16 @@ export type ServerPlugin = (options: ServerPluginOptions) => {
    * The `req.path` is the path after that. For example if the request is made at `/api/$pluginSlug/foo/bar`, then `req.path` will be `/foo/bar`.
    */
   onRequest?: (req: Request, res: Response) => Promise<any>;
+  /**
+   * Operations that can be called from the web app through the GraphQL API.
+   *
+   * The `id` is the operation's unique id. It should be in the format of `PluginOperation_pluginSlug_operationName`.
+   *
+   * The `data` is the operation's data. It can be any JSON value or null.
+   */
+  operations?: {
+    [operationName: string]: (input: any) => Promise<{ id: string; data: any }>;
+  };
 };
 
 export type ServerPluginReturn = ReturnType<ServerPlugin>;
