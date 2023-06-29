@@ -1,0 +1,59 @@
+name: CI/CD Checks
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+jobs:
+  format-check:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Check out repository code
+        uses: actions/checkout@v3
+      - name: Setup environment (node, npm install)
+        uses: ./.github/actions/setup
+      - name: Format check
+        run: npm run format:check
+
+  build-check:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Check out repository code
+        uses: actions/checkout@v3
+      - name: Setup environment (node, npm install)
+        uses: ./.github/actions/setup
+      - name: Build check
+        run: npm run build
+
+  server-test:
+    services:
+      postgres:
+        image: postgres
+        env:
+          POSTGRES_PASSWORD: pg
+          POSTGRES_DB: flow_test
+        options: >-
+          --health-cmd pg_isready
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+        ports:
+          - 5432:5432
+
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    env:
+      DATABASE_URL: postgresql://postgres@localhost:5432/flow
+
+    steps:
+      - name: Check out repository code
+        uses: actions/checkout@v3
+      - name: Setup environment (node, npm install)
+        uses: ./.github/actions/setup
+      - name: Prisma Gen
+        run: npm run gen -w apps/server
+      - name: Test check
+        run: npm run test -w apps/server

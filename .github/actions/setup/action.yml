@@ -1,0 +1,21 @@
+name: "Setup"
+description: "Sets up environment"
+inputs:
+  ssh-private-key:
+    description: "SSH key used for private git clone"
+    required: true
+runs:
+  using: "composite"
+  steps:
+    - name: Check out repository code
+      uses: actions/checkout@v3
+    - name: Use Node.js
+      uses: actions/setup-node@v3
+      with:
+        node-version: "18.13.0"
+        cache: "npm"
+        registry-url: "https://npm.pkg.github.com"
+    - name: Install dependencies
+      run: |
+        npm install --immutable --immutable-cache --check-cache
+      shell: bash
