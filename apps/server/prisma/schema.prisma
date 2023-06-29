@@ -101,6 +101,12 @@ model Task {
   item   Item? @relation(fields: [itemId], references: [id])
   itemId Int?
 
+  /// The parent task of the task
+  parentTask   Task? @relation("Subtask", fields: [parentTaskId], references: [id])
+  parentTaskId Int?
+
+  /// The subtasks of the task
+  Task        Task[]           @relation("Subtask")
   /// The labels of the task 
   labels      TaskLabel[]
   /// The plugin datas of the task
