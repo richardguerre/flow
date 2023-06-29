@@ -106,7 +106,7 @@ model Task {
   parentTaskId Int?
 
   /// The subtasks of the task
-  Task        Task[]           @relation("Subtask")
+  subTasks    Task[]           @relation("Subtask")
   /// The labels of the task 
   labels      TaskLabel[]
   /// The plugin datas of the task
