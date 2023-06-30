@@ -171,7 +171,7 @@ const DayAddTaskActionsBar = (props: DayAddTaskActionsBarProps) => {
   return (
     <div className="flex flex-col gap-4">
       <button
-        className="bg-background-300 text-foreground-900 w-full rounded-md bg-opacity-50 px-2 py-1 text-sm hover:bg-opacity-70 active:bg-opacity-100"
+        className="bg-background-300 text-foreground-900 w-full rounded-md bg-opacity-50 px-2 py-1 text-sm shadow-none hover:bg-opacity-70 active:bg-opacity-100"
         onClick={() => setShowNewTaskCard(true)}
       >
         Add task

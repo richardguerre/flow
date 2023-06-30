@@ -33,7 +33,7 @@ export const Button = forwardRef<HTMLButtonElement, ButtonProps>((props, ref) =>
       ref={ref}
       onClick={props.onClick}
       className={clsx(
-        "relative rounded-md text-sm ",
+        "relative rounded-md text-sm shadow-none",
         props.secondary
           ? "bg-primary-100 text-primary-500 active:bg-primary-200 bg-opacity-70 hover:bg-opacity-100 active:bg-opacity-70"
           : props.tertiary
