@@ -5,7 +5,6 @@
       "outputs": ["./.env"]
     },
     "dev": {
-      "persistent": true,
       "cache": false
     },
     "test": {
