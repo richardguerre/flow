@@ -8,6 +8,7 @@ import { DayContent_day$key } from "../relay/__generated__/DayContent_day.graphq
 import { DayUpdateTaskDateMutation } from "../relay/__generated__/DayUpdateTaskDateMutation.graphql";
 import { DayAddTaskActionsBar_day$key } from "../relay/__generated__/DayAddTaskActionsBar_day.graphql";
 import { NewTaskCard } from "./NewTaskCard";
+import { Button } from "@flowdev/ui/Button";
 
 type DayProps = {
   day: Day_day$key;
@@ -170,12 +171,14 @@ const DayAddTaskActionsBar = (props: DayAddTaskActionsBarProps) => {
 
   return (
     <div className="flex flex-col gap-4">
-      <button
-        className="bg-background-300 text-foreground-900 w-full rounded-md bg-opacity-50 px-2 py-1 text-sm shadow-none hover:bg-opacity-70 active:bg-opacity-100"
+      <Button
+        secondary
+        sm
+        className="bg-background-300/50 text-foreground-900 hover:bg-background-300/70 active:bg-background-300/100 w-full"
         onClick={() => setShowNewTaskCard(true)}
       >
         Add task
-      </button>
+      </Button>
       {showNewTaskCard && (
         <NewTaskCard
           date={day.date}
