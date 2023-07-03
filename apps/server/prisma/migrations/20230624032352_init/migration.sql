@@ -53,6 +53,7 @@ CREATE TABLE "Task" (
     "date" DATE NOT NULL,
     "durationInMinutes" INTEGER,
     "itemId" INTEGER,
+    "parentTaskId" INTEGER,
 
     CONSTRAINT "Task_pkey" PRIMARY KEY ("id")
 );
@@ -219,6 +220,9 @@ ALTER TABLE "Task" ADD CONSTRAINT "Task_date_fkey" FOREIGN KEY ("date") REFERENC
 
 -- AddForeignKey
 ALTER TABLE "Task" ADD CONSTRAINT "Task_itemId_fkey" FOREIGN KEY ("itemId") REFERENCES "Item"("id") ON DELETE SET NULL ON UPDATE CASCADE;
+
+-- AddForeignKey (added manually)
+ALTER TABLE "Task" ADD CONSTRAINT "Task_parentTaskId_fkey" FOREIGN KEY ("parentTaskId") REFERENCES "Task"("id") ON DELETE SET NULL ON UPDATE CASCADE;
 
 -- AddForeignKey
 ALTER TABLE "TaskPluginData" ADD CONSTRAINT "TaskPluginData_taskId_fkey" FOREIGN KEY ("taskId") REFERENCES "Task"("id") ON DELETE RESTRICT ON UPDATE CASCADE;
