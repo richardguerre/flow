@@ -52,9 +52,15 @@ app.use("/api/plugin/:pluginSlug", async (req, res) => {
       .send(`Plugin ${pluginSlug} has no \`onRequest\` function to handle the request.`);
     return;
   }
-  const success = await plugin.onRequest(req, res);
-  if (!success) {
+  await plugin.onRequest(req, res);
+  try {
     return res.status(404).send(`Plugin ${pluginSlug} has no endpoint for ${req.path}.`);
+  } catch (e: any) {
+    if (e?.message === "Cannot set headers after they are sent to the client") {
+      // this means the plugin has already sent a response, and we can ignore this error
+      return;
+    }
+    console.error(e);
   }
 });
 
