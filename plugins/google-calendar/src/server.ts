@@ -25,7 +25,8 @@ export default definePlugin("google-calendar", (opts) => {
     if (opts.dayjs().isAfter(tokens.expires_at)) {
       // access token has expired, refresh it
       const res = await fetch(
-        "https://google-calendar.vercel.com/api/auth/refresh?refresh_token=" + tokens.refresh_token
+        "https://google-calendar-api-flow-dev.vercel.app/api/auth/refresh?refresh_token=" +
+          tokens.refresh_token
       );
       if (!res.ok) {
         throw new Error("COULD_NOT_REFRESH_TOKEN: Could not refresh token.");
@@ -55,7 +56,7 @@ export default definePlugin("google-calendar", (opts) => {
   return {
     onRequest: async (req, res) => {
       if (req.path === "/auth") {
-        return res.redirect("https://google-calendar.vercel.com/api/auth"); // TODO: replace with the actual URL of the plugin api
+        return res.redirect("https://google-calendar-api-flow-dev.vercel.app/api/auth");
       } else if (req.path === "/auth/callback" && req.method === "POST") {
         // store the access token in the user's Flow instance and return 200
         const tokenData = {
