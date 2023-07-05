@@ -106,6 +106,7 @@ export async function installServerPlugin(opts: Options) {
 
 /** Uninstall a plugin on the server's file system. */
 export async function uninstallServerPlugin(slug: string) {
+  await cache.get(slug)?.onUninstall?.();
   await fs.unlink(path.join(pathToPlugins, `${slug}.js`));
   cache.delete(slug);
 }
