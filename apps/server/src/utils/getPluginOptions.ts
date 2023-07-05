@@ -1,10 +1,17 @@
 import { Prisma } from ".prisma/client";
 import { dayjs } from "./dayjs";
 import { prisma } from "./prisma";
+import { pgBoss } from "./pgBoss";
+import { nearestTailwindColor } from "./nearestTailwindColor";
+import type { Color } from "@prisma/client";
 
 type PrismaJsonInput = string | number | boolean | Prisma.JsonObject | Prisma.JsonArray;
 
 export const getPluginOptions = (pluginSlug: string) => ({
+  /** The plugin's slug. There is no difference with the one passed into `definePlugin`. It can be used to not repeat it throughout the plugin's code. */
+  pluginSlug,
+  /** The server's origin without the slash at the end. For example, `https://user.isflow.in` or `http://localhost:4000` if testing locally. */
+  serverOrigin: process.env.ORIGIN,
   /**
    * The dayjs package. This prevents the dayjs package from being bundled with the plugin, so that installs are faster.
    * It has some dayjs extensions already loaded:
@@ -12,6 +19,23 @@ export const getPluginOptions = (pluginSlug: string) => ({
    * - utc
    */
   dayjs,
+  pgBoss: {
+    /** Documentation: https://github.com/timgit/pg-boss/blob/HEAD/docs/readme.md#send */
+    send: pgBoss.send,
+    /** Documentation: https://github.com/timgit/pg-boss/blob/HEAD/docs/readme.md#sendaftername-data-options-seconds--iso-date-string--date */
+    sendAfter: pgBoss.sendAfter,
+    /** Documentation: https://github.com/timgit/pg-boss/blob/HEAD/docs/readme.md#sendoncename-data-options-key */
+    sendOnce: pgBoss.sendOnce,
+    /** Documentation: https://github.com/timgit/pg-boss/blob/HEAD/docs/readme.md#sendsingletonname-data-options */
+    sendSingleton: pgBoss.sendSingleton,
+    /** Documentation: https://github.com/timgit/pg-boss/blob/HEAD/docs/readme.md#sendthrottledname-data-options-seconds--key */
+    sendThrottled: pgBoss.sendThrottled,
+    /** Documentation: https://github.com/timgit/pg-boss/blob/HEAD/docs/readme.md#senddebouncedname-data-options-seconds--key */
+    sendDebounced: pgBoss.sendDebounced,
+    /** Documentation: https://github.com/timgit/pg-boss/blob/HEAD/docs/readme.md#schedulename-cron-data-options */
+    schedule: pgBoss.schedule,
+  },
+  /** Prisma client for non-sensitive tables. */
   prisma: {
     day: {
       findUnique: prisma.day.findUnique,
@@ -147,6 +171,8 @@ export const getPluginOptions = (pluginSlug: string) => ({
       });
     },
   },
+  /** Get the nearest valid Item.color to the specified Hex. */
+  getNearestItemColor: (hex: string) => nearestTailwindColor(hex) as Color,
 });
 
 export type ServerPluginOptions = ReturnType<typeof getPluginOptions>;

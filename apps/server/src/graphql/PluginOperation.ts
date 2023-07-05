@@ -20,7 +20,7 @@ export const PluginOperationType = builder.node(
   builder.objectRef<PluginOperation>("PluginOperation"),
   {
     id: { resolve: (op) => op.id },
-    loadOne: async (id) => await loadOneWithInput(id, {}),
+    loadOne: async (id) => await loadOneWithInput(id, {}), // fetching through the node field will not pass any input, see below description
     fields: (t) => ({
       data: t.field({ type: "JSON", resolve: (op) => op.data, nullable: true }),
     }),
@@ -78,7 +78,19 @@ const loadOneWithInput = async (id: string, input: Prisma.InputJsonValue) => {
     throw new GraphQLError(`Plugin ${pluginSlug} not found.`);
   }
   const operation = plugin.operations?.[operationName];
-  return operation?.(input) ?? null;
+  try {
+    const result = await operation?.(input);
+    if (!result) return null;
+    return {
+      id: `PluginOperation_${pluginSlug}_${result.operationName ?? operationName}`,
+      data: result.data ?? null,
+    };
+  } catch (e: any) {
+    if (e instanceof Error) {
+      throw new GraphQLError(e.message);
+    }
+    throw new GraphQLError(JSON.stringify(e));
+  }
 };
 
 builder.queryField("pluginOperation", (t) =>

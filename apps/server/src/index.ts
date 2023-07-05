@@ -1,10 +1,27 @@
 import express from "express";
 import { createYoga } from "graphql-yoga";
-import { schema } from "./graphql";
-import { getPlugins } from "./utils/getPlugins";
-import { prisma } from "./utils/prisma";
 import path from "node:path";
-import { getPluginsInStore, installServerPlugin } from "./utils/getPlugins";
+import { schema } from "./graphql";
+import { getPlugins, getPluginsInStore, installServerPlugin } from "./utils/getPlugins";
+import { prisma } from "./utils/prisma";
+import { pgBoss } from "./utils/pgBoss";
+
+/** An object where the key is the environment variable name and the value is whether or not it's required. */
+const envsToCheck = {
+  NODE_ENV: false,
+  PORT: false,
+  DATABASE_URL: true,
+  ORIGIN: true,
+};
+// didn't use zod nor chalk/ink/colors for this as it's not worth installing for just this (it's 600+kb to install)
+// color from https://backbencher.dev/nodejs-colored-text-console
+console.log("\x1b[2mEnvironment variables:\x1b[0m");
+for (const [env, required] of Object.entries(envsToCheck)) {
+  if (required && !process.env[env]) {
+    throw `❌ Environment variable ${env} is required but not set.`;
+  }
+  console.log(`\x1b[2m${env}: ${process.env[env]}\x1b[0m`);
+}
 
 const PORT = process.env.PORT ?? 4000;
 export const app = express();
@@ -101,9 +118,12 @@ if (process.env.NODE_ENV !== "test") {
     // -------------------------- Server ------------------------------
 
     app.listen(PORT, () => {
-      console.log(`\n✅ Server started on port ${PORT}`);
+      console.log(`✅ Server started at: http://localhost:${PORT}`);
       console.log(`🟣 GraphQL API: http://localhost:${PORT}/graphql`);
     });
+
+    // -------------------------- PgBoss ------------------------------
+    await pgBoss.start();
   })();
 } else {
   // express will default to port 0 which will randomly assign a port
@@ -114,8 +134,10 @@ if (process.env.NODE_ENV !== "test") {
 // -------------------------- Cleanup -----------------------------
 
 process.on("SIGINT", () => {
-  prisma
-    .$disconnect()
+  Promise.allSettled([
+    prisma.$disconnect().then(() => console.log("✅ Prisma disconnected.")),
+    pgBoss.stop().then(() => console.log("✅ PgBoss stopped.")),
+  ])
     .then(() => {
       process.exit(0);
     })
