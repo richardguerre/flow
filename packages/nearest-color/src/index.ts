@@ -1,4 +1,4 @@
-import colors from "tailwindcss/colors";
+// import colors from "tailwindcss/colors";
 
 type RGB = {
   r: number;
@@ -37,47 +37,47 @@ export const nearestColor = (colorPallette: Record<string, string>, color: RGB |
   return colorKeys[minDistanceIndex];
 };
 
-const toIgnore = {
-  lightBlue: true,
-  warmGray: true,
-  trueGray: true,
-  coolGray: true,
-  blueGray: true,
-};
-
-const colorPallette: Record<string, string> = {};
-for (const color of Object.keys(colors)) {
-  if (toIgnore[color as keyof typeof toIgnore]) continue;
-  const shade = colors[color as keyof typeof colors]?.["600"];
-  if (!shade) continue;
-  colorPallette[color] = shade;
-}
-console.log(JSON.stringify(colorPallette, null, 2));
-
-// the following is the default color pallette from Tailwind CSS with each value being a hex string of the 200 shade
-// const colorPallette = {
-//   slate: "#e2e8f0",
-//   gray: "#e5e7eb",
-//   zinc: "#e4e4e7",
-//   neutral: "#e5e5e5",
-//   stone: "#e7e5e4",
-//   red: "#fecaca",
-//   orange: "#fed7aa",
-//   amber: "#fde68a",
-//   yellow: "#fef08a",
-//   lime: "#d9f99d",
-//   green: "#bbf7d0",
-//   emerald: "#a7f3d0",
-//   teal: "#99f6e4",
-//   cyan: "#a5f3fc",
-//   sky: "#bae6fd",
-//   blue: "#bfdbfe",
-//   indigo: "#c7d2fe",
-//   violet: "#ddd6fe",
-//   purple: "#e9d5ff",
-//   fuchsia: "#f5d0fe",
-//   pink: "#fbcfe8",
-//   rose: "#fecdd3",
+// const toIgnore = {
+//   lightBlue: true,
+//   warmGray: true,
+//   trueGray: true,
+//   coolGray: true,
+//   blueGray: true,
 // };
 
-console.log(nearestColor(colorPallette, "#0088aa"));
+// const colorPallette: Record<string, string> = {};
+// for (const color of Object.keys(colors)) {
+//   if (toIgnore[color as keyof typeof toIgnore]) continue;
+//   const shade = colors[color as keyof typeof colors]?.["600"];
+//   if (!shade) continue;
+//   colorPallette[color] = shade;
+// }
+// console.log(JSON.stringify(colorPallette, null, 2));
+
+// // the following is the default color pallette from Tailwind CSS with each value being a hex string of the 200 shade
+// // const colorPallette = {
+// //   slate: "#e2e8f0",
+// //   gray: "#e5e7eb",
+// //   zinc: "#e4e4e7",
+// //   neutral: "#e5e5e5",
+// //   stone: "#e7e5e4",
+// //   red: "#fecaca",
+// //   orange: "#fed7aa",
+// //   amber: "#fde68a",
+// //   yellow: "#fef08a",
+// //   lime: "#d9f99d",
+// //   green: "#bbf7d0",
+// //   emerald: "#a7f3d0",
+// //   teal: "#99f6e4",
+// //   cyan: "#a5f3fc",
+// //   sky: "#bae6fd",
+// //   blue: "#bfdbfe",
+// //   indigo: "#c7d2fe",
+// //   violet: "#ddd6fe",
+// //   purple: "#e9d5ff",
+// //   fuchsia: "#f5d0fe",
+// //   pink: "#fbcfe8",
+// //   rose: "#fecdd3",
+// // };
+
+// console.log(nearestColor(colorPallette, "#0088aa"));
