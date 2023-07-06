@@ -126,7 +126,7 @@ export const DayContent = (props: DayContentProps) => {
   return (
     <ReactSortable
       id={day.date}
-      className="mt-4 flex flex-auto flex-col overflow-y-auto overflow-x-hidden"
+      className="mt-4 flex flex-auto flex-col"
       list={tasks}
       setList={setTasks} // TOOD: use mutation optimistic updater instead
       animation={150}
