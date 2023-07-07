@@ -53,6 +53,6 @@
     "graphql": "^16.6.0",
     "graphql-scalars": "^1.18.0",
     "graphql-yoga": "^3.3.0",
-    "pg-boss": "9.0.1"
+    "pg-boss": "^9.0.3"
   }
 }

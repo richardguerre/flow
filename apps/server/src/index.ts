@@ -87,6 +87,7 @@ app.get("*", (req, res) => {
 
 if (process.env.NODE_ENV !== "test") {
   (async () => {
+    const plugins = await getPlugins(); // this will refresh the plugin cache to make sure it's up to date before installing plugins and is also used below to handle the pgBoss jobs
     if (process.env.NODE_ENV !== "development") {
       // ---------------------- Install plugins -------------------------
 
@@ -99,7 +100,6 @@ if (process.env.NODE_ENV !== "test") {
           return [];
         });
         const installedPluginSlugs = installedPlugins.map((p) => p.slug);
-        await getPlugins(); // this will refresh the plugin cache to make sure it's up to date before installing plugins
         await Promise.all(
           installedPlugins.map((plugin) =>
             installServerPlugin({
@@ -130,6 +130,11 @@ if (process.env.NODE_ENV !== "test") {
 
     // -------------------------- PgBoss ------------------------------
     await pgBoss.start();
+    console.log("✅ PgBoss started.");
+    for (const plugin of Object.values(plugins)) {
+      const handlers = plugin.handlePgBossWork?.(pgBoss.work) ?? [];
+      await Promise.all(handlers);
+    }
   })();
 } else {
   // express will default to port 0 which will randomly assign a port

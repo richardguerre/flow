@@ -1,7 +1,7 @@
 // ‼️ only import types from the @flowdev/server package, not runtime code otherwise it will be a cyclic dependency
 import { type ServerPluginOptions as _ServerPluginOptions } from "@flowdev/server/src/utils/getPluginOptions";
+import { pgBoss } from "@flowdev/server/src/utils/pgBoss";
 import type { Request, Response } from "express";
-import type { WorkOptions, Job } from "pg-boss";
 
 export type ServerPluginOptions = _ServerPluginOptions;
 
@@ -34,21 +34,26 @@ export type ServerPlugin = (options: ServerPluginOptions) => {
     }>;
   };
   /**
-   * pg-boss job handlers passed to Flow's pgBoss instance. This allows the plugin to run background jobs that have been queued by
+   * Function to handle pg-boss jobs queued by the plugin. This allows the plugin to run background jobs that have been queued
    * with the `opts.pgBoss.send` function (or any other pg-boss ["send" function](https://github.com/timgit/pg-boss/blob/HEAD/docs/readme.md#send)
    * or the [schedule function](https://github.com/timgit/pg-boss/blob/HEAD/docs/readme.md#scheduling)).
    *
    * For more details read the [pg-boss documentation on the "work" function](https://github.com/timgit/pg-boss/blob/HEAD/docs/readme.md#work).
+   *
+   * @example
+   * ```ts
+   * {
+   *   handlePgBossWork: (work) => [
+   *     work('myJobName', async (job) => {...}),
+   *     work('myOtherJobWithOptions', { batchSize: 5 }, async (jobs) => {...}), // adding options to the job. batchSize will turn the first param which is normally one job that needs to be processed into an array of jobs
+   *     ...
+   *   ]
+   * }
+   * ```
+   *
+   * Note: the `work` function is not given in the options because Flow needs to control the order in which things run, including the pg-boss work handlers.
    */
-  pgBossWorkHandlers?: {
-    /** The name of the job/queue to listen to. */
-    [queueName: string]: {
-      /** The function to run when a job is received. */
-      fn: <T>(job: Job<T>) => Promise<void>;
-      /** The pg-boss work options. */
-      options?: WorkOptions;
-    };
-  };
+  handlePgBossWork?: (work: typeof pgBoss.work) => Promise<string>[];
 };
 
 export type ServerPluginReturn = ReturnType<ServerPlugin>;

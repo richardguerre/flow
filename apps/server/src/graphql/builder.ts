@@ -14,7 +14,7 @@ export const encodeGlobalID = (typename: string, id: string | number | bigint) =
 };
 export const decodeGlobalID = (globalId: string) => {
   const [typename, ...idElements] = globalId.split("_");
-  const id = idElements.join(""); // For dates, the ID is a string with colons
+  const id = idElements.join("_"); // For dates, the ID is a string with colons
   if (!typename || !id) throw new Error("Invalid Relay ID");
   return { typename, id };
 };

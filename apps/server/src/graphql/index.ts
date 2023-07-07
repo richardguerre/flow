@@ -14,6 +14,7 @@ import "./Store";
 import "./Task";
 import "./TaskLabel";
 import "./TaskPluginData";
+import "./PluginOperation";
 
 export const schema = builder.toSchema();
 if (process.env.NODE_ENV === "development") {

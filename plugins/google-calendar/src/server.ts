@@ -1,12 +1,13 @@
 import { definePlugin } from "@flowdev/plugin/server";
-import { calendar, type calendar_v3 } from "@googleapis/calendar";
+import { calendar, type calendar_v3, auth } from "@googleapis/calendar";
 
 const TOKENS_STORE_KEY = "tokens";
 const CONNECTED_CALENDARS_KEY = "connected_calendars";
-const UPSERT_EVENT_JOB_NAME = "upsert-item-from-event";
 const CHANNELS_STORE_KEY = "channels";
 
 export default definePlugin("google-calendar", (opts) => {
+  const UPSERT_EVENT_JOB_NAME = `${opts.pluginSlug}-upsert-item-from-event`; // prefixed with the plugin slug to avoid collisions with other plugins
+
   /**
    * Get the tokens from the database. If the access token has expired, it will be refreshed.
    * @throws {Error} If the user is not authenticated.
@@ -34,6 +35,7 @@ export default definePlugin("google-calendar", (opts) => {
       const newTokenData = await res.json();
       const newTokens = {
         ...newTokenData,
+        refresh_token: tokens.refresh_token, // the refresh token is not returned when refreshing the access token
         expires_at: opts
           .dayjs()
           .add((newTokenData.expires_in ?? 10) - 10, "seconds") // 10 seconds buffer to account for latency in network requests
@@ -47,16 +49,20 @@ export default definePlugin("google-calendar", (opts) => {
 
   const getCalendarClient = async () => {
     const tokens = await getTokens();
+    const authClient = new auth.OAuth2();
+    authClient.setCredentials(tokens);
     return calendar({
       version: "v3",
-      auth: tokens.access_token,
+      auth: authClient,
     });
   };
 
   return {
     onRequest: async (req, res) => {
       if (req.path === "/auth") {
-        return res.redirect("https://google-calendar-api-flow-dev.vercel.app/api/auth");
+        return res.redirect(
+          `https://google-calendar-api-flow-dev.vercel.app/api/auth?api_endpoint=${opts.serverOrigin}/api/plugin/${opts.pluginSlug}/auth/callback`
+        );
       } else if (req.path === "/auth/callback" && req.method === "POST") {
         // store the access token in the user's Flow instance and return 200
         const tokenData = {
@@ -187,9 +193,10 @@ export default definePlugin("google-calendar", (opts) => {
         };
       },
     },
-    pgBossWorkHandlers: {
-      [UPSERT_EVENT_JOB_NAME]: {
-        fn: async (job) => {
+    handlePgBossWork: (work) => [
+      work(UPSERT_EVENT_JOB_NAME, { batchSize: 5 }, async (jobs) => {
+        // process 5 events at a time to go a little faster
+        for (const job of jobs) {
           const data = job.data as calendar_v3.Schema$Event & { calendarColor: string | null };
           const item = await opts.prisma.item.findFirst({
             where: { pluginDatas: { some: { originalId: data.id, pluginSlug: opts.pluginSlug } } },
@@ -215,11 +222,11 @@ export default definePlugin("google-calendar", (opts) => {
           const full = {
             ...min,
             description: data.description ?? null,
-            attendees: data.attendees?.map((attendee) => ({ ...attendee })) ?? [], // the map is required to make typescript happy with Prisma's type system
+            attendees: data.attendees as any, // the any is required to make typescript happy with Prisma's type system
             eventType: data.eventType ?? null,
             organizer: data.organizer ?? null,
             hangoutLink: data.hangoutLink,
-            conferenceData: JSON.parse(JSON.stringify(data.conferenceData)) ?? null, // the parse/stringify is required to make typescript happy with Prisma's type system
+            conferenceData: data.conferenceData as any, // the any is required to make typescript happy with Prisma's type system
           };
           if (item) {
             await opts.prisma.item.update({
@@ -249,9 +256,10 @@ export default definePlugin("google-calendar", (opts) => {
               },
             });
           }
-        },
-      },
-    },
+          console.log("✔ Upserted event", data.id);
+        }
+      }),
+    ],
   };
 });
 
