@@ -48,7 +48,7 @@ export const nearestColor = (colorPallette: Record<string, string>, color: RGB |
 // const colorPallette: Record<string, string> = {};
 // for (const color of Object.keys(colors)) {
 //   if (toIgnore[color as keyof typeof toIgnore]) continue;
-//   const shade = colors[color as keyof typeof colors]?.["600"];
+//   const shade = colors[color as keyof typeof colors]?.["300"];
 //   if (!shade) continue;
 //   colorPallette[color] = shade;
 // }
@@ -80,4 +80,4 @@ export const nearestColor = (colorPallette: Record<string, string>, color: RGB |
 // //   rose: "#fecdd3",
 // // };
 
-// console.log(nearestColor(colorPallette, "#0088aa"));
+// console.log(nearestColor(colorPallette, "#92e1c0"));

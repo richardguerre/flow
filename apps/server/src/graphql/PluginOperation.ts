@@ -78,11 +78,14 @@ const loadOneWithInput = async (id: string, input: Prisma.InputJsonValue) => {
     throw new GraphQLError(`Plugin ${pluginSlug} not found.`);
   }
   const operation = plugin.operations?.[operationName];
+  if (!operation) {
+    throw new GraphQLError(`Operation ${operationName} not found in plugin ${pluginSlug}.`);
+  }
   try {
-    const result = await operation?.(input);
+    const result = await operation(input);
     if (!result) return null;
     return {
-      id: `PluginOperation_${pluginSlug}_${result.operationName ?? operationName}`,
+      id: `${pluginSlug}_${result.operationName ?? operationName}`,
       data: result.data ?? null,
     };
   } catch (e: any) {

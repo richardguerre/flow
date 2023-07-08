@@ -3,7 +3,7 @@ import { dayjs } from "./dayjs";
 import { prisma } from "./prisma";
 import { pgBoss } from "./pgBoss";
 import { nearestTailwindColor } from "./nearestTailwindColor";
-import type { Color } from "@prisma/client";
+import type { Color, Store } from "@prisma/client";
 
 type PrismaJsonInput = string | number | boolean | Prisma.JsonObject | Prisma.JsonArray;
 
@@ -52,6 +52,7 @@ export const getPluginOptions = (pluginSlug: string) => ({
     task: prisma.task,
     taskLabel: prisma.taskLabel,
     item: prisma.item,
+    itemPluginData: prisma.itemPluginData,
     list: prisma.list,
     routine: prisma.routine,
   },
@@ -70,15 +71,16 @@ export const getPluginOptions = (pluginSlug: string) => ({
      * await store.setItem("myKey", "myValue");
      * ```
      */
-    setItem: async (key: string, value: PrismaJsonInput) => {
+    setItem: async <T extends PrismaJsonInput>(key: string, value: T) => {
       if (typeof value === "symbol" || typeof value === "function") {
         throw new Error("Cannot store symbols or functions in the store.");
       }
-      return prisma.store.upsert({
+      const result = await prisma.store.upsert({
         where: { pluginSlug_key_unique: { pluginSlug, key } },
         update: { value },
         create: { pluginSlug, key, value },
       });
+      return result as Omit<Store, "value"> & { value: T };
     },
     /**
      * Set a secret item in the store. If the item already exists, it will be overwritten.
@@ -89,15 +91,16 @@ export const getPluginOptions = (pluginSlug: string) => ({
      * await store.setSecretItem("mySecretKey", "mySecretValue");
      * ```
      */
-    setSecretItem: async (key: string, value: PrismaJsonInput) => {
+    setSecretItem: async <T extends PrismaJsonInput>(key: string, value: T) => {
       if (typeof value === "symbol" || typeof value === "function") {
         throw new Error("Cannot store symbols or functions in the store.");
       }
-      return prisma.store.upsert({
+      const result = await prisma.store.upsert({
         where: { pluginSlug_key_unique: { pluginSlug, key } },
         update: { value },
         create: { pluginSlug, key, value, isSecret: true, isServerOnly: true },
       });
+      return result as Omit<Store, "value"> & { value: T };
     },
     /**
      * Set a server-only item in the store. If the item already exists, it will be overwritten.
@@ -108,15 +111,16 @@ export const getPluginOptions = (pluginSlug: string) => ({
      * await store.setServerOnlyItem("myKey", "myServerOnlyValue");
      * ```
      */
-    setServerOnlyItem: async (key: string, value: PrismaJsonInput) => {
+    setServerOnlyItem: async <T extends PrismaJsonInput>(key: string, value: PrismaJsonInput) => {
       if (typeof value === "symbol" || typeof value === "function") {
         throw new Error("Cannot store symbols or functions in the store.");
       }
-      return prisma.store.upsert({
+      const result = await prisma.store.upsert({
         where: { pluginSlug_key_unique: { pluginSlug, key } },
         update: { value },
         create: { pluginSlug, key, value, isServerOnly: true },
       });
+      return result as Omit<Store, "value"> & { value: T };
     },
     /**
      * Delete any item from the store that was created by the plugin (secret or not, server-only or not).
@@ -127,10 +131,11 @@ export const getPluginOptions = (pluginSlug: string) => ({
      * await store.deleteItem("myKey");
      * ```
      */
-    deleteItem: async (key: string) => {
-      return prisma.store.delete({
+    deleteItem: async <T = any>(key: string) => {
+      const result = await prisma.store.delete({
         where: { pluginSlug_key_unique: { pluginSlug, key } },
       });
+      return result as Omit<Store, "value"> & { value: T };
     },
     /**
      * Get any item from the store that was created by the plugin (including secret ones).
@@ -143,10 +148,11 @@ export const getPluginOptions = (pluginSlug: string) => ({
      * await store.getPluginItem("myKey");
      * ```
      */
-    getPluginItem: async (key: string) => {
-      return prisma.store.findFirst({
+    getPluginItem: async <T = any>(key: string) => {
+      const result = await prisma.store.findFirst({
         where: { key, pluginSlug },
       });
+      return result as (Omit<Store, "value"> & { value: T }) | null;
     },
     /**
      * Get any item from the store that is not secret. It will get items created by other plugins. If you want to get secret items created by the plugin, use `getPluginItem` instead.
@@ -165,10 +171,11 @@ export const getPluginOptions = (pluginSlug: string) => ({
      * await store.getItem("myKey", { pluginSlug: "somePluginSlug" }); // pluginSlug is optional, and can be of another plugin.
      * ```
      */
-    getItem: async (key: string, opts?: { pluginSlug?: string }) => {
-      return prisma.store.findFirst({
+    getItem: async <T = any>(key: string, opts?: { pluginSlug?: string }) => {
+      const result = await prisma.store.findFirst({
         where: { key, pluginSlug: opts?.pluginSlug, isSecret: false },
       });
+      return result as (Omit<Store, "value"> & { value: T }) | null;
     },
   },
   /** Get the nearest valid Item.color to the specified Hex. */
