@@ -1,37 +1,49 @@
 import { definePlugin } from "@flowdev/plugin/server";
 import { calendar, type calendar_v3, auth } from "@googleapis/calendar";
 
-const TOKENS_STORE_KEY = "tokens";
+const ACCOUNT_TOKENS_STORE_KEY = "account_tokens";
 const CONNECTED_CALENDARS_KEY = "connected_calendars";
-const CHANNELS_STORE_KEY = "channels";
-const LAST_SYNC_STORE_KEY = "last_sync";
 
 export default definePlugin("google-calendar", (opts) => {
   const GET_EVENTS_JOB_NAME = `${opts.pluginSlug}-get-events`; // prefixed with the plugin slug to avoid collisions with other plugins
   const CALENDARS_SYNC_JOB_NAME = `${opts.pluginSlug}-calendars-sync`; // prefixed with the plugin slug to avoid collisions with other plugins
   const UPSERT_EVENT_JOB_NAME = `${opts.pluginSlug}-upsert-item-from-event`; // prefixed with the plugin slug to avoid collisions with other plugins
   const PROCESS_EVENTS_WEBHOOK_JOB_NAME = `${opts.pluginSlug}-process-events-webhook`; // prefixed with the plugin slug to avoid collisions with other plugins
-  const EVENTS_WEBHOOK_JOB_NAME = `flow-${opts.pluginSlug}-events-webhook`; // prefixed with the plugin slug to avoid collisions with other plugins
+  const EVENTS_WEBHOOK_CHANNEL_ID = `flow-${opts.pluginSlug}-events-webhook`;
 
-  /**
-   * Get the tokens from the database. If the access token has expired, it will be refreshed.
-   * @throws {Error} If the user is not authenticated.
-   * @throws {Error} If the access token could not be refreshed.
-   * @example
-   * const tokens = await getTokens();
-   */
-  const getTokens = async (): Promise<Tokens> => {
-    const tokensItem = await opts.store.getPluginItem<Tokens>(TOKENS_STORE_KEY);
-    if (!tokensItem) {
+  const getTokensFromStore = async () => {
+    const accountsTokensItem = await opts.store.getPluginItem<AccountsTokens>(
+      ACCOUNT_TOKENS_STORE_KEY
+    );
+    if (!accountsTokensItem) {
       throw new Error(
         "NOT_AUTHENTICATED: You are not authenticated and will need to connect your Google account first."
       );
     }
-    if (opts.dayjs().isAfter(tokensItem.value.expires_at)) {
+    return accountsTokensItem.value;
+  };
+
+  /**
+   * Refreshes the tokens if they expired.
+   * @throws {Error} If the user is not authenticated.
+   * @throws {Error} If the access token could not be refreshed.
+   * @example
+   * const tokens = await getTokens(params);
+   */
+  const refreshTokens = async (params: GetTokenParams): Promise<Tokens> => {
+    const accountsTokens = params.accountsTokens ?? (await getTokensFromStore());
+    const tokens = accountsTokens[params.account];
+    if (!tokens) {
+      throw new Error(
+        "NOT_AUTHENTICATED: You are not authenticated and will need to connect your Google account first."
+      );
+    }
+
+    if (opts.dayjs().isAfter(tokens.expires_at)) {
       // access token has expired, refresh it
       const res = await fetch(
         "https://google-calendar-api-flow-dev.vercel.app/api/auth/refresh?refresh_token=" +
-          tokensItem.value.refresh_token
+          tokens.refresh_token
       );
       if (!res.ok) {
         throw new Error("COULD_NOT_REFRESH_TOKEN: Could not refresh token.");
@@ -39,20 +51,23 @@ export default definePlugin("google-calendar", (opts) => {
       const newTokenData = await res.json();
       const newTokens = {
         ...newTokenData,
-        refresh_token: tokensItem.value.refresh_token, // the refresh token is not returned when refreshing the access token
+        refresh_token: tokens.refresh_token, // the refresh token is not returned when refreshing the access token
         expires_at: opts
           .dayjs()
           .add((newTokenData.expires_in ?? 10) - 10, "seconds") // -10 is a 10 second buffer to account for latency in network requests
           .toISOString(),
       } as Tokens;
-      await opts.store.setSecretItem(TOKENS_STORE_KEY, newTokens);
+      await opts.store.setSecretItem<AccountsTokens>(ACCOUNT_TOKENS_STORE_KEY, {
+        ...params.accountsTokens,
+        [params.account]: newTokens,
+      });
       return newTokens;
     }
-    return tokensItem.value;
+    return tokens;
   };
 
-  const getCalendarClient = async () => {
-    const tokens = await getTokens();
+  const getCalendarClient = async (params: GetCalendarClientParams) => {
+    const tokens = await refreshTokens(params);
     const authClient = new auth.OAuth2();
     authClient.setCredentials(tokens);
     return calendar({
@@ -77,7 +92,14 @@ export default definePlugin("google-calendar", (opts) => {
             .toISOString(),
         } as Tokens;
         delete tokenData.expires_in;
-        await opts.store.setSecretItem(TOKENS_STORE_KEY, tokenData);
+        // not using getTokensFromStore here because it throws an error if the item doesn't exist, but we want to create it if it doesn't exist
+        const accountsTokensItem = await opts.store.getPluginItem<AccountsTokens>(
+          ACCOUNT_TOKENS_STORE_KEY
+        );
+        await opts.store.setSecretItem<AccountsTokens>(ACCOUNT_TOKENS_STORE_KEY, {
+          ...(accountsTokensItem?.value ?? {}),
+          [req.body.account]: tokenData,
+        });
         return res.status(200).send();
       } else if (req.path === "/events/webhook" && req.method === "POST") {
         const resourceUri = req.headers["x-goog-resource-uri"] as string; // example: https://www.googleapis.com/calendar/v3/calendars/calendarId/events?alt=json
@@ -97,92 +119,118 @@ export default definePlugin("google-calendar", (opts) => {
        * @throws {Error} If the user is not authenticated.
        */
       calendars: async () => {
-        const calendarClient = await getCalendarClient();
-        const calendars = await calendarClient.calendarList.list();
-        const connectedCalendarsItem = await opts.store.getPluginItem<string[]>(
-          CONNECTED_CALENDARS_KEY
-        );
-        const connectedCalendarsSet = new Set(connectedCalendarsItem?.value ?? []);
-        return {
-          data:
-            calendars.data.items?.map((calendar) => ({
-              ...calendar,
-              connected: connectedCalendarsSet.has(calendar.id ?? ""),
-            })) ?? [],
-        };
+        const accountsTokens = await getTokensFromStore();
+        const data = [];
+        for (const account of Object.keys(accountsTokens)) {
+          const calendarClient = await getCalendarClient({
+            account,
+            accountsTokens,
+          });
+          const calendars = await calendarClient.calendarList.list();
+          const connectedCalendarsMap = await opts.store
+            .getPluginItem<ConnectedCalendar[]>(CONNECTED_CALENDARS_KEY)
+            .then((res) => new Set(res?.value?.map((c) => c.calendarId) ?? []));
+          data.push({
+            account,
+            calendars:
+              calendars.data.items?.map((calendar) => ({
+                ...calendar,
+                connected: connectedCalendarsMap.has(calendar.id ?? ""),
+              })) ?? [],
+          });
+        }
+
+        return { data };
       },
       /**
        * Connect the specified calendars to Flow and disconnect any that is not specified.
        * @throws {Error} If the user is not authenticated.
        */
       connectCalendars: async (input: { calendarIds: string[] }) => {
-        const calendarClient = await getCalendarClient();
-        const allCalendars = await calendarClient.calendarList.list();
-        const connectedCalendars = await opts.store.getPluginItem<string[]>(
-          CONNECTED_CALENDARS_KEY
-        );
-        const connectedCalendarsSet = new Set(connectedCalendars?.value ?? []);
-        const connectedChannels = await opts.store.getPluginItem<StoreChannel[]>(
-          CHANNELS_STORE_KEY
-        );
-        const connectedChannelsMap = new Map(
-          connectedChannels?.value?.map((channel) => [channel.calendarId, channel]) ?? []
-        );
+        const accountsTokens = await getTokensFromStore();
+        const connectedCalendarsMap = await opts.store
+          .getPluginItem<ConnectedCalendar[]>(CONNECTED_CALENDARS_KEY)
+          .then((res) => new Map(res?.value?.map((c) => [c.calendarId, c]) ?? []));
 
-        // connect any calendar that is not already connected
-        for (const calendarId of input.calendarIds) {
-          // ignore if already connected
-          if (connectedCalendarsSet.has(calendarId)) continue;
-
-          // ignore if not in the user's account
-          if (!allCalendars.data.items?.some((calendar) => calendar.id === calendarId)) continue;
-
-          // add to connected calendars
-          connectedCalendarsSet.add(calendarId);
-
-          // send a job to get and upsert events
-          await opts.pgBoss.send(GET_EVENTS_JOB_NAME, { calendarId, days: 7 });
-
-          // set up webhook
-          const res = await calendarClient.events.watch({
-            calendarId,
-            requestBody: {
-              id: EVENTS_WEBHOOK_JOB_NAME,
-              type: "web_hook",
-              address: `${opts.serverOrigin}/api/plugin/${opts.pluginSlug}/events/webhook`,
-            },
+        const data = [];
+        for (const account of Object.keys(accountsTokens)) {
+          const calendarClient = await getCalendarClient({
+            account,
+            accountsTokens: accountsTokens,
           });
-          console.log("✔ Set up webhook for calendar", calendarId);
-          connectedChannelsMap.set(calendarId, {
-            calendarId,
-            id: res.data.id ?? EVENTS_WEBHOOK_JOB_NAME,
-            resourceId: res.data.resourceId!,
-            // res.data.expiration is in Unix time, convert it to ISO string
-            expires_at: opts.dayjs(res.data.expiration ?? 0).toISOString(),
+          const allCalendarsInAccount = await calendarClient.calendarList
+            .list()
+            .then((res) => res.data.items);
+
+          // connect any calendar that is not already connected
+          for (const calendarId of input.calendarIds) {
+            // ignore if already connected
+            if (connectedCalendarsMap.has(calendarId)) continue;
+
+            // ignore if not in the user's account
+            if (!allCalendarsInAccount?.some((calendar) => calendar.id === calendarId)) {
+              continue;
+            }
+
+            // send a job to get and upsert events
+            await opts.pgBoss.send(GET_EVENTS_JOB_NAME, { calendarId, days: 7 });
+
+            // set up webhook
+            const res = await calendarClient.events.watch({
+              calendarId,
+              requestBody: {
+                id: EVENTS_WEBHOOK_CHANNEL_ID,
+                type: "web_hook",
+                address: `${opts.serverOrigin}/api/plugin/${opts.pluginSlug}/events/webhook`,
+              },
+            });
+            console.log("✔ Set up webhook for calendar", calendarId);
+
+            // add to connected calendars
+            connectedCalendarsMap.set(calendarId, {
+              account,
+              calendarId,
+              lastSyncedAt: opts.dayjs().toISOString(),
+              channelId: res.data.id ?? EVENTS_WEBHOOK_CHANNEL_ID,
+              resourceId: res.data.resourceId!,
+              // res.data.expiration is in Unix time, convert it to ISO string
+              expiresAt: opts.dayjs(res.data.expiration ?? 0).toISOString(),
+            });
+          }
+
+          // disconnect any calendar that is not specified
+          for (const calendar of allCalendarsInAccount ?? []) {
+            if (!calendar.id || input.calendarIds.includes(calendar.id)) continue;
+
+            // remove webhook
+            const calendarConnectInfo = connectedCalendarsMap.get(calendar.id);
+            if (!calendarConnectInfo) continue;
+            await calendarClient.channels.stop({
+              requestBody: {
+                id: calendarConnectInfo.channelId,
+                resourceId: calendarConnectInfo.resourceId,
+              },
+            });
+            console.log("✔ Removed webhook for calendar", calendar.id);
+
+            // remove from connected calendars
+            connectedCalendarsMap.delete(calendar.id);
+          }
+
+          data.push({
+            account,
+            calendars:
+              allCalendarsInAccount?.map((calendar) => ({
+                ...calendar,
+                connected: connectedCalendarsMap.has(calendar.id ?? ""),
+              })) ?? [],
           });
         }
 
-        // disconnect any calendar that is not specified
-        for (const calendarId of allCalendars.data.items?.map((calendar) => calendar.id) ?? []) {
-          if (!calendarId || input.calendarIds.includes(calendarId)) continue;
-          // remove from connected calendars
-          connectedCalendarsSet.delete(calendarId);
-
-          // remove webhook
-          const channel = connectedChannelsMap.get(calendarId);
-          if (!channel) continue;
-          await calendarClient.channels.stop({
-            requestBody: {
-              id: channel.id,
-              resourceId: channel.resourceId,
-            },
-          });
-          console.log("✔ Removed webhook for calendar", calendarId);
-          connectedChannelsMap.delete(calendarId);
-        }
-
-        await opts.store.setItem(CONNECTED_CALENDARS_KEY, Array.from(connectedCalendarsSet));
-        await opts.store.setItem(CHANNELS_STORE_KEY, Array.from(connectedChannelsMap.values()));
+        await opts.store.setItem<ConnectedCalendar[]>(
+          CONNECTED_CALENDARS_KEY,
+          Array.from(connectedCalendarsMap.values())
+        );
         // schedule a job to sync calendars every 3 days. If the schedule already exists, it will be updated.
         await opts.pgBoss.schedule(CALENDARS_SYNC_JOB_NAME, "0 0 */3 * *", {
           calendarIds: input.calendarIds,
@@ -191,11 +239,7 @@ export default definePlugin("google-calendar", (opts) => {
 
         return {
           operationName: "calendars", // this should invalidate the cache for the calendars operation
-          data:
-            allCalendars.data.items?.map((calendar) => ({
-              ...calendar,
-              connected: connectedCalendarsSet.has(calendar.id ?? ""),
-            })) ?? [],
+          data,
         };
       },
       /**
@@ -203,11 +247,11 @@ export default definePlugin("google-calendar", (opts) => {
        * @throws {Error} If the user is not authenticated.
        */
       refreshEvents: async (input: { days: number }) => {
-        const connectedCalendars = await opts.store.getPluginItem<string[]>(
-          CONNECTED_CALENDARS_KEY
-        );
+        const connectedCalendarIds = await opts.store
+          .getPluginItem<ConnectedCalendar[]>(CONNECTED_CALENDARS_KEY)
+          .then((res) => res?.value.map((cal) => cal.calendarId) ?? []);
         await opts.pgBoss.send(CALENDARS_SYNC_JOB_NAME, {
-          calendarIds: connectedCalendars?.value ?? [],
+          calendarIds: connectedCalendarIds ?? [],
           days: input.days ?? 7,
         });
         return {
@@ -299,42 +343,58 @@ export default definePlugin("google-calendar", (opts) => {
       }),
       work(GET_EVENTS_JOB_NAME, async (job) => {
         const jobData = job.data as { calendarId: string; days?: number };
-        const calendarClient = await getCalendarClient();
-        const calendar = await calendarClient.calendarList.get({ calendarId: jobData.calendarId });
-        // get events in the next jobData.days days, start from the start of today
-        const events = await calendarClient.events.list({
-          calendarId: jobData.calendarId,
-          timeMin: opts.dayjs().startOf("day").toISOString(),
-          timeMax: opts
-            .dayjs()
-            .add(jobData.days ?? 7, "day")
-            .toISOString(),
-          singleEvents: true,
-          orderBy: "startTime",
-        });
-        console.log(
-          events.data.items?.length ?? 0,
-          events.data.items?.length === 1 ? "event" : "events",
-          "to process from initial sync of calendar",
-          jobData.calendarId
-        );
-        for (const event of events.data.items ?? []) {
-          await opts.pgBoss.send(UPSERT_EVENT_JOB_NAME, {
-            ...event,
-            calendarColor: calendar.data.backgroundColor ?? null,
+        const accountsTokens = await getTokensFromStore();
+        for (const account of Object.keys(accountsTokens)) {
+          const calendarClient = await getCalendarClient({
+            account,
+            accountsTokens,
           });
+          const calendar = await calendarClient.calendarList.get({
+            calendarId: jobData.calendarId,
+          });
+          // get events in the next jobData.days days, start from the start of today
+          const events = await calendarClient.events.list({
+            calendarId: jobData.calendarId,
+            timeMin: opts.dayjs().startOf("day").toISOString(),
+            timeMax: opts
+              .dayjs()
+              .add(jobData.days ?? 7, "day")
+              .toISOString(),
+            singleEvents: true,
+            orderBy: "startTime",
+          });
+          console.log(
+            events.data.items?.length ?? 0,
+            events.data.items?.length === 1 ? "event" : "events",
+            "to process from initial sync of calendar",
+            jobData.calendarId
+          );
+          for (const event of events.data.items ?? []) {
+            await opts.pgBoss.send(UPSERT_EVENT_JOB_NAME, {
+              ...event,
+              calendarColor: calendar.data.backgroundColor ?? null,
+            });
+          }
         }
       }),
       work(PROCESS_EVENTS_WEBHOOK_JOB_NAME, async (job) => {
         const jobData = job.data as { calendarId: string };
-        const lastSyncItem = await opts.store.getPluginItem<string>(LAST_SYNC_STORE_KEY);
-        const lastSync = lastSyncItem?.value ? opts.dayjs(lastSyncItem.value) : null;
-        const calendarClient = await getCalendarClient();
+        const connectedCalendars = await opts.store
+          .getPluginItem<ConnectedCalendar[]>(CONNECTED_CALENDARS_KEY)
+          .then((res) => res?.value ?? []);
+        const calendarToProcces = connectedCalendars.find(
+          (c) => c.calendarId === jobData.calendarId
+        );
+        if (!calendarToProcces) {
+          console.log("❌ Could not find calendar to process", jobData.calendarId);
+          return;
+        }
+        const calendarClient = await getCalendarClient({ account: calendarToProcces.account });
         const calendar = await calendarClient.calendarList.get({ calendarId: jobData.calendarId });
         // get events updated since last sync or in the last 10 minutes if this is the first sync
         const events = await calendarClient.events.list({
           calendarId: jobData.calendarId,
-          updatedMin: lastSync?.toISOString() ?? opts.dayjs().subtract(10, "minute").toISOString(),
+          updatedMin: opts.dayjs(calendarToProcces.lastSyncedAt).toISOString(),
           singleEvents: true,
           orderBy: "updated",
         });
@@ -350,7 +410,15 @@ export default definePlugin("google-calendar", (opts) => {
             calendarColor: calendar.data.backgroundColor ?? null,
           });
         }
-        await opts.store.setServerOnlyItem(LAST_SYNC_STORE_KEY, opts.dayjs().toISOString());
+
+        // update lastSyncedAt
+        await opts.store.setItem<ConnectedCalendar[]>(CONNECTED_CALENDARS_KEY, [
+          ...connectedCalendars.filter((c) => c.calendarId !== jobData.calendarId),
+          {
+            ...calendarToProcces,
+            lastSyncedAt: opts.dayjs().toISOString(),
+          },
+        ]);
       }),
       work(CALENDARS_SYNC_JOB_NAME, async (job) => {
         const jobData = job.data as { calendarIds: string[]; days?: number };
@@ -362,6 +430,17 @@ export default definePlugin("google-calendar", (opts) => {
   };
 });
 
+type GetTokenParams = {
+  account: string;
+  /** The tokens to use to make the request. If not provided, the tokens will be fetched from the store. */
+  accountsTokens?: AccountsTokens; // if the tokens are already known, they can be passed in to avoid fetching them again
+};
+type GetCalendarClientParams = GetTokenParams;
+
+type AccountsTokens = {
+  [account: string]: Tokens;
+};
+
 type Tokens = {
   access_token: string;
   expires_at: string;
@@ -371,9 +450,13 @@ type Tokens = {
   expires_in?: never; // this is deleted before storing in the database, hence it's optional and will never be present
 };
 
-type StoreChannel = {
+/** This ConnectedCalendars type is used to map the calendarId to the account when processing webhook events (only the calendarId is present when receiving a webhook) */
+type ConnectedCalendar = {
+  account: string;
   calendarId: string;
-  id: string;
+  lastSyncedAt: string;
+  // the following relate to the notification channel created for the webhook
+  channelId: string;
   resourceId: string;
-  expires_at: string;
+  expiresAt: string;
 };
