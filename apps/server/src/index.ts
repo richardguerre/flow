@@ -20,7 +20,7 @@ for (const [env, required] of Object.entries(envsToCheck)) {
   if (required && !process.env[env]) {
     throw `❌ Environment variable ${env} is required but not set.`;
   }
-  console.log(`\x1b[2m${env}: ${process.env[env]}\x1b[0m`);
+  console.log(`\x1b[2m  ${env}: ${process.env[env]}\x1b[0m`);
 }
 
 const PORT = process.env.PORT ?? 4000;
@@ -100,20 +100,18 @@ if (process.env.NODE_ENV !== "test") {
           return [];
         });
         const installedPluginSlugs = installedPlugins.map((p) => p.slug);
-        await Promise.all(
-          installedPlugins.map((plugin) =>
-            installServerPlugin({
-              url: plugin.url,
-              installedPluginSlugs,
-            }).catch((e) => {
-              if (e.message.includes("PLUGIN_WITH_SAME_SLUG")) {
-                console.log(`Plugin ${plugin.slug} already installed.`);
-                return;
-              }
-              console.log(`Failed to install ${plugin.slug}: ${e}`);
-            })
-          )
-        );
+        for (const plugin of installedPlugins) {
+          await installServerPlugin({
+            url: plugin.url,
+            installedPluginSlugs,
+          }).catch((e) => {
+            if (e.message.includes("PLUGIN_WITH_SAME_SLUG")) {
+              console.log(`Plugin ${plugin.slug} already installed.`);
+              return;
+            }
+            console.log(`Failed to install ${plugin.slug}: ${e}`);
+          });
+        }
       } catch (e) {
         // this should never happen, but better be safe than sorry
         console.log("Failed to install plugins from DB.");

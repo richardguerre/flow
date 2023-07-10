@@ -74,6 +74,7 @@ export async function installServerPlugin(opts: Options) {
   // the above creates the plugins folder if it doesn't exist.
 
   await fs.writeFile(pathToTemp, text); // we can keep overwriting this file because we only need it to get the plugin's slug.
+  delete require.cache[pathToTemp]; // make sure we get what was just written to the file and not what was cached before.
   const exported = require(pathToTemp) as DefineServerPluginReturn | undefined;
   if (typeof exported !== "object" || Object.keys(exported).length === 0) {
     throw new GraphQLError(`Couldn't find any exports at "${opts.url}/server.js"`);
