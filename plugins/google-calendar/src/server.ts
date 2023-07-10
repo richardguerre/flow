@@ -1,8 +1,8 @@
 import { definePlugin } from "@flowdev/plugin/server";
 import { calendar, type calendar_v3, auth } from "@googleapis/calendar";
 
-const ACCOUNT_TOKENS_STORE_KEY = "account_tokens";
-const CONNECTED_CALENDARS_KEY = "connected_calendars";
+const ACCOUNT_TOKENS_STORE_KEY = "account-tokens";
+const CONNECTED_CALENDARS_KEY = "connected-calendars";
 
 export default definePlugin("google-calendar", (opts) => {
   const GET_EVENTS_JOB_NAME = `${opts.pluginSlug}-get-events`; // prefixed with the plugin slug to avoid collisions with other plugins
@@ -91,14 +91,14 @@ export default definePlugin("google-calendar", (opts) => {
             .add((req.body.expires_in ?? 10) - 10, "seconds") // -10 is a 10 second buffer to account for latency in network requests
             .toISOString(),
         } as Tokens;
-        delete tokenData.expires_in;
+        if ("expires_in" in tokenData) delete tokenData.expires_in; // delete expires_in because it's not needed
         // not using getTokensFromStore here because it throws an error if the item doesn't exist, but we want to create it if it doesn't exist
         const accountsTokensItem = await opts.store.getPluginItem<AccountsTokens>(
           ACCOUNT_TOKENS_STORE_KEY
         );
         await opts.store.setSecretItem<AccountsTokens>(ACCOUNT_TOKENS_STORE_KEY, {
           ...(accountsTokensItem?.value ?? {}),
-          [req.body.account]: tokenData,
+          [tokenData.email]: tokenData,
         });
         return res.status(200).send();
       } else if (req.path === "/events/webhook" && req.method === "POST") {
@@ -442,11 +442,13 @@ type AccountsTokens = {
 };
 
 type Tokens = {
+  email: string;
   access_token: string;
   expires_at: string;
   refresh_token: string;
   scope: string;
   token_type: string;
+  id_token: string;
   expires_in?: never; // this is deleted before storing in the database, hence it's optional and will never be present
 };
 
