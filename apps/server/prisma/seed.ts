@@ -11,6 +11,7 @@
  * - Add a completed task for yesterday.
  * - Add a canceled task for yesterday.
  * - Add an incomplete task for tomorrow.
+ *   - Add a subtask to that task.
  * - Add an incomplete task for the day after tomorrow.
  * - Install the essentials plugin
  * - Adds a morning routine using the flow-essential steps
@@ -109,14 +110,18 @@ async function script() {
     data: {
       date: tomorrow,
       tasks: {
-        createMany: {
-          data: [
-            {
+        create: {
+          status: "TODO",
+          title: "Task 6 which is scheduled for tomorrow",
+          durationInMinutes: 45,
+          subtasks: {
+            create: {
+              date: tomorrow, // this has to be added manually as it's not a direct relation
               status: "TODO",
-              title: "Task 6 which is scheduled for tomorrow",
+              title: "Subtask of task 6",
               durationInMinutes: 45,
             },
-          ],
+          },
         },
       },
     },

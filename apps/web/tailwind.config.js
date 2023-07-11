@@ -36,6 +36,31 @@ const flowColors = {
   warning: colors.yellow,
 };
 
+// more round than the tailwind defaults
+const flowBorderRadius = {
+  none: "0",
+  sm: "0.25rem",
+  DEFAULT: "0.375rem",
+  md: "0.5rem",
+  lg: "0.75rem",
+  xl: "1rem",
+  "2xl": "1.5rem",
+  "3xl": "2.25rem",
+  full: "9999px",
+};
+
+// more spread than the tailwind defaults
+const flowBoxShadow = {
+  sm: "0 1px 6px 0 rgba(0, 0, 0, 0.05)",
+  DEFAULT: "0 1px 9px 0 rgba(0, 0, 0, 0.07), 0 1px 2px 0 rgba(0, 0, 0, 0.05)",
+  md: "0 4px 18px -1px rgba(0, 0, 0, 0.07), 0 2px 4px -1px rgba(0, 0, 0, 0.05)",
+  lg: "0 10px 25px -3px rgba(0, 0, 0, 0.07), 0 4px 6px -2px rgba(0, 0, 0, 0.05)",
+  xl: "0 20px 50px -5px rgba(0, 0, 0, 0.07), 0 10px 10px -5px rgba(0, 0, 0, 0.04)",
+  "2xl": "0 25px 75px -12px rgba(0, 0, 0, 0.25)",
+  inner: "inset 0 2px 4px 0 rgba(0, 0, 0, 0.06)",
+  none: "none",
+};
+
 const convertToCssVars = (key, value, transform) => {
   const result = {};
   for (const [k, v] of Object.entries(value)) {
@@ -82,16 +107,22 @@ export default {
   theme: {
     screens: {}, // don't know what screens to use, so until I do I'll just leave it empty
     colors: convertToCssVars("colors", flowColors, (value) => `rgb(${value} / <alpha-value>)`),
+    borderRadius: convertToCssVars("border-radius", flowBorderRadius),
+    boxShadow: convertToCssVars("box-shadow", flowBoxShadow),
     extend: {},
   },
   plugins: [
     typography,
     plugin(({ addBase }) => {
       addBase({
-        ":root": convertToCssRoot("colors", flowColors, (value) => {
-          const rgb = hexToRgb(value);
-          return `${rgb.r} ${rgb.g} ${rgb.b}`;
-        }),
+        ":root": {
+          ...convertToCssRoot("colors", flowColors, (value) => {
+            const rgb = hexToRgb(value);
+            return `${rgb.r} ${rgb.g} ${rgb.b}`;
+          }),
+          ...convertToCssRoot("border-radius", flowBorderRadius),
+          ...convertToCssRoot("box-shadow", flowBoxShadow),
+        },
       });
     }),
   ],
