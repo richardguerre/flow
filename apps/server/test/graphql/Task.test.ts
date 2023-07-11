@@ -770,4 +770,124 @@ describe("Task GraphQL mutations", () => {
       });
     });
   });
+
+  describe("addSubTask", () => {
+    it("creates a sub task with valid parent task Id but no item", async () => {
+      const { task } = await new Factory().newTask().run();
+
+      const res = await graphql({
+        query: /* GraphQL */ `
+          mutation AddSubTaskMutation($parentTaskId: ID!, $title: String!) {
+            addSubTask(input: { parentTaskId: $parentTaskId, title: $title }) {
+              id
+              date
+              title
+              status
+              item {
+                id
+              }
+            }
+          }
+        `,
+        variables: {
+          parentTaskId: task.id,
+          title: "new sub task",
+        },
+      });
+
+      expect(res.status).toBe(200);
+      const subTask = await prisma.task.findFirst({
+        where: { title: "new sub task" },
+      });
+
+      expect(subTask).not.toBe(null);
+      if (!subTask) throw new Error("No sub task found");
+
+      expect(res.body.data).toEqual({
+        addSubTask: {
+          id: encodeGlobalID("Task", subTask?.id),
+          date: toDateOnly(task.date),
+          status: "TODO",
+          item: subTask.itemId,
+          title: subTask.title,
+        },
+      });
+    });
+
+    it("creates a sub task with valid parent task Id with an item", async () => {
+      const { item } = await new Factory().newItem({ durationInMinutes: 60 }).run();
+      const { task } = await new Factory().newTask().run();
+
+      const res = await graphql({
+        query: /* GraphQL */ `
+          mutation AddSubTaskMutation($parentTaskId: ID!, $title: String!, $itemId: ID!) {
+            addSubTask(input: { parentTaskId: $parentTaskId, title: $title, itemId: $itemId }) {
+              id
+              date
+              title
+              status
+              item {
+                id
+              }
+            }
+          }
+        `,
+        variables: {
+          parentTaskId: task.id,
+          title: "second sub task",
+          itemId: encodeGlobalID("Item", item.id),
+        },
+      });
+
+      expect(res.status).toBe(200);
+      const subTask = await prisma.task.findFirst({
+        where: { title: "second sub task" },
+      });
+
+      expect(subTask).not.toBe(null);
+      if (!subTask) throw new Error("No sub task found");
+
+      expect(res.body.data).toEqual({
+        addSubTask: {
+          id: encodeGlobalID("Task", subTask?.id),
+          date: toDateOnly(task.date),
+          status: "TODO",
+          item: { id: `Item_${subTask.itemId}` },
+          title: subTask.title,
+        },
+      });
+    });
+
+    it("fails to create sub task if parent task doesn't exist", async () => {
+      const randomTaskId = Math.floor(Math.random() * 950) + 50;
+      const res = await graphql({
+        query: /* GraphQL */ `
+          mutation AddSubTaskMutation($parentTaskId: ID!, $title: String!) {
+            addSubTask(input: { parentTaskId: $parentTaskId, title: $title }) {
+              id
+              date
+              title
+              status
+              item {
+                id
+              }
+            }
+          }
+        `,
+        variables: {
+          parentTaskId: randomTaskId,
+          title: "new sub task",
+        },
+      });
+
+      expect(res.status).toBe(200);
+      const subTask = await prisma.task.findFirst({
+        where: { title: "new sub task" },
+      });
+
+      expect(subTask).toBeNull();
+      expect(res.body.data).toBeNull();
+      expect(res.body.errors).toBeDefined();
+    });
+  });
 });

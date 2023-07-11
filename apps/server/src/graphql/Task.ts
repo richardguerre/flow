@@ -1,4 +1,17 @@
-import { TaskStatus } from "@prisma/client";
+import {
+  Day,
+  Item,
+  ItemPluginData,
+  List,
+  Note,
+  NoteLabel,
+  Routine,
+  Store,
+  Task,
+  TaskLabel,
+  TaskPluginData,
+  TaskStatus,
+} from "@prisma/client";
 import { endOfDay, startOfDay } from "../utils/getDays";
 import { prisma } from "../utils/prisma";
 import { builder, u } from "./builder";
@@ -371,6 +384,58 @@ When the task is:
           orderBy: { date: "asc" },
         });
       });
+    },
+  })
+);
+
+builder.mutationField("addSubTask", (t) =>
+  t.prismaFieldWithInput({
+    type: "Task",
+    description: "Create a subtask.",
+    input: {
+      parentTaskId: t.input.id({ required: true, description: "The ID of the parent Task" }),
+      title: t.input.string({ required: true, description: "The title of the subtask." }),
+      status: t.input.field({
+        type: TaskStatusEnum,
+        defaultValue: "TODO",
+        description: "The status of the subtask.",
+      }),
+      durationInMinutes: t.input.field({
+        defaultValue: 60,
+        type: "PositiveInt",
+        description: "The length of time (in minutes) the task is expected to take.",
+      }),
+      itemId: t.input.globalID({
+        description: "The Relay ID of the Item that should be linked to the task.",
+      }),
+    },
+    resolve: async (query, _, args) => {
+      const { parentTaskId, title, status, durationInMinutes, itemId } = args.input as {
+        parentTaskId: string;
+        title: string;
+        status: TaskStatus;
+        durationInMinutes?: number;
+        itemId: any;
+      };
+
+      const parentTask = await prisma.task.findUniqueOrThrow({
+        where: { id: parseInt(parentTaskId) },
+      });
+
+      const { date } = parentTask;
+      const task = await prisma.task.create({
+        ...query,
+        data: {
+          title,
+          status: u(status),
+          durationInMinutes,
+          day: { connectOrCreate: { where: { date }, create: { date } } },
+          parentTask: { connect: { id: parseInt(parentTaskId) } },
+          ...(itemId ? { item: { connect: { id: parseInt(itemId?.id) } } } : {}),
+        },
+      });
+
+      return task;
     },
   })
 );

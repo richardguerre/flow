@@ -154,6 +154,8 @@ type ListItemsConnectionEdge {
 }
 
 type Mutation {
+  """Create a subtask."""
+  addSubTask(input: MutationAddSubTaskInput!): Task!
   completeRoutine(input: MutationCompleteRoutineInput!): Boolean!
 
   """Create an item."""
@@ -206,6 +208,23 @@ type Mutation {
   Creates a store item. If a store item with the same key exists, it will be updated.
   """
   upsertStoreItem(input: MutationUpsertStoreItemInput!): Store!
+}
+
+input MutationAddSubTaskInput {
+  """The length of time (in minutes) the task is expected to take."""
+  durationInMinutes: PositiveInt = 60
+
+  """The Relay ID of the Item that should be linked to the task."""
+  itemId: ID
+
+  """The ID of the parent Task"""
+  parentTaskId: ID!
+
+  """The status of the subtask."""
+  status: TaskStatus = TODO
+
+  """The title of the subtask."""
+  title: String!
 }
 
 input MutationCompleteRoutineInput {
