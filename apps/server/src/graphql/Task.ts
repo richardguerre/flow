@@ -1,4 +1,19 @@
-import { TaskStatus } from "@prisma/client";
+import { InputShapeFromFields, InputFieldRef, MaybePromise } from "@pothos/core";
+import {
+  Day,
+  Item,
+  ItemPluginData,
+  List,
+  Note,
+  NoteLabel,
+  Routine,
+  Store,
+  Task,
+  TaskLabel,
+  TaskPluginData,
+  TaskStatus,
+} from "@prisma/client";
+import { GraphQLResolveInfo } from "graphql";
 import { endOfDay, startOfDay } from "../utils/getDays";
 import { prisma } from "../utils/prisma";
 import { builder, u } from "./builder";
@@ -26,6 +41,8 @@ export const TaskType = builder.prismaNode("Task", {
     }),
     labels: t.relation("labels"),
     pluginDatas: t.relation("pluginDatas"),
+    subtasks: t.relation("subtasks"),
+    
   }),
 });
 
@@ -371,6 +388,52 @@ When the task is:
           orderBy: { date: "asc" },
         });
       });
+    },
+  })
+);
+
+builder.mutationField("makeTaskSubtask", (t) =>
+  t.prismaFieldWithInput({
+    type: "Task",
+    description: "Make a task a subtask of another task. Takes in the ID of the parent task and the ID of the subtask",
+    input: {
+      parentTaskId: t.input.id({ required: true, description: "The ID of the parent Task" }),
+      subTaskId: t.input.id({ required: true, description: "The ID of the subtask" }),
+    },
+    resolve: async (query, _, args) => {
+      const { parentTaskId, subTaskId } = args.input;
+
+      // Fetch the parent task and the subtask from the database
+      const parentTask = await prisma.task.findUnique({
+        where: { id: parseInt(parentTaskId) },
+      });
+      const subTask = await prisma.task.findUnique({
+        where: { id: parseInt(subTaskId) },
+      });
+
+      // Make sure both tasks exist
+      if (!parentTask) {
+        throw new Error(`Parent task with ID ${parentTaskId} does not exist.`);
+      }
+      if (!subTask) {
+        throw new Error(`Subtask with ID ${subTaskId} does not exist.`);
+      }
+
+      //Update the subtask to have the parent task as its parent
+      await prisma.task.update({
+        ...query,
+        where: { id: parseInt(subTaskId) },
+        data: {
+          parentTask: { connect: { id: parseInt(parentTaskId) } },
+        },
+      });
+
+      // Fetch the updated parent task with its subtasks
+      const updatedParentTask = await prisma.task.findUnique({
+        where: { id: parseInt(parentTaskId) },
+      });
+
+      return updatedParentTask;
     },
   })
 );
