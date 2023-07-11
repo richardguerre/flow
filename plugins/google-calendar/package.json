@@ -4,14 +4,16 @@
   "version": "0.0.1",
   "private": false,
   "scripts": {
+    "build:web": "vite build -c vite.web.ts",
     "build:server": "vite build -c vite.server.ts",
-    "build": "npm run build:server"
+    "build": "npm run build:web && npm run build:web"
   },
   "dependencies": {
     "@flowdev/plugin": "*",
     "@googleapis/calendar": "^6.0.0"
   },
   "devDependencies": {
+    "@vitejs/plugin-react": "^4.0.2",
     "vite": "^4.0.0"
   }
 }

@@ -19,6 +19,7 @@ export default (request: Request) => {
     response_type: "code",
     client_id: process.env.CLIENT_ID!,
     scope: [
+      "https://www.googleapis.com/auth/userinfo.email",
       "https://www.googleapis.com/auth/calendar",
       "https://www.googleapis.com/auth/calendar.events",
     ].join(" "),

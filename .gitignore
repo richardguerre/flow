@@ -38,3 +38,4 @@ dist/**
 # server installed plugins
 apps/server/plugins/*
 !apps/server/plugins/.gitkeep
+.vercel
