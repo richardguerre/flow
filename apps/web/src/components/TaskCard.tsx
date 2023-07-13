@@ -23,6 +23,7 @@ export const TaskCard = (props: TaskCardProps) => {
         title
         durationInMinutes
         status
+        completedAt # updates the CalendarList component to add checkmark at the time of completion
         ...TaskCardDetails_task
         ...TaskCardActions_task
         ...TaskTitle_task

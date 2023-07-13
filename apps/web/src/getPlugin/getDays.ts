@@ -62,7 +62,9 @@ graphql`
 `;
 
 type GetDaysOptions = {
+  /** The date to start from (inclusive) */
   from: Date;
+  /** The date to end at (inclusive) */
   to: Date;
   /**
    * Dictionary/object of some of the components you can get from `options.components`
