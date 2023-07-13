@@ -11,7 +11,7 @@ const pathToPlugins = path.join(__dirname, process.env.PATH_TO_PLUGINS ?? "../..
 const pathToTemp = path.join(pathToPlugins, "__temp.js"); // this __temp.js is used to get the plugin's slug. see installServerPlugin below.
 
 export const getPlugins = async (): Promise<Record<string, ServerPluginReturn>> => {
-  const plugins = (await fs.readdir(pathToPlugins))
+  const plugins = (await fs.readdir(pathToPlugins).catch(() => [])) // in case the plugins folder doesn't exist yet we just return an empty array
     .filter((p) => p.endsWith(".js") && p !== "__temp.js")
     .map((p) => p.replace(".js", ""));
   const unCachedPlugins = plugins.filter((plugin) => !cache.has(plugin));

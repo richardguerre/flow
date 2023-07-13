@@ -7,7 +7,7 @@
     "dev": "NODE_ENV=development ts-node-dev --transpile-only --ignore-watch=plugins --exit-child --respawn --no-notify src/index.ts",
     "type-check": "npm run gen && tsc --noEmit && echo '✅ Type checking passed!'",
     "build": "npm run type-check && ncc build src/index.ts -o dist",
-    "copy-web": "cp -r ../web/dist ./dist/web && echo '✅ apps/web/dist copied to apps/server/dist/web'",
+    "copy-web": "rm -rf ./dist/web && cp -r ../web/dist ./dist/web && echo '✅ apps/web/dist copied to apps/server/dist/web'",
     "move-prisma-binary": "mv dist/client/* dist || echo '🔵 Ignore above error. Prisma binary was already moved.' && rm -r dist/client || echo '🔵 Ignore above error. dist/client was already removed.' && echo '✅ Prisma binary successfully moved from dist/client to dist'",
     "post-build": "npm run copy-web && npm run move-prisma-binary",
     "build:prod": "npm run build && npm run post-build && echo '✅ Successfully built for prod!",

@@ -9,7 +9,7 @@
     "predev": "npm run relay",
     "dev": "vite --port 3000",
     "prebuild": "npm run relay",
-    "build": "tsc && vite build",
+    "build": "NODE_ENV=production tsc && vite build",
     "preview": "vite preview",
     "env:example": "cp -n .env.example .env || true",
     "env:codespaces": "cp .env.codespaces .env"
