@@ -2,7 +2,7 @@ import { useEffect, useMemo } from "react";
 import { graphql, useRefetchableFragment } from "@flowdev/relay";
 import { CalendarList_data$key } from "@flowdev/web/relay/__generated__/CalendarList_data.graphql";
 import { DayTimeGrid, CalendarEvent, CalendarArtifact } from "@flowdev/calendar";
-import colors from "tailwindcss/colors";
+import { tailwindColors } from "@flowdev/unocss";
 import { dayStoreAtom } from "@flowdev/web/stores/dayStore";
 import { useStore } from "@flowdev/jotai";
 
@@ -51,8 +51,8 @@ export const CalendarList = (props: CalendarListProps) => {
         id: edge.node.id,
         title: edge.node.title,
         scheduledAt: new Date(edge.node.scheduledAt!),
-        textColor: color ? colors[edge.node.color]["900"] : undefined,
-        backgroundColor: color ? colors[edge.node.color]["100"] : undefined,
+        textColor: color ? tailwindColors[edge.node.color]["900"] : undefined,
+        backgroundColor: color ? tailwindColors[edge.node.color]["100"] : undefined,
         durationInMinutes: edge.node.durationInMinutes ?? 0,
         ...(edge.node.isAllDay ? { isAllDay: true } : {}),
       });
@@ -85,7 +85,7 @@ export const CalendarList = (props: CalendarListProps) => {
   return (
     <div className="flex h-full flex-col">
       <div className="p-3 text-xl font-semibold">Calendar</div>
-      <div className="h-full overflow-y-scroll pl-3 pt-3">
+      <div className="h-full overflow-y-scroll pl-3 pt-0.5 pt-3">
         <DayTimeGrid events={events} artifacts={artifacts} startHour={4} />
       </div>
     </div>

@@ -1,0 +1,9 @@
+{
+  "name": "@flowdev/unocss",
+  "version": "0.1.0",
+  "private": false,
+  "main": "uno.config.ts",
+  "dependencies": {
+    "unocss": "^0.53.5"
+  }
+}

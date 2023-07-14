@@ -4,6 +4,9 @@
   "description": "Calendar components for Flow",
   "private": true,
   "main": "index.tsx",
+  "dependencies": {
+    "@flowdev/unocss": "*"
+  },
   "peerDependencies": {
     "react": "*"
   }
