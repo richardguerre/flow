@@ -1,4 +1,4 @@
-// import colors from "tailwindcss/colors";
+// import {tailwindColors as colors} from "@flowdev/unocss";
 
 type RGB = {
   r: number;
