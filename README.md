@@ -82,7 +82,7 @@ If you are using VS Code, you will be prompted to install the recommended extens
 
 - [Prettier](https://marketplace.visualstudio.com/items?itemName=esbenp.prettier-vscode) for formatting.
 - [Relay](https://marketplace.visualstudio.com/items?itemName=meta.relay) for [Relay GraphQL](https://relay.dev) support.
-- [Tailwind CSS IntelliSense](https://marketplace.visualstudio.com/items?itemName=bradlc.vscode-tailwindcss) for [Tailwind CSS](https://tailwindcss.com) support.
+- [UnoCSS](https://marketplace.visualstudio.com/items?itemName=bradlc.antfu.unocss) for [UnoCSS](https://unocss.dev) support.
 - [Prisma](https://marketplace.visualstudio.com/items?itemName=Prisma.prisma) for [Prisma](https://www.prisma.io) support.
 
 ## Running tests
@@ -116,10 +116,27 @@ const MyComponent = ({ value }) => {
   return <div>{value}</div>;
 };
 
+// ❌ Bad
+const MyComponent = (props) => {
+  const { value } = props;
+  return <div>{value}</div>;
+};
+
 // ✅ Good
 const MyComponent = (props) => {
   // destructuring objects returned by React hooks is fine
   const { symbol } = useLocaleCurrency();
   return <div>{props.myProp} {symbol}</div>;
 };
+
+// ✅ Good
+const MyComponent = (props) => {
+  // destructuring arrays is fine
+  const [value, setValue] = useState(props.value);
+  return <div>{value}</div>;
+};
 ```
+
+## Why UnoCSS instead of TailwindCSS?
+
+I was originally using TailwindCSS, but as I later realized I wanted/needed plugins to also have access to the same theme as the main app, I decided to switch to UnoCSS. This is because UnoCSS can be run at runtime, so plugins can add classes that the main app may not use directly, but that plugins can use. This is not possible with TailwindCSS, as it needs to be compiled at build time so all classes would need to be known at build time (not possible if hot swapping plugins).

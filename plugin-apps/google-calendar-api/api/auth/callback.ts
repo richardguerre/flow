@@ -46,9 +46,17 @@ export default async (request: Request) => {
     });
   }
 
+  // get user's email address
+  const userInfo = await fetch("https://www.googleapis.com/oauth2/v3/userinfo", {
+    headers: { Authorization: `Bearer ${tokenData.access_token}` },
+  }).then((res) => res.json());
+
   const storeTokenResponse = await fetch(apiEndpoint, {
     method: "POST",
-    body: JSON.stringify(tokenData),
+    body: JSON.stringify({
+      email: userInfo.email,
+      ...tokenData,
+    }),
     headers: {
       "Content-Type": "application/json",
     },
@@ -60,5 +68,5 @@ export default async (request: Request) => {
 
   const flowInstanceOrigin = new URL(apiEndpoint).origin;
 
-  return Response.redirect(flowInstanceOrigin);
+  return Response.redirect(`${flowInstanceOrigin}/settings`);
 };

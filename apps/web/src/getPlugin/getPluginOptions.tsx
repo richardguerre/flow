@@ -16,13 +16,19 @@ import { NoteEditor } from "../components/NoteEditor";
 import { Day, DayContent } from "../components/Day";
 import { TaskCard } from "../components/TaskCard";
 import { ItemCard } from "../components/ItemCard";
+import { Lists } from "../components/Lists";
 import { useAsyncLoader } from "../useAsyncLoader";
+import { useDebounce } from "../useDebounce";
+import { useAsyncEffect } from "../useAsyncEffect";
 import { createItem } from "./createItem";
 import { createTask } from "./createTask";
 import { getStoreUtils } from "./getStoreUtils";
 import React from "react";
+import { getPluginOperationUtils } from "./pluginOperation";
 
 export const getPluginOptions = (slug: string) => ({
+  /** The plugin's slug. There is no difference with the one passed into `definePlugin`. It can be used to not repeat it throughout the plugin's code. */
+  pluginSlug: slug,
   /**
    * React version that Flow uses.
    */
@@ -49,14 +55,30 @@ export const getPluginOptions = (slug: string) => ({
     DayContent,
     TaskCard,
     ItemCard,
+    Lists,
   },
   hooks: {
     /**
      * This hook is useful to do an async process on initial load.
      */
     useAsyncLoader,
+    /**
+     * This hook is useful to debounce a value.
+     */
+    useDebounce,
+    /**
+     * This hook is useful to do async operations in a useEffect.
+     */
+    useAsyncEffect,
   },
+  /**
+   * Utilities for interacting with the store.
+   */
   store: getStoreUtils(slug),
+  /**
+   * Utilities to interact with the plugin's server API.
+   */
+  operations: getPluginOperationUtils(slug),
   /**
    * Get days between 2 dates (inclusive) by passing `from` and `to` as part of the options.
    * If you want to get specific/discreate days, use `getDaysMax10` instead.

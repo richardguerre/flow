@@ -11,6 +11,7 @@
  * - Add a completed task for yesterday.
  * - Add a canceled task for yesterday.
  * - Add an incomplete task for tomorrow.
+ *   - Add a subtask to that task.
  * - Add an incomplete task for the day after tomorrow.
  * - Install the essentials plugin
  * - Adds a morning routine using the flow-essential steps
@@ -18,6 +19,7 @@
 
 import { PrismaClient } from "@prisma/client";
 import { addDays, startOfDay } from "../src/utils/getDays";
+import { dayjs } from "../src/utils/dayjs";
 const prisma = new PrismaClient();
 
 async function script() {
@@ -28,7 +30,7 @@ async function script() {
 
   const list = await prisma.list.create({
     data: {
-      slug: "my-list",
+      slug: "bucket-list",
       name: "Bucket list",
       description: "This is a random bucket list",
       items: {
@@ -65,6 +67,7 @@ async function script() {
               status: "DONE",
               title: "Task 4 which was completed yesterday",
               durationInMinutes: 30,
+              completedAt: dayjs(yesterday).add(14, "hour").toDate(),
             },
             {
               status: "CANCELED",
@@ -93,6 +96,7 @@ async function script() {
               status: "DONE",
               title: "Task 1 with a long title that will wrap to the next line",
               durationInMinutes: 30,
+              completedAt: dayjs(today).add(12, "hour").toDate(),
             },
             {
               status: "CANCELED",
@@ -109,14 +113,18 @@ async function script() {
     data: {
       date: tomorrow,
       tasks: {
-        createMany: {
-          data: [
-            {
+        create: {
+          status: "TODO",
+          title: "Task 6 which is scheduled for tomorrow",
+          durationInMinutes: 45,
+          subtasks: {
+            create: {
+              date: tomorrow, // this has to be added manually as it's not a direct relation
               status: "TODO",
-              title: "Task 6 which is scheduled for tomorrow",
+              title: "Subtask of task 6",
               durationInMinutes: 45,
             },
-          ],
+          },
         },
       },
     },
@@ -166,7 +174,7 @@ async function script() {
           "essentials_intro-to-today_false",
           "essentials_plan-for-today_false",
           "essentials_today-tomorrow-next-week_false",
-          // "essentials_decide-shutdown-time_false", // TODO: add this step
+          // "essentials_decide-shutdown-time_false", // TODO: add this step when it's ready in plugins/essentials/src/web.tsx
           "essentials_todays-plan_false",
         ],
       },

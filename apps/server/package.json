@@ -7,7 +7,7 @@
     "dev": "NODE_ENV=development ts-node-dev --transpile-only --ignore-watch=plugins --exit-child --respawn --no-notify src/index.ts",
     "type-check": "npm run gen && tsc --noEmit && echo '✅ Type checking passed!'",
     "build": "npm run type-check && ncc build src/index.ts -o dist",
-    "copy-web": "cp -r ../web/dist ./dist/web && echo '✅ apps/web/dist copied to apps/server/dist/web'",
+    "copy-web": "rm -rf ./dist/web && cp -r ../web/dist ./dist/web && echo '✅ apps/web/dist copied to apps/server/dist/web'",
     "move-prisma-binary": "mv dist/client/* dist || echo '🔵 Ignore above error. Prisma binary was already moved.' && rm -r dist/client || echo '🔵 Ignore above error. dist/client was already removed.' && echo '✅ Prisma binary successfully moved from dist/client to dist'",
     "post-build": "npm run copy-web && npm run move-prisma-binary",
     "build:prod": "npm run build && npm run post-build && echo '✅ Successfully built for prod!",
@@ -16,10 +16,10 @@
     "gen": "prisma generate && echo '✅ Prisma client successfully generated!'",
     "db:dev": "prisma migrate dev",
     "db:migrate": "prisma migrate dev --create-only",
-    "db:reset": "prisma migrate reset",
+    "db:reset": "ts-node -T prisma/dropOtherSchemas && prisma migrate reset",
     "db:seed": "ts-node -T prisma/seed.ts",
-    "setup:db": "psql -c \"CREATE DATABASE flow;\" || echo \"Ignore the above error. Everything is good to go!\"",
-    "setup:db:test": "psql -c \"CREATE DATABASE flow_test;\" || echo \"Ignore the above error. Everything is good to go!\"",
+    "setup:db": "psql -c \"CREATE DATABASE flow;\" || echo \"🔵 Ignore the above error. Everything is good to go!\"",
+    "setup:db:test": "psql -c \"CREATE DATABASE flow_test;\" || echo \"🔵 Ignore the above error. Everything is good to go!\"",
     "env:example": "cp -n .env.example .env || true",
     "env:codespaces": "cp .env.codespaces .env"
   },
@@ -42,6 +42,7 @@
     "vitest": "^0.23.4"
   },
   "dependencies": {
+    "@flowdev/nearest-color": "*",
     "@pothos/core": "^3.30.0",
     "@pothos/plugin-prisma": "^3.51.0",
     "@pothos/plugin-relay": "^3.27.0",
@@ -51,6 +52,7 @@
     "express": "^4.18.1",
     "graphql": "^16.6.0",
     "graphql-scalars": "^1.18.0",
-    "graphql-yoga": "^3.3.0"
+    "graphql-yoga": "^3.3.0",
+    "pg-boss": "^9.0.3"
   }
 }

@@ -74,8 +74,11 @@ export const UpdatePluginButton = (props: UpdatePluginButtonProps) => {
   if (!versions?.latestVersion || !versions.currentVersion) return null;
 
   return (
-    <Button onClick={handleUpdate} loading={isUpdatingPlugin}>
-      Update to {versions.latestVersion}
-    </Button>
+    <div className="flex items-center gap-2">
+      <Button onClick={handleUpdate} loading={isUpdatingPlugin}>
+        Update to {versions.latestVersion}
+      </Button>
+      <span>Current version: {versions.currentVersion}</span>
+    </div>
   );
 };

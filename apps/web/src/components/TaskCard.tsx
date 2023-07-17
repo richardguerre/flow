@@ -23,6 +23,7 @@ export const TaskCard = (props: TaskCardProps) => {
         title
         durationInMinutes
         status
+        completedAt # updates the CalendarList component to add checkmark at the time of completion
         ...TaskCardDetails_task
         ...TaskCardActions_task
         ...TaskTitle_task
@@ -38,7 +39,7 @@ export const TaskCard = (props: TaskCardProps) => {
 
   return (
     <div
-      className={`${statusStyles} bg-background-50 group flex cursor-pointer flex-col gap-1 rounded-md p-3`}
+      className={`${statusStyles} bg-background-50 group flex cursor-pointer flex-col gap-1 rounded-lg p-3 shadow-sm hover:shadow-md`}
     >
       <div className="flex gap-1">
         <TaskTitle task={task} />

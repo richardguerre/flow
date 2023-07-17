@@ -19,11 +19,12 @@ export default (request: Request) => {
     response_type: "code",
     client_id: process.env.CLIENT_ID!,
     scope: [
+      "https://www.googleapis.com/auth/userinfo.email",
       "https://www.googleapis.com/auth/calendar",
       "https://www.googleapis.com/auth/calendar.events",
     ].join(" "),
     redirect_uri: `${requestUrl.origin}/api/auth/callback`,
-    prompt: "select_account",
+    prompt: "consent", // This ensure that the refresh token is returned every time. Without this, the refresh token is only returned the first time the user consents.
     state,
   });
 

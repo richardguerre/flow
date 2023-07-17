@@ -11,7 +11,7 @@ const pathToPlugins = path.join(__dirname, process.env.PATH_TO_PLUGINS ?? "../..
 const pathToTemp = path.join(pathToPlugins, "__temp.js"); // this __temp.js is used to get the plugin's slug. see installServerPlugin below.
 
 export const getPlugins = async (): Promise<Record<string, ServerPluginReturn>> => {
-  const plugins = (await fs.readdir(pathToPlugins))
+  const plugins = (await fs.readdir(pathToPlugins).catch(() => [])) // in case the plugins folder doesn't exist yet we just return an empty array
     .filter((p) => p.endsWith(".js") && p !== "__temp.js")
     .map((p) => p.replace(".js", ""));
   const unCachedPlugins = plugins.filter((plugin) => !cache.has(plugin));
@@ -74,6 +74,7 @@ export async function installServerPlugin(opts: Options) {
   // the above creates the plugins folder if it doesn't exist.
 
   await fs.writeFile(pathToTemp, text); // we can keep overwriting this file because we only need it to get the plugin's slug.
+  delete require.cache[pathToTemp]; // make sure we get what was just written to the file and not what was cached before.
   const exported = require(pathToTemp) as DefineServerPluginReturn | undefined;
   if (typeof exported !== "object" || Object.keys(exported).length === 0) {
     throw new GraphQLError(`Couldn't find any exports at "${opts.url}/server.js"`);
@@ -106,6 +107,7 @@ export async function installServerPlugin(opts: Options) {
 
 /** Uninstall a plugin on the server's file system. */
 export async function uninstallServerPlugin(slug: string) {
+  await cache.get(slug)?.onUninstall?.();
   await fs.unlink(path.join(pathToPlugins, `${slug}.js`));
   cache.delete(slug);
 }

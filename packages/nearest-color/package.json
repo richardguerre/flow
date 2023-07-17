@@ -1,0 +1,7 @@
+{
+  "name": "@flowdev/nearest-color",
+  "description": "Find the nearest color in a list of colors.",
+  "version": "0.0.1",
+  "private": false,
+  "main": "src/index.ts"
+}
