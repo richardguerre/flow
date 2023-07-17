@@ -46,8 +46,10 @@ jobs:
     runs-on: ubuntu-latest
     timeout-minutes: 5
     env:
-      DATABASE_URL: postgresql://postgres@localhost:5432/flow
       CI: true
+      NODE_ENV: test
+      DATABASE_URL: postgresql://postgres@localhost:5432/flow
+      ORIGIN: http://localhost:4000
 
     steps:
       - name: Check out repository code
