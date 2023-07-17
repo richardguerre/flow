@@ -47,6 +47,7 @@ jobs:
     timeout-minutes: 5
     env:
       DATABASE_URL: postgresql://postgres@localhost:5432/flow
+      CI: true
 
     steps:
       - name: Check out repository code
