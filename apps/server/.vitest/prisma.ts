@@ -93,6 +93,6 @@ export const withDb = () => {
   });
 
   afterEach(async () => {
-    await prismaTxClient.$rollback();
+    await prismaTxClient?.$rollback();
   });
 };
