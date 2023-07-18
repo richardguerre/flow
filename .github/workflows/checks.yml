@@ -48,7 +48,7 @@ jobs:
     env:
       CI: true
       NODE_ENV: test
-      DATABASE_URL: postgresql://postgres@localhost:5432/flow
+      DATABASE_URL: postgresql://postgres@localhost:5432/flow # `flow` will get replaced with `flow_test` (see .vitest/prisma.ts) as `flow` is the local development DB and `flow_test` is the test DB.
       ORIGIN: http://localhost:4000
 
     steps:
@@ -57,6 +57,6 @@ jobs:
       - name: Setup environment (node, npm install)
         uses: ./.github/actions/setup
       - name: Run DB migrations
-        run: npm run db:dev
+        run: DATABASE_URL=postgres://postgres:postgres@localhost:5432/flow_test npm run db:dev
       - name: Test check
         run: npm run test -w apps/server -- test/graphql/Item.test.ts
