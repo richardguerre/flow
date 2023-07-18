@@ -56,7 +56,7 @@ jobs:
         uses: actions/checkout@v3
       - name: Setup environment (node, npm install)
         uses: ./.github/actions/setup
-      - name: Prisma Gen
-        run: npm run gen -w apps/server
+      - name: Run DB migrations
+        run: npm run db:dev
       - name: Test check
-        run: npm run test -w apps/server -- test/utils/pluralize.test.ts
+        run: npm run test -w apps/server -- test/graphql/Item.test.ts
