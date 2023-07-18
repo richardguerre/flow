@@ -135,7 +135,8 @@ if (process.env.NODE_ENV !== "test") {
     }
   })();
 } else {
-  // express will default to port 0 which will randomly assign a port
+  app.listen(0);
+  // by defaulting to port 0, it will randomly assign a port that is not in use
   // this prevents errors stating that the port is already in use
   // more info here: https://stackoverflow.com/questions/54422849/jest-testing-multiple-test-file-port-3000-already-in-use
 }
