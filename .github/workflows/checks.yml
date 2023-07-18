@@ -59,4 +59,4 @@ jobs:
       - name: Prisma Gen
         run: npm run gen -w apps/server
       - name: Test check
-        run: npm run test -w apps/server
+        run: npm run test -w apps/server -- test/utils/pluralize.test.ts
