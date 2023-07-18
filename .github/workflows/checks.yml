@@ -1,0 +1,62 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+jobs:
+  format-check:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Check out repository code
+        uses: actions/checkout@v3
+      - name: Setup environment (node, npm install)
+        uses: ./.github/actions/setup
+      - name: Format check
+        run: npm run format:check
+
+  build-check:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Check out repository code
+        uses: actions/checkout@v3
+      - name: Setup environment (node, npm install)
+        uses: ./.github/actions/setup
+      - name: Build check
+        run: npm run build
+
+  # server-test:
+  #   services:
+  #     postgres:
+  #       image: postgres
+  #       env:
+  #         POSTGRES_PASSWORD: postgres
+  #         POSTGRES_DB: flow_test
+  #       options: >-
+  #         --health-cmd pg_isready
+  #         --health-interval 10s
+  #         --health-timeout 5s
+  #         --health-retries 5
+  #       ports:
+  #         - 5432:5432
+
+  #   runs-on: ubuntu-latest
+  #   timeout-minutes: 5
+  #   env:
+  #     CI: true
+  #     NODE_ENV: test
+  #     DATABASE_URL: postgresql://postgres@localhost:5432/flow # `flow` will get replaced with `flow_test` (see .vitest/prisma.ts) as `flow` is the local development DB and `flow_test` is the test DB.
+  #     ORIGIN: http://localhost:4000
+
+  #   steps:
+  #     - name: Check out repository code
+  #       uses: actions/checkout@v3
+  #     - name: Setup environment (node, npm install)
+  #       uses: ./.github/actions/setup
+  #     - name: Run DB migrations
+  #       run: DATABASE_URL=postgres://postgres:postgres@localhost:5432/flow_test npm run db:dev
+  #     - name: Run tests
+  #       run: npm run test -w apps/server
