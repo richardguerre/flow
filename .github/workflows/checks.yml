@@ -33,7 +33,7 @@ jobs:
       postgres:
         image: postgres
         env:
-          POSTGRES_PASSWORD: pg
+          POSTGRES_PASSWORD: postgres
           POSTGRES_DB: flow_test
         options: >-
           --health-cmd pg_isready
