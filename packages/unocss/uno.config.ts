@@ -311,6 +311,7 @@ export default defineConfig({
         900: tailwindColors.gray[900],
         800: tailwindColors.gray[700],
         700: tailwindColors.gray[500],
+        600: tailwindColors.gray[400],
       },
       positive: tailwindColors.green,
       negative: tailwindColors.red,

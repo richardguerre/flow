@@ -1,5 +1,5 @@
 import React from "react";
-import clsx from "clsx";
+import { tw } from "./tw";
 import { Label } from "./label";
 
 export type TextfieldProps = React.InputHTMLAttributes<HTMLInputElement> & {
@@ -16,8 +16,8 @@ const Textfield = React.forwardRef<HTMLInputElement, TextfieldProps>((props, ref
       <input
         {...props}
         ref={ref}
-        className={clsx(
-          "ring-offset-background border-input placeholder:text-foreground-700 focus-visible:ring-ring flex h-10 w-full rounded-md border bg-transparent px-3 py-2 text-sm file:border-0 file:bg-transparent file:text-sm file:font-medium focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50",
+        className={tw(
+          "placeholder:text-foreground-700 flex h-10 w-full rounded-md border bg-transparent px-3 py-2 text-sm file:border-0 file:bg-transparent file:text-sm file:font-medium focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50",
           props.className
         )}
       />

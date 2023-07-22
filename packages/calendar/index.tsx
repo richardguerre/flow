@@ -127,7 +127,7 @@ export const DayTimeGrid = (props: DayTimeGridProps) => {
       >
         {hours.map((hour, i) => (
           <div key={i} className="relative w-[4ch]" style={{ height: heightOf1Hour }}>
-            <span className="text-foreground-700 absolute left-0 top-0 -translate-y-1/2 transform text-xs">
+            <span className="text-foreground-600 absolute left-0 top-0 -translate-y-1/2 transform text-xs">
               {digits(hour)}:00
             </span>
           </div>
