@@ -18,6 +18,7 @@ import { endOfDay, startOfDay } from "../utils/getDays";
 import { prisma } from "../utils/prisma";
 import { builder, u } from "./builder";
 import { DayType } from "./Day";
+import { dayjs } from "@flowdev/server/src/utils/dayjs";
 
 // -------------- Task types --------------
 
@@ -188,7 +189,7 @@ Any other scenario is not possible by nature of the app, where tasks:
           // and the position of the task in the day
           await tx.task.update({
             where: { id: task.id },
-            data: { status: newStatus },
+            data: { status: newStatus, completedAt: newStatus === "DONE" ? new Date() : null },
           });
           const newTasksOrder = originalDay.tasksOrder.filter((id) => id !== task.id);
           if (newStatus === "TODO") {
@@ -210,6 +211,7 @@ Any other scenario is not possible by nature of the app, where tasks:
             where: { id: task.id },
             data: {
               status: newStatus,
+              completedAt: newStatus === "DONE" ? new Date() : null,
               day: {
                 connectOrCreate: {
                   where: { date: startOfToday },
@@ -268,7 +270,10 @@ Any other scenario is not possible by nature of the app, where tasks:
             // Task is in the past, so we only need to update the status
             await tx.task.update({
               where: { id: task.id },
-              data: { status: newStatus },
+              data: {
+                status: newStatus,
+                completedAt: newStatus === "DONE" ? dayjs(task.date).endOf("day").toDate() : null,
+              },
             });
             days.push(task.date);
           }

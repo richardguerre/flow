@@ -19,6 +19,7 @@
 
 import { PrismaClient } from "@prisma/client";
 import { addDays, startOfDay } from "../src/utils/getDays";
+import { dayjs } from "../src/utils/dayjs";
 const prisma = new PrismaClient();
 
 async function script() {
@@ -29,7 +30,7 @@ async function script() {
 
   const list = await prisma.list.create({
     data: {
-      slug: "my-list",
+      slug: "bucket-list",
       name: "Bucket list",
       description: "This is a random bucket list",
       items: {
@@ -66,6 +67,7 @@ async function script() {
               status: "DONE",
               title: "Task 4 which was completed yesterday",
               durationInMinutes: 30,
+              completedAt: dayjs(yesterday).add(14, "hour").toDate(),
             },
             {
               status: "CANCELED",
@@ -94,6 +96,7 @@ async function script() {
               status: "DONE",
               title: "Task 1 with a long title that will wrap to the next line",
               durationInMinutes: 30,
+              completedAt: dayjs(today).add(12, "hour").toDate(),
             },
             {
               status: "CANCELED",
@@ -171,7 +174,7 @@ async function script() {
           "essentials_intro-to-today_false",
           "essentials_plan-for-today_false",
           "essentials_today-tomorrow-next-week_false",
-          // "essentials_decide-shutdown-time_false", // TODO: add this step
+          // "essentials_decide-shutdown-time_false", // TODO: add this step when it's ready in plugins/essentials/src/web.tsx
           "essentials_todays-plan_false",
         ],
       },

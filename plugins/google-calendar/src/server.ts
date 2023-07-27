@@ -83,19 +83,24 @@ export default definePlugin("google-calendar", (opts) => {
           `https://google-calendar-api-flow-dev.vercel.app/api/auth?api_endpoint=${opts.serverOrigin}/api/plugin/${opts.pluginSlug}/auth/callback`
         );
       } else if (req.path === "/auth/callback" && req.method === "POST") {
+        // not using getTokensFromStore here because it throws an error if the item doesn't exist, but we want to create it if it doesn't exist
+        const accountsTokensItem = await opts.store.getPluginItem<AccountsTokens>(
+          ACCOUNT_TOKENS_STORE_KEY
+        );
         // store the access token in the user's Flow instance and return 200
         const tokenData = {
           ...req.body,
+          // the refresh token may not be returned if the user has already connected their account before
+          // and they are connecting it again, so as a fallback use the one from the store if it exists
+          refresh_token:
+            req.body.refresh_token ?? accountsTokensItem?.value?.[req.body.email].refresh_token,
           expires_at: opts
             .dayjs()
             .add((req.body.expires_in ?? 10) - 10, "seconds") // -10 is a 10 second buffer to account for latency in network requests
             .toISOString(),
         } as Tokens;
         if ("expires_in" in tokenData) delete tokenData.expires_in; // delete expires_in because it's not needed
-        // not using getTokensFromStore here because it throws an error if the item doesn't exist, but we want to create it if it doesn't exist
-        const accountsTokensItem = await opts.store.getPluginItem<AccountsTokens>(
-          ACCOUNT_TOKENS_STORE_KEY
-        );
+
         await opts.store.setSecretItem<AccountsTokens>(ACCOUNT_TOKENS_STORE_KEY, {
           ...(accountsTokensItem?.value ?? {}),
           [tokenData.email]: tokenData,
@@ -120,7 +125,7 @@ export default definePlugin("google-calendar", (opts) => {
        */
       calendars: async () => {
         const accountsTokens = await getTokensFromStore();
-        const data = [];
+        const data: CalendarsData = [];
         for (const account of Object.keys(accountsTokens)) {
           const calendarClient = await getCalendarClient({
             account,
@@ -152,7 +157,7 @@ export default definePlugin("google-calendar", (opts) => {
           .getPluginItem<ConnectedCalendar[]>(CONNECTED_CALENDARS_KEY)
           .then((res) => new Map(res?.value?.map((c) => [c.calendarId, c]) ?? []));
 
-        const data = [];
+        const data: CalendarsData = [];
         for (const account of Object.keys(accountsTokens)) {
           const calendarClient = await getCalendarClient({
             account,

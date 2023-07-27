@@ -6,7 +6,13 @@ import {
   RelayEnvironmentProvider,
 } from "@flowdev/web/relay/environment";
 import { IconContext } from "@flowdev/icons";
-import "./index.css";
+import initUnocssRuntime from "@unocss/runtime";
+import unocssConfig from "@flowdev/unocss";
+
+initUnocssRuntime({
+  autoPrefix: true,
+  defaults: unocssConfig,
+});
 
 const IndexView = React.lazy(() => import("./views/IndexView"));
 const SettingsView = React.lazy(() => import("./views/SettingsView"));

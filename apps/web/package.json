@@ -9,7 +9,7 @@
     "predev": "npm run relay",
     "dev": "vite --port 3000",
     "prebuild": "npm run relay",
-    "build": "tsc && vite build",
+    "build": "NODE_ENV=production tsc && vite build",
     "preview": "vite preview",
     "env:example": "cp -n .env.example .env || true",
     "env:codespaces": "cp .env.codespaces .env"
@@ -21,6 +21,7 @@
     "@flowdev/plugin": "*",
     "@flowdev/relay": "*",
     "@flowdev/ui": "*",
+    "@flowdev/unocss": "*",
     "@tiptap/extension-bullet-list": "^2.0.3",
     "@tiptap/extension-document": "^2.0.0-beta.218",
     "@tiptap/extension-history": "^2.0.0-beta.218",
@@ -32,6 +33,7 @@
     "@tiptap/pm": "^2.0.0-beta.218",
     "@tiptap/react": "^2.0.0-beta.218",
     "@tiptap/starter-kit": "^2.0.3",
+    "@unocss/runtime": "^0.53.5",
     "dayjs": "^1.11.7",
     "framer-motion": "^10.12.10",
     "react": "^18.2.0",
@@ -42,7 +44,6 @@
   },
   "devDependencies": {
     "@swc/plugin-relay": "^1.5.36",
-    "@tailwindcss/typography": "^0.5.9",
     "@types/react": "^18.0.26",
     "@types/react-dom": "^18.0.9",
     "@vitejs/plugin-react": "^3.0.1",
@@ -51,7 +52,6 @@
     "postcss": "^8.4.23",
     "relay-compiler": "^14.1.0",
     "sass": "^1.62.0",
-    "tailwindcss": "^3.3.2",
     "typescript": "^4.9.3",
     "vite": "^4.0.0",
     "vite-tsconfig-paths": "^4.0.5"

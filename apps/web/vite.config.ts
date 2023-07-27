@@ -39,6 +39,28 @@ const relay = () =>
 
 // https://vitejs.dev/config/
 export default defineConfig({
+  build: {
+    chunkSizeWarningLimit: 1000,
+    rollupOptions: {
+      shimMissingExports: true,
+      external: [
+        "fs",
+        "path",
+        "os",
+        "crypto",
+        "util",
+        "assert",
+        "buffer",
+        "stream",
+        "events",
+        "module",
+        "url",
+        "process",
+        "child_process",
+        // the above come from unocss/runtime but are not used in the browser
+      ],
+    },
+  },
   plugins: [
     react(),
     // @ts-ignore as tsconfigPaths types are not updated to those of Vite 4.0, but the plugin works fine

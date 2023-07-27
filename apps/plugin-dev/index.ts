@@ -1,11 +1,16 @@
 import express from "express";
 import path from "node:path";
+import cors from "cors";
 
 const PORT = process.env.PORT ?? 4040;
 
 const app = express();
 
 const patchToPlugins = path.join(__dirname, "../../plugins");
+
+// this prevents flakey CORS errors when running the app.
+app.use(cors());
+
 app.use(
   express.static(patchToPlugins, {
     setHeaders: () => ({

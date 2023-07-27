@@ -1,6 +1,6 @@
 import React, { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { Hour } from "./types";
-import colors from "tailwindcss/colors";
+import { tailwindColors } from "@flowdev/unocss";
 
 type CalendarEventBase = {
   id: string;
@@ -140,8 +140,8 @@ export const DayTimeGrid = (props: DayTimeGridProps) => {
               key={event.id}
               className="border-background-50 overflow-hidden overflow-ellipsis whitespace-nowrap rounded-md border px-2 py-1 text-sm"
               style={{
-                color: event.textColor ?? colors.blue["900"],
-                backgroundColor: event.backgroundColor ?? colors.blue["100"],
+                color: event.textColor ?? tailwindColors.blue["900"],
+                backgroundColor: event.backgroundColor ?? tailwindColors.blue["100"],
               }}
             >
               {event.title}
@@ -186,8 +186,8 @@ export const DayTimeGrid = (props: DayTimeGridProps) => {
             style={{
               top: getTop(event.scheduledAt),
               height: event.height,
-              color: event.textColor ?? colors.blue["900"],
-              backgroundColor: event.backgroundColor ?? colors.blue["100"],
+              color: event.textColor ?? tailwindColors.blue["900"],
+              backgroundColor: event.backgroundColor ?? tailwindColors.blue["100"],
               width: `calc(${event.widthPercentage}% - 2%)`,
               left: `calc(${100 - event.widthPercentage}% + 2%)`,
             }}

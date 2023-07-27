@@ -6,7 +6,8 @@
   "scripts": {
     "build:web": "vite build -c vite.web.ts",
     "build:server": "vite build -c vite.server.ts",
-    "build": "npm run build:web && npm run build:web"
+    "build": "npm run build:web && npm run build:web",
+    "dev:web": "vite build -c vite.web.ts --watch"
   },
   "dependencies": {
     "@flowdev/plugin": "*",

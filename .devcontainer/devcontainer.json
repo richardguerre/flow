@@ -20,7 +20,7 @@
         "esbenp.prettier-vscode",
         "Prisma.prisma",
         "meta.relay",
-        "bradlc.vscode-tailwindcss"
+        "antfu.unocss"
       ]
     }
   },
