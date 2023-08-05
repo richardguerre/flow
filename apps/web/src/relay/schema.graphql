@@ -204,6 +204,12 @@ type Mutation {
 
   """
   Creates a store item. If a store item with the same key exists, it will be updated.
+  
+  If the `pluginSlug` is passed, it will create/update a store item for that plugin. Otherwise, it will create/update a store item for flow.
+  
+  If `isSecret` is set to true, the store item will be set or updated with `isServerOnly` set to true as well and will not be returned in the `storeItems` query.
+  
+  If `isServerOnly` is set to true, the store item will not be returned in the `storeItems` query.
   """
   upsertStoreItem(input: MutationUpsertStoreItemInput!): Store!
 }
