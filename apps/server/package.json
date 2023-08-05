@@ -16,7 +16,7 @@
     "gen": "prisma generate && echo '✅ Prisma client successfully generated!'",
     "db:dev": "prisma migrate dev",
     "db:migrate": "prisma migrate dev --create-only",
-    "db:reset": "ts-node -T prisma/dropOtherSchemas && prisma migrate reset",
+    "db:reset": "ts-node -T prisma/dropOtherSchemas && prisma migrate reset --force",
     "db:seed": "ts-node -T prisma/seed.ts",
     "setup:db": "psql -c \"CREATE DATABASE flow;\" || echo \"🔵 Ignore the above error. Everything is good to go!\"",
     "setup:db:test": "psql -c \"CREATE DATABASE flow_test;\" || echo \"🔵 Ignore the above error. Everything is good to go!\"",
