@@ -35,7 +35,7 @@ type SettingsViewProps = {
 const SettingsViewContent = (props: SettingsViewProps) => {
   const data = usePreloadedQuery(settingsViewQuery, props.queryRef);
   const [
-    /** If selectedTab is null, then it defaults to the flow settings tab. If it's not browse-plugins, then it's plugin installation data, so render the PluginSettings component. */
+    /** If selectedView is null, then it defaults to the flow settings tab. If it's not browse-plugins, then it's plugin installation data, so render the PluginSettings component. */
     selectedView,
     setSelectedView,
   ] = useState<SettingsViewQuery["response"]["installedPlugins"][number] | "browse-plugins" | null>(

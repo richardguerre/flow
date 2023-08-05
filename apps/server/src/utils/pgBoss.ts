@@ -6,3 +6,5 @@ export const pgBoss = new PgBoss(
 pgBoss.on("error", (error) => {
   console.error(error);
 });
+
+export type PgBossType = typeof pgBoss;

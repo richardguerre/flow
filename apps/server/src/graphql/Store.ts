@@ -77,8 +77,13 @@ const PluginInstallationType = builder.objectType(
 builder.mutationField("upsertStoreItem", (t) =>
   t.prismaFieldWithInput({
     type: "Store",
-    description:
-      "Creates a store item. If a store item with the same key exists, it will be updated.",
+    description: `Creates a store item. If a store item with the same key exists, it will be updated.
+
+If the \`pluginSlug\` is passed, it will create/update a store item for that plugin. Otherwise, it will create/update a store item for flow.
+
+If \`isSecret\` is set to true, the store item will be set or updated with \`isServerOnly\` set to true as well and will not be returned in the \`storeItems\` query.
+
+If \`isServerOnly\` is set to true, the store item will not be returned in the \`storeItems\` query.`,
     input: {
       key: t.input.string({ required: true }),
       value: t.input.field({ type: "JSON", required: true }),
@@ -101,7 +106,7 @@ builder.mutationField("upsertStoreItem", (t) =>
           value: args.input.value,
           pluginSlug: args.input.pluginSlug,
           isSecret: args.input.isSecret ?? false,
-          isServerOnly: args.input.isServerOnly ?? false,
+          isServerOnly: args.input.isServerOnly ?? args.input.isSecret ?? false,
         },
       });
     },

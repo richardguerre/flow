@@ -35,7 +35,11 @@ export const getPluginOptions = (pluginSlug: string) => ({
     /** Documentation: https://github.com/timgit/pg-boss/blob/HEAD/docs/readme.md#schedulename-cron-data-options */
     schedule: pgBoss.schedule,
   },
-  /** Prisma client for non-sensitive tables. */
+  /**
+   * Prisma client for non-sensitive tables.
+   *
+   * Sensitve tables, like the Store table, are not exposed directly to plugins. For the Store table, use the `opts.store` object instead.
+   */
   prisma: {
     day: {
       findUnique: prisma.day.findUnique,

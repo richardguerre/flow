@@ -1,11 +1,12 @@
 // ‼️ only import types from the @flowdev/server package, not runtime code otherwise it will be a cyclic dependency
 import { type ServerPluginOptions as _ServerPluginOptions } from "@flowdev/server/src/utils/getPluginOptions";
-import { pgBoss } from "@flowdev/server/src/utils/pgBoss";
+import { type PgBossType } from "@flowdev/server/src/utils/pgBoss";
 import type { Request, Response } from "express";
+import type { Prisma } from "@prisma/client";
 
 export type ServerPluginOptions = _ServerPluginOptions;
 
-export type ServerPlugin = (options: ServerPluginOptions) => {
+export type ServerPlugin = (opts: ServerPluginOptions) => {
   /** Hook called just after installating the plugin. This is also called when updating a plugin. */
   onInstall?: () => Promise<void>;
   /** Hook called just after uninstalling the plugin. */
@@ -16,6 +17,14 @@ export type ServerPlugin = (options: ServerPluginOptions) => {
    * The `req.path` is the path after that. For example if the request is made at `/api/$pluginSlug/foo/bar`, then `req.path` will be `/foo/bar`.
    */
   onRequest?: (req: Request, res: Response) => Promise<any>;
+  /**
+   * Hook called before a task is created in the database:
+   * - When the `createTask` mutation is called.
+   * - When a task is created using the `opts.prisma.task.create` function.
+   *
+   * This allows the plugin to modify the task and any related data before it is created. For example, the plugin could add to the task's `pluginDatas` array.
+   */
+  onCreateTask?: (input: any) => Promise<Prisma.TaskCreateInput>;
   /**
    * Operations that can be called from the web app through the GraphQL API. This allows the web app to call the plugin's
    * backend code and GraphQL clients like Relay to cache the results for a better user experience.
@@ -53,7 +62,7 @@ export type ServerPlugin = (options: ServerPluginOptions) => {
    *
    * Note: the `work` function is not given in the options because Flow needs to control the order in which things run, including the pg-boss work handlers.
    */
-  handlePgBossWork?: (work: typeof pgBoss.work) => Promise<string>[];
+  handlePgBossWork?: (work: PgBossType["work"]) => Promise<string>[];
 };
 
 export type ServerPluginReturn = ReturnType<ServerPlugin>;
