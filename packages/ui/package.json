@@ -8,6 +8,7 @@
   },
   "dependencies": {
     "@radix-ui/react-label": "^2.0.2",
+    "@radix-ui/react-tooltip": "^1.0.6",
     "clsx": "^1.2.1",
     "tailwind-merge": "^1.13.2"
   }

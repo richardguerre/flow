@@ -30,11 +30,14 @@ export const Day = (props: DayProps) => {
   const dayRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
-    if (dayRef.current) {
-      const today = dayjs().format("YYYY-MM-DD");
-      if (day.date === today) {
-        dayRef.current.scrollIntoView({ inline: "start", behavior: "auto" });
-      }
+    const today = dayjs().format("YYYY-MM-DD");
+    if (day.date === today) {
+      // FIXME: unocss runtime has not changed styles yet, so this is a hack to wait for it to change
+      setTimeout(() => {
+        if (dayRef.current) {
+          dayRef.current.scrollIntoView({ inline: "start", behavior: "auto" });
+        }
+      }, 100);
     }
   }, [dayRef]);
 

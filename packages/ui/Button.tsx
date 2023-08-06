@@ -2,10 +2,9 @@ import React, { forwardRef } from "react";
 import { Spinner } from "./Spinner";
 import { tw } from "./tw";
 
-export type ButtonProps = {
+export type ButtonProps = React.ButtonHTMLAttributes<HTMLButtonElement> & {
   children: React.ReactNode;
   className?: string;
-  onClick?: () => void;
   primary?: boolean;
   secondary?: boolean;
   tertiary?: boolean;
@@ -20,7 +19,6 @@ export type ButtonProps = {
  *
  * Props:
  * - `children` - The content of the button
- * - `onClick?` - The function to call when the button is clicked
  * - `secondary?` - Secondary variant of the button
  * - `tertiary?` - Tertiary variant of the button
  * - `sm?` - Small variant of the button
@@ -31,23 +29,25 @@ export type ButtonProps = {
 export const Button = forwardRef<HTMLButtonElement, ButtonProps>((props, ref) => {
   return (
     <button
+      {...props}
       ref={ref}
-      onClick={props.onClick}
+      disabled={props.disabled ?? props.loading}
       className={tw(
-        "Button relative rounded-md text-sm shadow-none",
+        "rounded-md text-sm shadow-none",
         props.secondary
           ? "bg-primary-100 text-primary-500 active:bg-primary-200 bg-opacity-70 hover:bg-opacity-100 active:bg-opacity-70"
           : props.tertiary
           ? "text-primary-500 hover:text-primary-400 active:text-primary-600 bg-transparent"
           : "bg-primary-500 text-background-50 hover:bg-primary-600 active:bg-primary-700 bg-opacity-100",
         props.sm ? "px-2 py-1" : props.lg ? "px-4 py-3" : "px-3 py-2",
+        props.loading ? "relative" : "",
         props.className
       )}
     >
       {props.children}
       {props.loading && (
-        <div className="bg-background-50 absolute bottom-0 left-0 right-0 top-0 flex items-center justify-center opacity-50">
-          <Spinner sm />
+        <div className="bg-background-50 absolute bottom-0 left-0 right-0 top-0 flex items-center justify-center rounded-md opacity-50">
+          <Spinner sm xs={props.sm} />
         </div>
       )}
     </button>

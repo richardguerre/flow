@@ -5,9 +5,11 @@ import {
   LOCAL_STORAGE_USER_TOKEN_KEY,
   RelayEnvironmentProvider,
 } from "@flowdev/web/relay/environment";
-import { IconContext } from "@flowdev/icons";
 import initUnocssRuntime from "@unocss/runtime";
 import unocssConfig from "@flowdev/unocss";
+import { Navbar } from "@flowdev/web/components/Navbar";
+import { getClosestRoutineRoutePath } from "@flowdev/web/views/RoutineView";
+import { Providers } from "@flowdev/web/components/Providers";
 
 initUnocssRuntime({
   autoPrefix: true,
@@ -36,13 +38,24 @@ const router = createBrowserRouter([
     },
     element: (
       <RelayEnvironmentProvider>
-        <Outlet />
+        <div className="flex">
+          <Navbar />
+          <Outlet />
+        </div>
       </RelayEnvironmentProvider>
     ),
     children: [
       { path: "/", element: <IndexView /> },
       { path: "/settings", element: <SettingsView /> },
       { path: "/routine/:routineId/:routineStep", element: <RoutineView /> },
+      {
+        path: "/routine",
+        loader: async () => {
+          const closestRoutineRoutePath = await getClosestRoutineRoutePath();
+          if (!closestRoutineRoutePath) return redirect("/routine/1/1"); // should never happen, but just in case
+          return redirect(closestRoutineRoutePath);
+        },
+      },
     ],
   },
   { path: "/login", element: <TestView /> },
@@ -52,10 +65,10 @@ const router = createBrowserRouter([
 
 ReactDOM.createRoot(document.getElementById("root") as HTMLElement).render(
   <React.StrictMode>
-    <IconContext.Provider value={{ size: "20px" }}>
+    <Providers>
       <React.Suspense fallback="...">
         <RouterProvider router={router} />
       </React.Suspense>
-    </IconContext.Provider>
+    </Providers>
   </React.StrictMode>
 );

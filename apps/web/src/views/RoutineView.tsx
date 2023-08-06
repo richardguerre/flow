@@ -1,9 +1,18 @@
-import { PreloadedQuery, graphql, usePreloadedQuery, useQueryLoader } from "@flowdev/relay";
+import {
+  PreloadedQuery,
+  fetchQuery,
+  graphql,
+  usePreloadedQuery,
+  useQueryLoader,
+} from "@flowdev/relay";
 import { useNavigate, useParams } from "react-router-dom";
-import { RoutineViewQuery } from "../relay/__generated__/RoutineViewQuery.graphql";
+import { RoutineViewQuery } from "@flowdev/web/relay/__generated__/RoutineViewQuery.graphql";
 import { useMemo, useState } from "react";
 import { dayjs } from "@flowdev/web/dayjs";
-import { RoutineStep } from "../components/RoutineStep";
+import { RoutineStep } from "@flowdev/web/components/RoutineStep";
+import { environment } from "@flowdev/web/relay/environment";
+import { RoutineViewLatestQuery } from "@flowdev/web/relay/__generated__/RoutineViewLatestQuery.graphql";
+import { decodeGlobalId } from "@flowdev/web/relay/utils";
 
 const routineViewQuery = graphql`
   query RoutineViewQuery($previousDayId: ID!, $currentDayId: ID!, $routineId: ID!) {
@@ -137,4 +146,43 @@ const RoutineViewContent = (props: RoutineViewProps) => {
       hasNext={currentStep < stepsLeft.length - 1}
     />
   );
+};
+
+export const getClosestRoutineRoutePath = async () => {
+  const data = await fetchQuery<RoutineViewLatestQuery>(
+    environment,
+    graphql`
+      query RoutineViewLatestQuery($todayDayId: ID!) {
+        today: node(id: $todayDayId) {
+          ... on Day {
+            routines {
+              id
+              time
+              steps {
+                pluginSlug
+                stepSlug
+              }
+            }
+          }
+        }
+      }
+    `,
+    { todayDayId: `Day_${dayjs().format("YYYY-MM-DD")}` },
+    { fetchPolicy: "store-or-network" }
+  ).toPromise();
+  const routineTimes = data?.today?.routines?.map((routine) => routine?.time) ?? [];
+  // time is format "HH:mm"
+  const closestRoutineTime = routineTimes.reduce((prev, curr) => {
+    const prevDiff = Math.abs(dayjs(prev).diff(dayjs(), "minute"));
+    const currDiff = Math.abs(dayjs(curr).diff(dayjs(), "minute"));
+    return prevDiff < currDiff ? prev : curr;
+  });
+  // routineTimes is in same order as data.today.routines
+  const closestRoutineIndex = routineTimes.indexOf(closestRoutineTime);
+  const closestRoutine = data?.today?.routines?.[closestRoutineIndex];
+  if (!closestRoutine) return null;
+  const firstStep = closestRoutine.steps[0];
+  return `/routine/${decodeGlobalId(closestRoutine.id)?.id}/${firstStep.pluginSlug}_${
+    firstStep.stepSlug
+  }`;
 };
