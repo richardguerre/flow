@@ -8,13 +8,15 @@ import {
 import initUnocssRuntime from "@unocss/runtime";
 import unocssConfig from "@flowdev/unocss";
 import { Navbar } from "@flowdev/web/components/Navbar";
-import { getClosestRoutineRoutePath } from "@flowdev/web/views/RoutineView";
+import { getClosestRoutineRoutePathAndName } from "@flowdev/web/views/RoutineView";
 import { Providers } from "@flowdev/web/components/Providers";
 
 initUnocssRuntime({
   autoPrefix: true,
   defaults: unocssConfig,
 });
+// disable unocss runtime observer as we already extract styles in jsx factory (see @flowdev/react package)
+window.__unocss_runtime?.toggleObserver(false);
 
 const IndexView = React.lazy(() => import("./views/IndexView"));
 const SettingsView = React.lazy(() => import("./views/SettingsView"));
@@ -51,9 +53,9 @@ const router = createBrowserRouter([
       {
         path: "/routine",
         loader: async () => {
-          const closestRoutineRoutePath = await getClosestRoutineRoutePath();
-          if (!closestRoutineRoutePath) return redirect("/routine/1/1"); // should never happen, but just in case
-          return redirect(closestRoutineRoutePath);
+          const closestRoutine = await getClosestRoutineRoutePathAndName();
+          if (!closestRoutine) return redirect("/routine/1/1"); // should never happen, but just in case
+          return redirect(closestRoutine.path);
         },
       },
     ],

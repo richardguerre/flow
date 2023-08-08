@@ -3,6 +3,9 @@ import { useState } from "react";
 import { graphql, useFragment } from "@flowdev/relay";
 import { List } from "./List";
 import { CalendarList } from "./CalendarList";
+import { BsCalendar4, BsInbox, BsList } from "@flowdev/icons";
+import { Tooltip, TooltipContent, TooltipTrigger } from "@flowdev/ui/Tooltip";
+import { tw } from "@flowdev/ui/tw";
 
 type ListsProps = {
   data: Lists_data$key;
@@ -31,21 +34,49 @@ export const Lists = (props: ListsProps) => {
       <div className="h-full w-72 flex-1">
         {selectedList ? <List listId={selectedList} /> : <CalendarList data={data} />}
       </div>
-      <div className="border-l-background-300 flex h-full flex-col gap-3 overflow-y-scroll border-l p-4">
-        <button
-          title="calendar"
-          className="bg-background-300 h-12 w-12 rounded-full p-3"
-          onClick={() => setSelectedList(null)}
-        >
-          🗓️ {/* TODO: replace with calendar icon */}
-        </button>
+      <div className="border-l-background-300 flex h-full flex-col gap-3 overflow-y-scroll border-l p-2">
+        <Tooltip>
+          <TooltipTrigger>
+            <button
+              className={tw(
+                "text-foreground-700 hover:bg-background-200 flex h-11 w-11 items-center justify-center rounded-full bg-transparent"
+              )}
+            >
+              <BsInbox />
+            </button>
+          </TooltipTrigger>
+          <TooltipContent side="left">Inbox</TooltipContent>
+        </Tooltip>
+        <Tooltip>
+          <TooltipTrigger>
+            <button
+              className={tw(
+                "flex h-11 w-11 items-center justify-center rounded-full",
+                selectedList === null
+                  ? "bg-primary-100 text-primary-600"
+                  : "hover:bg-background-200 text-foreground-700 bg-transparent"
+              )}
+              onClick={() => setSelectedList(null)}
+            >
+              <BsCalendar4 />
+            </button>
+          </TooltipTrigger>
+          <TooltipContent side="left">Calendar</TooltipContent>
+        </Tooltip>
         {data.lists.map((list) => (
           <button
             key={list.id}
             title={list.name}
-            className="bg-background-300 h-9 w-9 rounded-full"
+            className={tw(
+              "flex h-11 w-11 items-center justify-center rounded-full",
+              selectedList === list.id
+                ? "bg-primary-100 text-primary-600"
+                : "hover:bg-background-200 text-foreground-700 bg-transparent"
+            )}
             onClick={() => setSelectedList(list.id)}
-          />
+          >
+            <BsList />
+          </button>
         ))}
       </div>
     </div>

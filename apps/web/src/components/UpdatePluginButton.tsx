@@ -75,7 +75,7 @@ export const UpdatePluginButton = (props: UpdatePluginButtonProps) => {
 
   return (
     <div className="flex items-center gap-2">
-      <Button onClick={handleUpdate} loading={isUpdatingPlugin}>
+      <Button onClick={() => handleUpdate()} loading={isUpdatingPlugin}>
         Update to {versions.latestVersion}
       </Button>
       <span>Current version: {versions.currentVersion}</span>

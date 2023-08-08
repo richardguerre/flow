@@ -40,7 +40,7 @@ const relay = () =>
 // https://vitejs.dev/config/
 export default defineConfig({
   build: {
-    chunkSizeWarningLimit: 1000,
+    chunkSizeWarningLimit: 2000, // it's a big app, and size is not a prioritized concern for now
     rollupOptions: {
       shimMissingExports: true,
       external: [
@@ -62,7 +62,9 @@ export default defineConfig({
     },
   },
   plugins: [
-    react(),
+    react({
+      jsxImportSource: "@flowdev/react", // wrapper around react jsx runtime that extracts classnames for unocss
+    }),
     // @ts-ignore as tsconfigPaths types are not updated to those of Vite 4.0, but the plugin works fine
     tsconfigPaths({
       // root is required for vite to detect the tsconfig.json file

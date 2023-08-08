@@ -148,7 +148,7 @@ const RoutineViewContent = (props: RoutineViewProps) => {
   );
 };
 
-export const getClosestRoutineRoutePath = async () => {
+export const getClosestRoutineRoutePathAndName = async () => {
   const data = await fetchQuery<RoutineViewLatestQuery>(
     environment,
     graphql`
@@ -157,6 +157,7 @@ export const getClosestRoutineRoutePath = async () => {
           ... on Day {
             routines {
               id
+              name
               time
               steps {
                 pluginSlug
@@ -182,7 +183,11 @@ export const getClosestRoutineRoutePath = async () => {
   const closestRoutine = data?.today?.routines?.[closestRoutineIndex];
   if (!closestRoutine) return null;
   const firstStep = closestRoutine.steps[0];
-  return `/routine/${decodeGlobalId(closestRoutine.id)?.id}/${firstStep.pluginSlug}_${
-    firstStep.stepSlug
-  }`;
+  return {
+    path: `/routine/${decodeGlobalId(closestRoutine.id)?.id}/${firstStep.pluginSlug}_${
+      firstStep.stepSlug
+    }
+  }`,
+    name: closestRoutine.name,
+  };
 };

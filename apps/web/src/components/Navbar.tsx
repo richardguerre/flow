@@ -4,14 +4,14 @@ import { BsGear, BsGlobe2, BsJournalCheck, BsKanban, BsListCheck } from "@flowde
 import { Link, useMatch } from "react-router-dom";
 import { Tooltip, TooltipTrigger, TooltipContent } from "@flowdev/ui/Tooltip";
 import { useAsyncLoader } from "@flowdev/web/useAsyncLoader";
-import { getClosestRoutineRoutePath } from "@flowdev/web/views/RoutineView";
+import { getClosestRoutineRoutePathAndName } from "@flowdev/web/views/RoutineView";
 
 export const Navbar = () => {
   // routinePath is loaded non-blocking so that the navbar can render immediately
-  const [routinePath] = useAsyncLoader(async () => await getClosestRoutineRoutePath());
+  const [routine] = useAsyncLoader(async () => await getClosestRoutineRoutePathAndName());
 
   return (
-    <div className="bg-background-50 flex h-screen flex-shrink-0 flex-col justify-between gap-4 px-2 py-2 shadow-xl">
+    <div className="bg-background-50 flex h-screen flex-shrink-0 flex-col justify-between gap-4 p-2 shadow-xl">
       <div className="flex flex-col gap-2">
         <Link to="/" className="flex h-11 w-11 cursor-pointer items-center justify-center">
           <FlowIcon />
@@ -22,7 +22,12 @@ export const Navbar = () => {
         <NavItem to="/list" tooltip="List view">
           <BsListCheck />
         </NavItem>
-        <NavItem to={routinePath ?? "/routine"} tooltip="Do your latest routine">
+        <NavItem
+          to={routine?.path ?? "/routine"}
+          tooltip={`Do your ${routine?.name ?? "latest"}${
+            routine?.name.includes("routine") ? "" : " routine"
+          }`}
+        >
           <BsJournalCheck />
         </NavItem>
       </div>
@@ -48,7 +53,7 @@ type NavItemProps = {
 export const NavItem = (props: NavItemProps) => {
   const selected = useMatch(props.to);
   return (
-    <Tooltip delayDuration={100}>
+    <Tooltip>
       <TooltipTrigger>
         <Link
           to={props.to}

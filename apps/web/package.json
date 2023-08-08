@@ -19,6 +19,7 @@
     "@flowdev/icons": "*",
     "@flowdev/jotai": "*",
     "@flowdev/plugin": "*",
+    "@flowdev/react": "*",
     "@flowdev/relay": "*",
     "@flowdev/ui": "*",
     "@flowdev/unocss": "*",
