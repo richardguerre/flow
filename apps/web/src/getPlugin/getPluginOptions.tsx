@@ -32,7 +32,19 @@ export const getPluginOptions = (slug: string) => ({
   /**
    * React version that Flow uses.
    */
-  React,
+  React: {
+    ...React,
+    createElement: (type: any, props: any, ...rest: any) => {
+      if (!("unocssExtracted" in window) || !window.unocssExtracted) {
+        window.unocssExtracted = new Set<string>();
+      }
+      if (props?.className && !window.unocssExtracted?.has(props.className)) {
+        window.__unocss_runtime?.extract(props.className);
+        window.unocssExtracted?.add(props.className);
+      }
+      return React.createElement(type, props, ...rest);
+    },
+  },
   /**
    * Components that Flow uses you can re-use in your plugin views to feel more integrated.
    *

@@ -1,0 +1,12 @@
+diff --git a/node_modules/@unocss/runtime/dist/index.d.ts b/node_modules/@unocss/runtime/dist/index.d.ts
+index 3de88f5..5cbd025 100644
+--- a/node_modules/@unocss/runtime/dist/index.d.ts
++++ b/node_modules/@unocss/runtime/dist/index.d.ts
+@@ -88,6 +88,7 @@ declare global {
+             runtime?: RuntimeOptions;
+         };
+         __unocss_runtime?: RuntimeContext;
++        unocssExtracted?: Set<string>; // added for optimization in @flowdev/react
+     }
+ }
+ declare function init(inlineConfig?: RuntimeOptions): void;
