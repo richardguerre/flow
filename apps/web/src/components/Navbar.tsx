@@ -1,17 +1,18 @@
 import { tw } from "@flowdev/ui/tw";
 import { FlowIcon } from "@flowdev/web/components/FlowIcon";
 import { BsGear, BsGlobe2, BsJournalCheck, BsKanban, BsListCheck } from "@flowdev/icons";
-import { Link, useMatch } from "react-router-dom";
+import { Link } from "react-router-dom";
 import { Tooltip, TooltipTrigger, TooltipContent } from "@flowdev/ui/Tooltip";
 import { useAsyncLoader } from "@flowdev/web/useAsyncLoader";
 import { getClosestRoutineRoutePathAndName } from "@flowdev/web/views/RoutineView";
+import { useActiveLink } from "../useActiveLink";
 
 export const Navbar = () => {
   // routinePath is loaded non-blocking so that the navbar can render immediately
   const [routine] = useAsyncLoader(async () => await getClosestRoutineRoutePathAndName());
 
   return (
-    <div className="bg-background-50 flex h-screen flex-shrink-0 flex-col justify-between gap-4 p-2 shadow-xl">
+    <div className="bg-background-50 z-50 flex h-screen flex-shrink-0 flex-col justify-between gap-4 p-2 shadow-xl">
       <div className="flex flex-col gap-2">
         <Link to="/" className="flex h-11 w-11 cursor-pointer items-center justify-center">
           <FlowIcon />
@@ -33,7 +34,7 @@ export const Navbar = () => {
       </div>
 
       <div className="flex flex-col gap-2">
-        <NavItem to="/plugins" tooltip="Browse plugins">
+        <NavItem to="/settings/browse-plugins" tooltip="Browse plugins">
           <BsGlobe2 />
         </NavItem>
         <NavItem to="/settings" tooltip="Settings">
@@ -51,7 +52,8 @@ type NavItemProps = {
 };
 
 export const NavItem = (props: NavItemProps) => {
-  const selected = useMatch(props.to);
+  const active = useActiveLink(props.to);
+
   return (
     <Tooltip>
       <TooltipTrigger>
@@ -59,7 +61,7 @@ export const NavItem = (props: NavItemProps) => {
           to={props.to}
           className={tw(
             "flex h-11 w-11 items-center justify-center rounded-full",
-            selected
+            active
               ? "bg-primary-100 text-primary-600"
               : "text-foreground-700 hover:bg-background-200 bg-transparent"
           )}

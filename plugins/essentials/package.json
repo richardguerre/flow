@@ -1,7 +1,7 @@
 {
-  "name": "@flowdev/essentials",
+  "name": "@flowdev/plugin-essentials",
   "description": "The official and default plugin for Flow containing essential features such as a morning routine and a shutdown routine.",
-  "version": "0.0.1",
+  "version": "0.1.0",
   "private": false,
   "scripts": {
     "build:web": "vite build -c vite.web.ts",

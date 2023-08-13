@@ -20,6 +20,11 @@ window.__unocss_runtime?.toggleObserver(false);
 
 const IndexView = React.lazy(() => import("./views/IndexView"));
 const SettingsView = React.lazy(() => import("./views/SettingsView"));
+const GeneralSettingsView = React.lazy(() => import("./views/GeneralSettingsView"));
+const TaskSettingsView = React.lazy(() => import("./views/TaskSettingsView"));
+const RoutineSettingsView = React.lazy(() => import("./views/RoutineSettingsView"));
+const BrowsePluginsView = React.lazy(() => import("./views/BrowsePluginsView"));
+// const PluginSettingsView = React.lazy(() => import("./views/PluginSettingsView"));
 const RoutineView = React.lazy(() => import("./views/RoutineView"));
 const TestView = React.lazy(() => import("./views/TestView"));
 const NotFoundView = React.lazy(() => import("./views/NotFoundView"));
@@ -48,7 +53,19 @@ const router = createBrowserRouter([
     ),
     children: [
       { path: "/", element: <IndexView /> },
-      { path: "/settings", element: <SettingsView /> },
+      {
+        path: "/settings",
+        element: <SettingsView />,
+        children: [
+          { path: "", element: <GeneralSettingsView /> }, // show general settings as default
+          { path: "general", element: <GeneralSettingsView /> },
+          { path: "tasks", element: <TaskSettingsView /> },
+          { path: "routines", element: <RoutineSettingsView /> },
+          { path: "browse-plugins", element: <BrowsePluginsView /> },
+          // { path: "plugin/:pluginId", element: <PluginSettingsView /> },
+          { path: "*", element: <NotFoundView /> },
+        ],
+      },
       { path: "/routine/:routineId/:routineStep", element: <RoutineView /> },
       {
         path: "/routine",

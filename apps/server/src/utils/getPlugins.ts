@@ -2,6 +2,7 @@ import { GraphQLError } from "graphql";
 import fs from "node:fs/promises";
 import path from "node:path";
 import { DefineServerPluginReturn, ServerPluginReturn } from "@flowdev/plugin/server";
+import type { PluginJson } from "@flowdev/plugin";
 import { getPluginOptions } from "./getPluginOptions";
 import { PluginInstallation, StoreKeys } from "../graphql/Store";
 import { prisma } from "./prisma";
@@ -44,10 +45,35 @@ type Options = {
    * `/server.js` will be appended to the given `url`.
    */
   url: string;
-  /** Installed plugins' slugs in the db. */
-  installedPluginSlugs: string[];
+  /** The plugin's slug to be fetched from the plugin.json file of the plugin. */
+  slug: string;
   /** Whether to override the existing installation of a plugin with the same slug. */
   override?: boolean;
+};
+
+export const getPluginJson = async (opts: { url: string }) => {
+  const res = await fetch(`${opts.url}/plugin.json`).catch((err) => {
+    if (err.message === "fetch failed") {
+      throw new GraphQLError(
+        `Got no response. Make sure the URL is correct: "${opts.url}/plugin.json"`
+      );
+    }
+    throw new GraphQLError(err.message);
+  });
+  if (!res.ok) {
+    throw new GraphQLError(`Got status code ${res.status} from "${opts.url}/plugin.json"`);
+  }
+  const text = await res.text();
+  if (text.startsWith("Couldn't find the requested file")) {
+    // error thrown by jsdelivr
+    throw new GraphQLError(`Couldn't find the plugin at "${opts.url}/server.js"`);
+  }
+
+  try {
+    return JSON.parse(text) as PluginJson;
+  } catch (err) {
+    throw new GraphQLError(`Couldn't parse JSON of "${opts.url}/plugin.json"`);
+  }
 };
 
 /**
@@ -56,9 +82,20 @@ type Options = {
  * Used when installating and updating a plugin.
  */
 export async function installServerPlugin(opts: Options) {
-  const res = await fetch(`${opts.url}/server.js`);
+  const res = await fetch(`${opts.url}/server.js`).catch((err) => {
+    if (err.message === "fetch failed") {
+      throw new GraphQLError(
+        `Got no response. Make sure the URL is correct: "${opts.url}/server.js"`
+      );
+    }
+    throw new GraphQLError(err.message);
+  });
+  if (!res.ok) {
+    throw new GraphQLError(`Got status code ${res.status} from "${opts.url}/server.js"`);
+  }
   const text = await res.text();
   if (text.startsWith("Couldn't find the requested file")) {
+    // error thrown by jsdelivr
     throw new GraphQLError(`Couldn't find the plugin at "${opts.url}/server.js"`);
   }
 
@@ -82,27 +119,18 @@ export async function installServerPlugin(opts: Options) {
     throw new GraphQLError(
       `The exports of "${opts.url}/server.js" must have a \`plugin\` property which is a function. Please use \`definePlugin\` from \`@flowdev/plugin/server\`.`
     );
-  } else if (typeof exported.slug !== "string") {
+  }
+
+  if (!opts.override && cache.has(opts.slug)) {
     throw new GraphQLError(
-      `The exports of "${opts.url}/server.js" must have a \`slug\` property which is a string. Please use \`definePlugin\` from \`@flowdev/plugin/server\`.`
+      `PLUGIN_WITH_SAME_SLUG: A plugin with the slug "${opts.slug}" is already installed. Use the \`override\` option to override the existing plugin.`
     );
   }
-  if (
-    !opts.override &&
-    cache.has(exported.slug) &&
-    opts.installedPluginSlugs.includes(exported.slug)
-  ) {
-    throw new GraphQLError(
-      `PLUGIN_WITH_SAME_SLUG: A plugin with the slug "${exported.slug}" is already installed. Use the \`override\` option to override the existing plugin.`
-    );
-  }
-  await fs.rename(pathToTemp, path.join(pathToPlugins, `${exported.slug}.js`));
-  const plugin = exported.plugin(getPluginOptions(exported.slug));
-  cache.set(exported.slug, plugin);
+  await fs.rename(pathToTemp, path.join(pathToPlugins, `${opts.slug}.js`));
+  const plugin = exported.plugin(getPluginOptions(opts.slug));
+  cache.set(opts.slug, plugin);
 
   await plugin.onInstall?.();
-
-  return exported.slug;
 }
 
 /** Uninstall a plugin on the server's file system. */

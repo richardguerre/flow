@@ -1,4 +1,10 @@
-import { getPluginsInStore, installServerPlugin, uninstallServerPlugin } from "../utils/getPlugins";
+import { GraphQLError } from "graphql";
+import {
+  getPluginJson,
+  getPluginsInStore,
+  installServerPlugin,
+  uninstallServerPlugin,
+} from "../utils/getPlugins";
 import { prisma } from "../utils/prisma";
 import { builder } from "./builder";
 
@@ -125,22 +131,30 @@ builder.mutationField("installPlugin", (t) =>
     resolve: async (_, args) => {
       let installedPlugins = await getPluginsInStore();
 
-      // this will throw GraphQLErrors if there are any problems with the plugin
-      // installation. If there exists a plugin with the same slug, it will throw.
-      // the user can choose to override the existing plugin by setting the `override`
-      // arg to true.
-      const newPluginSlug = await installServerPlugin({
-        url: args.input.url,
-        installedPluginSlugs: installedPlugins.map((p) => p.slug),
-        override: args.input.override ?? false,
-      });
+      // this will throw GraphQLErrors if there are problems with the plugin.json file
+      const newPluginJson = await getPluginJson({ url: args.input.url });
+
+      if (!args.input.override && installedPlugins.find((p) => p.slug === newPluginJson.slug)) {
+        throw new GraphQLError(
+          `PLUGIN_WITH_SAME_SLUG: A plugin with the slug "${newPluginJson.slug}" is already installed. Use the \`override\` option to override the existing plugin.`
+        );
+      }
+
+      if (newPluginJson.server) {
+        // this will throw GraphQLErrors if there are problems with the plugin installation process
+        await installServerPlugin({
+          url: args.input.url,
+          slug: newPluginJson.slug,
+          override: args.input.override ?? false,
+        });
+      }
 
       // remove old plugin installation if it exists
-      installedPlugins = installedPlugins.filter((p) => p.slug !== newPluginSlug);
+      installedPlugins = installedPlugins.filter((p) => p.slug !== newPluginJson.slug);
       // add new plugin installation
       installedPlugins.push({
         url: args.input.url,
-        slug: newPluginSlug,
+        slug: newPluginJson.slug,
       });
 
       const newSetting = await prisma.store.upsert({

@@ -1,20 +1,23 @@
 import { PreloadedQuery, graphql, usePreloadedQuery, useQueryLoader } from "@flowdev/relay";
 import { getPlugin } from "@flowdev/web/getPlugin";
 import { SettingsViewQuery } from "../relay/__generated__/SettingsViewQuery.graphql";
-import { useState } from "react";
 import { useAsyncLoader } from "../useAsyncLoader";
-import { Button } from "@flowdev/ui/Button";
-import { PluginSettings } from "../components/PluginSettings";
-import { FlowSettings } from "../components/FlowSettings";
-import { BrowsePlugins } from "../components/BrowsePlugins";
+import { Link, Outlet } from "react-router-dom";
+import { tw } from "@flowdev/ui/tw";
+import { useActiveLink } from "../useActiveLink";
 
 const settingsViewQuery = graphql`
   query SettingsViewQuery {
-    ...FlowSettings_data
     installedPlugins {
-      slug
-      ...PluginSettings_pluginInstallation
+      ...SettingsView_pluginInstallation @relay(mask: false)
     }
+  }
+`;
+
+graphql`
+  fragment SettingsView_pluginInstallation on PluginInstallation {
+    slug
+    ...PluginSettingsView_pluginInstallation
   }
 `;
 
@@ -34,58 +37,64 @@ type SettingsViewProps = {
 
 const SettingsViewContent = (props: SettingsViewProps) => {
   const data = usePreloadedQuery(settingsViewQuery, props.queryRef);
-  const [
-    /** If selectedView is null, then it defaults to the flow settings tab. If it's not browse-plugins, then it's plugin installation data, so render the PluginSettings component. */
-    selectedView,
-    setSelectedView,
-  ] = useState<SettingsViewQuery["response"]["installedPlugins"][number] | "browse-plugins" | null>(
-    null
-  );
 
   return (
-    <div className="flex">
-      <div className="flex flex-col gap-8">
-        <div>
-          <Button onClick={() => setSelectedView(null)}>Settings</Button>
+    <div className="flex w-full">
+      <div className="bg-background-50 w-63 z-10 flex flex-shrink-0 flex-col gap-4 p-4 shadow-xl">
+        <div className="text-base font-semibold">Settings</div>
+        <div className="flex flex-col gap-2">
+          <SettingTab to="/settings/general">General</SettingTab>
+          <SettingTab to="/settings/tasks">Tasks</SettingTab>
+          <SettingTab to="/settings/routines">Routines</SettingTab>
+          <SettingTab to="/settings/browse-plugins">Browse plugins</SettingTab>
         </div>
         <div className="flex flex-col gap-2">
-          <div>Installed plugins</div>
+          <div className="text-base font-semibold">Plugin settings</div>
           {data.installedPlugins.map((plugin) => (
-            <SettingsViewPluginTab
-              key={plugin.slug}
-              slug={plugin.slug}
-              onClick={() => setSelectedView(plugin)}
-            />
+            <SettingsViewPluginTab key={plugin.slug} slug={plugin.slug} />
           ))}
-          <Button onClick={() => setSelectedView("browse-plugins")}>
-            Browse community plugins
-          </Button>
         </div>
       </div>
-      <div>
-        {!selectedView ? (
-          <FlowSettings data={data} />
-        ) : selectedView === "browse-plugins" ? (
-          <BrowsePlugins />
-        ) : (
-          <PluginSettings pluginInstallation={selectedView} />
-        )}
-      </div>
+      <Outlet context={data} />
     </div>
+  );
+};
+
+type SettingTabProps = {
+  children: string;
+  to: string;
+};
+
+const SettingTab = (props: SettingTabProps) => {
+  const active = useActiveLink(props.to);
+
+  return (
+    <Link
+      to={props.to}
+      className={tw(
+        "text-foreground-700 hover:bg-background-200 rounded-md bg-transparent p-2",
+        active && "bg-primary-100 text-primary-600 hover:bg-primary-100"
+      )}
+    >
+      {props.children}
+    </Link>
   );
 };
 
 type SettingsViewPluginTabProps = {
   slug: string;
-  onClick: () => void;
 };
 
 const SettingsViewPluginTab = (props: SettingsViewPluginTabProps) => {
   const [plugin, loading] = useAsyncLoader(async () => getPlugin({ pluginSlug: props.slug }));
+  const to = `settings/plugin/${props.slug}`;
 
-  if (loading) return <div>Loading...</div>;
+  if (loading) return <SettingTab to={to}>{props.slug}</SettingTab>;
   if (!plugin) return null;
-  if ("_error" in plugin) return <div>Error: {plugin._error}</div>;
+  if ("_error" in plugin) {
+    console.log("SettingViewPluginTab error", plugin); // to see the error
+    return null;
+  }
 
-  return <div onClick={props.onClick}>{plugin.name}</div>;
+  return <SettingTab to={to}>{plugin.name}</SettingTab>;
 };

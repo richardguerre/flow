@@ -1,7 +1,7 @@
 {
-  "name": "@flowdev/google-calendar",
+  "name": "@flowdev/plugin-google-calendar",
   "description": "Official Google Calendar plugin for Flow.",
-  "version": "0.0.1",
+  "version": "0.1.0",
   "private": false,
   "scripts": {
     "build:web": "vite build -c vite.web.ts",

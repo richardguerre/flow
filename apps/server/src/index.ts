@@ -99,17 +99,13 @@ if (process.env.NODE_ENV !== "test") {
           console.log("Failed to get plugins from DB.");
           return [];
         });
-        const installedPluginSlugs = installedPlugins.map((p) => p.slug);
-        for (const plugin of installedPlugins) {
-          await installServerPlugin({
-            url: plugin.url,
-            installedPluginSlugs,
-          }).catch((e) => {
+        for (const pluginInfo of installedPlugins) {
+          await installServerPlugin(pluginInfo).catch((e) => {
             if (e.message.includes("PLUGIN_WITH_SAME_SLUG")) {
-              console.log(`Plugin ${plugin.slug} already installed.`);
+              console.log(`Plugin ${pluginInfo.slug} already installed.`);
               return;
             }
-            console.log(`Failed to install ${plugin.slug}: ${e}`);
+            console.log(`Failed to install ${pluginInfo.slug}: ${e}`);
           });
         }
       } catch (e) {

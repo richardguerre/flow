@@ -2,18 +2,18 @@ import { Button } from "@flowdev/ui/Button";
 import { getPlugin } from "../getPlugin";
 import { useAsyncLoader } from "../useAsyncLoader";
 import { graphql, useFragment, useMutation } from "@flowdev/relay";
-import { PluginSettings_pluginInstallation$key } from "../relay/__generated__/PluginSettings_pluginInstallation.graphql";
-import { UpdatePluginButton } from "./UpdatePluginButton";
-import { PluginSettingsUninstallPluginMutation } from "../relay/__generated__/PluginSettingsUninstallPluginMutation.graphql";
+import { PluginSettingsView_pluginInstallation$key } from "../relay/__generated__/PluginSettingsView_pluginInstallation.graphql";
+import { UpdatePluginButton } from "../components/UpdatePluginButton";
+import { PluginSettingsViewUninstallPluginMutation } from "../relay/__generated__/PluginSettingsViewUninstallPluginMutation.graphql";
 
 type PluginSettingsProps = {
-  pluginInstallation: PluginSettings_pluginInstallation$key;
+  pluginInstallation: PluginSettingsView_pluginInstallation$key;
 };
 
-export const PluginSettings = (props: PluginSettingsProps) => {
+export default (props: PluginSettingsProps) => {
   const pluginInstallation = useFragment(
     graphql`
-      fragment PluginSettings_pluginInstallation on PluginInstallation {
+      fragment PluginSettingsView_pluginInstallation on PluginInstallation {
         slug
         url
         ...UpdatePluginButton_pluginInstallation
@@ -22,8 +22,8 @@ export const PluginSettings = (props: PluginSettingsProps) => {
     props.pluginInstallation
   );
   const [uninstallPlugin, isUninstallingPlugin] =
-    useMutation<PluginSettingsUninstallPluginMutation>(graphql`
-      mutation PluginSettingsUninstallPluginMutation($input: MutationUninstallPluginInput!) {
+    useMutation<PluginSettingsViewUninstallPluginMutation>(graphql`
+      mutation PluginSettingsViewUninstallPluginMutation($input: MutationUninstallPluginInput!) {
         uninstallPlugin(input: $input) {
           slug
         }
