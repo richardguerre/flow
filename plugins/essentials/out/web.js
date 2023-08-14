@@ -122,7 +122,7 @@ const y = (a, s) => ({ slug: a, plugin: s }), f = y("essentials", (a) => {
             s.NoteEditor,
             {
               slug: `flow-essentials_retro-${l.format("YYYY-MM-DD")}`,
-              title: `Retro of ${l.format("MMMM D")}`,
+              title: `Plan for ${l.format("MMMM D")}`,
               loading: o === null,
               initialValue: o ?? ""
             }

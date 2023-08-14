@@ -2,7 +2,7 @@ import { GraphQLError } from "graphql";
 import fs from "node:fs/promises";
 import path from "node:path";
 import { DefineServerPluginReturn, ServerPluginReturn } from "@flowdev/plugin/server";
-import type { PluginJson } from "@flowdev/plugin";
+import type { PluginJson } from "@flowdev/plugin/json";
 import { getPluginOptions } from "./getPluginOptions";
 import { PluginInstallation, StoreKeys } from "../graphql/Store";
 import { prisma } from "./prisma";
