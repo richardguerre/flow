@@ -2,7 +2,12 @@ import express from "express";
 import { createYoga } from "graphql-yoga";
 import path from "node:path";
 import { schema } from "./graphql";
-import { getPlugins, getPluginsInStore, installServerPlugin } from "./utils/getPlugins";
+import {
+  getPluginJson,
+  getPlugins,
+  getPluginsInStore,
+  installServerPlugin,
+} from "./utils/getPlugins";
 import { prisma } from "./utils/prisma";
 import { pgBoss } from "./utils/pgBoss";
 
@@ -100,12 +105,25 @@ if (process.env.NODE_ENV !== "test") {
           return [];
         });
         for (const pluginInfo of installedPlugins) {
+          const pluginJson = await getPluginJson(pluginInfo).catch(() => null);
+          if (!pluginJson) {
+            console.log(`Invalid plugin.json for "${pluginInfo.slug}".`);
+            continue;
+          }
+          if (installedPlugins.find((p) => p.slug === pluginJson.slug)) {
+            console.log(`Plugin "${pluginJson.slug}" already installed.`);
+            continue;
+          }
+          if (!pluginJson.server) {
+            console.log(`Plugin "${pluginJson.slug}" has no server entrypoint.`);
+            continue;
+          }
           await installServerPlugin(pluginInfo).catch((e) => {
             if (e.message.includes("PLUGIN_WITH_SAME_SLUG")) {
-              console.log(`Plugin ${pluginInfo.slug} already installed.`);
+              console.log(`Plugin "${pluginInfo.slug}" already installed.`);
               return;
             }
-            console.log(`Failed to install ${pluginInfo.slug}: ${e}`);
+            console.log(`Failed to install "${pluginInfo.slug}": ${e}`);
           });
         }
       } catch (e) {
