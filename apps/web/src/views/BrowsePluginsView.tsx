@@ -7,10 +7,14 @@ import { useForm } from "react-hook-form";
 import { graphql, useMutation } from "@flowdev/relay";
 import { Button } from "@flowdev/ui/Button";
 import { BrowsePluginsViewInstallFromUrlMutation } from "@flowdev/web/relay/__generated__/BrowsePluginsViewInstallFromUrlMutation.graphql";
+import { useState } from "react";
+import { toast } from "@flowdev/ui/Toast";
 
 export default () => {
+  const [openInstallPluginFromUrl, setOpenInstallPluginFromUrl] = useState(false);
+
   return (
-    <div className="flex w-full flex-col gap-8 p-16">
+    <div className="max-w-1488px mx-auto flex w-full flex-col gap-8 p-16">
       <div className="flex w-full flex-col gap-2">
         <div className="w-full text-center text-3xl font-extrabold">Browse plugins</div>
         <div className="w-full text-center text-base">Sprinkle a little magic in your day</div>
@@ -23,9 +27,9 @@ export default () => {
             </TooltipTrigger>
             <TooltipContent side="bottom">Search is not yet implemented</TooltipContent>
           </Tooltip>
-          <Popover>
+          <Popover open={openInstallPluginFromUrl} onOpenChange={setOpenInstallPluginFromUrl}>
             <PopoverTrigger>
-              <Tooltip open={false}>
+              <Tooltip>
                 <TooltipTrigger asChild>
                   <button className="hover:bg-background-200 text-foreground-700 rounded p-2">
                     <BsLink45Deg />
@@ -35,7 +39,7 @@ export default () => {
               </Tooltip>
             </PopoverTrigger>
             <PopoverContent align="end" className="w-96">
-              <InstallPluginFromUrlForm />
+              <InstallPluginFromUrlForm onClose={() => setOpenInstallPluginFromUrl(false)} />
             </PopoverContent>
           </Popover>
         </div>
@@ -48,7 +52,7 @@ type FormValues = {
   url: string;
 };
 
-const InstallPluginFromUrlForm = () => {
+const InstallPluginFromUrlForm = (props: { onClose: () => void }) => {
   const { register, formState, handleSubmit, setError } = useForm<FormValues>();
   const [installPlugin, installingPlugin] =
     useMutation<BrowsePluginsViewInstallFromUrlMutation>(graphql`
@@ -62,27 +66,27 @@ const InstallPluginFromUrlForm = () => {
   const onSubmit = (values: FormValues) => {
     installPlugin({
       variables: values,
+      updater: (store) => {
+        const updatedInstalledPlugins = store.getPluralRootField("installPlugin");
+        const root = store.getRoot();
+        root.setLinkedRecords(updatedInstalledPlugins, "installedPlugins");
+      },
       onCompleted: (_data, errs) => {
         if (errs) {
-          console.log("from onCompleted");
           setError("url", { message: errs[0].message });
           return;
         }
+        toast.success("Plugin installed");
+        props.onClose();
       },
-      // updater: (store) => {
-      //   const updatedInstalledPlugins = store.getRootField("installPlugin");
-      //   const root = store.getRoot();
-      //   root.setLinkedRecords(updatedInstalledPlugins, "installedPlugins");
-      // },
       onError: (error) => {
-        console.log("from onError");
         setError("url", { message: error.message });
       },
     });
   };
 
   return (
-    <form onSubmit={handleSubmit(onSubmit)} className="flex gap-2">
+    <form onSubmit={handleSubmit(onSubmit)} className="flex gap-2 break-all">
       <FormInput
         {...register("url", { required: "A URL is required" })}
         placeholder="https://cdn.jsdelivr.net/npm/package@version/dist"

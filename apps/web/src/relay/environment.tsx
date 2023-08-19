@@ -5,13 +5,15 @@ import { RelayEnvironmentProvider as RelayRelayEnvironmentProvider } from "@flow
 export const LOCAL_STORAGE_USER_TOKEN_KEY = "token";
 
 export const environment = new Environment({
-  network: Network.create((operation, variables) => {
+  network: Network.create(async (operation, variables) => {
     const token = window.localStorage.getItem(LOCAL_STORAGE_USER_TOKEN_KEY);
-    return fetch(import.meta.env.VITE_GRAPHQL_URL, {
+    const res = await fetch(import.meta.env.VITE_GRAPHQL_URL, {
       method: "POST",
       headers: { "content-type": "application/json", ...(token ? { token } : {}) },
       body: JSON.stringify({ operationName: operation.name, query: operation.text, variables }),
     }).then((res) => res.json());
+    res.data = res.data ?? {};
+    return res;
   }),
   store: new Store(new RecordSource()),
 });

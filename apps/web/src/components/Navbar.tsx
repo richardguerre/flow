@@ -34,7 +34,7 @@ export const Navbar = () => {
       </div>
 
       <div className="flex flex-col gap-2">
-        <NavItem to="/settings/browse-plugins" tooltip="Browse plugins">
+        <NavItem to="/browse-plugins" tooltip="Browse plugins">
           <BsGlobe2 />
         </NavItem>
         <NavItem to="/settings" tooltip="Settings">

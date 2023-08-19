@@ -53,6 +53,7 @@ const router = createBrowserRouter([
     ),
     children: [
       { path: "/", element: <IndexView /> },
+      { path: "browse-plugins", element: <BrowsePluginsView /> },
       {
         path: "/settings",
         element: <SettingsView />,
