@@ -10,31 +10,71 @@ import {
 } from "./utils/getPlugins";
 import { prisma } from "./utils/prisma";
 import { pgBoss } from "./utils/pgBoss";
+import { env } from "./env";
+import { GraphQLError, parse } from "graphql";
+import { FlowPluginSlug, StoreKeys } from "./graphql/Store";
 
-/** An object where the key is the environment variable name and the value is whether or not it's required. */
-const envsToCheck = {
-  NODE_ENV: false,
-  PORT: false,
-  DATABASE_URL: true,
-  ORIGIN: true,
-};
-// didn't use zod nor chalk/ink/colors for this as it's not worth installing for just this (it's 600+kb to install)
-// color from https://backbencher.dev/nodejs-colored-text-console
-console.log("\x1b[2mEnvironment variables:\x1b[0m");
-for (const [env, required] of Object.entries(envsToCheck)) {
-  if (required && !process.env[env]) {
-    throw `❌ Environment variable ${env} is required but not set.`;
-  }
-  console.log(`\x1b[2m  ${env}: ${process.env[env]}\x1b[0m`);
-}
-
-const PORT = process.env.PORT ?? 4000;
+const PORT = env.PORT ?? 4000;
 export const app = express();
 app.use(express.json());
 
 // -------------------------- GraphQL ----------------------------
 
-const graphqlAPI = createYoga({ schema });
+const graphqlAPI = createYoga({
+  schema,
+  context: async (req) => {
+    const sessionToken = req.request.headers.get("authorization")?.replace("Bearer ", "");
+
+    // the following logic of parsing the GraphQL request is to whitelist certain operations that don't require a valid session token
+    // this may change in the future to be more flexible and granular for each operation
+    const queryParsed = req.params.query ? parse(req.params.query) : null;
+    // find all the queries and mutations in the request
+    const graphqlOperations =
+      queryParsed?.definitions
+        .filter((d) => d.kind === "OperationDefinition")
+        .flatMap((op) =>
+          op.kind === "OperationDefinition"
+            ? op.selectionSet.selections
+                .filter((s) => s.kind === "Field")
+                .map((s) => (s.kind === "Field" ? s.name.value : "")) // this is the non-alised name so it can't be changed by the user
+            : []
+        ) ?? [];
+    const publicOperations = ["isPasswordSet", "setPassword", "login"];
+    const requiresValidSession = !graphqlOperations.every((op) => publicOperations.includes(op));
+    if (requiresValidSession) {
+      if (!sessionToken) {
+        throw new GraphQLError("The request requires a valid session token.");
+      } else {
+        const sessionItem = await prisma.store.findFirst({
+          where: {
+            pluginSlug: FlowPluginSlug,
+            key: { startsWith: StoreKeys.AUTH_SESSION_PREFIX },
+            AND: [
+              { value: { path: ["token"], equals: sessionToken } },
+              { value: { path: ["expiresAt"], gt: new Date().toISOString() } },
+            ],
+          },
+        });
+        if (!sessionItem) {
+          throw new GraphQLError("Invalid session token.");
+        } else {
+          // do nothing, the session is valid
+        }
+      }
+    }
+
+    return {
+      userAgent: req.request.headers.get("user-agent") ?? undefined,
+      sessionToken,
+    };
+  },
+  graphiql: {
+    title: "Flow GraphQL API",
+    headers: JSON.stringify({
+      Authorization: `Bearer COPY_TOKEN_FROM_BROWSER_CONSOLE_OR_LOGIN_MUTATION`,
+    }),
+  },
+});
 app.use("/graphql", graphqlAPI);
 
 // ---------------------- Plugin endpoints -----------------------
@@ -74,7 +114,7 @@ app.use("/api/plugin/:pluginSlug", async (req, res) => {
 app.use(express.static("web"));
 app.get("*", (req, res) => {
   res.sendFile(path.join(__dirname, "./web/index.html"), async () => {
-    if (process.env.NODE_ENV === "development") {
+    if (env.NODE_ENV === "development") {
       const developmentPath = `http://localhost:3000${req.path}`;
       try {
         const result = await fetch(developmentPath);
@@ -90,10 +130,10 @@ app.get("*", (req, res) => {
   });
 });
 
-if (process.env.NODE_ENV !== "test") {
+if (env.NODE_ENV !== "test") {
   (async () => {
     const plugins = await getPlugins(); // this will refresh the plugin cache to make sure it's up to date before installing plugins and is also used below to handle the pgBoss jobs
-    if (process.env.NODE_ENV !== "development") {
+    if (env.NODE_ENV !== "development") {
       // ---------------------- Install plugins -------------------------
 
       // Try installing plugins before starting the server so that requests
@@ -110,8 +150,8 @@ if (process.env.NODE_ENV !== "test") {
             console.log(`Invalid plugin.json for "${pluginInfo.slug}".`);
             continue;
           }
-          if (installedPlugins.find((p) => p.slug === pluginJson.slug)) {
-            console.log(`Plugin "${pluginJson.slug}" already installed.`);
+          if (Object.keys(plugins).find((p) => p === pluginJson.slug)) {
+            console.log(`Plugin "${pluginJson.slug}" already installed on server.`);
             continue;
           }
           if (!pluginJson.server) {
@@ -120,7 +160,7 @@ if (process.env.NODE_ENV !== "test") {
           }
           await installServerPlugin(pluginInfo).catch((e) => {
             if (e.message.includes("PLUGIN_WITH_SAME_SLUG")) {
-              console.log(`Plugin "${pluginInfo.slug}" already installed.`);
+              console.log(`Plugin "${pluginInfo.slug}" already installed on server.`);
               return;
             }
             console.log(`Failed to install "${pluginInfo.slug}": ${e}`);

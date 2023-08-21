@@ -2,6 +2,7 @@
 import { PrismaClient } from "@prisma/client";
 import { afterEach, beforeEach, vi } from "vitest";
 import * as prismaUtils from "../src/utils/prisma";
+import { env } from "../src/env";
 
 type CtorParams<C> = C extends new (...args: infer P) => any ? P[0] : never;
 type TxClient = Parameters<Parameters<PrismaClient["$transaction"]>[0]>[0];
@@ -77,7 +78,7 @@ function getTxClient(options?: CtorParams<typeof PrismaClient>) {
 const prismaTestClient = getTxClient({
   datasources: {
     db: {
-      url: process.env.DATABASE_URL?.replace("flow", "flow_test") ?? "",
+      url: env.DATABASE_URL?.replace("flow", "flow_test") ?? "",
     },
   },
 });

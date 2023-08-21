@@ -150,6 +150,7 @@ async function script() {
   await prisma.store.create({
     data: {
       key: "installed-plugins",
+      pluginSlug: "flow",
       value: [
         {
           slug: "essentials",

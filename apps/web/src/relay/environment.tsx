@@ -9,7 +9,10 @@ export const environment = new Environment({
     const token = window.localStorage.getItem(LOCAL_STORAGE_USER_TOKEN_KEY);
     const res = await fetch(import.meta.env.VITE_GRAPHQL_URL, {
       method: "POST",
-      headers: { "content-type": "application/json", ...(token ? { token } : {}) },
+      headers: {
+        "content-type": "application/json",
+        ...(token ? { Authorization: `Bearer ${token}` } : {}),
+      },
       body: JSON.stringify({ operationName: operation.name, query: operation.text, variables }),
     }).then((res) => res.json());
     res.data = res.data ?? {};

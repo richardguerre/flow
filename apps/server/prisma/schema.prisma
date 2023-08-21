@@ -249,11 +249,11 @@ model Store {
   /// The date and time the store item was last updated
   updatedAt    DateTime @updatedAt
   /// The key of the store item
-  key          String   @unique
+  key          String
   /// The value of the store item
   value        Json
   /// The slug of the plugin the store item is linked to.
-  pluginSlug   String?
+  pluginSlug   String
   /// Whether the store item is secret.
   /// Secret items are automatically server-only as well (even if the value of isServerOnly is false)
   /// and can only be accessed by the plugin with the same pluginSlug.

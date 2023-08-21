@@ -4,6 +4,7 @@ import { prisma } from "./prisma";
 import { pgBoss } from "./pgBoss";
 import { nearestTailwindColor } from "./nearestTailwindColor";
 import type { Color, Store } from "@prisma/client";
+import { env } from "../env";
 
 type PrismaJsonInput = string | number | boolean | Prisma.JsonObject | Prisma.JsonArray;
 
@@ -11,7 +12,7 @@ export const getPluginOptions = (pluginSlug: string) => ({
   /** The plugin's slug. There is no difference with the one passed into `definePlugin`. It can be used to not repeat it throughout the plugin's code. */
   pluginSlug,
   /** The server's origin without the slash at the end. For example, `https://user.isflow.in` or `http://localhost:4000` if testing locally. */
-  serverOrigin: process.env.ORIGIN,
+  serverOrigin: env.ORIGIN,
   /**
    * The dayjs package. This prevents the dayjs package from being bundled with the plugin, so that installs are faster.
    * It has some dayjs extensions already loaded:

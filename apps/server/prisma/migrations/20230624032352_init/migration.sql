@@ -134,7 +134,7 @@ CREATE TABLE "Store" (
     "updatedAt" TIMESTAMP(3) NOT NULL,
     "key" TEXT NOT NULL,
     "value" JSONB NOT NULL,
-    "pluginSlug" TEXT,
+    "pluginSlug" TEXT NOT NULL,
     "isSecret" BOOLEAN NOT NULL DEFAULT false,
     "isServerOnly" BOOLEAN NOT NULL DEFAULT false,
 
@@ -187,9 +187,6 @@ CREATE UNIQUE INDEX "TaskLabel_slug_key" ON "TaskLabel"("slug");
 
 -- CreateIndex
 CREATE UNIQUE INDEX "List_slug_key" ON "List"("slug");
-
--- CreateIndex
-CREATE UNIQUE INDEX "Store_key_key" ON "Store"("key");
 
 -- CreateIndex
 CREATE UNIQUE INDEX "Store_pluginSlug_key_key" ON "Store"("pluginSlug", "key");

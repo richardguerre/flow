@@ -154,6 +154,10 @@ type ListItemsConnectionEdge {
 }
 
 type Mutation {
+  """
+  Change password for the Flow instance and get a new session token to make authenticated requests.
+  """
+  changePassword(input: MutationChangePasswordInput!): String!
   completeRoutine(input: MutationCompleteRoutineInput!): Boolean!
 
   """Create an item."""
@@ -172,7 +176,20 @@ type Mutation {
   Install a plugin. If a plugin with the same slug exists, it will throw an error, unless `override` is set to true.
   """
   installPlugin(input: MutationInstallPluginInput!): [PluginInstallation!]!
+
+  """
+  Login to the Flow instance and get a session token to make authenticated requests.
+  """
+  login(input: MutationLoginInput!): String!
+
+  """Logout from the Flow instance."""
+  logout: Boolean!
   pluginOperation(id: ID!, input: JSON): PluginOperation
+
+  """
+  Set password for the Flow instance and get a session token to make authenticated requests.
+  """
+  setPassword(input: MutationSetPasswordInput!): String!
 
   """Uninstall a plugin."""
   uninstallPlugin(input: MutationUninstallPluginInput!): [PluginInstallation!]!
@@ -212,6 +229,14 @@ type Mutation {
   If `isServerOnly` is set to true, the store item will not be returned in the `storeItems` query.
   """
   upsertStoreItem(input: MutationUpsertStoreItemInput!): Store!
+}
+
+input MutationChangePasswordInput {
+  """The new password (unhashed)."""
+  newPassword: String!
+
+  """The old password (unhashed)."""
+  oldPassword: String!
 }
 
 input MutationCompleteRoutineInput {
@@ -296,6 +321,16 @@ input MutationInstallPluginInput {
   url: String!
 }
 
+input MutationLoginInput {
+  """The password (unhashed)."""
+  password: String!
+}
+
+input MutationSetPasswordInput {
+  """The password to set (unhashed)."""
+  password: String!
+}
+
 input MutationUninstallPluginInput {
   slug: String!
 }
@@ -347,7 +382,7 @@ input MutationUpsertStoreItemInput {
   isSecret: Boolean
   isServerOnly: Boolean
   key: String!
-  pluginSlug: String
+  pluginSlug: String!
   value: JSON!
 }
 
@@ -457,6 +492,9 @@ type Query {
 
   """Get all installed plugins."""
   installedPlugins: [PluginInstallation!]!
+
+  """Check if the password is set."""
+  isPasswordSet: Boolean!
 
   """
   Get all external items. Useuful to get list of items for a specific day to show in a calendar.
@@ -634,7 +672,7 @@ type Store implements Node {
   key: String!
 
   """The slug of the plugin the store item is linked to."""
-  pluginSlug: String
+  pluginSlug: String!
   updatedAt: DateTime!
   value: JSON!
 }

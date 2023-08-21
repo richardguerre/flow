@@ -27,6 +27,11 @@ export const builder = new SchemaBuilder<{
     JSON: { Input: Prisma.InputJsonValue; Output: Prisma.JsonValue };
     Time: { Input: Date; Output: Date };
   };
+  Context: {
+    userAgent?: string;
+    /** This session token is guaranteed in the GraphQL context as session token validation is done before it. */
+    sessionToken: string;
+  };
 }>({
   plugins: [RelayPlugin, PrismaPlugin, WithInputPlugin],
   relayOptions: {
