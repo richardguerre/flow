@@ -11,9 +11,28 @@ import {
 import { prisma } from "./utils/prisma";
 import { pgBoss } from "./utils/pgBoss";
 import { env } from "./env";
-import { GraphQLError, parse } from "graphql";
 import { FlowPluginSlug, StoreKeys } from "./graphql/Store";
 
+const isSessionTokenValid = async (sessionToken: string | undefined) => {
+  if (!sessionToken) {
+    return false;
+  } else {
+    const sessionItem = await prisma.store.findFirst({
+      where: {
+        pluginSlug: FlowPluginSlug,
+        key: { startsWith: StoreKeys.AUTH_SESSION_PREFIX },
+        AND: [
+          { value: { path: ["token"], equals: sessionToken } },
+          { value: { path: ["expiresAt"], gt: new Date().toISOString() } },
+        ],
+      },
+    });
+    if (!sessionItem) {
+      return false;
+    }
+  }
+  return true;
+};
 const PORT = env.PORT ?? 4000;
 export const app = express();
 app.use(express.json());
@@ -25,55 +44,11 @@ const graphqlAPI = createYoga({
   context: async (req) => {
     const sessionToken = req.request.headers.get("authorization")?.replace("Bearer ", "");
 
-    // the following logic of parsing the GraphQL request is to whitelist certain operations that don't require a valid session token
-    // this may change in the future to be more flexible and granular for each operation
-    const queryParsed = req.params.query ? parse(req.params.query) : null;
-    // find all the queries and mutations in the request
-    const graphqlOperations =
-      queryParsed?.definitions
-        .filter((d) => d.kind === "OperationDefinition")
-        .flatMap((op) =>
-          op.kind === "OperationDefinition"
-            ? op.selectionSet.selections
-                .filter((s) => s.kind === "Field")
-                .map((s) => (s.kind === "Field" ? s.name.value : "")) // this is the non-alised name so it can't be changed by the user
-            : []
-        ) ?? [];
-    const publicOperations = [
-      "__schema",
-      "__type",
-      "__typename",
-      // the above 3 are GraphQL introspection operations and should always be public
-      "isPasswordSet",
-      "setPassword",
-      "login",
-    ];
-    const requiresValidSession = !graphqlOperations.every((op) => publicOperations.includes(op));
-    if (requiresValidSession) {
-      if (!sessionToken) {
-        throw new GraphQLError("The request requires a valid session token.");
-      } else {
-        const sessionItem = await prisma.store.findFirst({
-          where: {
-            pluginSlug: FlowPluginSlug,
-            key: { startsWith: StoreKeys.AUTH_SESSION_PREFIX },
-            AND: [
-              { value: { path: ["token"], equals: sessionToken } },
-              { value: { path: ["expiresAt"], gt: new Date().toISOString() } },
-            ],
-          },
-        });
-        if (!sessionItem) {
-          throw new GraphQLError("Invalid session token.");
-        } else {
-          // do nothing, the session is valid
-        }
-      }
-    }
-
     return {
       userAgent: req.request.headers.get("user-agent") ?? undefined,
       sessionToken,
+      // had to do this as having the isSessionValid function in builder.ts caused an error (maybe circular dependency error)
+      isSessionValid: () => isSessionTokenValid(sessionToken),
     };
   },
   graphiql: {

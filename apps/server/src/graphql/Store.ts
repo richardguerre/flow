@@ -87,6 +87,8 @@ Pass the \`pluginSlug\` if you want to get items created by a specific plugin. N
 
 builder.queryField("isPasswordSet", (t) =>
   t.field({
+    authScopes: { public: true },
+    skipTypeScopes: true, // this is required as the authScope of the Query type is set to authenticated by default
     type: "Boolean",
     description: "Check if the password is set.",
     resolve: async () => {
@@ -259,6 +261,8 @@ const generateSessionToken = () => {
 
 builder.mutationField("setPassword", (t) =>
   t.fieldWithInput({
+    authScopes: { public: true },
+    skipTypeScopes: true, // this is required as the authScope of the Query type is set to authenticated by default
     type: "String",
     description:
       "Set password for the Flow instance and get a session token to make authenticated requests.",
@@ -413,6 +417,8 @@ builder.mutationField("changePassword", (t) =>
 
 builder.mutationField("login", (t) =>
   t.fieldWithInput({
+    authScopes: { public: true },
+    skipTypeScopes: true, // this is required as the authScope of the Query type is set to authenticated by default
     type: "String",
     description:
       "Login to the Flow instance and get a session token to make authenticated requests.",
@@ -470,6 +476,8 @@ builder.mutationField("login", (t) =>
 
 builder.mutationField("logout", (t) =>
   t.field({
+    authScopes: { authenticated: true }, // this ensures that the sessionToken is set and is valid before even deleting the session token
+    skipTypeScopes: true, // this is required as the authScope of the Query type is set to authenticated by default
     type: "Boolean",
     description:
       "Logout from the Flow instance using the session token set in the Authorization header.",

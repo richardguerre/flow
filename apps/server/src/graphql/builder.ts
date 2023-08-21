@@ -8,6 +8,7 @@ import type PrismaTypes from "@pothos/plugin-prisma/generated";
 import { DateResolver, DateTimeResolver, PositiveIntResolver, JSONResolver } from "graphql-scalars";
 import { dayjs } from "../utils/dayjs";
 import { GraphQLError } from "graphql";
+import ScopeAuthPlugin from "@pothos/plugin-scope-auth";
 
 export const encodeGlobalID = (typename: string, id: string | number | bigint) => {
   return `${typename}_${id}`;
@@ -29,11 +30,16 @@ export const builder = new SchemaBuilder<{
   };
   Context: {
     userAgent?: string;
-    /** This session token is guaranteed in the GraphQL context as session token validation is done before it. */
-    sessionToken: string;
+    sessionToken?: string;
+    isSessionValid: () => Promise<boolean>;
+  };
+  AuthScopes: {
+    public: true;
+    authenticated: true;
   };
 }>({
-  plugins: [RelayPlugin, PrismaPlugin, WithInputPlugin],
+  // the order of plugins matters. see https://pothos-graphql.dev/docs/plugins/scope-auth#important
+  plugins: [RelayPlugin, ScopeAuthPlugin, PrismaPlugin, WithInputPlugin],
   relayOptions: {
     clientMutationId: "omit",
     cursorType: "ID",
@@ -52,10 +58,27 @@ export const builder = new SchemaBuilder<{
     exposeDescriptions: true,
     filterConnectionTotalCount: true,
   },
+  authScopes: async (context) => {
+    return {
+      public: true,
+      authenticated: () => context.isSessionValid(),
+    };
+  },
+  scopeAuthOptions: {
+    unauthorizedError: (_, __, info) => {
+      const errors = {
+        query: "You need to be logged in to see this.",
+        mutation: "You need to be logged in to do this.",
+        subscription: "You need to be logged in to see this.",
+        _default: "You need to be logged in to do this.",
+      };
+      return new GraphQLError(errors[info.operation.operation] ?? errors._default);
+    },
+  },
 });
 
-builder.queryType(); // this initializes the query type, so that builder.queryField() works
-builder.mutationType(); // this initializes the mutation type, so that builder.mutationField() works
+builder.queryType({ authScopes: { authenticated: true } }); // this initializes the query type, so that builder.queryField() works
+builder.mutationType({ authScopes: { authenticated: true } }); // this initializes the mutation type, so that builder.mutationField() works
 
 builder.addScalarType("Date", DateResolver, {});
 builder.addScalarType("DateTime", DateTimeResolver, {});
