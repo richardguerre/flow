@@ -39,7 +39,15 @@ const graphqlAPI = createYoga({
                 .map((s) => (s.kind === "Field" ? s.name.value : "")) // this is the non-alised name so it can't be changed by the user
             : []
         ) ?? [];
-    const publicOperations = ["isPasswordSet", "setPassword", "login"];
+    const publicOperations = [
+      "__schema",
+      "__type",
+      "__typename",
+      // the above 3 are GraphQL introspection operations and should always be public
+      "isPasswordSet",
+      "setPassword",
+      "login",
+    ];
     const requiresValidSession = !graphqlOperations.every((op) => publicOperations.includes(op));
     if (requiresValidSession) {
       if (!sessionToken) {
