@@ -5,7 +5,6 @@ import { tw } from "./tw";
 export type ButtonProps = React.ButtonHTMLAttributes<HTMLButtonElement> & {
   children: React.ReactNode;
   className?: string;
-  primary?: boolean;
   secondary?: boolean;
   tertiary?: boolean;
   sm?: boolean;
@@ -38,7 +37,7 @@ export const Button = forwardRef<HTMLButtonElement, ButtonProps>((props, ref) =>
           ? "bg-primary-100 text-primary-500 active:bg-primary-200 bg-opacity-70 hover:bg-opacity-100 active:bg-opacity-70"
           : props.tertiary
           ? "text-primary-500 hover:text-primary-400 active:text-primary-600 bg-transparent"
-          : "bg-primary-500 text-background-50 hover:bg-primary-600 active:bg-primary-700 bg-opacity-100",
+          : "bg-primary-500 text-primary-50 hover:bg-primary-600 active:bg-primary-700 bg-opacity-100",
         props.sm ? "px-2 py-1" : props.lg ? "px-4 py-3" : "px-3 py-2",
         props.loading ? "relative" : "",
         props.className

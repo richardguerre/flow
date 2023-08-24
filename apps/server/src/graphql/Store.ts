@@ -452,7 +452,9 @@ builder.mutationField("login", (t) =>
       const isPasswordCorrect = await compare(args.input.password, passwordSetting.value as string);
 
       if (!isPasswordCorrect) {
-        throw new GraphQLError("PASSWORD_INCORRECT: The password is incorrect.");
+        throw new GraphQLError("The password is incorrect.", {
+          extensions: { code: "PASSWORD_INCORRECT" },
+        });
       }
 
       // generate session token

@@ -24,6 +24,7 @@ const RoutineSettingsView = React.lazy(() => import("./views/RoutineSettingsView
 const BrowsePluginsView = React.lazy(() => import("./views/BrowsePluginsView"));
 // const PluginSettingsView = React.lazy(() => import("./views/PluginSettingsView"));
 const RoutineView = React.lazy(() => import("./views/RoutineView"));
+const LoginView = React.lazy(() => import("./views/LoginView"));
 const TestView = React.lazy(() => import("./views/TestView"));
 const NotFoundView = React.lazy(() => import("./views/NotFoundView"));
 
@@ -78,7 +79,7 @@ const router = createBrowserRouter([
       },
     ],
   },
-  { path: "/login", element: <TestView /> },
+  { path: "/login", element: <LoginView /> },
   { path: "/test", element: <TestView /> },
   { path: "*", element: <NotFoundView /> },
 ]);

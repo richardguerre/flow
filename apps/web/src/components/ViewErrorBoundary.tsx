@@ -24,8 +24,8 @@ export const ViewErrorBoundary = (props: Props) => {
                   <h1 className="text-2xl font-bold">Hmm... seems you're logged out!</h1>
                   {errorMessages}
                   <div className="mt-4">
-                    <Link to="/login" className="mt-4">
-                      <Button>Login</Button>
+                    <Link to="/login">
+                      <Button lg>Login</Button>
                     </Link>
                   </div>
                 </>
