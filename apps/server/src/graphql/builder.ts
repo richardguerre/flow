@@ -72,7 +72,12 @@ export const builder = new SchemaBuilder<{
         subscription: "You need to be logged in to see this.",
         _default: "You need to be logged in to do this.",
       };
-      return new GraphQLError(errors[info.operation.operation] ?? errors._default);
+      return new GraphQLError(errors[info.operation.operation] ?? errors._default, {
+        extensions: {
+          code: "UNAUTHENTICATED",
+          userFriendlyMessage: errors[info.operation.operation] ?? errors._default,
+        },
+      });
     },
   },
 });

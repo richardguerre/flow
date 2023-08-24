@@ -137,17 +137,11 @@ const InstallPluginFromUrlForm = (props: { onClose: () => void }) => {
         const root = store.getRoot();
         root.setLinkedRecords(updatedInstalledPlugins, "installedPlugins");
       },
-      onCompleted: (_data, errs) => {
-        if (errs) {
-          setError("url", { message: errs[0].message });
-          return;
-        }
+      onCompleted: (_data) => {
         toast.success("Plugin installed");
         props.onClose();
       },
-      onError: (error) => {
-        setError("url", { message: error.message });
-      },
+      onError: (error) => setError("url", { message: error.message }),
     });
   };
 

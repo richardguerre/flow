@@ -1,15 +1,13 @@
 import React from "react";
 import ReactDOM from "react-dom/client";
 import { createBrowserRouter, Outlet, redirect, RouterProvider } from "react-router-dom";
-import {
-  LOCAL_STORAGE_USER_TOKEN_KEY,
-  RelayEnvironmentProvider,
-} from "@flowdev/web/relay/environment";
+import { LOCAL_STORAGE_USER_TOKEN_KEY } from "@flowdev/web/relay/environment";
 import initUnocssRuntime from "@unocss/runtime";
 import unocssConfig from "@flowdev/unocss";
 import { Navbar } from "@flowdev/web/components/Navbar";
 import { getClosestRoutineRoutePathAndName } from "@flowdev/web/views/RoutineView";
 import { Providers } from "@flowdev/web/components/Providers";
+import { ViewErrorBoundary } from "@flowdev/web/components/ViewErrorBoundary";
 
 initUnocssRuntime({
   autoPrefix: true,
@@ -46,12 +44,12 @@ const router = createBrowserRouter([
       return null;
     },
     element: (
-      <RelayEnvironmentProvider>
+      <ViewErrorBoundary>
         <div className="flex">
           <Navbar />
           <Outlet />
         </div>
-      </RelayEnvironmentProvider>
+      </ViewErrorBoundary>
     ),
     children: [
       { path: "/", element: <IndexView /> },

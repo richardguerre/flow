@@ -15,7 +15,10 @@ export const environment = new Environment({
       },
       body: JSON.stringify({ operationName: operation.name, query: operation.text, variables }),
     }).then((res) => res.json());
-    res.data = res.data ?? {};
+    if (res.errors) {
+      const errorsSet = new Set(res.errors.map((e: any) => e.message));
+      throw new Error(Array.from(errorsSet).join("\n"), { cause: res.errors });
+    }
     return res;
   }),
   store: new Store(new RecordSource()),

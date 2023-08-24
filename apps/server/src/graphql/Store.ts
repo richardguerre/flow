@@ -90,7 +90,7 @@ builder.queryField("isPasswordSet", (t) =>
     authScopes: { public: true },
     skipTypeScopes: true, // this is required as the authScope of the Query type is set to authenticated by default
     type: "Boolean",
-    description: "Check if the password is set.",
+    description: "Whether the password is set.",
     resolve: async () => {
       const passwordSetting = await prisma.store
         .findUnique({
@@ -101,6 +101,16 @@ builder.queryField("isPasswordSet", (t) =>
         .catch(() => null);
       return !!passwordSetting;
     },
+  })
+);
+
+builder.queryField("isSessionValid", (t) =>
+  t.field({
+    type: "Boolean",
+    description: "Whether the session is valid.",
+    authScopes: { public: true },
+    skipTypeScopes: true,
+    resolve: (_, __, context) => context.isSessionValid(),
   })
 );
 

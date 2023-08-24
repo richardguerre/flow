@@ -13,6 +13,18 @@ import {
   Environment,
 } from "react-relay";
 
+export type FlowPayloadError = {
+  message: string;
+  locations: {
+    line: number;
+    column: number;
+  }[];
+  path: string[];
+  extensions?: {
+    code: string;
+  };
+};
+
 // unwrapped exports of react-relay
 export {
   RelayEnvironmentProvider,
