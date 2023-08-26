@@ -31,13 +31,8 @@ export const Day = (props: DayProps) => {
 
   useEffect(() => {
     const today = dayjs().format("YYYY-MM-DD");
-    if (day.date === today) {
-      // FIXME: unocss runtime has not changed styles yet, so this is a hack to wait for it to change
-      setTimeout(() => {
-        if (dayRef.current) {
-          dayRef.current.scrollIntoView({ inline: "start", behavior: "auto" });
-        }
-      }, 100);
+    if (day.date === today && dayRef.current) {
+      dayRef.current.scrollIntoView({ inline: "start", behavior: "auto" });
     }
   }, [dayRef]);
 
