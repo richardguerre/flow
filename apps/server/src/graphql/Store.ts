@@ -17,6 +17,7 @@ export const StoreKeys = {
   INSTALLED_PLUGINS: "installed-plugins",
   PASSWORD_HASH: "password-hash",
   AUTH_SESSION_PREFIX: "session-",
+  TIMEZONE: "timezone",
 };
 
 type AuthSession = {
@@ -502,6 +503,45 @@ builder.mutationField("logout", (t) =>
         },
       });
       return true;
+    },
+  })
+);
+
+builder.mutationField("setTimezone", (t) =>
+  t.fieldWithInput({
+    type: "String",
+    description:
+      'Set the timezone using a [dayjs timezone string](https://day.js.org/docs/en/plugin/timezone) (e.g. "America/New_York") for the Flow instance. This will affect the time the tasks are synced (default is 04:00 in the timezone set)',
+    input: {
+      timezone: t.input.string({
+        required: true,
+        description:
+          'The timezone to set as a [dayjs timezone string](https://day.js.org/docs/en/plugin/timezone) (e.g. "America/New_York").',
+      }),
+    },
+    resolve: async (_, args) => {
+      try {
+        dayjs().tz(args.input.timezone); // check if timezone is valid
+      } catch {
+        throw new GraphQLError(
+          'The timezone is invalid. Please use a correct timezone identifier (e.g. "America/New_York") from this list: https://en.wikipedia.org/wiki/List_of_tz_database_time_zones.',
+          { extensions: { code: "TIMEZONE_INVALID" } }
+        );
+      }
+      await prisma.store.upsert({
+        where: {
+          pluginSlug_key_unique: { key: StoreKeys.TIMEZONE, pluginSlug: FlowPluginSlug },
+        },
+        update: { value: args.input.timezone },
+        create: {
+          key: StoreKeys.TIMEZONE,
+          pluginSlug: FlowPluginSlug,
+          value: args.input.timezone,
+          isSecret: false,
+          isServerOnly: false,
+        },
+      });
+      return args.input.timezone;
     },
   })
 );

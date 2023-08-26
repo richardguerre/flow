@@ -11,28 +11,15 @@ import {
 import { prisma } from "./utils/prisma";
 import { pgBoss } from "./utils/pgBoss";
 import { env } from "./env";
-import { FlowPluginSlug, StoreKeys } from "./graphql/Store";
+import {
+  SYNC_TASKS_JOB_NAME,
+  getTimezone,
+  isSessionTokenValid,
+  scheduleSyncTasks,
+  syncTasks,
+} from "./utils";
+import "./utils/dayjs";
 
-const isSessionTokenValid = async (sessionToken: string | undefined) => {
-  if (!sessionToken) {
-    return false;
-  } else {
-    const sessionItem = await prisma.store.findFirst({
-      where: {
-        pluginSlug: FlowPluginSlug,
-        key: { startsWith: StoreKeys.AUTH_SESSION_PREFIX },
-        AND: [
-          { value: { path: ["token"], equals: sessionToken } },
-          { value: { path: ["expiresAt"], gt: new Date().toISOString() } },
-        ],
-      },
-    });
-    if (!sessionItem) {
-      return false;
-    }
-  }
-  return true;
-};
 const PORT = env.PORT ?? 4000;
 export const app = express();
 app.use(express.json());
@@ -169,6 +156,12 @@ if (env.NODE_ENV !== "test") {
     for (const plugin of Object.values(plugins)) {
       const handlers = plugin.handlePgBossWork?.(pgBoss.work) ?? [];
       await Promise.all(handlers);
+    }
+    if (env.NODE_ENV !== "development") {
+      await pgBoss.work(SYNC_TASKS_JOB_NAME, syncTasks);
+      const timezone = await getTimezone();
+      await scheduleSyncTasks(timezone);
+      await syncTasks(); // initial sync on server start
     }
   })();
 } else {
