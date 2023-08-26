@@ -5,6 +5,8 @@ import { LOCAL_STORAGE_USER_TOKEN_KEY } from "../relay/environment";
 import { useNavigate } from "react-router-dom";
 import { useForm } from "react-hook-form";
 import { FormInput } from "@flowdev/ui/FormInput";
+import { toast } from "@flowdev/ui/Toast";
+import { GeneralSettingsViewChangePasswordMutation } from "../relay/__generated__/GeneralSettingsViewChangePasswordMutation.graphql";
 
 export default () => {
   return (
@@ -22,21 +24,31 @@ type ChangePasswordFormValues = {
 };
 
 const ChangePasswordSection = () => {
-  const [changePassword, isChangingPassword] = useMutation(graphql`
-    mutation GeneralSettingsViewChangePasswordMutation($input: MutationChangePasswordInput!) {
-      newToken: changePassword(input: $input)
-    }
-  `);
-  const { register, handleSubmit, formState, setError } = useForm<ChangePasswordFormValues>();
+  const [changePassword, isChangingPassword] =
+    useMutation<GeneralSettingsViewChangePasswordMutation>(graphql`
+      mutation GeneralSettingsViewChangePasswordMutation($input: MutationChangePasswordInput!) {
+        newToken: changePassword(input: $input)
+      }
+    `);
+  const { register, handleSubmit, formState, setError, reset } =
+    useForm<ChangePasswordFormValues>();
 
-  const onSubmit = () => {
+  const onSubmit = (values: ChangePasswordFormValues) => {
     changePassword({
-      variables: {},
+      variables: {
+        input: {
+          oldPassword: values.oldPassword,
+          newPassword: values.newPassword,
+        },
+      },
       onError: (error) => setError("newPasswordConfirm", { message: error.message }),
       onCompleted: (data) => {
+        toast.success("Password changed successfully.");
         const sessionToken = window.localStorage.getItem(LOCAL_STORAGE_USER_TOKEN_KEY);
         console.info(`${sessionToken} is no longer valid.`);
-        window.localStorage.removeItem(LOCAL_STORAGE_USER_TOKEN_KEY);
+        console.info(`New token: ${data.newToken}`);
+        window.localStorage.setItem(LOCAL_STORAGE_USER_TOKEN_KEY, data.newToken!);
+        reset();
       },
     });
   };
