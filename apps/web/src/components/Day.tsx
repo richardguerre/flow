@@ -37,7 +37,8 @@ export const Day = (props: DayProps) => {
   }, [dayRef]);
 
   return (
-    <div ref={dayRef} className="flex h-full w-64 flex-col">
+    <div className="relative flex h-full w-64 flex-col">
+      <div ref={dayRef} className="absolute -left-2" />
       <div className="mb-3 px-2">
         <button
           className="hover:text-primary-400 active:text-primary-600 text-xl font-semibold"
@@ -123,7 +124,7 @@ export const DayContent = (props: DayContentProps) => {
   return (
     <ReactSortable
       id={day.date}
-      className="mt-4 flex flex-auto flex-col overflow-x-hidden px-2"
+      className="no-scrollbar mt-4 flex flex-auto flex-col overflow-y-scroll px-2"
       list={tasks}
       setList={setTasks} // TOOD: use mutation optimistic updater instead
       animation={150}

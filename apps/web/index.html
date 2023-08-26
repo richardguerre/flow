@@ -17,6 +17,7 @@
       .fixed{position:fixed;}
       .relative{position:relative;}
       .left-0{left:0;}
+      .-left-2{left: -0.5rem;}
       .top-0{top:0;}
       .z-10{z-index:10;}
       .z-20{z-index:20;}
@@ -136,6 +137,15 @@
       .hover\:shadow-md:hover{--un-shadow:0 4px 18px -1px rgba(0, 0, 0, 0.07), 0 2px 4px -1px rgba(0, 0, 0, 0.05);box-shadow:var(--un-ring-offset-shadow), var(--un-ring-shadow), var(--un-shadow);}
       .ring-0\.5{--un-ring-width:0.5px;--un-ring-offset-shadow:var(--un-ring-inset) 0 0 0 var(--un-ring-offset-width) var(--un-ring-offset-color);--un-ring-shadow:var(--un-ring-inset) 0 0 0 calc(var(--un-ring-width) + var(--un-ring-offset-width)) var(--un-ring-color);box-shadow:var(--un-ring-offset-shadow), var(--un-ring-shadow), var(--un-shadow);}
       .ring-primary-100{--un-ring-opacity:1;--un-ring-color:rgba(224,231,255,var(--un-ring-opacity));}</style>
+    <style>
+      .no-scrollbar::-webkit-scrollbar {
+        display: none;
+      }
+      .no-scrollbar {
+        -ms-overflow-style: none; /* IE and Edge */
+        scrollbar-width: none; /* Firefox */
+      }
+    </style>
   </head>
   <body class="bg-background-200 text-foreground-900">
     <div id="root"></div>
