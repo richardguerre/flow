@@ -37,9 +37,8 @@ export const Day = (props: DayProps) => {
   }, [dayRef]);
 
   return (
-    <div ref={dayRef} className="flex h-full w-64 flex-col pl-4">
-      {/* pl-4 is needed for scrollIntoView to not scroll with the day flush to the left */}
-      <div className="mb-3">
+    <div ref={dayRef} className="flex h-full w-64 flex-col">
+      <div className="mb-3 px-2">
         <button
           className="hover:text-primary-400 active:text-primary-600 text-xl font-semibold"
           onClick={() => dayRef.current?.scrollIntoView({ inline: "start", behavior: "smooth" })}
@@ -124,7 +123,7 @@ export const DayContent = (props: DayContentProps) => {
   return (
     <ReactSortable
       id={day.date}
-      className="mt-4 flex flex-auto flex-col overflow-y-auto overflow-x-hidden"
+      className="mt-4 flex flex-auto flex-col overflow-x-hidden px-2"
       list={tasks}
       setList={setTasks} // TOOD: use mutation optimistic updater instead
       animation={150}
@@ -168,7 +167,7 @@ const DayAddTaskActionsBar = (props: DayAddTaskActionsBarProps) => {
   const [showNewTaskCard, setShowNewTaskCard] = useState(false);
 
   return (
-    <div className="flex flex-col gap-4">
+    <div className="flex flex-col gap-4 px-2">
       <Button
         secondary
         sm
