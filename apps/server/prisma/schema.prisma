@@ -188,7 +188,7 @@ model ItemPluginData {
   itemId Int
 }
 
-/// An item created by the user or a plugin. These items are then turned into tasks.
+/// An item created by the user or a plugin. The user can then create 1 or more tasks from the item.
 /// It can be a calendar event, a Trello task, a Linear issue, a GitHub request for review, a notification, etc.
 model Item {
   /// The id of the item
@@ -209,8 +209,11 @@ model Item {
   durationInMinutes Int?
   /// Whether the item is all-day on the date of `scheduledAt`.
   isAllDay          Boolean   @default(false)
-  /// The color of the item in hex. Used in calendar views.
+  /// The tailwind color of the item. Used in the calendar view.
   color             Color?
+  /// The number of inbox points the item has to be shown in the inbox.
+  /// The more inbox points an item has, the higher it is in the inbox.
+  inboxPoints       Int?
 
   /// The tasks linked to the item
   tasks       Task[]

@@ -40,6 +40,7 @@ async function script() {
           color: "blue",
           durationInMinutes: 30,
           isRelevant: true,
+          inboxPoints: 10,
         },
       },
     },

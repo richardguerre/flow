@@ -11,6 +11,7 @@ import {
   TaskStatus,
 } from "@flowdev/web/relay/__generated__/TaskCardUpdateTaskStatusMutation.graphql";
 import { TaskTitle } from "./TaskTitle";
+import { tw } from "@flowdev/ui/tw";
 
 type TaskCardProps = {
   task: TaskCard_task$key;
@@ -32,14 +33,12 @@ export const TaskCard = (props: TaskCardProps) => {
     props.task
   );
 
-  let statusStyles = "";
-  if (task.status !== "TODO") {
-    statusStyles = "opacity-50 hover:opacity-100";
-  }
-
   return (
     <div
-      className={`${statusStyles} bg-background-50 group flex cursor-pointer flex-col gap-1 rounded-lg p-3 shadow-sm hover:shadow-md`}
+      className={tw(
+        "bg-background-50 group flex cursor-pointer flex-col gap-1 rounded-lg p-3 shadow-sm hover:shadow-md",
+        task.status !== "TODO" && "opacity-50 hover:opacity-100"
+      )}
     >
       <div className="flex gap-1">
         <TaskTitle task={task} />

@@ -22,8 +22,8 @@ export const ItemCard = (props: ItemCardProps) => {
   );
 
   return (
-    <div className="flex flex-col">
-      <div className="flex">
+    <div className="bg-background-50 group flex cursor-pointer flex-col gap-1 rounded-lg p-3 shadow-sm hover:shadow-md">
+      <div className="flex gap-1">
         <div>{item.title}</div>
         {item.durationInMinutes && <DurationBadge durationInMinutes={item.durationInMinutes} />}
       </div>
@@ -42,6 +42,10 @@ const ItemCardDetails = (props: ItemCardDetailsProps) => {
     graphql`
       fragment ItemCardDetails_item on Item {
         scheduledAt
+        inboxPoints
+        tasks {
+          id
+        }
       }
     `,
     props.item

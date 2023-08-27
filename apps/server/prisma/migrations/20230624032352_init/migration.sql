@@ -111,6 +111,7 @@ CREATE TABLE "Item" (
     "isAllDay" BOOLEAN NOT NULL DEFAULT false,
     "color" "Color",
     "listId" INTEGER,
+    "inboxPoints" INTEGER,
 
     CONSTRAINT "Item_pkey" PRIMARY KEY ("id")
 );

@@ -13,11 +13,13 @@ export const ItemType = builder.prismaNode("Item", {
     createdAt: t.expose("createdAt", { type: "DateTime" }),
     title: t.exposeString("title"),
     isRelevant: t.exposeBoolean("isRelevant"),
+    inboxPoints: t.exposeInt("inboxPoints", { nullable: true }),
     scheduledAt: t.expose("scheduledAt", { type: "DateTime", nullable: true }),
     durationInMinutes: t.exposeInt("durationInMinutes", { nullable: true }),
     isAllDay: t.exposeBoolean("isAllDay", { nullable: true }),
     color: t.expose("color", { type: ColorEnum, nullable: true }),
     pluginDatas: t.relation("pluginDatas"),
+    tasks: t.relation("tasks"),
   }),
 });
 
@@ -30,11 +32,20 @@ builder.queryField("items", (t) =>
     description: `Get all external items. Useuful to get list of items for a specific day to show in a calendar.
 By default, only items where \`isRelevant\` is true.
 Pass the \`where\` argument to override these defaults.`,
-    args: { where: t.arg({ type: ItemWhereInput, required: false }) },
+    args: {
+      where: t.arg({ type: ItemWhereInput, required: false }),
+      orderBy: t.arg({ type: ItemOrderByEnum, required: false }),
+    },
     resolve: (query, _, args) => {
       return prisma.item.findMany({
         ...query,
         where: createItemWhere(args.where ?? {}),
+        orderBy:
+          args.orderBy === "inboxPoints_ASC"
+            ? { inboxPoints: "asc" }
+            : args.orderBy === "inboxPoints_DESC"
+            ? { inboxPoints: "desc" }
+            : undefined,
       });
     },
   })
@@ -44,6 +55,7 @@ export const createItemWhere = (
   where: InputShapeFromFields<{
     isRelevant: InputFieldRef<boolean | null | undefined, "InputObject">;
     scheduledFor: InputFieldRef<Date | null | undefined, "InputObject">;
+    minInboxPoints: InputFieldRef<number | null | undefined, "InputObject">;
   }>
 ) => {
   const scheduledFor = where.scheduledFor;
@@ -57,6 +69,7 @@ export const createItemWhere = (
           },
         }
       : { scheduledAt: null }),
+    ...(where.minInboxPoints ? { inboxPoints: { gte: where.minInboxPoints } } : {}),
   };
 };
 
@@ -70,9 +83,17 @@ export const ItemWhereInput = builder.inputType("ItemWhereInput", {
     scheduledFor: t.field({
       type: "Date",
       required: false,
-      description: `If set to true, it will return items where scheduledAt is today or null.`,
+      description: `If set, it will return items where scheduledAt is the given date.`,
+    }),
+    minInboxPoints: t.int({
+      required: false,
+      description: `If set, it will return items where inboxPoints is greater than or equal to this value.`,
     }),
   }),
+});
+
+export const ItemOrderByEnum = builder.enumType("ItemOrderBy", {
+  values: ["inboxPoints_ASC", "inboxPoints_DESC"],
 });
 
 // --------------- Item mutation types ---------------
@@ -120,6 +141,23 @@ builder.mutationField("createItem", (t) =>
               }
             : {}),
         },
+      });
+    },
+  })
+);
+
+builder.mutationField("dismissItemFromInbox", (t) =>
+  t.prismaFieldWithInput({
+    type: "Item",
+    description: `Dismiss an item from the inbox. This effectively sets \`inboxPoints = null\` for the item.`,
+    input: {
+      id: t.input.globalID({ required: true }),
+    },
+    resolve: (query, _, { input }) => {
+      return prisma.item.update({
+        ...query,
+        where: { id: parseInt(input.id.id) },
+        data: { inboxPoints: null },
       });
     },
   })

@@ -61,7 +61,7 @@ type Day implements Node {
 }
 
 """
-An item created by the user or a plugin. These items are then turned into tasks.\nIt can be a calendar event, a Trello task, a Linear issue, a GitHub request for review, a notification, etc.
+An item created by the user or a plugin. The user can then create 1 or more tasks from the item.\nIt can be a calendar event, a Trello task, a Linear issue, a GitHub request for review, a notification, etc.
 """
 type Item implements Node {
   color: Color
@@ -72,6 +72,11 @@ type Item implements Node {
   """
   durationInMinutes: Int
   id: ID!
+
+  """
+  The number of inbox points the item has to be shown in the inbox.\nThe more inbox points an item has, the higher it is in the inbox.
+  """
+  inboxPoints: Int
 
   """Whether the item is all-day on the date of `scheduledAt`."""
   isAllDay: Boolean
@@ -85,10 +90,18 @@ type Item implements Node {
   pluginDatas: [ItemPluginData!]!
   scheduledAt: DateTime
 
+  """The tasks linked to the item"""
+  tasks: [Task!]!
+
   """
   The title of the item.\nIt is used as the initial title when creating a task from the item.
   """
   title: String!
+}
+
+enum ItemOrderBy {
+  inboxPoints_ASC
+  inboxPoints_DESC
 }
 
 """The data a plugin links to an item."""
@@ -115,8 +128,11 @@ input ItemWhereInput {
   isRelevant: Boolean = true
 
   """
-  If set to true, it will return items where scheduledAt is today or null.
+  If set, it will return items where inboxPoints is greater than or equal to this value.
   """
+  minInboxPoints: Int
+
+  """If set, it will return items where scheduledAt is the given date."""
   scheduledFor: Date
 }
 
@@ -173,6 +189,11 @@ type Mutation {
   createTask(input: MutationCreateTaskInput!): Task!
 
   """
+  Dismiss an item from the inbox. This effectively sets `inboxPoints = null` for the item.
+  """
+  dismissItemFromInbox(input: MutationDismissItemFromInboxInput!): Item!
+
+  """
   Install a plugin. If a plugin with the same slug exists, it will throw an error, unless `override` is set to true.
   """
   installPlugin(input: MutationInstallPluginInput!): [PluginInstallation!]!
@@ -182,7 +203,9 @@ type Mutation {
   """
   login(input: MutationLoginInput!): String!
 
-  """Logout from the Flow instance."""
+  """
+  Logout from the Flow instance using the session token set in the Authorization header.
+  """
   logout: Boolean!
   pluginOperation(id: ID!, input: JSON): PluginOperation
 
@@ -190,6 +213,11 @@ type Mutation {
   Set password for the Flow instance and get a session token to make authenticated requests.
   """
   setPassword(input: MutationSetPasswordInput!): String!
+
+  """
+  Set the timezone using a [dayjs timezone string](https://day.js.org/docs/en/plugin/timezone) (e.g. "America/New_York") for the Flow instance. This will affect the time the tasks are synced (default is 04:00 in the timezone set)
+  """
+  setTimezone(input: MutationSetTimezoneInput!): String!
 
   """Uninstall a plugin."""
   uninstallPlugin(input: MutationUninstallPluginInput!): [PluginInstallation!]!
@@ -316,6 +344,10 @@ input MutationCreateTaskInput {
   title: String!
 }
 
+input MutationDismissItemFromInboxInput {
+  id: ID!
+}
+
 input MutationInstallPluginInput {
   override: Boolean
   url: String!
@@ -329,6 +361,13 @@ input MutationLoginInput {
 input MutationSetPasswordInput {
   """The password to set (unhashed)."""
   password: String!
+}
+
+input MutationSetTimezoneInput {
+  """
+  The timezone to set as a [dayjs timezone string](https://day.js.org/docs/en/plugin/timezone) (e.g. "America/New_York").
+  """
+  timezone: String!
 }
 
 input MutationUninstallPluginInput {
@@ -493,15 +532,18 @@ type Query {
   """Get all installed plugins."""
   installedPlugins: [PluginInstallation!]!
 
-  """Check if the password is set."""
+  """Whether the password is set."""
   isPasswordSet: Boolean!
+
+  """Whether the session is valid."""
+  isSessionValid: Boolean!
 
   """
   Get all external items. Useuful to get list of items for a specific day to show in a calendar.
   By default, only items where `isRelevant` is true.
   Pass the `where` argument to override these defaults.
   """
-  items(after: ID, before: ID, first: Int, last: Int, where: ItemWhereInput): QueryItemsConnection!
+  items(after: ID, before: ID, first: Int, last: Int, orderBy: ItemOrderBy, where: ItemWhereInput): QueryItemsConnection!
 
   """Get all lists."""
   lists(

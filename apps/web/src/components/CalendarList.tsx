@@ -85,7 +85,7 @@ export const CalendarList = (props: CalendarListProps) => {
   return (
     <div className="flex h-full flex-col">
       <div className="p-3 text-xl font-semibold">Calendar</div>
-      <div className="h-full overflow-y-scroll pl-3 pt-0.5 pt-3">
+      <div className="no-scrollbar h-full overflow-y-scroll pl-3 pt-0.5 pt-3">
         <DayTimeGrid events={events} artifacts={artifacts} startHour={4} />
       </div>
     </div>

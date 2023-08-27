@@ -6,10 +6,13 @@ import { CalendarList } from "./CalendarList";
 import { BsCalendar4, BsInbox, BsList } from "@flowdev/icons";
 import { Tooltip, TooltipContent, TooltipTrigger } from "@flowdev/ui/Tooltip";
 import { tw } from "@flowdev/ui/tw";
+import { InboxList } from "./InboxList";
 
 type ListsProps = {
   data: Lists_data$key;
 };
+
+type ListType = "calendar" | "inbox" | (string & {});
 
 export const Lists = (props: ListsProps) => {
   const data = useFragment(
@@ -17,6 +20,7 @@ export const Lists = (props: ListsProps) => {
       fragment Lists_data on Query
       @argumentDefinitions(dateInFocus: { type: "Date!" }, dayIdInFocus: { type: "ID!" }) {
         ...CalendarList_data @arguments(dateInFocus: $dateInFocus, dayIdInFocus: $dayIdInFocus)
+        ...InboxList_data
         lists {
           id
           name
@@ -27,58 +31,73 @@ export const Lists = (props: ListsProps) => {
   );
 
   // if selectedList null, show the calendar
-  const [selectedList, setSelectedList] = useState<string | null>(null);
+  const [selectedList, setSelectedList] = useState<ListType>("inbox");
 
   return (
     <div className="bg-background-50 z-10 flex h-full shadow-xl">
       <div className="h-full w-72 flex-1">
-        {selectedList ? <List listId={selectedList} /> : <CalendarList data={data} />}
+        {selectedList === "inbox" ? (
+          <InboxList data={data} />
+        ) : selectedList === "calendar" ? (
+          <CalendarList data={data} />
+        ) : (
+          <List listId={selectedList} />
+        )}
       </div>
       <div className="border-l-background-300 flex h-full flex-col gap-3 overflow-y-scroll border-l p-2">
-        <Tooltip>
-          <TooltipTrigger>
-            <button
-              className={tw(
-                "text-foreground-700 hover:bg-background-200 flex h-11 w-11 items-center justify-center rounded-full bg-transparent"
-              )}
-            >
-              <BsInbox />
-            </button>
-          </TooltipTrigger>
-          <TooltipContent side="left">Inbox</TooltipContent>
-        </Tooltip>
-        <Tooltip>
-          <TooltipTrigger>
-            <button
-              className={tw(
-                "flex h-11 w-11 items-center justify-center rounded-full",
-                selectedList === null
-                  ? "bg-primary-100 text-primary-600"
-                  : "hover:bg-background-200 text-foreground-700 bg-transparent"
-              )}
-              onClick={() => setSelectedList(null)}
-            >
-              <BsCalendar4 />
-            </button>
-          </TooltipTrigger>
-          <TooltipContent side="left">Calendar</TooltipContent>
-        </Tooltip>
+        <ListButton
+          listId="inbox"
+          isSelected={selectedList === "inbox"}
+          onClick={() => setSelectedList("inbox")}
+        >
+          <BsInbox />
+        </ListButton>
+        <ListButton
+          listId="calendar"
+          isSelected={selectedList === "calendar"}
+          onClick={() => setSelectedList("calendar")}
+        >
+          <BsCalendar4 size={18} />
+        </ListButton>
         {data.lists.map((list) => (
-          <button
+          <ListButton
             key={list.id}
-            title={list.name}
-            className={tw(
-              "flex h-11 w-11 items-center justify-center rounded-full",
-              selectedList === list.id
-                ? "bg-primary-100 text-primary-600"
-                : "hover:bg-background-200 text-foreground-700 bg-transparent"
-            )}
+            listId={list.id}
+            isSelected={selectedList === list.id}
             onClick={() => setSelectedList(list.id)}
           >
             <BsList />
-          </button>
+          </ListButton>
         ))}
       </div>
     </div>
+  );
+};
+
+type ListButtonProps = {
+  children: React.ReactNode;
+  listId: string;
+  isSelected: boolean;
+  onClick: () => void;
+};
+
+const ListButton = (props: ListButtonProps) => {
+  return (
+    <Tooltip>
+      <TooltipTrigger>
+        <button
+          className={tw(
+            "flex h-11 w-11 items-center justify-center rounded-full",
+            props.isSelected
+              ? "bg-primary-100 text-primary-600"
+              : "hover:bg-background-200 text-foreground-700 bg-transparent"
+          )}
+          onClick={props.onClick}
+        >
+          {props.children}
+        </button>
+      </TooltipTrigger>
+      <TooltipContent side="left">{props.listId}</TooltipContent>
+    </Tooltip>
   );
 };

@@ -15,9 +15,10 @@ import "./Task";
 import "./TaskLabel";
 import "./TaskPluginData";
 import "./PluginOperation";
+import { env } from "../env";
 
 export const schema = builder.toSchema();
-if (process.env.NODE_ENV === "development") {
+if (env.NODE_ENV === "development") {
   const schemaAsString = printSchema(schema);
   const path = join(__dirname, "../../../web/src/relay/schema.graphql");
   writeFileSync(path, schemaAsString);
