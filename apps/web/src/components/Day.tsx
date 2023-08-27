@@ -1,5 +1,5 @@
 import { useEffect, useRef, useState } from "react";
-import { graphql, useFragment, useMutation } from "@flowdev/relay";
+import { graphql, useFragment, useMutation, useMutationPromise } from "@flowdev/relay";
 import { Day_day$key } from "@flowdev/web/relay/__generated__/Day_day.graphql";
 import { TaskCard } from "./TaskCard";
 import { dayjs } from "@flowdev/web/dayjs";
@@ -9,6 +9,10 @@ import { DayUpdateTaskDateMutation } from "../relay/__generated__/DayUpdateTaskD
 import { DayAddTaskActionsBar_day$key } from "../relay/__generated__/DayAddTaskActionsBar_day.graphql";
 import { NewTaskCard } from "./NewTaskCard";
 import { Button } from "@flowdev/ui/Button";
+import { environment } from "../relay/environment";
+import { ItemCard_item$data } from "../relay/__generated__/ItemCard_item.graphql";
+import { toast } from "@flowdev/ui/Toast";
+import { DayCreateTaskFromItemMutation } from "../relay/__generated__/DayCreateTaskFromItemMutation.graphql";
 
 type DayProps = {
   day: Day_day$key;
@@ -70,6 +74,7 @@ export const DayContent = (props: DayContentProps) => {
       fragment DayContent_day on Day {
         date
         tasks {
+          __typename
           id
           status
           ...TaskCard_task
@@ -87,6 +92,17 @@ export const DayContent = (props: DayContentProps) => {
     }
   `);
 
+  const [createTaskFromItem] = useMutationPromise<DayCreateTaskFromItemMutation>(graphql`
+    mutation DayCreateTaskFromItemMutation($input: MutationCreateTaskInput!) {
+      createTask(input: $input) {
+        __typename
+        id
+        status
+        ...TaskCard_task
+      }
+    }
+  `);
+
   const [tasks, setTasks] = useState(structuredClone(Array.from(day.tasks)));
   const [updateTaskDateInfo, setUpdateTaskDateInfo] = useState<UpdateTaskDateInfo>(null);
 
@@ -95,6 +111,52 @@ export const DayContent = (props: DayContentProps) => {
       htmlParent: e.to,
       movedTaskId: e.item.id,
     });
+  };
+
+  const setList = async (newList: typeof tasks) => {
+    setTasks(newList.filter((task) => task.__typename === "Task")); // ignore item(s) that were dropped
+
+    const items = newList.filter((task) => task.__typename !== "Task") as { id: string }[];
+    const store = environment.getStore().getSource();
+    for (const item of items) {
+      if (!store.has(item.id)) continue;
+      const index = newList.findIndex((task) => task.id === item.id);
+      const itemRecord = store.get(item.id) as unknown as ItemCard_item$data;
+      const createTask = createTaskFromItem({
+        variables: {
+          input: {
+            date: day.date,
+            title: itemRecord.title,
+            status: "TODO",
+            itemId: item.id,
+            atIndex: index,
+          },
+        },
+        updater: (updaterStore) => {
+          const updaterDay = updaterStore.get(`Day_${day.date}`);
+          const updaterDayTasks = updaterDay?.getLinkedRecords("tasks") ?? [];
+          const createdTask = updaterStore.getRootField("createTask");
+          // This adds the new task to where the item was dropped
+          updaterDay?.setLinkedRecords(
+            [
+              ...(updaterDayTasks ?? []).slice(0, index),
+              createdTask,
+              ...(updaterDayTasks ?? []).slice(index),
+            ],
+            "tasks"
+          );
+          // This adds the new task the item's tasks
+          const updaterItem = updaterStore.get(item.id);
+          const updaterItemTasks = updaterItem?.getLinkedRecords("tasks");
+          updaterItem?.setLinkedRecords([createdTask, ...(updaterItemTasks ?? [])], "tasks");
+        },
+      });
+      await toast.promise(createTask, {
+        loading: "Creating task...",
+        error: "Failed to create task",
+        success: "Task created",
+      });
+    }
   };
 
   useEffect(() => {
@@ -126,7 +188,7 @@ export const DayContent = (props: DayContentProps) => {
       id={day.date}
       className="no-scrollbar mt-4 flex flex-auto flex-col overflow-y-scroll px-2"
       list={tasks}
-      setList={setTasks} // TOOD: use mutation optimistic updater instead
+      setList={setList}
       animation={150}
       delayOnTouchOnly
       delay={100}

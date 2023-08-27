@@ -1,0 +1,11 @@
+{
+  "name": "@flowdev/dndkit",
+  "description": "Wrapper around @dnd-kit/core.",
+  "version": "0.1.0",
+  "dependencies": {
+    "@dnd-kit/core": "^6.0.8"
+  },
+  "peerDependencies": {
+    "react": "*"
+  }
+}

@@ -72,9 +72,14 @@ builder.mutationField("createTask", (t) =>
       itemId: t.input.globalID({
         description: "The Relay ID of the Item that should be linked to the task.",
       }),
+      atIndex: t.input.int({
+        description:
+          "The position in the day the task should be placed at. If not specified, it will be placed at the beginning.",
+      }),
     },
     resolve: (query, _, args) => {
       const date = args.input.date ?? startOfDay(new Date());
+      const index = args.input.atIndex ?? 0;
       return prisma.$transaction(async (tx) => {
         const task = await tx.task.create({
           ...query,
@@ -89,7 +94,11 @@ builder.mutationField("createTask", (t) =>
           },
         });
         const day = await tx.day.findUnique({ where: { date }, select: { tasksOrder: true } });
-        const newTasksOrder = [task.id, ...day!.tasksOrder];
+        const newTasksOrder = [
+          ...day!.tasksOrder.slice(0, index),
+          task.id,
+          ...day!.tasksOrder.slice(index),
+        ];
         await tx.day.update({ where: { date }, data: { tasksOrder: { set: newTasksOrder } } });
         return task;
       });

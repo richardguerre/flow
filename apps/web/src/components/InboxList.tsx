@@ -2,7 +2,7 @@ import { graphql, useRefetchableFragment } from "@flowdev/relay";
 import { InboxList_data$key } from "@flowdev/web/relay/__generated__/InboxList_data.graphql";
 import { ItemCard } from "./ItemCard";
 import { ReactSortable } from "react-sortablejs";
-import { useMemo, useState } from "react";
+import { useMemo } from "react";
 
 type InboxListProps = {
   data: InboxList_data$key;
@@ -24,21 +24,22 @@ export const InboxList = (props: InboxListProps) => {
     `,
     props.data
   );
-  const itemNodes = useMemo(() => data.items.edges.map((edge) => edge.node), [data.items.edges]);
-
-  const [items, setItems] = useState(structuredClone(itemNodes));
+  const itemNodes = useMemo(
+    () => structuredClone(data.items.edges.map((edge) => edge.node)),
+    [data.items.edges]
+  );
 
   return (
     <div className="bg-background-100 flex h-full flex-col">
       <div className="p-3 text-xl font-semibold">Inbox</div>
       <ReactSortable
-        list={items}
-        setList={setItems}
+        list={itemNodes}
+        setList={() => {}}
         group="shared"
-        className="flex h-full flex-col gap-4 px-4 pb-4"
+        className="flex h-full flex-col px-4"
       >
         {data.items.edges.map((edge) => (
-          <div>
+          <div id={edge.node.id} key={edge.node.id} className="pb-4">
             <ItemCard key={edge.node.id} item={edge.node} />
           </div>
         ))}

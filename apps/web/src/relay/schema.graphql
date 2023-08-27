@@ -328,6 +328,11 @@ input MutationCreateRoutineInput {
 }
 
 input MutationCreateTaskInput {
+  """
+  The position in the day the task should be placed at. If not specified, it will be placed at the beginning.
+  """
+  atIndex: Int
+
   """The day (no time required) the task is planned for."""
   date: Date
 

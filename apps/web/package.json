@@ -24,6 +24,7 @@
     "@flowdev/ui": "*",
     "@flowdev/unocss": "*",
     "@flowdev/error-boundary": "*",
+    "@flowdev/dndkit": "*",
     "@tiptap/extension-bullet-list": "^2.0.3",
     "@tiptap/extension-document": "^2.0.0-beta.218",
     "@tiptap/extension-history": "^2.0.0-beta.218",
