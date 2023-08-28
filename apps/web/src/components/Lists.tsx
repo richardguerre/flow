@@ -47,6 +47,7 @@ export const Lists = (props: ListsProps) => {
       <div className="border-l-background-300 flex h-full flex-col gap-3 overflow-y-scroll border-l p-2">
         <ListButton
           listId="inbox"
+          tooltip="Inbox"
           isSelected={selectedList === "inbox"}
           onClick={() => setSelectedList("inbox")}
         >
@@ -54,6 +55,7 @@ export const Lists = (props: ListsProps) => {
         </ListButton>
         <ListButton
           listId="calendar"
+          tooltip="Calendar"
           isSelected={selectedList === "calendar"}
           onClick={() => setSelectedList("calendar")}
         >
@@ -63,6 +65,7 @@ export const Lists = (props: ListsProps) => {
           <ListButton
             key={list.id}
             listId={list.id}
+            tooltip={list.name}
             isSelected={selectedList === list.id}
             onClick={() => setSelectedList(list.id)}
           >
@@ -76,6 +79,7 @@ export const Lists = (props: ListsProps) => {
 
 type ListButtonProps = {
   children: React.ReactNode;
+  tooltip: string;
   listId: string;
   isSelected: boolean;
   onClick: () => void;
@@ -97,7 +101,7 @@ const ListButton = (props: ListButtonProps) => {
           {props.children}
         </button>
       </TooltipTrigger>
-      <TooltipContent side="left">{props.listId}</TooltipContent>
+      <TooltipContent side="left">{props.tooltip}</TooltipContent>
     </Tooltip>
   );
 };

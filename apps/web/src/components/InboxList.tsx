@@ -36,7 +36,7 @@ export const InboxList = (props: InboxListProps) => {
         list={itemNodes}
         setList={() => {}}
         group="shared"
-        className="flex h-full flex-col px-4"
+        className="no-scrollbar flex h-full flex-col overflow-y-scroll px-4"
       >
         {data.items.edges.map((edge) => (
           <div id={edge.node.id} key={edge.node.id} className="pb-4">
