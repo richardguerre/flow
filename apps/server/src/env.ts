@@ -1,10 +1,13 @@
-/** An object where the key is the environment variable name and the value is an array where the first element is whether it's required or not and the second whether it's sensitive and should be obfusucated in stdout. */
+/** An object where the key is the environment variable name and the value is an array where:
+ * the first element is whether it's required or not.
+ * the second whether it's sensitive and should be obfusucated in stdout.
+ */
 const envsToCheck = {
   NODE_ENV: [false, false],
   PORT: [false, false],
   DATABASE_URL: [true, true],
   ORIGIN: [true, false],
-};
+} as const;
 
 /** Copy of process.env in memory so that process.env can be deleted and not used in plugins for unsafe things. */
 const env: Record<string, string | undefined> = {};

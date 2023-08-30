@@ -7,7 +7,7 @@ export const LOCAL_STORAGE_USER_TOKEN_KEY = "token";
 export const environment = new Environment({
   network: Network.create(async (operation, variables) => {
     const token = window.localStorage.getItem(LOCAL_STORAGE_USER_TOKEN_KEY);
-    const res = await fetch(import.meta.env.VITE_GRAPHQL_URL, {
+    const res = await fetch(import.meta.env.PROD ? "/graphql" : import.meta.env.VITE_GRAPHQL_URL, {
       method: "POST",
       headers: {
         "content-type": "application/json",
