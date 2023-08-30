@@ -12,10 +12,10 @@ import { prisma } from "./utils/prisma";
 import { pgBoss } from "./utils/pgBoss";
 import { env } from "./env";
 import {
-  SYNC_TASKS_JOB_NAME,
+  ROLLOVER_TASKS_JOB_NAME,
   getTimezone,
   isSessionTokenValid,
-  scheduleSyncTasks,
+  scheduleRolloverTasks,
   syncTasks,
 } from "./utils";
 import "./utils/dayjs";
@@ -158,9 +158,9 @@ if (env.NODE_ENV !== "test") {
       await Promise.all(handlers);
     }
     if (env.NODE_ENV !== "development") {
-      await pgBoss.work(SYNC_TASKS_JOB_NAME, syncTasks);
+      await pgBoss.work(ROLLOVER_TASKS_JOB_NAME, syncTasks);
       const timezone = await getTimezone();
-      await scheduleSyncTasks(timezone);
+      await scheduleRolloverTasks(timezone);
       await syncTasks(); // initial sync on server start
     }
   })();

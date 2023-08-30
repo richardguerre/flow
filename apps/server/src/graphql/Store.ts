@@ -10,6 +10,7 @@ import { builder } from "./builder";
 import { genSalt, hash, compare } from "bcryptjs";
 import crypto from "crypto";
 import { dayjs } from "../utils/dayjs";
+import { scheduleRolloverTasks } from "../utils";
 
 /** The pluginSlug used to set Flow specific items in the Store table. */
 export const FlowPluginSlug = "flow";
@@ -541,6 +542,7 @@ builder.mutationField("setTimezone", (t) =>
           isServerOnly: false,
         },
       });
+      await scheduleRolloverTasks(args.input.timezone); // reschedule the rollover tasks to the new timezone
       return args.input.timezone;
     },
   })

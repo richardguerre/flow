@@ -3,8 +3,8 @@ import { prisma } from "./prisma";
 import { pgBoss } from "./pgBoss";
 import { dayjs } from "./dayjs";
 
-export const SYNC_TASKS_JOB_NAME = "sync-tasks";
-const SYNC_TASKS_CRON = "0 4 * * *";
+export const ROLLOVER_TASKS_JOB_NAME = "rollover-tasks-to-today";
+const ROLLOVER_TASKS_CRON = "0 4 * * *";
 
 export const syncTasks = async () => {
   console.log("-- Syncing tasks...");
@@ -23,13 +23,13 @@ export const syncTasks = async () => {
   console.log(`✅ Synced ${res.count} tasks.`);
 };
 
-export const scheduleSyncTasks = async (timezone: string = "Etc/GMT-11") => {
+export const scheduleRolloverTasks = async (timezone: string = "Etc/GMT-11") => {
   // sync tasks every day at 04:00 (least busy time of the day)
-  await pgBoss.schedule(SYNC_TASKS_JOB_NAME, SYNC_TASKS_CRON, undefined, {
+  await pgBoss.schedule(ROLLOVER_TASKS_JOB_NAME, ROLLOVER_TASKS_CRON, undefined, {
     tz: timezone,
-    singletonKey: SYNC_TASKS_JOB_NAME,
+    singletonKey: ROLLOVER_TASKS_JOB_NAME,
   });
-  console.log(`✅ Scheduled "${SYNC_TASKS_JOB_NAME}" job.`);
+  console.log(`✅ Scheduled "${ROLLOVER_TASKS_JOB_NAME}" job.`);
 };
 
 export const isSessionTokenValid = async (sessionToken: string | undefined) => {
