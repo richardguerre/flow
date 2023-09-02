@@ -49,28 +49,28 @@ model Note {
   /// it will most likely be converted to HTML by the TipTap editor.
   content   String
 
-  /// The labels of the note
-  labels NoteLabel[]
+  /// The tags of the note
+  tags NoteTag[]
 }
 
-/// A label that can be applied to a note.
-model NoteLabel {
-  /// The id of the note label
+/// A tag that can be applied to a note.
+model NoteTag {
+  /// The id of the note tag
   id        Int      @id @default(autoincrement())
-  /// The date and time of creation of the note label
+  /// The date and time of creation of the note tag
   createdAt DateTime @default(now())
-  /// The date and time the note label was last updated
+  /// The date and time the note tag was last updated
   updatedAt DateTime @updatedAt
-  /// The name of the note label
+  /// The name of the note tag
   name      String
-  /// The slug (i.e. the url-safe version) of the note label name
+  /// The slug (i.e. the url-safe version) of the note tag name
   slug      String   @unique
-  /// The color of the note label in hex
+  /// The color of the note tag in hex
   color     Color
-  /// Whether notes with this label should be private. (default: true)
+  /// Whether notes with this tag should be private. (default: true)
   isPrivate Boolean  @default(true)
 
-  /// The notes with this label
+  /// The notes with this tag
   notes Note[]
 }
 
@@ -107,8 +107,8 @@ model Task {
 
   /// The subtasks of the task
   subtasks    Task[]           @relation("Subtask")
-  /// The labels of the task 
-  labels      TaskLabel[]
+  /// The tags of the task 
+  tags        TaskTag[]
   /// The plugin datas of the task
   pluginDatas TaskPluginData[]
 }
@@ -124,21 +124,21 @@ enum TaskStatus {
   CANCELED
 }
 
-/// A label that can be applied to a task.
-model TaskLabel {
-  /// The id of the task label
+/// A tag that can be applied to a task.
+model TaskTag {
+  /// The id of the task tag
   id        Int      @id @default(autoincrement())
-  /// The date and time of creation of the task label
+  /// The date and time of creation of the task tag
   createdAt DateTime @default(now())
-  /// The date and time the task label was last updated
+  /// The date and time the task tag was last updated
   updatedAt DateTime @updatedAt
-  /// The name of the task label
+  /// The name of the task tag
   name      String
-  /// The slug (i.e. the url-safe version) of the task label name
+  /// The slug (i.e. the url-safe version) of the task tag name
   slug      String   @unique
-  /// The color of the task label
+  /// The color of the task tag
   color     Color
-  /// Whether tasks with this label should be private. (default: true)
+  /// Whether tasks with this tag should be private. (default: true)
   isPrivate Boolean  @default(true)
 
   tasks Task[]
@@ -146,7 +146,7 @@ model TaskLabel {
 
 /// The data required by a plugin to be linked to a task.
 model TaskPluginData {
-  /// The id of the task label
+  /// The id of the task plugin data
   id         Int      @id @default(autoincrement())
   /// The date and time of creation of the task plugin data
   createdAt  DateTime @default(now())
@@ -168,7 +168,7 @@ model TaskPluginData {
 
 /// The data a plugin links to an item.
 model ItemPluginData {
-  /// The id of the item label
+  /// The id of the item plugin data
   id         Int      @id @default(autoincrement())
   /// The date and time of creation of the item plugin data
   createdAt  DateTime @default(now())

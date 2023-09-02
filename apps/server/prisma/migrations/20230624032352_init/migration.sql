@@ -29,7 +29,7 @@ CREATE TABLE "Note" (
 );
 
 -- CreateTable
-CREATE TABLE "NoteLabel" (
+CREATE TABLE "NoteTag" (
     "id" SERIAL NOT NULL,
     "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
     "updatedAt" TIMESTAMP(3) NOT NULL,
@@ -38,7 +38,7 @@ CREATE TABLE "NoteLabel" (
     "color" "Color" NOT NULL,
     "isPrivate" BOOLEAN NOT NULL DEFAULT true,
 
-    CONSTRAINT "NoteLabel_pkey" PRIMARY KEY ("id")
+    CONSTRAINT "NoteTag_pkey" PRIMARY KEY ("id")
 );
 
 -- CreateTable
@@ -59,7 +59,7 @@ CREATE TABLE "Task" (
 );
 
 -- CreateTable
-CREATE TABLE "TaskLabel" (
+CREATE TABLE "TaskTag" (
     "id" SERIAL NOT NULL,
     "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
     "updatedAt" TIMESTAMP(3) NOT NULL,
@@ -68,7 +68,7 @@ CREATE TABLE "TaskLabel" (
     "color" "Color" NOT NULL,
     "isPrivate" BOOLEAN NOT NULL DEFAULT true,
 
-    CONSTRAINT "TaskLabel_pkey" PRIMARY KEY ("id")
+    CONSTRAINT "TaskTag_pkey" PRIMARY KEY ("id")
 );
 
 -- CreateTable
@@ -166,13 +166,13 @@ CREATE TABLE "_DayToRoutine" (
 );
 
 -- CreateTable
-CREATE TABLE "_NoteToNoteLabel" (
+CREATE TABLE "_NoteToNoteTag" (
     "A" INTEGER NOT NULL,
     "B" INTEGER NOT NULL
 );
 
 -- CreateTable
-CREATE TABLE "_TaskToTaskLabel" (
+CREATE TABLE "_TaskToTaskTag" (
     "A" INTEGER NOT NULL,
     "B" INTEGER NOT NULL
 );
@@ -181,10 +181,10 @@ CREATE TABLE "_TaskToTaskLabel" (
 CREATE UNIQUE INDEX "Note_slug_key" ON "Note"("slug");
 
 -- CreateIndex
-CREATE UNIQUE INDEX "NoteLabel_slug_key" ON "NoteLabel"("slug");
+CREATE UNIQUE INDEX "NoteTag_slug_key" ON "NoteTag"("slug");
 
 -- CreateIndex
-CREATE UNIQUE INDEX "TaskLabel_slug_key" ON "TaskLabel"("slug");
+CREATE UNIQUE INDEX "TaskTag_slug_key" ON "TaskTag"("slug");
 
 -- CreateIndex
 CREATE UNIQUE INDEX "List_slug_key" ON "List"("slug");
@@ -199,16 +199,16 @@ CREATE UNIQUE INDEX "_DayToRoutine_AB_unique" ON "_DayToRoutine"("A", "B");
 CREATE INDEX "_DayToRoutine_B_index" ON "_DayToRoutine"("B");
 
 -- CreateIndex
-CREATE UNIQUE INDEX "_NoteToNoteLabel_AB_unique" ON "_NoteToNoteLabel"("A", "B");
+CREATE UNIQUE INDEX "_NoteToNoteTag_AB_unique" ON "_NoteToNoteTag"("A", "B");
 
 -- CreateIndex
-CREATE INDEX "_NoteToNoteLabel_B_index" ON "_NoteToNoteLabel"("B");
+CREATE INDEX "_NoteToNoteTag_B_index" ON "_NoteToNoteTag"("B");
 
 -- CreateIndex
-CREATE UNIQUE INDEX "_TaskToTaskLabel_AB_unique" ON "_TaskToTaskLabel"("A", "B");
+CREATE UNIQUE INDEX "_TaskToTaskTag_AB_unique" ON "_TaskToTaskTag"("A", "B");
 
 -- CreateIndex
-CREATE INDEX "_TaskToTaskLabel_B_index" ON "_TaskToTaskLabel"("B");
+CREATE INDEX "_TaskToTaskTag_B_index" ON "_TaskToTaskTag"("B");
 
 -- AddForeignKey
 ALTER TABLE "Note" ADD CONSTRAINT "Note_date_fkey" FOREIGN KEY ("date") REFERENCES "Day"("date") ON DELETE RESTRICT ON UPDATE CASCADE;
@@ -238,13 +238,13 @@ ALTER TABLE "_DayToRoutine" ADD CONSTRAINT "_DayToRoutine_A_fkey" FOREIGN KEY ("
 ALTER TABLE "_DayToRoutine" ADD CONSTRAINT "_DayToRoutine_B_fkey" FOREIGN KEY ("B") REFERENCES "Routine"("id") ON DELETE CASCADE ON UPDATE CASCADE;
 
 -- AddForeignKey
-ALTER TABLE "_NoteToNoteLabel" ADD CONSTRAINT "_NoteToNoteLabel_A_fkey" FOREIGN KEY ("A") REFERENCES "Note"("id") ON DELETE CASCADE ON UPDATE CASCADE;
+ALTER TABLE "_NoteToNoteTag" ADD CONSTRAINT "_NoteToNoteTag_A_fkey" FOREIGN KEY ("A") REFERENCES "Note"("id") ON DELETE CASCADE ON UPDATE CASCADE;
 
 -- AddForeignKey
-ALTER TABLE "_NoteToNoteLabel" ADD CONSTRAINT "_NoteToNoteLabel_B_fkey" FOREIGN KEY ("B") REFERENCES "NoteLabel"("id") ON DELETE CASCADE ON UPDATE CASCADE;
+ALTER TABLE "_NoteToNoteTag" ADD CONSTRAINT "_NoteToNoteTag_B_fkey" FOREIGN KEY ("B") REFERENCES "NoteTag"("id") ON DELETE CASCADE ON UPDATE CASCADE;
 
 -- AddForeignKey
-ALTER TABLE "_TaskToTaskLabel" ADD CONSTRAINT "_TaskToTaskLabel_A_fkey" FOREIGN KEY ("A") REFERENCES "Task"("id") ON DELETE CASCADE ON UPDATE CASCADE;
+ALTER TABLE "_TaskToTaskTag" ADD CONSTRAINT "_TaskToTaskTag_A_fkey" FOREIGN KEY ("A") REFERENCES "Task"("id") ON DELETE CASCADE ON UPDATE CASCADE;
 
 -- AddForeignKey
-ALTER TABLE "_TaskToTaskLabel" ADD CONSTRAINT "_TaskToTaskLabel_B_fkey" FOREIGN KEY ("B") REFERENCES "TaskLabel"("id") ON DELETE CASCADE ON UPDATE CASCADE;
+ALTER TABLE "_TaskToTaskTag" ADD CONSTRAINT "_TaskToTaskTag_B_fkey" FOREIGN KEY ("B") REFERENCES "TaskTag"("id") ON DELETE CASCADE ON UPDATE CASCADE;

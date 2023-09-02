@@ -73,7 +73,7 @@ export const Days = (props: DaysProps) => {
   }, [loadPreviousAndStayAt, shouldLoadNext]);
 
   return (
-    <div ref={days} className="flex h-full overflow-x-scroll pr-3 pt-3">
+    <div ref={days} className="no-scrollbar flex h-full overflow-x-scroll pr-3 pt-3">
       {data.days.edges.map((edge) => (
         <div key={edge.cursor} className="flex-1">
           <Day day={edge.node} />
