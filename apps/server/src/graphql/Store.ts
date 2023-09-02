@@ -193,6 +193,19 @@ builder.mutationField("installPlugin", (t) =>
         );
       }
 
+      if (newPluginJson.slug.includes("_")) {
+        throw new GraphQLError(
+          `The plugin slug "${newPluginJson.slug}" is invalid. Plugin slugs cannot contain underscores.`,
+          {
+            extensions: {
+              code: "PLUGIN_SLUG_INVALID",
+              userFriendlyMessage:
+                "There is a problem with the plugin you are trying to install (Err: PLUGIN_SLUG_INVALID). Please contact the plugin author for more information.",
+            },
+          }
+        );
+      }
+
       if (newPluginJson.server) {
         // this will throw GraphQLErrors if there are problems with the plugin installation process
         await installServerPlugin({
