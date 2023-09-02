@@ -3,6 +3,7 @@ import { ItemCard_item$key } from "@flowdev/web/relay/__generated__/ItemCard_ite
 import { ItemCardDetails_item$key } from "@flowdev/web/relay/__generated__/ItemCardDetails_item.graphql";
 import { ItemCardActions_item$key } from "@flowdev/web/relay/__generated__/ItemCardActions_item.graphql";
 import { DurationBadge } from "./Badges";
+import { ItemTitle } from "./ItemTitle";
 
 type ItemCardProps = {
   item: ItemCard_item$key;
@@ -14,6 +15,7 @@ export const ItemCard = (props: ItemCardProps) => {
       fragment ItemCard_item on Item {
         title
         durationInMinutes
+        ...ItemTitle_item
         ...ItemCardDetails_item
         ...ItemCardActions_item
       }
@@ -24,7 +26,7 @@ export const ItemCard = (props: ItemCardProps) => {
   return (
     <div className="bg-background-50 group flex cursor-pointer flex-col gap-1 rounded-lg p-3 shadow-sm hover:shadow-md">
       <div className="flex gap-1">
-        <div>{item.title}</div>
+        <ItemTitle item={item} />
         {item.durationInMinutes && <DurationBadge durationInMinutes={item.durationInMinutes} />}
       </div>
       <ItemCardDetails item={item} />

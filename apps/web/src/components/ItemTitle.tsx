@@ -1,35 +1,33 @@
-import { graphql, useFragment, useMutation } from "@flowdev/relay";
-import { useEditor, EditorContent, Editor } from "@tiptap/react";
-import { TaskTitle_task$key } from "@flowdev/web/relay/__generated__/TaskTitle_task.graphql";
-import { TaskTitleUpdateTaskTitleMutation } from "../relay/__generated__/TaskTitleUpdateTaskTitleMutation.graphql";
+import { useCallback, useEffect, useRef, useState } from "react";
+import { Editor, EditorContent, useEditor } from "@tiptap/react";
 import { Document } from "@tiptap/extension-document";
 import { Paragraph } from "@tiptap/extension-paragraph";
 import { Text } from "@tiptap/extension-text";
 import { Mention } from "@tiptap/extension-mention";
 import { History } from "@tiptap/extension-history";
-import { Extension } from "@tiptap/core";
-import { Plugin, PluginKey } from "prosemirror-state";
-import "./TaskTitle.scss";
-import { useCallback, useEffect, useRef, useState } from "react";
+import { CatchNewLines } from "./TaskTitle";
+import { graphql, useFragment, useMutation } from "@flowdev/relay";
+import { ItemTitle_item$key } from "../relay/__generated__/ItemTitle_item.graphql";
+import { ItemTitleUpdateItemTitleMutation } from "../relay/__generated__/ItemTitleUpdateItemTitleMutation.graphql";
 
-type TaskTitleProps = {
-  task: TaskTitle_task$key;
+type ItemTitleProps = {
+  item: ItemTitle_item$key;
 };
 
-export const TaskTitle = (props: TaskTitleProps) => {
-  const task = useFragment(
+export const ItemTitle = (props: ItemTitleProps) => {
+  const item = useFragment(
     graphql`
-      fragment TaskTitle_task on Task {
+      fragment ItemTitle_item on Item {
         id
         title
       }
     `,
-    props.task
+    props.item
   );
 
-  const [updateTask] = useMutation<TaskTitleUpdateTaskTitleMutation>(graphql`
-    mutation TaskTitleUpdateTaskTitleMutation($input: MutationUpdateTaskInput!) {
-      updateTask(input: $input) {
+  const [updateItem] = useMutation<ItemTitleUpdateItemTitleMutation>(graphql`
+    mutation ItemTitleUpdateItemTitleMutation($input: MutationUpdateItemInput!) {
+      updateItem(input: $input) {
         id
         title
       }
@@ -37,35 +35,29 @@ export const TaskTitle = (props: TaskTitleProps) => {
   `);
 
   const handleSave = (value: string) => {
-    console.log("saving", task.id);
-    updateTask({
-      variables: { input: { id: task.id, title: value } },
+    console.log("saving", item.id);
+    updateItem({
+      variables: { input: { id: item.id, title: value } },
       optimisticResponse: {
-        updateTask: {
-          id: task.id,
+        updateItem: {
+          id: item.id,
           title: value,
         },
       },
     });
   };
 
-  return <TaskTitleInput initialValue={task.title} onSave={handleSave} />;
+  return <ItemTitleInput initialValue={item.title} onSave={handleSave} />;
 };
 
-type TaskTitleInputProps = {
-  initialValue?: string;
-  /** Whether the input is used to create a task or not */
+type ItemTitleInputProps = {
   toCreate?: boolean;
-  /**
-   * Triggered when the user:
-   * - clicks outside the input
-   * - OR, presses enter
-   */
-  onSave?: (value: string) => void;
+  initialValue?: string;
+  onSave?: (newValue: string) => void;
   onCancel?: () => void;
 };
 
-export const TaskTitleInput = (props: TaskTitleInputProps) => {
+export const ItemTitleInput = (props: ItemTitleInputProps) => {
   const editorRef = useRef<Editor | null>(null);
   const [editable, setEditable] = useState(props.toCreate ?? false);
 
@@ -132,24 +124,3 @@ export const TaskTitleInput = (props: TaskTitleInputProps) => {
     />
   );
 };
-
-export const CatchNewLines = (onNewLine?: () => void) =>
-  Extension.create({
-    name: "no_new_line",
-
-    addProseMirrorPlugins() {
-      return [
-        new Plugin({
-          key: new PluginKey("eventHandler"),
-          props: {
-            handleKeyDown: (_view, event) => {
-              if (event.key === "Enter") {
-                onNewLine?.();
-                return true;
-              }
-            },
-          },
-        }),
-      ];
-    },
-  });

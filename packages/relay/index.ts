@@ -35,6 +35,7 @@ export {
   usePaginationFragment,
   useRefetchableFragment,
   useLazyLoadQuery,
+  ConnectionHandler,
 } from "react-relay";
 export { type RecordSourceSelectorProxy } from "relay-runtime";
 

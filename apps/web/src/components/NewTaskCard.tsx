@@ -37,22 +37,22 @@ export const NewTaskCard = (props: Props) => {
           status: "TODO",
         },
       },
-      optimisticResponse: {
-        createTask: {
-          __typename: "Task",
-          id: `Task_${Math.random()}`,
-          title,
-          createdAt: new Date().toISOString(),
-          status: "TODO",
-          canBeSuperdone: false,
-          completedAt: null,
-          date: props.date,
-          item: null,
-          durationInMinutes: null,
-          labels: [],
-          pluginDatas: [],
-        },
-      },
+      // optimisticResponse: {
+      //   createTask: {
+      //     __typename: "Task",
+      //     id: `Task_${Math.random()}`,
+      //     title,
+      //     createdAt: new Date().toISOString(),
+      //     status: "TODO",
+      //     canBeSuperdone: false,
+      //     completedAt: null,
+      //     date: props.date,
+      //     item: null,
+      //     durationInMinutes: null,
+      //     labels: [],
+      //     pluginDatas: [],
+      //   },
+      // },
       // TODO: figure out how to do optimistic updates such that setLinkedRecords is reverted (when the acutal data comes) without causing an error
       // optimisticUpdater: (store) => {
       //   const day = store.get(`Day_${props.date}`);
@@ -72,7 +72,7 @@ export const NewTaskCard = (props: Props) => {
   };
 
   return (
-    <div className="bg-background-50 group flex cursor-pointer flex-col gap-1 rounded-md p-3">
+    <div className="bg-background-50 group flex cursor-pointer flex-col gap-1 rounded-md p-3 shadow-sm hover:shadow-md">
       <TaskTitleInput toCreate onSave={handleSave} onCancel={props.onCancel} />
       {/* These buttons are just for aesthetics */}
       <div className="flex gap-2">

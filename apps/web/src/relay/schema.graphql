@@ -188,6 +188,9 @@ type Mutation {
   """Create a new task."""
   createTask(input: MutationCreateTaskInput!): Task!
 
+  """Delete an item."""
+  deleteItem(id: ID!): Item!
+
   """
   Dismiss an item from the inbox. This effectively sets `inboxPoints = null` for the item.
   """
@@ -221,6 +224,9 @@ type Mutation {
 
   """Uninstall a plugin."""
   uninstallPlugin(input: MutationUninstallPluginInput!): [PluginInstallation!]!
+
+  """Update an item."""
+  updateItem(input: MutationUpdateItemInput!): Item!
   updateRoutineSteps(input: MutationUpdateRoutineStepsInput!): Routine!
 
   """Update a task."""
@@ -278,6 +284,7 @@ input MutationCompleteRoutineInput {
 input MutationCreateItemInput {
   color: Color
   durationInMinutes: Int
+  inboxPoints: Int
   isAllDay: Boolean
 
   """
@@ -377,6 +384,24 @@ input MutationSetTimezoneInput {
 
 input MutationUninstallPluginInput {
   slug: String!
+}
+
+input MutationUpdateItemInput {
+  color: Color
+  durationInMinutes: Int
+  id: ID!
+  isAllDay: Boolean
+
+  """
+  If set to true, it will return items where `isRelevant` is true.
+  
+  `isRelevant` is used in the List component to only show relevant items. If the item becomes irrelevant (e.g. because the trello task was already completed), you can update the item to make this `isRelevant = false`
+  """
+  isRelevant: Boolean
+  listId: ID
+  pluginDatas: [ItemPluginDataInput!]
+  scheduledAt: DateTime
+  title: String
 }
 
 input MutationUpdateRoutineStepsInput {
