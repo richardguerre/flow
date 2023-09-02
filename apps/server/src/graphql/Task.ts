@@ -22,7 +22,7 @@ export const TaskType = builder.prismaNode("Task", {
       description: "The length of time the task is expected to take.",
       select: { item: { select: { durationInMinutes: true } } },
       resolve: (task) => {
-        return task.item?.durationInMinutes ?? task.durationInMinutes;
+        return task.durationInMinutes ?? task.item?.durationInMinutes;
       },
     }),
     labels: t.relation("labels"),
