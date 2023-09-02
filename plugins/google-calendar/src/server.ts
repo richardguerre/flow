@@ -117,12 +117,6 @@ export default definePlugin("google-calendar", (opts) => {
         const accountsTokens = await getTokensFromStore();
         const data: CalendarsData = [];
         for (const account of Object.keys(accountsTokens)) {
-          // const calendarClient = await getCalendarClient({
-          //   account,
-          //   accountsTokens,
-          // });
-          // const calendars = await calendarClient.calendarList.list();
-          // fetch equivalent of the above
           const tokens = await getRefreshedTokens({ account, accountsTokens });
           const calendars = await fetch(
             "https://www.googleapis.com/calendar/v3/users/me/calendarList",
@@ -158,14 +152,6 @@ export default definePlugin("google-calendar", (opts) => {
 
         const data: CalendarsData = [];
         for (const account of Object.keys(accountsTokens)) {
-          // const calendarClient = await getCalendarClient({
-          //   account,
-          //   accountsTokens: accountsTokens,
-          // });
-          // const allCalendarsInAccount = await calendarClient.calendarList
-          //   .list()
-          //   .then((res) => res.data.items);
-          // fetch equivalent of the above
           const tokens = await getRefreshedTokens({ account, accountsTokens });
           const allCalendarsInAccount = await fetch(
             "https://www.googleapis.com/calendar/v3/users/me/calendarList",
@@ -188,15 +174,6 @@ export default definePlugin("google-calendar", (opts) => {
             await opts.pgBoss.send(GET_EVENTS_JOB_NAME, { calendarId, days: 7 });
 
             // set up webhook
-            // const res = await calendarClient.events.watch({
-            //   calendarId,
-            //   requestBody: {
-            //     id: EVENTS_WEBHOOK_CHANNEL_ID,
-            //     type: "web_hook",
-            //     address: `${opts.serverOrigin}/api/plugin/${opts.pluginSlug}/events/webhook`,
-            //   },
-            // });
-            // fetch equivalent of the above
             const res = await fetch(
               `https://www.googleapis.com/calendar/v3/calendars/${calendarId}/events/watch`,
               {
@@ -233,13 +210,6 @@ export default definePlugin("google-calendar", (opts) => {
             // remove webhook
             const calendarConnectInfo = connectedCalendarsMap.get(calendar.id);
             if (!calendarConnectInfo) continue;
-            // await calendarClient.channels.stop({
-            //   requestBody: {
-            //     id: calendarConnectInfo.channelId,
-            //     resourceId: calendarConnectInfo.resourceId,
-            //   },
-            // });
-            // fetch equivalent of the above
             await fetch(`https://www.googleapis.com/calendar/v3/channels/stop`, {
               method: "POST",
               headers: {
@@ -385,31 +355,12 @@ export default definePlugin("google-calendar", (opts) => {
         const jobData = job.data as { calendarId: string; days?: number };
         const accountsTokens = await getTokensFromStore();
         for (const account of Object.keys(accountsTokens)) {
-          // const calendarClient = await getCalendarClient({
-          //   account,
-          //   accountsTokens,
-          // });
-          // const calendar = await calendarClient.calendarList.get({
-          //   calendarId: jobData.calendarId,
-          // });
-          // fetch equivalent of the above
           const tokens = await getRefreshedTokens({ account, accountsTokens });
           const calendar = await fetch(
             `https://www.googleapis.com/calendar/v3/calendars/${jobData.calendarId}`,
             { headers: { Authorization: `Bearer ${tokens.access_token}` } }
           ).then((res) => res.json() as calendar_v3.Schema$CalendarListEntry);
-          // get events in the next jobData.days days, start from the start of today
-          // const events = await calendarClient.events.list({
-          //   calendarId: jobData.calendarId,
-          //   timeMin: opts.dayjs().startOf("day").toISOString(),
-          //   timeMax: opts
-          //     .dayjs()
-          //     .add(jobData.days ?? 7, "day")
-          //     .toISOString(),
-          //   singleEvents: true,
-          //   orderBy: "startTime",
-          // });
-          // fetch equivalent of the above
+
           const events = await fetch(
             `https://www.googleapis.com/calendar/v3/calendars/${
               jobData.calendarId
@@ -449,22 +400,12 @@ export default definePlugin("google-calendar", (opts) => {
           console.log("❌ Could not find calendar to process", jobData.calendarId);
           return;
         }
-        // const calendarClient = await getCalendarClient({ account: calendarToProcces.account });
-        // const calendar = await calendarClient.calendarList.get({ calendarId: jobData.calendarId });
-        // fetch equivalent of the above
         const tokens = await getRefreshedTokens({ account: calendarToProcces.account });
         const calendar = await fetch(
           `https://www.googleapis.com/calendar/v3/calendars/${jobData.calendarId}`,
           { headers: { Authorization: `Bearer ${tokens.access_token}` } }
         ).then((res) => res.json() as calendar_v3.Schema$CalendarListEntry);
-        // get events updated since last sync or in the last 10 minutes if this is the first sync
-        // const events = await calendarClient.events.list({
-        //   calendarId: jobData.calendarId,
-        //   updatedMin: opts.dayjs(calendarToProcces.lastSyncedAt).toISOString(),
-        //   singleEvents: true,
-        //   orderBy: "updated",
-        // });
-        // fetch equivalent of the above
+
         const events = await fetch(
           `https://www.googleapis.com/calendar/v3/calendars/${
             jobData.calendarId
