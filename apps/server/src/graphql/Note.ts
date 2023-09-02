@@ -1,7 +1,7 @@
 import { Color } from "@prisma/client";
 import { prisma } from "../utils/prisma";
 import { builder } from "./builder";
-import { CreateNoteLabelInputType } from "./NoteLabel";
+import { CreateNoteLabelInputType } from "./NoteTag";
 
 export const NoteType = builder.prismaNode("Note", {
   id: { field: "slug" },
@@ -12,7 +12,7 @@ export const NoteType = builder.prismaNode("Note", {
     slug: t.exposeString("slug"),
     title: t.exposeString("title"),
     content: t.exposeString("content"),
-    labels: t.relation("labels"),
+    labels: t.relation("tags"),
   }),
 });
 
@@ -64,7 +64,7 @@ builder.mutationField("createOrUpdateNote", (t) =>
     },
     resolve: (query, _, args) => {
       const date = args.input.date;
-      const labels = {
+      const tags = {
         connect: args.input.labels?.map((globalId) => ({ id: parseInt(globalId.id) })) ?? [],
         create:
           args.input.newLabels?.map((label) => ({
@@ -80,8 +80,8 @@ builder.mutationField("createOrUpdateNote", (t) =>
           day: { connectOrCreate: { where: { date }, create: { date } } },
           title: args.input.title,
           content: args.input.content,
-          labels: {
-            ...labels,
+          tags: {
+            ...tags,
             disconnect:
               args.input.removedLabels?.map((globalId) => ({
                 id: parseInt(globalId.id),
@@ -93,7 +93,7 @@ builder.mutationField("createOrUpdateNote", (t) =>
           slug: args.input.slug,
           title: args.input.title,
           content: args.input.content,
-          labels,
+          tags,
         },
       });
     },

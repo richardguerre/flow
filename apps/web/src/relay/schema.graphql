@@ -469,8 +469,8 @@ type Note implements Node {
   date: Date!
   id: ID!
 
-  """The labels of the note"""
-  labels: [NoteLabel!]!
+  """The tags of the note"""
+  labels: [NoteTag!]!
 
   """
   The slug of the note which needs to be unique.\nIt can be used to retrieve the note and update it.
@@ -482,41 +482,41 @@ type Note implements Node {
   updatedAt: DateTime!
 }
 
-"""A label that can be applied to a note."""
-type NoteLabel implements Node {
-  color: Color!
-  createdAt: DateTime!
-  id: ID!
-
-  """Whether notes with this label should be private. (default: true)"""
-  isPrivate: Boolean!
-
-  """The name of the note label"""
-  name: String!
-
-  """The notes with this label"""
-  notes(after: ID, before: ID, first: Int, last: Int): NoteLabelNotesConnection!
-
-  """The slug (i.e. the url-safe version) of the note label name"""
-  slug: String!
-}
-
-type NoteLabelNotesConnection {
-  edges: [NoteLabelNotesConnectionEdge!]!
-  pageInfo: PageInfo!
-}
-
-type NoteLabelNotesConnectionEdge {
-  cursor: ID!
-  node: Note!
-}
-
 input NoteLabelWhereInput {
   """Filter by whether the label is for private use."""
   isPrivate: Boolean
 
   """Filter by name. Case insensitive."""
   nameIsLike: String
+}
+
+"""A tag that can be applied to a note."""
+type NoteTag implements Node {
+  color: Color!
+  createdAt: DateTime!
+  id: ID!
+
+  """Whether notes with this tag should be private. (default: true)"""
+  isPrivate: Boolean!
+
+  """The name of the note tag"""
+  name: String!
+
+  """The notes with this tag"""
+  notes(after: ID, before: ID, first: Int, last: Int): NoteTagNotesConnection!
+
+  """The slug (i.e. the url-safe version) of the note tag name"""
+  slug: String!
+}
+
+type NoteTagNotesConnection {
+  edges: [NoteTagNotesConnectionEdge!]!
+  pageInfo: PageInfo!
+}
+
+type NoteTagNotesConnectionEdge {
+  cursor: ID!
+  node: Note!
 }
 
 type PageInfo {
@@ -656,7 +656,7 @@ type QueryNoteLabelsConnection {
 
 type QueryNoteLabelsConnectionEdge {
   cursor: ID!
-  node: NoteLabel!
+  node: NoteTag!
 }
 
 input QueryStoreItemsInput {
@@ -671,7 +671,7 @@ type QueryTaskLabelsConnection {
 
 type QueryTaskLabelsConnectionEdge {
   cursor: ID!
-  node: TaskLabel!
+  node: TaskTag!
 }
 
 enum RepetitionPattern {
@@ -763,8 +763,8 @@ type Task implements Node {
   """The item linked to the task"""
   item: Item
 
-  """The labels of the task """
-  labels: [TaskLabel!]!
+  """The tags of the task """
+  labels: [TaskTag!]!
 
   """The plugin datas of the task"""
   pluginDatas: [TaskPluginData!]!
@@ -772,33 +772,6 @@ type Task implements Node {
 
   """The title of the task in text or HTML."""
   title: String!
-}
-
-"""A label that can be applied to a task."""
-type TaskLabel implements Node {
-  color: Color!
-  createdAt: DateTime!
-  id: ID!
-
-  """Whether tasks with this label should be private. (default: true)"""
-  isPrivate: Boolean!
-
-  """The name of the task label"""
-  name: String!
-
-  """The slug (i.e. the url-safe version) of the task label name"""
-  slug: String!
-  tasks(after: ID, before: ID, first: Int, last: Int): TaskLabelTasksConnection!
-}
-
-type TaskLabelTasksConnection {
-  edges: [TaskLabelTasksConnectionEdge!]!
-  pageInfo: PageInfo!
-}
-
-type TaskLabelTasksConnectionEdge {
-  cursor: ID!
-  node: Task!
 }
 
 input TaskLabelWhereInput {
@@ -830,6 +803,33 @@ enum TaskStatus {
 
   """When the task is planned or in progress."""
   TODO
+}
+
+"""A tag that can be applied to a task."""
+type TaskTag implements Node {
+  color: Color!
+  createdAt: DateTime!
+  id: ID!
+
+  """Whether tasks with this tag should be private. (default: true)"""
+  isPrivate: Boolean!
+
+  """The name of the task tag"""
+  name: String!
+
+  """The slug (i.e. the url-safe version) of the task tag name"""
+  slug: String!
+  tasks(after: ID, before: ID, first: Int, last: Int): TaskTagTasksConnection!
+}
+
+type TaskTagTasksConnection {
+  edges: [TaskTagTasksConnectionEdge!]!
+  pageInfo: PageInfo!
+}
+
+type TaskTagTasksConnectionEdge {
+  cursor: ID!
+  node: Task!
 }
 
 """

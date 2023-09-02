@@ -2,7 +2,7 @@ import { prisma } from "../utils/prisma";
 import { builder } from "./builder";
 import { ColorEnum } from "./Color";
 
-export const TaskLabelType = builder.prismaNode("TaskLabel", {
+export const TaskLabelType = builder.prismaNode("TaskTag", {
   id: { field: "id" },
   fields: (t) => ({
     createdAt: t.expose("createdAt", { type: "DateTime" }),
@@ -18,7 +18,7 @@ export const TaskLabelType = builder.prismaNode("TaskLabel", {
 
 builder.queryField("taskLabels", (t) =>
   t.prismaConnection({
-    type: "TaskLabel",
+    type: "TaskTag",
     cursor: "id",
     description:
       "Get all task labels ordered by usage in descending order. `before` and `after` cursors are ignored, and `first` and `last` act the same and are limited to 100.",
@@ -31,7 +31,7 @@ builder.queryField("taskLabels", (t) =>
     },
     resolve: (query, _, args) => {
       const where = args.where;
-      return prisma.taskLabel.findMany({
+      return prisma.taskTag.findMany({
         ...query,
         where: {
           ...(where?.nameIsLike

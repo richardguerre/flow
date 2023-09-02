@@ -2,7 +2,7 @@ import { prisma } from "../utils/prisma";
 import { builder } from "./builder";
 import { ColorEnum } from "./Color";
 
-export const NoteLabelType = builder.prismaNode("NoteLabel", {
+export const NoteLabelType = builder.prismaNode("NoteTag", {
   id: { field: "id" },
   fields: (t) => ({
     createdAt: t.expose("createdAt", { type: "DateTime" }),
@@ -18,7 +18,7 @@ export const NoteLabelType = builder.prismaNode("NoteLabel", {
 
 builder.queryField("noteLabels", (t) =>
   t.prismaConnection({
-    type: "NoteLabel",
+    type: "NoteTag",
     cursor: "id",
     description:
       "Get all note labels ordered by usage in descending order. `before` and `after` cursors are ignored, and `first` and `last` act the same and are limited to 100.",
@@ -31,7 +31,7 @@ builder.queryField("noteLabels", (t) =>
     },
     resolve: (query, _, args) => {
       const where = args.where;
-      return prisma.noteLabel.findMany({
+      return prisma.noteTag.findMany({
         ...query,
         where: {
           ...(where?.nameIsLike
