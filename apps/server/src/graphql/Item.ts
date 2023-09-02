@@ -4,6 +4,7 @@ import { startOfDayScheduledAt, endOfDayScheduledAt } from "../utils/getDays";
 import { InputFieldRef, InputShapeFromFields } from "@pothos/core";
 import { ColorEnum } from "./Color";
 import { ItemPluginDataInput } from "./ItemPluginData";
+import type { Prisma } from "@prisma/client";
 
 // -------------- Item types --------------
 
@@ -57,7 +58,7 @@ export const createItemWhere = (
     scheduledFor: InputFieldRef<Date | null | undefined, "InputObject">;
     minInboxPoints: InputFieldRef<number | null | undefined, "InputObject">;
   }>
-) => {
+): Prisma.ItemWhereInput => {
   const scheduledFor = where.scheduledFor;
   return {
     isRelevant: where.isRelevant ?? true,
@@ -69,7 +70,9 @@ export const createItemWhere = (
           },
         }
       : { scheduledAt: null }),
-    ...(where.minInboxPoints ? { inboxPoints: { gte: where.minInboxPoints } } : {}),
+    ...(typeof where.minInboxPoints === "number"
+      ? { inboxPoints: { gte: where.minInboxPoints } }
+      : {}),
   };
 };
 
