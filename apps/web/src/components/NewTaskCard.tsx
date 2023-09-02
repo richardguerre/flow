@@ -52,16 +52,10 @@ export const NewTaskCard = (props: Props) => {
       <TaskTitleInput toCreate onSave={handleSave} onCancel={props.onCancel} />
       {/* These buttons are just for aesthetics */}
       <div className="flex gap-2">
-        <button
-          key="done"
-          className="bg-background-200 text-foreground-700 hover:bg-background-300 active:bg-background-300 flex h-6 w-6 items-center justify-center rounded-full bg-opacity-50 text-sm hover:bg-opacity-70 active:bg-opacity-100 "
-        >
+        <button className="bg-background-200 text-foreground-700 hover:bg-background-300 active:bg-background-300 flex h-6 w-6 items-center justify-center rounded-full bg-opacity-50 text-sm hover:bg-opacity-70 active:bg-opacity-100 ">
           <BsCheck />
         </button>
-        <button
-          key="cancel"
-          className="bg-background-200 text-foreground-700 hover:bg-background-300 active:bg-background-300 hidden h-6 w-6 items-center justify-center rounded-full bg-opacity-50 text-sm hover:bg-opacity-70 active:bg-opacity-100 group-hover:flex "
-        >
+        <button className="bg-background-200 text-foreground-700 hover:bg-background-300 active:bg-background-300 hidden h-6 w-6 items-center justify-center rounded-full bg-opacity-50 text-sm hover:bg-opacity-70 active:bg-opacity-100 group-hover:flex ">
           <BsX size={20} />
         </button>
       </div>

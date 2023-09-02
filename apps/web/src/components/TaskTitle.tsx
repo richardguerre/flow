@@ -98,7 +98,6 @@ export const TaskTitleInput = (props: TaskTitleInputProps) => {
       Paragraph,
       Text,
       CatchNewLines(() => {
-        if (props.toCreate) return;
         handleSave();
       }),
       History,
@@ -110,7 +109,6 @@ export const TaskTitleInput = (props: TaskTitleInputProps) => {
     ],
     content: props.initialValue ?? "",
     onBlur: handleSave,
-    autofocus: props.toCreate ?? false,
   });
 
   const handleClick = () => {
@@ -119,6 +117,11 @@ export const TaskTitleInput = (props: TaskTitleInputProps) => {
 
   useEffect(() => {
     editorRef.current?.setEditable(editable);
+    if (editable) {
+      // setTimeout(() => {
+      editorRef.current?.commands.focus("end");
+      // }, 1000);
+    }
   }, [editable, editorRef.current]);
 
   return (
