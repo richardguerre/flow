@@ -1,5 +1,5 @@
 import { definePlugin } from "@flowdev/plugin/server";
-import { calendar, type calendar_v3, auth } from "@googleapis/calendar";
+import type { calendar_v3 } from "@googleapis/calendar"; // import type only to avoid bundling the library in the plugin which contains unsafe code (process.env access, etc.)
 
 const ACCOUNT_TOKENS_STORE_KEY = "account-tokens";
 const CONNECTED_CALENDARS_KEY = "connected-calendars";
@@ -30,7 +30,7 @@ export default definePlugin("google-calendar", (opts) => {
    * @example
    * const tokens = await getTokens(params);
    */
-  const refreshTokens = async (params: GetTokenParams): Promise<Tokens> => {
+  const getRefreshedTokens = async (params: GetTokenParams): Promise<Tokens> => {
     const accountsTokens = params.accountsTokens ?? (await getTokensFromStore());
     const tokens = accountsTokens[params.account];
     if (!tokens) {
@@ -64,16 +64,6 @@ export default definePlugin("google-calendar", (opts) => {
       return newTokens;
     }
     return tokens;
-  };
-
-  const getCalendarClient = async (params: GetCalendarClientParams) => {
-    const tokens = await refreshTokens(params);
-    const authClient = new auth.OAuth2();
-    authClient.setCredentials(tokens);
-    return calendar({
-      version: "v3",
-      auth: authClient,
-    });
   };
 
   return {
@@ -127,18 +117,27 @@ export default definePlugin("google-calendar", (opts) => {
         const accountsTokens = await getTokensFromStore();
         const data: CalendarsData = [];
         for (const account of Object.keys(accountsTokens)) {
-          const calendarClient = await getCalendarClient({
-            account,
-            accountsTokens,
-          });
-          const calendars = await calendarClient.calendarList.list();
+          // const calendarClient = await getCalendarClient({
+          //   account,
+          //   accountsTokens,
+          // });
+          // const calendars = await calendarClient.calendarList.list();
+          // fetch equivalent of the above
+          const tokens = await getRefreshedTokens({ account, accountsTokens });
+          const calendars = await fetch(
+            "https://www.googleapis.com/calendar/v3/users/me/calendarList",
+            { headers: { Authorization: `Bearer ${tokens.access_token}` } }
+          )
+            .then((res) => res.json() as calendar_v3.Schema$CalendarList)
+            .then((res) => res.items);
+
           const connectedCalendarsMap = await opts.store
             .getPluginItem<ConnectedCalendar[]>(CONNECTED_CALENDARS_KEY)
             .then((res) => new Set(res?.value?.map((c) => c.calendarId) ?? []));
           data.push({
             account,
             calendars:
-              calendars.data.items?.map((calendar) => ({
+              calendars?.map((calendar) => ({
                 ...calendar,
                 connected: connectedCalendarsMap.has(calendar.id ?? ""),
               })) ?? [],
@@ -159,13 +158,21 @@ export default definePlugin("google-calendar", (opts) => {
 
         const data: CalendarsData = [];
         for (const account of Object.keys(accountsTokens)) {
-          const calendarClient = await getCalendarClient({
-            account,
-            accountsTokens: accountsTokens,
-          });
-          const allCalendarsInAccount = await calendarClient.calendarList
-            .list()
-            .then((res) => res.data.items);
+          // const calendarClient = await getCalendarClient({
+          //   account,
+          //   accountsTokens: accountsTokens,
+          // });
+          // const allCalendarsInAccount = await calendarClient.calendarList
+          //   .list()
+          //   .then((res) => res.data.items);
+          // fetch equivalent of the above
+          const tokens = await getRefreshedTokens({ account, accountsTokens });
+          const allCalendarsInAccount = await fetch(
+            "https://www.googleapis.com/calendar/v3/users/me/calendarList",
+            { headers: { Authorization: `Bearer ${tokens.access_token}` } }
+          )
+            .then((res) => res.json() as calendar_v3.Schema$CalendarList)
+            .then((res) => res.items);
 
           // connect any calendar that is not already connected
           for (const calendarId of input.calendarIds) {
@@ -181,14 +188,30 @@ export default definePlugin("google-calendar", (opts) => {
             await opts.pgBoss.send(GET_EVENTS_JOB_NAME, { calendarId, days: 7 });
 
             // set up webhook
-            const res = await calendarClient.events.watch({
-              calendarId,
-              requestBody: {
-                id: EVENTS_WEBHOOK_CHANNEL_ID,
-                type: "web_hook",
-                address: `${opts.serverOrigin}/api/plugin/${opts.pluginSlug}/events/webhook`,
-              },
-            });
+            // const res = await calendarClient.events.watch({
+            //   calendarId,
+            //   requestBody: {
+            //     id: EVENTS_WEBHOOK_CHANNEL_ID,
+            //     type: "web_hook",
+            //     address: `${opts.serverOrigin}/api/plugin/${opts.pluginSlug}/events/webhook`,
+            //   },
+            // });
+            // fetch equivalent of the above
+            const res = await fetch(
+              `https://www.googleapis.com/calendar/v3/calendars/${calendarId}/events/watch`,
+              {
+                method: "POST",
+                headers: {
+                  Authorization: `Bearer ${tokens.access_token}`,
+                  "Content-Type": "application/json",
+                },
+                body: JSON.stringify({
+                  id: EVENTS_WEBHOOK_CHANNEL_ID,
+                  type: "web_hook",
+                  address: `${opts.serverOrigin}/api/plugin/${opts.pluginSlug}/events/webhook`,
+                }),
+              }
+            ).then((res) => res.json() as calendar_v3.Schema$Channel);
             console.log("✔ Set up webhook for calendar", calendarId);
 
             // add to connected calendars
@@ -196,10 +219,10 @@ export default definePlugin("google-calendar", (opts) => {
               account,
               calendarId,
               lastSyncedAt: opts.dayjs().toISOString(),
-              channelId: res.data.id ?? EVENTS_WEBHOOK_CHANNEL_ID,
-              resourceId: res.data.resourceId!,
+              channelId: res.id ?? EVENTS_WEBHOOK_CHANNEL_ID,
+              resourceId: res.resourceId!,
               // res.data.expiration is in Unix time, convert it to ISO string
-              expiresAt: opts.dayjs(res.data.expiration ?? 0).toISOString(),
+              expiresAt: opts.dayjs(res.expiration ?? 0).toISOString(),
             });
           }
 
@@ -210,11 +233,23 @@ export default definePlugin("google-calendar", (opts) => {
             // remove webhook
             const calendarConnectInfo = connectedCalendarsMap.get(calendar.id);
             if (!calendarConnectInfo) continue;
-            await calendarClient.channels.stop({
-              requestBody: {
+            // await calendarClient.channels.stop({
+            //   requestBody: {
+            //     id: calendarConnectInfo.channelId,
+            //     resourceId: calendarConnectInfo.resourceId,
+            //   },
+            // });
+            // fetch equivalent of the above
+            await fetch(`https://www.googleapis.com/calendar/v3/channels/stop`, {
+              method: "POST",
+              headers: {
+                Authorization: `Bearer ${tokens.access_token}`,
+                "Content-Type": "application/json",
+              },
+              body: JSON.stringify({
                 id: calendarConnectInfo.channelId,
                 resourceId: calendarConnectInfo.resourceId,
-              },
+              }),
             });
             console.log("✔ Removed webhook for calendar", calendar.id);
 
@@ -350,34 +385,54 @@ export default definePlugin("google-calendar", (opts) => {
         const jobData = job.data as { calendarId: string; days?: number };
         const accountsTokens = await getTokensFromStore();
         for (const account of Object.keys(accountsTokens)) {
-          const calendarClient = await getCalendarClient({
-            account,
-            accountsTokens,
-          });
-          const calendar = await calendarClient.calendarList.get({
-            calendarId: jobData.calendarId,
-          });
+          // const calendarClient = await getCalendarClient({
+          //   account,
+          //   accountsTokens,
+          // });
+          // const calendar = await calendarClient.calendarList.get({
+          //   calendarId: jobData.calendarId,
+          // });
+          // fetch equivalent of the above
+          const tokens = await getRefreshedTokens({ account, accountsTokens });
+          const calendar = await fetch(
+            `https://www.googleapis.com/calendar/v3/calendars/${jobData.calendarId}`,
+            { headers: { Authorization: `Bearer ${tokens.access_token}` } }
+          ).then((res) => res.json() as calendar_v3.Schema$CalendarListEntry);
           // get events in the next jobData.days days, start from the start of today
-          const events = await calendarClient.events.list({
-            calendarId: jobData.calendarId,
-            timeMin: opts.dayjs().startOf("day").toISOString(),
-            timeMax: opts
-              .dayjs()
-              .add(jobData.days ?? 7, "day")
-              .toISOString(),
-            singleEvents: true,
-            orderBy: "startTime",
-          });
+          // const events = await calendarClient.events.list({
+          //   calendarId: jobData.calendarId,
+          //   timeMin: opts.dayjs().startOf("day").toISOString(),
+          //   timeMax: opts
+          //     .dayjs()
+          //     .add(jobData.days ?? 7, "day")
+          //     .toISOString(),
+          //   singleEvents: true,
+          //   orderBy: "startTime",
+          // });
+          // fetch equivalent of the above
+          const events = await fetch(
+            `https://www.googleapis.com/calendar/v3/calendars/${
+              jobData.calendarId
+            }/events?timeMin=${encodeURIComponent(
+              opts.dayjs().startOf("day").toISOString()
+            )}&timeMax=${encodeURIComponent(
+              opts
+                .dayjs()
+                .add(jobData.days ?? 7, "day")
+                .toISOString()
+            )}&singleEvents=true&orderBy=startTime`,
+            { headers: { Authorization: `Bearer ${tokens.access_token}` } }
+          ).then((res) => res.json() as calendar_v3.Schema$Events);
           console.log(
-            events.data.items?.length ?? 0,
-            events.data.items?.length === 1 ? "event" : "events",
+            events.items?.length ?? 0,
+            events.items?.length === 1 ? "event" : "events",
             "to process from initial sync of calendar",
             jobData.calendarId
           );
-          for (const event of events.data.items ?? []) {
+          for (const event of events.items ?? []) {
             await opts.pgBoss.send(UPSERT_EVENT_JOB_NAME, {
               ...event,
-              calendarColor: calendar.data.backgroundColor ?? null,
+              calendarColor: calendar.backgroundColor ?? null,
             });
           }
         }
@@ -394,25 +449,40 @@ export default definePlugin("google-calendar", (opts) => {
           console.log("❌ Could not find calendar to process", jobData.calendarId);
           return;
         }
-        const calendarClient = await getCalendarClient({ account: calendarToProcces.account });
-        const calendar = await calendarClient.calendarList.get({ calendarId: jobData.calendarId });
+        // const calendarClient = await getCalendarClient({ account: calendarToProcces.account });
+        // const calendar = await calendarClient.calendarList.get({ calendarId: jobData.calendarId });
+        // fetch equivalent of the above
+        const tokens = await getRefreshedTokens({ account: calendarToProcces.account });
+        const calendar = await fetch(
+          `https://www.googleapis.com/calendar/v3/calendars/${jobData.calendarId}`,
+          { headers: { Authorization: `Bearer ${tokens.access_token}` } }
+        ).then((res) => res.json() as calendar_v3.Schema$CalendarListEntry);
         // get events updated since last sync or in the last 10 minutes if this is the first sync
-        const events = await calendarClient.events.list({
-          calendarId: jobData.calendarId,
-          updatedMin: opts.dayjs(calendarToProcces.lastSyncedAt).toISOString(),
-          singleEvents: true,
-          orderBy: "updated",
-        });
+        // const events = await calendarClient.events.list({
+        //   calendarId: jobData.calendarId,
+        //   updatedMin: opts.dayjs(calendarToProcces.lastSyncedAt).toISOString(),
+        //   singleEvents: true,
+        //   orderBy: "updated",
+        // });
+        // fetch equivalent of the above
+        const events = await fetch(
+          `https://www.googleapis.com/calendar/v3/calendars/${
+            jobData.calendarId
+          }/events?updatedMin=${encodeURIComponent(
+            opts.dayjs(calendarToProcces.lastSyncedAt).toISOString()
+          )}&singleEvents=true&orderBy=updated`,
+          { headers: { Authorization: `Bearer ${tokens.access_token}` } }
+        ).then((res) => res.json() as calendar_v3.Schema$Events);
         console.log(
-          events.data.items?.length ?? 0,
-          events.data.items?.length === 1 ? "event" : "events",
+          events.items?.length ?? 0,
+          events.items?.length === 1 ? "event" : "events",
           "to process from webhook of calendar",
           jobData.calendarId
         );
-        for (const event of events.data.items ?? []) {
+        for (const event of events.items ?? []) {
           await opts.pgBoss.send(UPSERT_EVENT_JOB_NAME, {
             ...event,
-            calendarColor: calendar.data.backgroundColor ?? null,
+            calendarColor: calendar.backgroundColor ?? null,
           });
         }
 
@@ -440,7 +510,6 @@ type GetTokenParams = {
   /** The tokens to use to make the request. If not provided, the tokens will be fetched from the store. */
   accountsTokens?: AccountsTokens; // if the tokens are already known, they can be passed in to avoid fetching them again
 };
-type GetCalendarClientParams = GetTokenParams;
 
 type AccountsTokens = {
   [account: string]: Tokens;
