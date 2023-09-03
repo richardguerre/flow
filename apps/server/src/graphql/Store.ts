@@ -106,6 +106,22 @@ builder.queryField("isPasswordSet", (t) =>
   })
 );
 
+builder.queryField("timezoneSet", (t) =>
+  t.field({
+    type: "String",
+    nullable: true,
+    description: "The timezone set for the Flow instance. `null` if no timezone is set.",
+    resolve: async () => {
+      const timezoneSetting = await prisma.store
+        .findUnique({
+          where: { pluginSlug_key_unique: { key: StoreKeys.TIMEZONE, pluginSlug: FlowPluginSlug } },
+        })
+        .catch(() => null);
+      return (timezoneSetting?.value ?? null) as string | null;
+    },
+  })
+);
+
 builder.queryField("isSessionValid", (t) =>
   t.field({
     type: "Boolean",

@@ -636,6 +636,9 @@ type Query {
     """Filters to use when querying task labels."""
     where: TaskLabelWhereInput
   ): QueryTaskLabelsConnection!
+
+  """The timezone set for the Flow instance. `null` if no timezone is set."""
+  timezoneSet: String
 }
 
 type QueryDaysConnection {
