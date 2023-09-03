@@ -191,6 +191,12 @@ type Mutation {
   """Delete an item."""
   deleteItem(id: ID!): Item!
 
+  """Delete a task."""
+  deleteTask(
+    """The Relay ID of the task to delete."""
+    id: ID!
+  ): Task!
+
   """
   Dismiss an item from the inbox. This effectively sets `inboxPoints = null` for the item.
   """

@@ -1,18 +1,13 @@
-import React from "react";
-import { TaskCard_task$key } from "@flowdev/web/relay/__generated__/TaskCard_task.graphql";
 import { useMemo } from "react";
-import { graphql, useFragment, useMutation, useMutationPromise } from "@flowdev/relay";
-import { TaskCardDetails_task$key } from "@flowdev/web/relay/__generated__/TaskCardDetails_task.graphql";
-import { TaskCardActions_task$key } from "@flowdev/web/relay/__generated__/TaskCardActions_task.graphql";
-import { DurationBadge, TimeBadge } from "./Badges";
-import { BsCheck, BsCheckAll, BsClock, BsX } from "@flowdev/icons";
 import {
-  TaskCardUpdateTaskStatusMutation,
-  TaskStatus,
-} from "@flowdev/web/relay/__generated__/TaskCardUpdateTaskStatusMutation.graphql";
+  SelectorStoreUpdater,
+  graphql,
+  useFragment,
+  useMutation,
+  useMutationPromise,
+} from "@flowdev/relay";
 import { TaskTitle } from "./TaskTitle";
 import { tw } from "@flowdev/ui/tw";
-import { TaskCardDurationButton_task$key } from "../relay/__generated__/TaskCardDurationButton_task.graphql";
 import {
   DropdownMenu,
   DropdownMenuCheckboxItem,
@@ -21,8 +16,25 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@flowdev/ui/DropdownMenu";
+import {
+  ContextMenu,
+  ContextMenuContent,
+  ContextMenuItem,
+  ContextMenuTrigger,
+} from "@flowdev/ui/ContextMenu";
+import { DurationBadge, TimeBadge } from "./Badges";
+import { BsCheck, BsCheckAll, BsClock, BsX } from "@flowdev/icons";
+import { TaskCard_task$key } from "@flowdev/web/relay/__generated__/TaskCard_task.graphql";
+import { TaskCardDetails_task$key } from "@flowdev/web/relay/__generated__/TaskCardDetails_task.graphql";
+import { TaskCardActions_task$key } from "@flowdev/web/relay/__generated__/TaskCardActions_task.graphql";
+import {
+  TaskCardUpdateTaskStatusMutation,
+  TaskStatus,
+} from "@flowdev/web/relay/__generated__/TaskCardUpdateTaskStatusMutation.graphql";
 import { TaskCardUpdateTaskDurationMutation } from "../relay/__generated__/TaskCardUpdateTaskDurationMutation.graphql";
 import { TaskCardUpdateItemStatusMutation } from "../relay/__generated__/TaskCardUpdateItemStatusMutation.graphql";
+import { TaskCardDurationButton_task$key } from "../relay/__generated__/TaskCardDurationButton_task.graphql";
+import { TaskCardDeleteTaskMutation } from "../relay/__generated__/TaskCardDeleteTaskMutation.graphql";
 
 type TaskCardProps = {
   task: TaskCard_task$key;
@@ -32,6 +44,8 @@ export const TaskCard = (props: TaskCardProps) => {
   const task = useFragment(
     graphql`
       fragment TaskCard_task on Task {
+        id
+        date
         title
         status
         completedAt # updates the CalendarList component to add checkmark at the time of completion
@@ -43,17 +57,42 @@ export const TaskCard = (props: TaskCardProps) => {
     props.task
   );
 
+  const [_deleteTask] = useMutation<TaskCardDeleteTaskMutation>(graphql`
+    mutation TaskCardDeleteTaskMutation($id: ID!) {
+      deleteTask(id: $id) {
+        id
+        date
+      }
+    }
+  `);
+
+  const deleteTask = () => {
+    _deleteTask({
+      variables: { id: task.id },
+      optimisticResponse: { id: task.id, date: task.date },
+      optimisticUpdater: deleteTaskUpdater,
+      updater: deleteTaskUpdater,
+    });
+  };
+
   return (
-    <div
-      className={tw(
-        "bg-background-50 group flex cursor-pointer flex-col gap-1 rounded-lg p-3 shadow-sm hover:shadow-md",
-        task.status !== "TODO" && "opacity-50 hover:opacity-100"
-      )}
-    >
-      <TaskTitle task={task} />
-      <TaskCardDetails task={task} />
-      <TaskCardActions task={task} />
-    </div>
+    <ContextMenu>
+      <ContextMenuTrigger>
+        <div
+          className={tw(
+            "bg-background-50 group flex cursor-pointer flex-col gap-1 rounded-lg p-3 shadow-sm hover:shadow-md",
+            task.status !== "TODO" && "opacity-50 hover:opacity-100"
+          )}
+        >
+          <TaskTitle task={task} />
+          <TaskCardDetails task={task} />
+          <TaskCardActions task={task} />
+        </div>
+      </ContextMenuTrigger>
+      <ContextMenuContent>
+        <ContextMenuItem onClick={deleteTask}>Delete task</ContextMenuItem>
+      </ContextMenuContent>
+    </ContextMenu>
   );
 };
 
@@ -289,5 +328,17 @@ const TaskDurationButton = (props: TaskDurationButtonProps) => {
         </div>
       </DropdownMenuContent>
     </DropdownMenu>
+  );
+};
+
+const deleteTaskUpdater: SelectorStoreUpdater<TaskCardDeleteTaskMutation["response"]> = (
+  store,
+  data
+) => {
+  const day = store.get(`Day_${data.deleteTask.date}`);
+  const dayTasks = day?.getLinkedRecords("tasks");
+  day?.setLinkedRecords(
+    (dayTasks ?? []).filter((dayTask) => dayTask.getValue("id") !== data.deleteTask.id),
+    "tasks"
   );
 };

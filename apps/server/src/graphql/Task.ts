@@ -130,6 +130,19 @@ builder.mutationField("updateTask", (t) =>
   })
 );
 
+builder.mutationField("deleteTask", (t) =>
+  t.prismaField({
+    type: "Task",
+    description: `Delete a task.`,
+    args: {
+      id: t.arg.globalID({ required: true, description: "The Relay ID of the task to delete." }),
+    },
+    resolve: (query, _, args) => {
+      return prisma.task.delete({ ...query, where: { id: parseInt(args.id.id) } });
+    },
+  })
+);
+
 // TODO: add completedAt in the logic
 builder.mutationField("updateTaskStatus", (t) =>
   t.prismaFieldWithInput({

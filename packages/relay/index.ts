@@ -37,7 +37,7 @@ export {
   useLazyLoadQuery,
   ConnectionHandler,
 } from "react-relay";
-export { type RecordSourceSelectorProxy } from "relay-runtime";
+export { type RecordSourceSelectorProxy, type SelectorStoreUpdater } from "relay-runtime";
 
 // ----------------- wrapped exports of react-relay -----------------
 

@@ -1,37 +1,31 @@
-import React from "react";
+import { forwardRef } from "react";
 import {
-  Root,
-  Trigger,
-  Group,
-  Portal,
-  Sub,
-  RadioGroup,
-  SubTrigger,
-  SubContent,
-  Content,
-  Item,
   CheckboxItem,
+  Content,
+  Group,
+  Item,
   ItemIndicator,
-  RadioItem,
   Label,
+  Portal,
+  RadioGroup,
+  RadioItem,
+  Root,
   Separator,
-} from "@radix-ui/react-dropdown-menu";
+  Sub,
+  SubContent,
+  SubTrigger,
+  Trigger,
+} from "@radix-ui/react-context-menu";
 import { tw } from "./tw";
 import { BsCheck, BsCircleFill, BsChevronRight } from "@flowdev/icons";
 
-export const DropdownMenu = Root;
-export const DropdownMenuGroup = Group;
-export const DropdownMenuPortal = Portal;
-export const DropdownMenuSub = Sub;
-export const DropdownMenuRadioGroup = RadioGroup;
-export const DropdownMenuTrigger = React.forwardRef<
-  React.ElementRef<typeof Trigger>,
-  React.ComponentPropsWithoutRef<typeof Trigger>
->(({ className, ...props }, ref) => (
-  <Trigger ref={ref} className={tw("outline-none", className)} {...props} />
-));
-
-export const DropdownMenuSubTrigger = React.forwardRef<
+export const ContextMenu = Root;
+export const ContextMenuTrigger = Trigger;
+export const ContextMenuGroup = Group;
+export const ContextMenuPortal = Portal;
+export const ContextMenuSub = Sub;
+export const ContextMenuRadioGroup = RadioGroup;
+export const ContextMenuSubTrigger = forwardRef<
   React.ElementRef<typeof SubTrigger>,
   React.ComponentPropsWithoutRef<typeof SubTrigger> & {
     inset?: boolean;
@@ -40,7 +34,7 @@ export const DropdownMenuSubTrigger = React.forwardRef<
   <SubTrigger
     ref={ref}
     className={tw(
-      "focus:bg-primary-100/70 focus:text-primary-500 flex cursor-default select-none items-center rounded-sm px-2 py-1.5 text-sm outline-none data-[state=open]:bg-black",
+      "focus:bg-primary-100/70 focus:text-primary-500 data-[state=open]:bg-primary-100/70 data-[state=open]:text-primary-500 flex cursor-default select-none items-center rounded-sm px-2 py-1.5 text-sm outline-none",
       inset && "pl-8",
       className
     )}
@@ -51,30 +45,29 @@ export const DropdownMenuSubTrigger = React.forwardRef<
   </SubTrigger>
 ));
 
-export const DropdownMenuSubContent = React.forwardRef<
+export const ContextMenuSubContent = forwardRef<
   React.ElementRef<typeof SubContent>,
   React.ComponentPropsWithoutRef<typeof SubContent>
 >(({ className, ...props }, ref) => (
   <SubContent
     ref={ref}
     className={tw(
-      "bg-background-50 ring-0.5 ring-primary-100 text-foreground-900 data-[state=open]:animate-fade-in data-[state=closed]:animate-fade-out z-50 min-w-[8rem] overflow-hidden rounded-md border p-1 shadow-lg",
+      "bg-background-50 ring-0.5 ring-primary-100 text-foreground-900 data-[state=open]:animate-fade-in animate-duration-100 data-[state=closed]:animate-fade-out z-50 overflow-hidden rounded-md border p-1 shadow-md",
       className
     )}
     {...props}
   />
 ));
 
-export const DropdownMenuContent = React.forwardRef<
+export const ContextMenuContent = forwardRef<
   React.ElementRef<typeof Content>,
   React.ComponentPropsWithoutRef<typeof Content>
->(({ className, sideOffset = 4, ...props }, ref) => (
+>(({ className, ...props }, ref) => (
   <Portal>
     <Content
       ref={ref}
-      sideOffset={sideOffset}
       className={tw(
-        "bg-background-50 ring-0.5 ring-primary-100 animate-fade-in animate-duration-100 z-50 rounded-md p-1 shadow-md outline-none",
+        "bg-background-50 ring-0.5 ring-primary-100 text-foreground-900 animate-fade-in data-[state=open]:animate-duration-100 data-[state=open]:animate-fade-in data-[state=closed]:animate-fade-out data-[state=closed]:animate-duration-100 z-50 overflow-hidden rounded-md border p-1 shadow-md",
         className
       )}
       {...props}
@@ -82,7 +75,7 @@ export const DropdownMenuContent = React.forwardRef<
   </Portal>
 ));
 
-export const DropdownMenuItem = React.forwardRef<
+export const ContextMenuItem = forwardRef<
   React.ElementRef<typeof Item>,
   React.ComponentPropsWithoutRef<typeof Item> & {
     inset?: boolean;
@@ -91,7 +84,7 @@ export const DropdownMenuItem = React.forwardRef<
   <Item
     ref={ref}
     className={tw(
-      "focus:bg-primary-100/70 focus:text-primary-500 relative flex cursor-default select-none items-center rounded-sm px-2 py-1.5 text-sm outline-none transition-colors data-[disabled]:pointer-events-none data-[disabled]:opacity-50",
+      "focus:bg-primary-100/70 focus:text-primary-500 relative flex cursor-default select-none items-center rounded-sm px-2 py-1.5 text-sm outline-none data-[disabled]:pointer-events-none data-[disabled]:opacity-50",
       inset && "pl-8",
       className
     )}
@@ -99,14 +92,14 @@ export const DropdownMenuItem = React.forwardRef<
   />
 ));
 
-export const DropdownMenuCheckboxItem = React.forwardRef<
+export const ContextMenuCheckboxItem = forwardRef<
   React.ElementRef<typeof CheckboxItem>,
   React.ComponentPropsWithoutRef<typeof CheckboxItem>
 >(({ className, children, checked, ...props }, ref) => (
   <CheckboxItem
     ref={ref}
     className={tw(
-      "focus:bg-primary-100/70 focus:text-primary-500 relative flex cursor-default select-none items-center rounded-sm py-1.5 pl-8 pr-2 text-sm outline-none transition-colors data-[disabled]:pointer-events-none data-[disabled]:opacity-50",
+      "focus:bg-primary-100/70 focus:text-primary-500 relative flex cursor-default select-none items-center rounded-sm py-1.5 pl-8 pr-2 text-sm outline-none data-[disabled]:pointer-events-none data-[disabled]:opacity-50",
       className
     )}
     checked={checked}
@@ -120,15 +113,16 @@ export const DropdownMenuCheckboxItem = React.forwardRef<
     {children}
   </CheckboxItem>
 ));
+CheckboxItem.displayName;
 
-export const DropdownMenuRadioItem = React.forwardRef<
+export const ContextMenuRadioItem = forwardRef<
   React.ElementRef<typeof RadioItem>,
   React.ComponentPropsWithoutRef<typeof RadioItem>
 >(({ className, children, ...props }, ref) => (
   <RadioItem
     ref={ref}
     className={tw(
-      "focus:bg-primary-100/70 focus:text-primary-500 relative flex cursor-default select-none items-center rounded-sm py-1.5 pl-8 pr-2 text-sm outline-none transition-colors data-[disabled]:pointer-events-none data-[disabled]:opacity-50",
+      "focus:bg-primary-100/70 focus:text-primary-500 relative flex cursor-default select-none items-center rounded-sm py-1.5 pl-8 pr-2 text-sm outline-none data-[disabled]:pointer-events-none data-[disabled]:opacity-50",
       className
     )}
     {...props}
@@ -142,7 +136,7 @@ export const DropdownMenuRadioItem = React.forwardRef<
   </RadioItem>
 ));
 
-export const DropdownMenuLabel = React.forwardRef<
+export const ContextMenuLabel = forwardRef<
   React.ElementRef<typeof Label>,
   React.ComponentPropsWithoutRef<typeof Label> & {
     inset?: boolean;
@@ -155,18 +149,21 @@ export const DropdownMenuLabel = React.forwardRef<
   />
 ));
 
-export const DropdownMenuSeparator = React.forwardRef<
+export const ContextMenuSeparator = forwardRef<
   React.ElementRef<typeof Separator>,
   React.ComponentPropsWithoutRef<typeof Separator>
 >(({ className, ...props }, ref) => (
   <Separator ref={ref} className={tw("bg-primary-100 -mx-1 my-1 h-px", className)} {...props} />
 ));
 
-export const DropdownMenuShortcut = ({
+export const ContextMenuShortcut = ({
   className,
   ...props
 }: React.HTMLAttributes<HTMLSpanElement>) => {
   return (
-    <span className={tw("ml-auto text-xs tracking-widest opacity-60", className)} {...props} />
+    <span
+      className={tw("text-foreground-700 ml-auto text-xs tracking-widest", className)}
+      {...props}
+    />
   );
 };
