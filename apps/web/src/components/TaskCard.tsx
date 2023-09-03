@@ -1,7 +1,7 @@
 import React from "react";
 import { TaskCard_task$key } from "@flowdev/web/relay/__generated__/TaskCard_task.graphql";
 import { useMemo } from "react";
-import { graphql, useFragment, useMutation } from "@flowdev/relay";
+import { graphql, useFragment, useMutation, useMutationPromise } from "@flowdev/relay";
 import { TaskCardDetails_task$key } from "@flowdev/web/relay/__generated__/TaskCardDetails_task.graphql";
 import { TaskCardActions_task$key } from "@flowdev/web/relay/__generated__/TaskCardActions_task.graphql";
 import { DurationBadge, TimeBadge } from "./Badges";
@@ -22,6 +22,7 @@ import {
   DropdownMenuTrigger,
 } from "@flowdev/ui/DropdownMenu";
 import { TaskCardUpdateTaskDurationMutation } from "../relay/__generated__/TaskCardUpdateTaskDurationMutation.graphql";
+import { TaskCardUpdateItemMutation } from "../relay/__generated__/TaskCardUpdateItemMutation.graphql";
 
 type TaskCardProps = {
   task: TaskCard_task$key;
@@ -94,15 +95,17 @@ const TaskCardActions = (props: TaskCardActionsProps) => {
     graphql`
       fragment TaskCardActions_task on Task {
         status
-        canBeSuperdone
         id
+        item {
+          id
+        }
         ...TaskCardDurationButton_task
       }
     `,
     props.task
   );
 
-  const [_updateTaskStatus] = useMutation<TaskCardUpdateTaskStatusMutation>(graphql`
+  const [_updateTaskStatus] = useMutationPromise<TaskCardUpdateTaskStatusMutation>(graphql`
     mutation TaskCardUpdateTaskStatusMutation($input: MutationUpdateTaskStatusInput!) {
       updateTaskStatus(input: $input) {
         ...Day_day
@@ -110,12 +113,27 @@ const TaskCardActions = (props: TaskCardActionsProps) => {
     }
   `);
 
-  const updateStatus = (status: TaskStatus, superDone?: boolean) => {
-    _updateTaskStatus({
+  const [updateItem] = useMutationPromise<TaskCardUpdateItemMutation>(graphql`
+    mutation TaskCardUpdateItemMutation($input: MutationUpdateItemInput!) {
+      updateItem(input: $input) {
+        id
+        isRelevant
+      }
+    }
+  `);
+
+  const updateStatus = async (status: TaskStatus) => {
+    await _updateTaskStatus({
       variables: {
-        input: { id: task.id, status, superDone },
+        input: { id: task.id, status },
       },
     });
+  };
+
+  const markAsSuperdone = async (done: boolean) => {
+    await updateStatus(done ? "DONE" : "TODO");
+    if (!task.item) return;
+    await updateItem({ variables: { input: { id: task.item.id, isRelevant: !done } } });
   };
 
   const doneButton = (
@@ -142,7 +160,7 @@ const TaskCardActions = (props: TaskCardActionsProps) => {
     <button
       key="superdone"
       className="bg-background-200 text-foreground-700 hover:bg-background-300 active:bg-background-300 hidden h-6 w-6 items-center justify-center rounded-full bg-opacity-50 text-sm hover:bg-opacity-70 active:bg-opacity-100 group-hover:flex"
-      onClick={() => updateStatus("DONE", true)}
+      onClick={() => markAsSuperdone(true)}
     >
       <BsCheckAll />
     </button>
@@ -152,7 +170,7 @@ const TaskCardActions = (props: TaskCardActionsProps) => {
     <button
       key="undoSuperdone"
       className="bg-positive-100 text-positive-600 hover:bg-positive-200 active:bg-positive-300 flex h-6 w-6 items-center justify-center rounded-full"
-      onClick={() => updateStatus("TODO")}
+      onClick={() => markAsSuperdone(false)}
     >
       <BsCheckAll />
     </button>
@@ -180,9 +198,9 @@ const TaskCardActions = (props: TaskCardActionsProps) => {
 
   const taskStatusActions: Array<React.ReactNode> = useMemo(() => {
     if (task.status === "TODO") {
-      return [doneButton, ...(task.canBeSuperdone ? [superdoneButton] : []), cancelButton];
+      return [doneButton, ...(task.item ? [superdoneButton] : []), cancelButton];
     } else if (task.status === "DONE") {
-      return task.canBeSuperdone ? [undoSuperdoneButton] : [undoDoneButton];
+      return task.item ? [undoSuperdoneButton] : [undoDoneButton];
     } else if (task.status === "CANCELED") {
       return [undoCancelButton];
     }

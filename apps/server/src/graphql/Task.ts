@@ -13,7 +13,6 @@ export const TaskType = builder.prismaNode("Task", {
     createdAt: t.expose("createdAt", { type: "DateTime" }),
     title: t.exposeString("title"),
     status: t.expose("status", { type: TaskStatusEnum }),
-    canBeSuperdone: t.expose("canBeSuperdone", { type: "Boolean" }),
     completedAt: t.expose("completedAt", { type: "DateTime", nullable: true }),
     date: t.expose("date", { type: "Date" }),
     item: t.relation("item", { nullable: true }),
@@ -155,11 +154,6 @@ Any other scenario is not possible by nature of the app, where tasks:
         type: TaskStatusEnum,
         required: true,
         description: "The new status of the task.",
-      }),
-      superDone: t.input.boolean({
-        required: false,
-        description:
-          "If true, the task will be done within Flow and other systems that plugins have connected to.",
       }),
     },
     resolve: (query, _, args) => {

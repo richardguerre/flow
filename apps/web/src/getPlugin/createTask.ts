@@ -12,7 +12,6 @@ export const createTask = async (input: createTaskMutation["variables"]["input"]
           createdAt
           title
           status
-          canBeSuperdone
           completedAt
           durationInMinutes
           pluginDatas {

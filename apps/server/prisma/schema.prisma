@@ -86,8 +86,6 @@ model Task {
   title             String
   /// The status of the task
   status            TaskStatus @default(TODO)
-  /// Whether the task can be superdone (i.e. setting the task to done in Flow + setting the item linked to the task to done using the plugin).
-  canBeSuperdone    Boolean    @default(false)
   /// The date and time the task was completed.
   completedAt       DateTime?
   /// The day the task is scheduled for

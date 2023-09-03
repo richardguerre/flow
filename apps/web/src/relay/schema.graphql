@@ -441,11 +441,6 @@ input MutationUpdateTaskStatusInput {
 
   """The new status of the task."""
   status: TaskStatus!
-
-  """
-  If true, the task will be done within Flow and other systems that plugins have connected to.
-  """
-  superDone: Boolean
 }
 
 input MutationUpsertStoreItemInput {
@@ -752,7 +747,6 @@ type Store implements Node {
 
 """A task that the user or a plugin has created."""
 type Task implements Node {
-  canBeSuperdone: Boolean!
   completedAt: DateTime
   createdAt: DateTime!
   date: Date!

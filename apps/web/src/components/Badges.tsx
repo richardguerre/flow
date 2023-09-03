@@ -22,7 +22,7 @@ type TimeBadgeProps = {
 
 export const TimeBadge = (props: TimeBadgeProps) => {
   return (
-    <div className="bg-primary-100 text-primary-600 inline-flex h-min rounded-md px-1 py-[1px] text-sm">
+    <div className="inline-flex h-min rounded bg-green-100 px-1 py-[1px] text-sm text-green-700">
       {dayjs(props.time).format("HH:mm")}
     </div>
   );

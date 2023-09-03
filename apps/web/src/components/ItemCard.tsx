@@ -79,7 +79,7 @@ const ItemCardDetails = (props: ItemCardDetailsProps) => {
         <Tooltip>
           <TooltipTrigger>
             <div className="bg-primary-100 text-primary-600 rounded px-1 py-0.5 text-sm">
-              {item.tasks.length} tasks
+              {item.tasks.length} {pluralize("task", item.tasks.length)}
             </div>
           </TooltipTrigger>
           <TooltipContent side="bottom">

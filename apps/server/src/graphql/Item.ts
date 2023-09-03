@@ -61,7 +61,7 @@ export const createItemWhere = (
 ): Prisma.ItemWhereInput => {
   const scheduledFor = where.scheduledFor;
   return {
-    isRelevant: where.isRelevant ?? true,
+    ...(where.isRelevant ? { isRelevant: true } : {}),
     ...(scheduledFor
       ? {
           scheduledAt: {

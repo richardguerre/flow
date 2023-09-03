@@ -18,7 +18,7 @@ export const CalendarList = (props: CalendarListProps) => {
       fragment CalendarList_data on Query
       @refetchable(queryName: "CalendarListQuery")
       @argumentDefinitions(dateInFocus: { type: "Date!" }, dayIdInFocus: { type: "ID!" }) {
-        events: items(where: { isRelevant: true, scheduledFor: $dateInFocus }) {
+        events: items(where: { scheduledFor: $dateInFocus }) {
           edges {
             node {
               id

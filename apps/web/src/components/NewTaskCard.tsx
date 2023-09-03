@@ -44,7 +44,6 @@ export const NewTaskCard = (props: Props) => {
       //     title,
       //     createdAt: new Date().toISOString(),
       //     status: "TODO",
-      //     canBeSuperdone: false,
       //     completedAt: null,
       //     date: props.date,
       //     item: null,

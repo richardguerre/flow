@@ -16,7 +16,6 @@ graphql`
       id
       date
       title
-      canBeSuperdone
       completedAt
       createdAt
       durationInMinutes
@@ -102,7 +101,6 @@ type GetDaysResult = Promise<
       id: string;
       date: string;
       title: string;
-      canBeSuperdone: boolean;
       completedAt: string | null;
       createdAt: string;
       durationInMinutes: number | null;
