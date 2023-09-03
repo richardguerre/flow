@@ -203,6 +203,24 @@ builder.mutationField("updateItem", (t) =>
   })
 );
 
+builder.mutationField("updateItemStatus", (t) =>
+  t.prismaFieldWithInput({
+    type: "Item",
+    description: `Mark an item as done or not done. Plugins can use this to mark the item as done or not done in the external system. For example, if the item is a trello task and is marked as done in Flow, it will be marked as done in trello (by the Trello plugin).`,
+    input: {
+      id: t.input.globalID({ required: true, description: "The ID of the item." }),
+      done: t.input.boolean({ required: true, description: "Whether the item is done or not." }),
+    },
+    resolve: (query, _, args) => {
+      return prisma.item.update({
+        ...query,
+        where: { id: parseInt(args.input.id.id) },
+        data: { isRelevant: !args.input.done },
+      });
+    },
+  })
+);
+
 builder.mutationField("deleteItem", (t) =>
   t.prismaField({
     type: "Item",
@@ -210,8 +228,8 @@ builder.mutationField("deleteItem", (t) =>
     args: {
       id: t.arg.globalID({ required: true }),
     },
-    resolve: (query, _, { id }) => {
-      return prisma.item.delete({ ...query, where: { id: parseInt(id.id) } });
+    resolve: (query, _, args) => {
+      return prisma.item.delete({ ...query, where: { id: parseInt(args.id.id) } });
     },
   })
 );
@@ -223,10 +241,10 @@ builder.mutationField("dismissItemFromInbox", (t) =>
     input: {
       id: t.input.globalID({ required: true }),
     },
-    resolve: (query, _, { input }) => {
+    resolve: (query, _, args) => {
       return prisma.item.update({
         ...query,
-        where: { id: parseInt(input.id.id) },
+        where: { id: parseInt(args.input.id.id) },
         data: { inboxPoints: null },
       });
     },

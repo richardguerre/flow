@@ -22,7 +22,7 @@ import {
   DropdownMenuTrigger,
 } from "@flowdev/ui/DropdownMenu";
 import { TaskCardUpdateTaskDurationMutation } from "../relay/__generated__/TaskCardUpdateTaskDurationMutation.graphql";
-import { TaskCardUpdateItemMutation } from "../relay/__generated__/TaskCardUpdateItemMutation.graphql";
+import { TaskCardUpdateItemStatusMutation } from "../relay/__generated__/TaskCardUpdateItemStatusMutation.graphql";
 
 type TaskCardProps = {
   task: TaskCard_task$key;
@@ -113,9 +113,9 @@ const TaskCardActions = (props: TaskCardActionsProps) => {
     }
   `);
 
-  const [updateItem] = useMutationPromise<TaskCardUpdateItemMutation>(graphql`
-    mutation TaskCardUpdateItemMutation($input: MutationUpdateItemInput!) {
-      updateItem(input: $input) {
+  const [updateItemStatus] = useMutationPromise<TaskCardUpdateItemStatusMutation>(graphql`
+    mutation TaskCardUpdateItemStatusMutation($input: MutationUpdateItemStatusInput!) {
+      updateItemStatus(input: $input) {
         id
         isRelevant
       }
@@ -133,7 +133,7 @@ const TaskCardActions = (props: TaskCardActionsProps) => {
   const markAsSuperdone = async (done: boolean) => {
     await updateStatus(done ? "DONE" : "TODO");
     if (!task.item) return;
-    await updateItem({ variables: { input: { id: task.item.id, isRelevant: !done } } });
+    await updateItemStatus({ variables: { input: { id: task.item.id, done } } });
   };
 
   const doneButton = (
