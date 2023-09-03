@@ -17,7 +17,11 @@ export const syncTasks = async () => {
     update: {},
   });
   const res = await prisma.task.updateMany({
-    where: { status: { notIn: ["DONE", "CANCELED"] }, date: { lt: usersToday } },
+    where: {
+      status: { notIn: ["DONE", "CANCELED"] },
+      date: { lt: usersToday },
+      OR: [{ item: null }, { item: { scheduledAt: null } }], // for now ignore tasks with items that have a scheduledAt date
+    },
     data: { date: usersToday },
   });
   console.log(`✅ Synced ${res.count} tasks.`);
