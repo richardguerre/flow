@@ -118,9 +118,7 @@ export const TaskTitleInput = (props: TaskTitleInputProps) => {
   useEffect(() => {
     editorRef.current?.setEditable(editable);
     if (editable) {
-      // setTimeout(() => {
       editorRef.current?.commands.focus("end");
-      // }, 1000);
     }
   }, [editable, editorRef.current]);
 

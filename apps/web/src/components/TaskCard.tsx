@@ -32,7 +32,6 @@ export const TaskCard = (props: TaskCardProps) => {
     graphql`
       fragment TaskCard_task on Task {
         title
-        durationInMinutes
         status
         completedAt # updates the CalendarList component to add checkmark at the time of completion
         ...TaskCardDetails_task
@@ -50,10 +49,7 @@ export const TaskCard = (props: TaskCardProps) => {
         task.status !== "TODO" && "opacity-50 hover:opacity-100"
       )}
     >
-      <div className="flex gap-1">
-        <TaskTitle task={task} />
-        {task.durationInMinutes && <DurationBadge durationInMinutes={task.durationInMinutes} />}
-      </div>
+      <TaskTitle task={task} />
       <TaskCardDetails task={task} />
       <TaskCardActions task={task} />
     </div>
@@ -68,6 +64,7 @@ const TaskCardDetails = (props: TaskCardDetailsProps) => {
   const task = useFragment(
     graphql`
       fragment TaskCardDetails_task on Task {
+        durationInMinutes
         item {
           scheduledAt
         }
@@ -80,7 +77,12 @@ const TaskCardDetails = (props: TaskCardDetailsProps) => {
     props.task
   );
 
-  return <div>{task.item?.scheduledAt && <TimeBadge time={task.item.scheduledAt} />}</div>;
+  return (
+    <div className="flex gap-2">
+      {task.durationInMinutes && <DurationBadge durationInMinutes={task.durationInMinutes} />}
+      {task.item?.scheduledAt && <TimeBadge time={task.item.scheduledAt} />}
+    </div>
+  );
 };
 
 type TaskCardActionsProps = {

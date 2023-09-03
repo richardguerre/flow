@@ -168,6 +168,7 @@ builder.mutationField("updateItem", (t) =>
       durationInMinutes: t.input.int({ required: false }),
       isAllDay: t.input.boolean({ required: false }),
       color: t.input.field({ type: ColorEnum, required: false }),
+      inboxPoints: t.input.int({ required: false }),
       listId: t.input.globalID({ required: false }),
       pluginDatas: t.input.field({ type: [ItemPluginDataInput], required: false }),
     },
@@ -182,6 +183,7 @@ builder.mutationField("updateItem", (t) =>
           durationInMinutes: u(input.durationInMinutes),
           isAllDay: u(input.isAllDay),
           color: u(input.color),
+          inboxPoints: u(input.inboxPoints),
           list:
             input.listId && input.listId.typename === "List"
               ? { connect: { id: parseInt(input.listId.id) } }

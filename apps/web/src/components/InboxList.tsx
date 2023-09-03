@@ -20,6 +20,8 @@ export const InboxList = (props: InboxListProps) => {
           edges {
             node {
               id
+              isRelevant
+              inboxPoints
               ...ItemCard_item
             }
           }
@@ -28,8 +30,13 @@ export const InboxList = (props: InboxListProps) => {
     `,
     props.data
   );
-  const itemNodes = useMemo(
-    () => structuredClone(data.items.edges.map((edge) => edge.node)),
+  const items = useMemo(
+    () =>
+      structuredClone(
+        data.items.edges
+          .map((edge) => edge.node)
+          .filter((node) => !!node.isRelevant && (node.inboxPoints ?? 0) > 0)
+      ),
     [data.items.edges]
   );
 
@@ -59,14 +66,14 @@ export const InboxList = (props: InboxListProps) => {
         </div>
       </div>
       <ReactSortable
-        list={itemNodes}
+        list={items}
         setList={() => {}}
         group="shared"
         className="no-scrollbar flex h-full flex-col overflow-y-scroll px-4"
       >
-        {data.items.edges.map((edge) => (
-          <div id={edge.node.id} key={edge.node.id} className="pb-4">
-            <ItemCard key={edge.node.id} item={edge.node} />
+        {items.map((item) => (
+          <div id={item.id} key={item.id} className="pb-4">
+            <ItemCard key={item.id} item={item} />
           </div>
         ))}
       </ReactSortable>

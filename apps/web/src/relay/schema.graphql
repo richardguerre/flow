@@ -390,6 +390,7 @@ input MutationUpdateItemInput {
   color: Color
   durationInMinutes: Int
   id: ID!
+  inboxPoints: Int
   isAllDay: Boolean
 
   """
