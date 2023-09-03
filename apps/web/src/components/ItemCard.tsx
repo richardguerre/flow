@@ -165,7 +165,7 @@ const ItemCardActions = (props: ItemCardActionsProps) => {
             <BsCheckAll />
           </button>
         </TooltipTrigger>
-        <TooltipContent>Mark this item as done</TooltipContent>
+        <TooltipContent side="bottom">Mark this item as done</TooltipContent>
       </Tooltip>
       <Tooltip>
         <TooltipTrigger>
@@ -176,7 +176,7 @@ const ItemCardActions = (props: ItemCardActionsProps) => {
             <BsArchive size={16} />
           </button>
         </TooltipTrigger>
-        <TooltipContent>Archive this item.</TooltipContent>
+        <TooltipContent side="bottom">Archive this item.</TooltipContent>
       </Tooltip>
     </div>
   );
