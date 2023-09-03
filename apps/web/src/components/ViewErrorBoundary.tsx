@@ -11,7 +11,7 @@ export const ViewErrorBoundary = (props: Props) => {
     <ErrorBoundary
       fallbackRender={({ error }) => {
         const unauthenticatedError = error.cause?.find(
-          (e: any) => e.extensions.code === "UNAUTHENTICATED"
+          (e: any) => e.extensions?.code === "UNAUTHENTICATED"
         );
         const errorMessages = error.message
           .split("\n")

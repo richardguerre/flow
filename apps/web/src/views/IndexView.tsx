@@ -3,6 +3,7 @@ import { IndexViewQuery } from "@flowdev/web/relay/__generated__/IndexViewQuery.
 import { Days } from "../components/Days";
 import { Lists } from "../components/Lists";
 import { dayjs } from "@flowdev/web/dayjs";
+import { useEffect, useRef } from "react";
 
 const indexViewQuery = graphql`
   query IndexViewQuery($daysAfter: ID, $firstDays: Int, $dateInFocus: Date!, $dayIdInFocus: ID!) {
@@ -12,16 +13,32 @@ const indexViewQuery = graphql`
 `;
 
 export default () => {
-  const daysAfterDate = new Date();
-  daysAfterDate.setDate(daysAfterDate.getDate() - 7);
-  const daysAfter = daysAfterDate.toISOString().split("T")[0]; // converts to YYYY-MM-DD
-  const today = dayjs().format("YYYY-MM-DD");
-  const { queryRef } = useQueryLoader<IndexViewQuery>(indexViewQuery, {
-    daysAfter,
+  const today = useRef(dayjs());
+  const { queryRef, loadQuery } = useQueryLoader<IndexViewQuery>(indexViewQuery, {
+    daysAfter: today.current.subtract(7, "day").format("YYYY-MM-DD"),
     firstDays: 17, // 7 days before and 10 days after today
-    dateInFocus: today,
-    dayIdInFocus: `Day_${today}`,
+    dateInFocus: today.current.format("YYYY-MM-DD"),
+    dayIdInFocus: `Day_${today.current.format("YYYY-MM-DD")}`,
   });
+
+  useEffect(() => {
+    const interval = setInterval(() => {
+      const threshold = today.current.startOf("day").add(1, "day").add(4, "hours");
+      if (threshold.isAfter(dayjs())) return;
+      today.current = dayjs();
+      loadQuery(
+        {
+          daysAfter: today.current.subtract(7, "day").format("YYYY-MM-DD"),
+          firstDays: 17, // 7 days before and 10 days after today
+          dateInFocus: today.current.format("YYYY-MM-DD"),
+          dayIdInFocus: `Day_${today.current.format("YYYY-MM-DD")}`,
+        },
+        { fetchPolicy: "store-and-network" }
+      );
+    }, 1000 * 60 * 60); // every hour
+    return () => clearInterval(interval);
+  }, []);
+
   if (!queryRef) return null;
   return <IndexViewContent queryRef={queryRef} />;
 };
