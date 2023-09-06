@@ -12,6 +12,7 @@ export const NewItemCard = (props: NewItemCardProps) => {
   const [createItem] = useMutation<NewItemCardCreateItemMutation>(graphql`
     mutation NewItemCardCreateItemMutation($input: MutationCreateItemInput!) {
       createItem(input: $input) {
+        isRelevant
         ...ItemCard_item
       }
     }
