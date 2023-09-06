@@ -10,7 +10,8 @@ const envsToCheck = {
 } as const;
 
 /** Copy of process.env in memory so that process.env can be deleted and not used in plugins for unsafe things. */
-const env: Record<string, string | undefined> = {};
+const // @ts-ignore
+  env: Record<keyof typeof envsToCheck, string | undefined> = {};
 
 // didn't use zod nor chalk/ink/colors for this as it's not worth installing for just this (it's 600+kb to install)
 // color from https://backbencher.dev/nodejs-colored-text-console
@@ -25,7 +26,7 @@ for (const [envKey, [required, sensitive]] of Object.entries(envsToCheck)) {
   } else {
     console.log(`\x1b[2m  ${envKey}: ${envValue}\x1b[0m`);
   }
-  env[envKey] = envValue;
+  env[envKey as keyof typeof env] = envValue;
   delete process.env[envKey]; // delete from process.env so that plugins can't use it
 }
 
