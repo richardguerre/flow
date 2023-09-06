@@ -112,9 +112,7 @@ export async function installServerPlugin(opts: Options) {
   // the above creates the plugins folder if it doesn't exist.
 
   // check if server.js contains unsafe code (require(), eval(), etc.)
-  if (
-    /require|eval|setTimeout|setInterval|setImmidiate|process\.|__dirname|__filename/.test(text)
-  ) {
+  if (/require|eval|setTimeout|setInterval|setImmidiate|process|__dirname|__filename/.test(text)) {
     throw new GraphQLError(
       `The plugin is unsafe to install as it can gain access to sensitive data. Contact the plugin author or Install a different plugin.`
     );
