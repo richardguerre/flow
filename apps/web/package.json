@@ -3,12 +3,11 @@
   "private": true,
   "type": "module",
   "scripts": {
-    "prerelay": "DATABASE_URL=this_makes_it_run_wo_server_envs ORIGIN=sam_as_db_url npm run print-schema -w=@flowdev/server && mkdir -p src/relay/__generated__",
     "relay": "cd ../.. && relay-compiler && echo '✅ Relay compiled!'",
     "relay:watch": "npm run relay -- --watch",
     "predev": "npm run relay",
     "dev": "vite --port 3000",
-    "prebuild": "npm run relay",
+    "prebuild": "DATABASE_URL=this_makes_it_run_wo_server_envs ORIGIN=sam_as_db_url npm run print-schema -w=@flowdev/server && mkdir -p src/relay/__generated__ && npm run relay",
     "build": "NODE_ENV=production tsc && vite build",
     "preview": "vite preview",
     "env:example": "cp -n .env.example .env || true",

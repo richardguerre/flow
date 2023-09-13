@@ -28,7 +28,7 @@ export const Input = React.forwardRef<HTMLInputElement, InputProps>((props, ref)
             props.leftIcon && "pl-10",
             props.rightIcon && "pr-10",
             props.hasError &&
-              "ring-negative-600 hover:ring-negative-600 placeholder:text-negative-600",
+              "ring-negative-600 hover:ring-negative-600 focus:ring-negative-600 placeholder:text-negative-600",
             props.className
           )}
         />

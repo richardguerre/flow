@@ -109,8 +109,10 @@ builder.queryField("isPasswordSet", (t) =>
 builder.queryField("timezoneSet", (t) =>
   t.field({
     type: "String",
-    nullable: true,
     description: "The timezone set for the Flow instance. `null` if no timezone is set.",
+    nullable: true,
+    authScopes: { public: true },
+    skipTypeScopes: true, // this is required as the authScope of the Query type is set to authenticated by default
     resolve: async () => {
       const timezoneSetting = await prisma.store
         .findUnique({
@@ -118,6 +120,25 @@ builder.queryField("timezoneSet", (t) =>
         })
         .catch(() => null);
       return (timezoneSetting?.value ?? null) as string | null;
+    },
+  })
+);
+
+builder.queryField("isFullySetup", (t) =>
+  t.field({
+    type: "Boolean",
+    description: "Whether the Flow instance is fully setup.",
+    nullable: false,
+    authScopes: { public: true },
+    skipTypeScopes: true, // this is required as the authScope of the Query type is set to authenticated by default
+    resolve: async () => {
+      const storeItems = await prisma.store.findMany({
+        where: {
+          key: { in: [StoreKeys.PASSWORD_HASH, StoreKeys.TIMEZONE] },
+          pluginSlug: FlowPluginSlug,
+        },
+      });
+      return storeItems.length === 2;
     },
   })
 );

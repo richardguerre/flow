@@ -577,6 +577,9 @@ type Query {
   """Get all installed plugins."""
   installedPlugins: [PluginInstallation!]!
 
+  """Whether the Flow instance is fully setup."""
+  isFullySetup: Boolean!
+
   """Whether the password is set."""
   isPasswordSet: Boolean!
 

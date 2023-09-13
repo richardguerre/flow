@@ -1,6 +1,7 @@
 import { ErrorBoundary } from "@flowdev/error-boundary";
 import { Button } from "@flowdev/ui/Button";
 import { Link } from "react-router-dom";
+import { LOCAL_STORAGE_USER_TOKEN_KEY } from "../relay/environment";
 
 type Props = {
   children: React.ReactNode;
@@ -16,6 +17,10 @@ export const ViewErrorBoundary = (props: Props) => {
         const errorMessages = error.message
           .split("\n")
           .map((m: string) => <p className="text-gray-500">{m}</p>);
+
+        if (unauthenticatedError) {
+          window.localStorage.removeItem(LOCAL_STORAGE_USER_TOKEN_KEY);
+        }
         return (
           <div className="flex h-screen items-center justify-center">
             <div className="text-center">

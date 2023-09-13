@@ -27,7 +27,8 @@
     "clean": "npm run clean:root && npm run clean:apps && npm run clean:packages",
     "clean:root": "rm -rf ./node_modules",
     "clean:apps": "rm -rf ./apps/**/node_modules",
-    "clean:packages": "rm -rf ./packages/**/node_modules"
+    "clean:packages": "rm -rf ./packages/**/node_modules",
+    "relay": "npm run relay -w apps/web"
   },
   "devDependencies": {
     "dotenv": "^16.0.2",
