@@ -1,3 +1,3 @@
 export default () => {
-  return "Test view";
+  return <div>Test view</div>;
 };
