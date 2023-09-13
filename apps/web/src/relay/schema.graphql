@@ -23,14 +23,14 @@ enum Color {
   zinc
 }
 
-input CreateNoteLabelInput {
-  """The color of the label."""
+input CreateNoteTagInput {
+  """The color of the tag."""
   color: String!
 
-  """The name of the label."""
+  """The name of the tag."""
   name: String!
 
-  """The slug of the label. Defaults to dashcase version of the name."""
+  """The slug of the tag. Defaults to dashcase version of the name."""
   slug: String
 }
 
@@ -319,19 +319,19 @@ input MutationCreateOrUpdateNoteInput {
   """The date of the note."""
   date: Date!
 
-  """
-  The IDs of exsiting labels to be linked to the note. If you want to create a new label, use the `newLabels` input.
-  """
-  labels: [ID!]
+  """Create new tags and link them to the note."""
+  newTags: [CreateNoteTagInput!]
 
-  """Create new labels and link them to the note."""
-  newLabels: [CreateNoteLabelInput!]
-
-  """The IDs of labels to be unlinked from the note."""
-  removedLabels: [ID!]
+  """The IDs of tags to be unlinked from the note."""
+  removedTags: [ID!]
 
   """The slug of the note. Used for retrieving the note back."""
   slug: String!
+
+  """
+  The IDs of exsiting tags to be linked to the note. If you want to create a new tag, use the `newTags` input.
+  """
+  tags: [ID!]
 
   """The title of the note."""
   title: String!
@@ -484,25 +484,17 @@ type Note implements Node {
   date: Date!
   id: ID!
 
-  """The tags of the note"""
-  labels: [NoteTag!]!
-
   """
   The slug of the note which needs to be unique.\nIt can be used to retrieve the note and update it.
   """
   slug: String!
 
+  """The tags of the note"""
+  tags: [NoteTag!]!
+
   """The title of the note"""
   title: String!
   updatedAt: DateTime!
-}
-
-input NoteLabelWhereInput {
-  """Filter by whether the label is for private use."""
-  isPrivate: Boolean
-
-  """Filter by name. Case insensitive."""
-  nameIsLike: String
 }
 
 """A tag that can be applied to a note."""
@@ -532,6 +524,14 @@ type NoteTagNotesConnection {
 type NoteTagNotesConnectionEdge {
   cursor: ID!
   node: Note!
+}
+
+input NoteTagWhereInput {
+  """Filter by whether the tag is for private use."""
+  isPrivate: Boolean
+
+  """Filter by name. Case insensitive."""
+  nameIsLike: String
 }
 
 type PageInfo {
@@ -610,17 +610,17 @@ type Query {
   ): Note
 
   """
-  Get all note labels ordered by usage in descending order. `before` and `after` cursors are ignored, and `first` and `last` act the same and are limited to 100.
+  Get all note tags ordered by usage in descending order. `before` and `after` cursors are ignored, and `first` and `last` act the same and are limited to 100.
   """
-  noteLabels(
+  noteTags(
     after: ID
     before: ID
     first: Int
     last: Int
 
-    """Filters to use when querying note labels."""
-    where: NoteLabelWhereInput
-  ): QueryNoteLabelsConnection!
+    """Filters to use when querying note tags."""
+    where: NoteTagWhereInput
+  ): QueryNoteTagsConnection!
   pluginOperation(id: ID!, input: JSON): PluginOperation
 
   """Get all routines."""
@@ -634,17 +634,17 @@ type Query {
   storeItems(input: QueryStoreItemsInput): [Store!]!
 
   """
-  Get all task labels ordered by usage in descending order. `before` and `after` cursors are ignored, and `first` and `last` act the same and are limited to 100.
+  Get all task tags ordered by usage in descending order. `before` and `after` cursors are ignored, and `first` and `last` act the same and are limited to 100.
   """
-  taskLabels(
+  taskTags(
     after: ID
     before: ID
     first: Int
     last: Int
 
-    """Filters to use when querying task labels."""
-    where: TaskLabelWhereInput
-  ): QueryTaskLabelsConnection!
+    """Filters to use when querying task tags."""
+    where: TaskTagWhereInput
+  ): QueryTaskTagsConnection!
 
   """The timezone set for the Flow instance. `null` if no timezone is set."""
   timezoneSet: String
@@ -670,12 +670,12 @@ type QueryItemsConnectionEdge {
   node: Item!
 }
 
-type QueryNoteLabelsConnection {
-  edges: [QueryNoteLabelsConnectionEdge!]!
+type QueryNoteTagsConnection {
+  edges: [QueryNoteTagsConnectionEdge!]!
   pageInfo: PageInfo!
 }
 
-type QueryNoteLabelsConnectionEdge {
+type QueryNoteTagsConnectionEdge {
   cursor: ID!
   node: NoteTag!
 }
@@ -685,12 +685,12 @@ input QueryStoreItemsInput {
   pluginSlug: String
 }
 
-type QueryTaskLabelsConnection {
-  edges: [QueryTaskLabelsConnectionEdge!]!
+type QueryTaskTagsConnection {
+  edges: [QueryTaskTagsConnectionEdge!]!
   pageInfo: PageInfo!
 }
 
-type QueryTaskLabelsConnectionEdge {
+type QueryTaskTagsConnectionEdge {
   cursor: ID!
   node: TaskTag!
 }
@@ -783,23 +783,15 @@ type Task implements Node {
   """The item linked to the task"""
   item: Item
 
-  """The tags of the task """
-  labels: [TaskTag!]!
-
   """The plugin datas of the task"""
   pluginDatas: [TaskPluginData!]!
   status: TaskStatus!
 
+  """The tags of the task """
+  tags: [TaskTag!]!
+
   """The title of the task in text or HTML."""
   title: String!
-}
-
-input TaskLabelWhereInput {
-  """Filter by whether the label is for private use."""
-  isPrivate: Boolean
-
-  """Filter by name. Case insensitive."""
-  nameIsLike: String
 }
 
 """The data required by a plugin to be linked to a task."""
@@ -850,6 +842,14 @@ type TaskTagTasksConnection {
 type TaskTagTasksConnectionEdge {
   cursor: ID!
   node: Task!
+}
+
+input TaskTagWhereInput {
+  """Filter by whether the tag is for private use."""
+  isPrivate: Boolean
+
+  """Filter by name. Case insensitive."""
+  nameIsLike: String
 }
 
 """

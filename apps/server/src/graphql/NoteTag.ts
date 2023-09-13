@@ -2,7 +2,7 @@ import { prisma } from "../utils/prisma";
 import { builder } from "./builder";
 import { ColorEnum } from "./Color";
 
-export const NoteLabelType = builder.prismaNode("NoteTag", {
+export const NoteTagType = builder.prismaNode("NoteTag", {
   id: { field: "id" },
   fields: (t) => ({
     createdAt: t.expose("createdAt", { type: "DateTime" }),
@@ -14,19 +14,19 @@ export const NoteLabelType = builder.prismaNode("NoteTag", {
   }),
 });
 
-// -------------- NoteLabel query types --------------
+// -------------- NoteTag query types --------------
 
-builder.queryField("noteLabels", (t) =>
+builder.queryField("noteTags", (t) =>
   t.prismaConnection({
     type: "NoteTag",
     cursor: "id",
     description:
-      "Get all note labels ordered by usage in descending order. `before` and `after` cursors are ignored, and `first` and `last` act the same and are limited to 100.",
+      "Get all note tags ordered by usage in descending order. `before` and `after` cursors are ignored, and `first` and `last` act the same and are limited to 100.",
     args: {
       where: t.arg({
-        type: NoteLabelWhereInput,
+        type: NoteTagWhereInput,
         required: false,
-        description: "Filters to use when querying note labels.",
+        description: "Filters to use when querying note tags.",
       }),
     },
     resolve: (query, _, args) => {
@@ -46,7 +46,7 @@ builder.queryField("noteLabels", (t) =>
   })
 );
 
-export const NoteLabelWhereInput = builder.inputType("NoteLabelWhereInput", {
+export const NoteTagWhereInput = builder.inputType("NoteTagWhereInput", {
   fields: (t) => ({
     nameIsLike: t.string({
       required: false,
@@ -54,20 +54,20 @@ export const NoteLabelWhereInput = builder.inputType("NoteLabelWhereInput", {
     }),
     isPrivate: t.boolean({
       required: false,
-      description: "Filter by whether the label is for private use.",
+      description: "Filter by whether the tag is for private use.",
     }),
   }),
 });
 
-// -------------- NoteLabel mutation types --------------
+// -------------- NoteTag mutation types --------------
 
-export const CreateNoteLabelInputType = builder.inputType("CreateNoteLabelInput", {
+export const CreateNoteTagInputType = builder.inputType("CreateNoteTagInput", {
   fields: (t) => ({
-    name: t.string({ required: true, description: "The name of the label." }),
+    name: t.string({ required: true, description: "The name of the tag." }),
     slug: t.string({
       required: false,
-      description: "The slug of the label. Defaults to dashcase version of the name.",
+      description: "The slug of the tag. Defaults to dashcase version of the name.",
     }),
-    color: t.string({ required: true, description: "The color of the label." }),
+    color: t.string({ required: true, description: "The color of the tag." }),
   }),
 });

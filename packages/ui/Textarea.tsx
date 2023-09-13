@@ -1,32 +1,22 @@
 import React from "react";
-import clsx from "clsx";
-import { Label } from "./label";
+import { tw } from "./tw";
 
 export type TextareaProps = React.TextareaHTMLAttributes<HTMLTextAreaElement> & {
-  label?: string;
-  description?: string;
-  error?: string | { message: string };
+  hasError?: boolean;
 };
 
 const Textarea = React.forwardRef<HTMLTextAreaElement, TextareaProps>((props, ref) => {
   return (
-    <div className="grid w-full max-w-sm items-center gap-2">
-      {props.label && <Label htmlFor={props.id}>{props.label}</Label>}
-      {props.description && <div className="text-foreground-800 text-sm">{props.description}</div>}
-      <textarea
-        {...props}
-        ref={ref}
-        className={clsx(
-          "flex min-h-[80px] w-full rounded-md border bg-transparent px-3 py-2 text-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50",
-          props.className
-        )}
-      />
-      {props.error && (
-        <div className="text-negative-500 text-sm">
-          {typeof props.error === "object" ? props.error.message : props.error}
-        </div>
+    <textarea
+      {...props}
+      ref={ref}
+      className={tw(
+        "ring-primary-200 placeholder:text-foreground-700 text-foreground-900 disabled:bg-background-300/50 disabled:ring-none hover:ring-primary-300 focus:ring-primary-500 w-full rounded-md px-3 py-2 text-sm outline-none ring transition-colors duration-300 ease-in-out",
+        props.hasError &&
+          "ring-negative-600 hover:ring-negative-600 focus:ring-negative-600 placeholder:text-negative-600",
+        props.className
       )}
-    </div>
+    />
   );
 });
 Textarea.displayName = "Textarea";

@@ -24,7 +24,7 @@ export const TaskType = builder.prismaNode("Task", {
         return task.durationInMinutes ?? task.item?.durationInMinutes;
       },
     }),
-    labels: t.relation("tags"),
+    tags: t.relation("tags"),
     pluginDatas: t.relation("pluginDatas"),
   }),
 });

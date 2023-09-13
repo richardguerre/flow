@@ -5,7 +5,7 @@ import { Suspense, useEffect, useRef } from "react";
 import { NoteEditorQuery } from "@flowdev/web/relay/__generated__/NoteEditorQuery.graphql";
 import { NoteEditorUpsertNoteMutation } from "@flowdev/web/relay/__generated__/NoteEditorUpsertNoteMutation.graphql";
 import { dayjs } from "@flowdev/web/dayjs";
-// import { CreateNoteLabelInput } from "@flowdev/web/relay/__generated__/RoutineStepSaveNoteMutation.graphql";
+// import { CreateNoteTagInput } from "@flowdev/web/relay/__generated__/RoutineStepSaveNoteMutation.graphql";
 
 type NoteEditorProps = {
   /** The slug of the note. The note will either be created or updated using that slug. */
@@ -20,7 +20,7 @@ type NoteEditorProps = {
   /**
    * Triggers for each key pressed within the editor. If you want to retrive the values less often, use `onSaveBegin` and `onSaveEnd`.
    *
-   * Note: the labels and newLabels will always be empty arrays for now as the NoteEditor is not fully implemented yet.
+   * Note: the tags and newTags will always be empty arrays for now as the NoteEditor is not fully implemented yet.
    * */
   onChange?: (values: NoteEditorOnChangeValue) => void;
   /** If true, the note will be saved immediately without waiting for the user to stop typing. */
@@ -35,20 +35,20 @@ export type NoteEditorOnChangeValue = {
   /** The HTML content of the NoteEditor. */
   html: string;
   /**
-   * The GlobalIDs of the labels used in the content.
+   * The GlobalIDs of the tags used in the content.
    * This can just be passed to the saveNote() function provided in the routineSteps component props.
    *
    * Note: this not working yet and will always be an empty array. The `NoteEditor` is not fully implemented yet.
    */
-  labels: string[];
-  // THINK: maybe just passing the `labels` array containing all labels (including the new ones) is enough?
+  tags: string[];
+  // THINK: maybe just passing the `tags` array containing all tags (including the new ones) is enough?
   // /**
-  //  * The GlobalIDs of the labels that were created in the content.
+  //  * The GlobalIDs of the tags that were created in the content.
   //  * This can just be passed to the saveNote() function provided in the routineSteps component props.
   //  *
   //  * Note: this not working yet and will always be an empty array. The `NoteEditor` is not fully implemented yet.
   //  */
-  // newLabels: CreateNoteLabelInput[];
+  // newTags: CreateNoteTagInput[];
 };
 
 export const NoteEditor = (props: NoteEditorProps) => {
@@ -72,7 +72,7 @@ const NoteEditorContent = (props: NoteEditorProps) => {
         note(slug: $slug) {
           content
         }
-        labels: noteLabels {
+        tags: noteTags {
           edges {
             node {
               slug
@@ -95,7 +95,7 @@ const NoteEditorContent = (props: NoteEditorProps) => {
   const handleSave = async (html: string) => {
     props.onSaveBegin?.({
       html,
-      labels: [],
+      tags: [],
     });
     await upsertNote({
       variables: {
@@ -104,16 +104,16 @@ const NoteEditorContent = (props: NoteEditorProps) => {
           slug: props.slug,
           title: props.title,
           content: html,
-          // TODO: labels
-          labels: [],
-          newLabels: [],
-          removedLabels: [],
+          // TODO: tags
+          tags: [],
+          newTags: [],
+          removedTags: [],
         },
       },
     });
     props.onSaveEnd?.({
       html,
-      labels: [],
+      tags: [],
     });
   };
 
@@ -135,7 +135,7 @@ const NoteEditorContent = (props: NoteEditorProps) => {
       if (props.onChange) {
         props.onChange({
           html: content,
-          labels: [],
+          tags: [],
         });
       }
     },

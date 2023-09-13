@@ -48,7 +48,7 @@ export const NewTaskCard = (props: Props) => {
       //     date: props.date,
       //     item: null,
       //     durationInMinutes: null,
-      //     labels: [],
+      //     tags: [],
       //     pluginDatas: [],
       //   },
       // },

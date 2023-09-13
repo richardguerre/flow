@@ -2,7 +2,7 @@ import { prisma } from "../utils/prisma";
 import { builder } from "./builder";
 import { ColorEnum } from "./Color";
 
-export const TaskLabelType = builder.prismaNode("TaskTag", {
+export const TaskTagType = builder.prismaNode("TaskTag", {
   id: { field: "id" },
   fields: (t) => ({
     createdAt: t.expose("createdAt", { type: "DateTime" }),
@@ -14,19 +14,19 @@ export const TaskLabelType = builder.prismaNode("TaskTag", {
   }),
 });
 
-// -------------- TaskLabel query types --------------
+// -------------- TaskTag query types --------------
 
-builder.queryField("taskLabels", (t) =>
+builder.queryField("taskTags", (t) =>
   t.prismaConnection({
     type: "TaskTag",
     cursor: "id",
     description:
-      "Get all task labels ordered by usage in descending order. `before` and `after` cursors are ignored, and `first` and `last` act the same and are limited to 100.",
+      "Get all task tags ordered by usage in descending order. `before` and `after` cursors are ignored, and `first` and `last` act the same and are limited to 100.",
     args: {
       where: t.arg({
-        type: TaskLabelWhereInput,
+        type: TaskTagWhereInput,
         required: false,
-        description: "Filters to use when querying task labels.",
+        description: "Filters to use when querying task tags.",
       }),
     },
     resolve: (query, _, args) => {
@@ -46,7 +46,7 @@ builder.queryField("taskLabels", (t) =>
   })
 );
 
-export const TaskLabelWhereInput = builder.inputType("TaskLabelWhereInput", {
+export const TaskTagWhereInput = builder.inputType("TaskTagWhereInput", {
   fields: (t) => ({
     nameIsLike: t.string({
       required: false,
@@ -54,7 +54,7 @@ export const TaskLabelWhereInput = builder.inputType("TaskLabelWhereInput", {
     }),
     isPrivate: t.boolean({
       required: false,
-      description: "Filter by whether the label is for private use.",
+      description: "Filter by whether the tag is for private use.",
     }),
   }),
 });
