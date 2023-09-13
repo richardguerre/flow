@@ -86,6 +86,9 @@ type Item implements Node {
   """
   isRelevant: Boolean!
 
+  """The list in which the item is in"""
+  list: List
+
   """The plugin datas linked to the item"""
   pluginDatas: [ItemPluginData!]!
   scheduledAt: DateTime

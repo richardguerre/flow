@@ -5,6 +5,7 @@ import { ReactSortable } from "react-sortablejs";
 import { useMemo, useState } from "react";
 import { Button } from "@flowdev/ui/Button";
 import { NewItemCard } from "./NewItemCard";
+import { dayjs } from "../dayjs";
 
 type InboxListProps = {
   data: InboxList_data$key;
@@ -22,6 +23,9 @@ export const InboxList = (props: InboxListProps) => {
               id
               isRelevant
               inboxPoints
+              tasks {
+                createdAt
+              }
               ...ItemCard_item
             }
           }
@@ -35,7 +39,14 @@ export const InboxList = (props: InboxListProps) => {
       structuredClone(
         data.items.edges
           .map((edge) => edge.node)
-          .filter((node) => !!node.isRelevant && (node.inboxPoints ?? 0) > 0)
+          .filter((node) => {
+            const passesBaseFilter = !!node.isRelevant && (node.inboxPoints ?? 0) > 0;
+            const today = dayjs();
+            const hasTaskCreatedToday = node.tasks.find((task) =>
+              dayjs(task.createdAt).isSame(today, "day")
+            );
+            return passesBaseFilter && !hasTaskCreatedToday;
+          })
       ),
     [data.items.edges]
   );

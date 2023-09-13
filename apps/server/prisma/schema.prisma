@@ -217,7 +217,7 @@ model Item {
   tasks       Task[]
   /// The plugin datas linked to the item
   pluginDatas ItemPluginData[]
-  /// The list in which the item is
+  /// The list in which the item is in
   list        List?            @relation(fields: [listId], references: [id])
   listId      Int?
 }

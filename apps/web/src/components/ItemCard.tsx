@@ -23,6 +23,7 @@ export const ItemCard = (props: ItemCardProps) => {
         ...ItemTitle_item
         ...ItemCardDetails_item
         ...ItemCardActions_item
+        ...DayItemRecordToCreateTaskFrom_item # used to create tasks from items
       }
     `,
     props.item

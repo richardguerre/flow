@@ -21,6 +21,7 @@ export const ItemType = builder.prismaNode("Item", {
     color: t.expose("color", { type: ColorEnum, nullable: true }),
     pluginDatas: t.relation("pluginDatas"),
     tasks: t.relation("tasks"),
+    list: t.relation("list", { nullable: true }),
   }),
 });
 

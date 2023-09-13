@@ -10,9 +10,10 @@ import { DayAddTaskActionsBar_day$key } from "../relay/__generated__/DayAddTaskA
 import { NewTaskCard } from "./NewTaskCard";
 import { Button } from "@flowdev/ui/Button";
 import { environment } from "../relay/environment";
-import { ItemCard_item$data } from "../relay/__generated__/ItemCard_item.graphql";
 import { toast } from "@flowdev/ui/Toast";
 import { DayCreateTaskFromItemMutation } from "../relay/__generated__/DayCreateTaskFromItemMutation.graphql";
+import { DayItemRecordToCreateTaskFrom_item$data } from "../relay/__generated__/DayItemRecordToCreateTaskFrom_item.graphql";
+import { DayDismissItemFromInboxMutation } from "../relay/__generated__/DayDismissItemFromInboxMutation.graphql";
 
 type DayProps = {
   day: Day_day$key;
@@ -103,6 +104,15 @@ export const DayContent = (props: DayContentProps) => {
     }
   `);
 
+  const [_dismissItemFromInbox] = useMutation<DayDismissItemFromInboxMutation>(graphql`
+    mutation DayDismissItemFromInboxMutation($input: MutationDismissItemFromInboxInput!) {
+      dismissItemFromInbox(input: $input) {
+        id
+        inboxPoints
+      }
+    }
+  `);
+
   const [tasks, setTasks] = useState(structuredClone(Array.from(day.tasks)));
   const [updateTaskDateInfo, setUpdateTaskDateInfo] = useState<UpdateTaskDateInfo>(null);
 
@@ -121,14 +131,14 @@ export const DayContent = (props: DayContentProps) => {
     for (const item of items) {
       if (!store.has(item.id)) continue;
       const index = newList.findIndex((task) => task.id === item.id);
-      const itemRecord = store.get(item.id) as unknown as ItemCard_item$data;
+      const itemRecord = store.get(item.id) as unknown as DayItemRecordToCreateTaskFrom_item$data;
       const createTask = createTaskFromItem({
         variables: {
           input: {
             date: day.date,
             title: itemRecord.title,
             status: "TODO",
-            itemId: item.id,
+            itemId: itemRecord.id,
             atIndex: index,
           },
         },
@@ -146,7 +156,7 @@ export const DayContent = (props: DayContentProps) => {
             "tasks"
           );
           // This adds the new task the item's tasks
-          const updaterItem = updaterStore.get(item.id);
+          const updaterItem = updaterStore.get(itemRecord.id);
           const updaterItemTasks = updaterItem?.getLinkedRecords("tasks");
           updaterItem?.setLinkedRecords([createdTask, ...(updaterItemTasks ?? [])], "tasks");
         },
@@ -156,6 +166,17 @@ export const DayContent = (props: DayContentProps) => {
         error: "Failed to create task",
         success: "Task created",
       });
+
+      // if the item was in the inbox (i.e. had inboxPoints) and the item is in a list, we can dismiss it from the inbox
+      if ((itemRecord.inboxPoints ?? 0) > 0 && itemRecord.list) {
+        _dismissItemFromInbox({
+          variables: { input: { id: itemRecord.id } },
+          optimisticUpdater: (updaterStore) => {
+            const updaterItem = updaterStore.get(itemRecord.id);
+            updaterItem?.setValue(0, "inboxPoints");
+          },
+        });
+      }
     }
   };
 
@@ -249,3 +270,14 @@ const DayAddTaskActionsBar = (props: DayAddTaskActionsBarProps) => {
     </div>
   );
 };
+
+graphql`
+  fragment DayItemRecordToCreateTaskFrom_item on Item {
+    id
+    title
+    inboxPoints
+    list {
+      id
+    }
+  }
+`;
