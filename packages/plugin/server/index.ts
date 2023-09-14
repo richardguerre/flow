@@ -11,6 +11,8 @@ export type ServerPlugin = (opts: ServerPluginOptions) => {
   onInstall?: () => Promise<void>;
   /** Hook called just after uninstalling the plugin. */
   onUninstall?: () => Promise<void>;
+  /** Hook called after a store item belonging to the plugin was upserted. Use `opts.store` to get the value of setting in the store. */
+  onAfterStoreItemUpsert?: (key: string) => Promise<void>;
   /**
    * Hook called when a request is made at `/api/$pluginSlug`.
    *

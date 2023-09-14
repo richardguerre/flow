@@ -11,6 +11,7 @@ const RELEVANT_STATUSES = [
 export default definePlugin((opts) => {
   const GITSTART_LIST_SLUG = "gitstart-items";
   const UPSERT_PR_JOB_NAME = `${opts.pluginSlug}-upsert-pr-as-item`;
+  const SYNC_ITEMS = `${opts.pluginSlug}-sync-items`;
 
   const gqlRequest = async <T>(token: string, query: string, variables?: object) => {
     const res = await fetch("https://api.gitstart.com/graphql", {
@@ -59,8 +60,19 @@ export default definePlugin((opts) => {
         },
       });
     },
+    onAfterStoreItemUpsert: async (itemKey) => {
+      if (itemKey === TOKEN_STORE_KEY) {
+        await opts.pgBoss.send(SYNC_ITEMS, {});
+      }
+    },
     operations: {
       sync: async () => {
+        await opts.pgBoss.send(SYNC_ITEMS, {});
+        return { data: "Job sent to sync the GitStart items." };
+      },
+    },
+    handlePgBossWork: (work) => [
+      work(SYNC_ITEMS, async () => {
         const token = await getTokenFromStore();
         const data1 = await gqlRequest<{
           viewer: { actionablePullRequests: PullRequestWithTicketTasks[] };
@@ -89,13 +101,7 @@ export default definePlugin((opts) => {
         for (const pr of data1.viewer.actionablePullRequests) {
           await opts.pgBoss.send(UPSERT_PR_JOB_NAME, pr);
         }
-
-        return {
-          data: "Job sent to sync the GitStart items.",
-        };
-      },
-    },
-    handlePgBossWork: (work) => [
+      }),
       work(UPSERT_PR_JOB_NAME, { batchSize: 10 }, async (jobs) => {
         for (const job of jobs) {
           const pr = job.data as PullRequestWithTicketTasks;

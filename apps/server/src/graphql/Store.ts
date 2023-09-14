@@ -1,6 +1,7 @@
 import { GraphQLError } from "graphql";
 import {
   getPluginJson,
+  getPlugins,
   getPluginsInStore,
   installServerPlugin,
   uninstallServerPlugin,
@@ -52,7 +53,11 @@ export const StoreType = builder.prismaNode("Store", {
     createdAt: t.expose("createdAt", { type: "DateTime" }),
     updatedAt: t.expose("updatedAt", { type: "DateTime" }),
     key: t.exposeString("key"),
-    value: t.expose("value", { type: "JSON" }),
+    value: t.field({
+      type: "JSON",
+      description: "The value of the store item.",
+      resolve: (store) => (store.isSecret || store.isServerOnly ? null : store.value),
+    }),
     pluginSlug: t.exposeString("pluginSlug"),
   }),
 });
@@ -190,8 +195,8 @@ If \`isServerOnly\` is set to true, the store item will not be returned in the \
       isSecret: t.input.boolean({ required: false }),
       isServerOnly: t.input.boolean({ required: false }),
     },
-    resolve: (query, _, args) => {
-      return prisma.store.upsert({
+    resolve: async (query, _, args) => {
+      const res = await prisma.store.upsert({
         ...query,
         where: {
           pluginSlug_key_unique: { key: args.input.key, pluginSlug: args.input.pluginSlug },
@@ -205,6 +210,10 @@ If \`isServerOnly\` is set to true, the store item will not be returned in the \
           isServerOnly: args.input.isServerOnly ?? args.input.isSecret ?? false,
         },
       });
+      const plugins = await getPlugins();
+      const plugin = plugins[args.input.pluginSlug];
+      await plugin?.onAfterStoreItemUpsert?.(args.input.key); // TODO: maybe execute in message queue instead of synchronously
+      return res;
     },
   })
 );
