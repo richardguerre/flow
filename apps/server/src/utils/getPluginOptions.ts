@@ -5,6 +5,7 @@ import { pgBoss } from "./pgBoss";
 import { nearestTailwindColor } from "./nearestTailwindColor";
 import type { Color, Store } from "@prisma/client";
 import { env } from "../env";
+import { GraphQLError } from "graphql";
 
 type PrismaJsonInput = string | number | boolean | Prisma.JsonObject | Prisma.JsonArray;
 
@@ -185,6 +186,21 @@ export const getPluginOptions = (pluginSlug: string) => ({
   },
   /** Get the nearest valid Item.color to the specified Hex. */
   getNearestItemColor: (hex: string) => nearestTailwindColor(hex) as Color,
+  /**
+   * The GraphQLError constructor so you don't have to install the `graphql` package.
+   *
+   * Recommended to use this instead of throwing errors directly, so that the error is formatted correctly.
+   * @example
+   * ```ts
+   * throw new opts.GraphQLError("Not authenticated", {
+   *  extensions: {
+   *    code: "NOT_AUTHENTICATED" // if present, the frontend will display this code for users to report errors
+   *    userFriendlyMessage: "You need to authenticate first." // if present, the frontend will display this instead of the error message
+   *  }
+   * })
+   * ```
+   */
+  GraphQLError,
 });
 
 export type ServerPluginOptions = ReturnType<typeof getPluginOptions>;

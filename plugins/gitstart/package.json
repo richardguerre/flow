@@ -1,0 +1,12 @@
+{
+  "name": "@flowdev/plugin-gitstart",
+  "description": "Official GitStart plugin for Flow",
+  "version": "0.1.0",
+  "private": false,
+  "dependencies": {
+    "@flowdev/plugin": "*"
+  },
+  "devDependencies": {
+    "@vitejs/plugin-react": "^4.0.2"
+  }
+}

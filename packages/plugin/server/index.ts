@@ -2,7 +2,7 @@
 import { type ServerPluginOptions as _ServerPluginOptions } from "@flowdev/server/src/utils/getPluginOptions";
 import { type PgBossType } from "@flowdev/server/src/utils/pgBoss";
 import type { Request, Response } from "express";
-import type { Prisma } from "@prisma/client";
+// import type { Prisma } from "@prisma/client";
 
 export type ServerPluginOptions = _ServerPluginOptions;
 
@@ -24,7 +24,7 @@ export type ServerPlugin = (opts: ServerPluginOptions) => {
    *
    * This allows the plugin to modify the task and any related data before it is created. For example, the plugin could add to the task's `pluginDatas` array.
    */
-  onCreateTask?: (input: any) => Promise<Prisma.TaskCreateInput>;
+  // onCreateTask?: (input: any) => Promise<Prisma.TaskCreateInput>;
   /**
    * Operations that can be called from the web app through the GraphQL API. This allows the web app to call the plugin's
    * backend code and GraphQL clients like Relay to cache the results for a better user experience.

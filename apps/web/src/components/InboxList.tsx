@@ -79,7 +79,7 @@ export const InboxList = (props: InboxListProps) => {
       >
         {items.map((item) => (
           <div id={item.id} key={item.id} className="pb-4">
-            <ItemCard key={item.id} item={item} />
+            <ItemCard key={item.id} item={item} inInbox />
           </div>
         ))}
       </ReactSortable>

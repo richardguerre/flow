@@ -16,9 +16,13 @@ export default definePlugin((opts) => {
       ACCOUNT_TOKENS_STORE_KEY
     );
     if (!accountsTokensItem) {
-      throw new Error(
-        "NOT_AUTHENTICATED: You are not authenticated and will need to connect your Google account first."
-      );
+      throw new opts.GraphQLError("User not authenticated.", {
+        extensions: {
+          code: "NOT_AUTHENTICATED",
+          userFriendlyMessage:
+            "You are not authenticated and will need to connect your Google account first.",
+        },
+      });
     }
     return accountsTokensItem.value;
   };
@@ -34,9 +38,13 @@ export default definePlugin((opts) => {
     const accountsTokens = params.accountsTokens ?? (await getTokensFromStore());
     const tokens = accountsTokens[params.account];
     if (!tokens) {
-      throw new Error(
-        "NOT_AUTHENTICATED: You are not authenticated and will need to connect your Google account first."
-      );
+      throw new opts.GraphQLError("User not authenticated.", {
+        extensions: {
+          code: "NOT_AUTHENTICATED",
+          userFriendlyMessage:
+            "You are not authenticated and will need to connect your Google account first.",
+        },
+      });
     }
 
     if (opts.dayjs().isAfter(tokens.expires_at)) {

@@ -12,6 +12,7 @@ import { ItemCardDismissFromInboxMutation } from "../relay/__generated__/ItemCar
 
 type ItemCardProps = {
   item: ItemCard_item$key;
+  inInbox?: boolean;
 };
 
 export const ItemCard = (props: ItemCardProps) => {
@@ -40,6 +41,7 @@ export const ItemCard = (props: ItemCardProps) => {
 
 type ItemCardDetailsProps = {
   item: ItemCardDetails_item$key;
+  inInbox?: boolean;
 };
 
 const ItemCardDetails = (props: ItemCardDetailsProps) => {
@@ -95,6 +97,7 @@ const ItemCardDetails = (props: ItemCardDetailsProps) => {
 
 type ItemCardActionsProps = {
   item: ItemCardActions_item$key;
+  inInbox?: boolean;
 };
 
 const ItemCardActions = (props: ItemCardActionsProps) => {
@@ -168,17 +171,19 @@ const ItemCardActions = (props: ItemCardActionsProps) => {
         </TooltipTrigger>
         <TooltipContent side="bottom">Mark this item as done</TooltipContent>
       </Tooltip>
-      <Tooltip>
-        <TooltipTrigger>
-          <button
-            className="bg-background-200 text-foreground-700 hover:bg-background-300 active:bg-background-300 flex h-6 w-6 items-center justify-center rounded-full bg-opacity-50 text-sm hover:bg-opacity-70 active:bg-opacity-100"
-            onClick={dismissFromInbox}
-          >
-            <BsArchive size={16} />
-          </button>
-        </TooltipTrigger>
-        <TooltipContent side="bottom">Archive this item.</TooltipContent>
-      </Tooltip>
+      {props.inInbox && (
+        <Tooltip>
+          <TooltipTrigger>
+            <button
+              className="bg-background-200 text-foreground-700 hover:bg-background-300 active:bg-background-300 flex h-6 w-6 items-center justify-center rounded-full bg-opacity-50 text-sm hover:bg-opacity-70 active:bg-opacity-100"
+              onClick={dismissFromInbox}
+            >
+              <BsArchive size={16} />
+            </button>
+          </TooltipTrigger>
+          <TooltipContent side="bottom">Archive this item.</TooltipContent>
+        </Tooltip>
+      )}
     </div>
   );
 };

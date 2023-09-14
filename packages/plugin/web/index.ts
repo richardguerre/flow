@@ -40,6 +40,11 @@ export type WebPlugin = (options: WebPluginOptions) => {
   settings?: {
     [settingKey: string]: SettingField;
   };
+  onBeforeCreateTaskFromItem?: (props: {
+    item: any;
+    itemWillBeDimissedFromInbox: boolean;
+  }) => Promise<any>;
+  onAfterCreateTaskFromItem?: (props: { item: any }) => Promise<any>;
 };
 
 export const definePlugin = (plugin: WebPlugin) => ({ plugin });
