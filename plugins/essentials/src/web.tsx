@@ -3,7 +3,7 @@
  */
 import { definePlugin, PluginRoutineStepProps } from "@flowdev/plugin/web";
 
-export default definePlugin("essentials", (options) => {
+export default definePlugin((options) => {
   const Flow = options.components;
   const { motion } = options.framerMotion;
   const React = options.React;

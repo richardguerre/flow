@@ -67,6 +67,6 @@ export type ServerPlugin = (opts: ServerPluginOptions) => {
 
 export type ServerPluginReturn = ReturnType<ServerPlugin>;
 
-export const definePlugin = (slug: string, plugin: ServerPlugin) => ({ slug, plugin });
+export const definePlugin = (plugin: ServerPlugin) => ({ plugin });
 
 export type DefineServerPluginReturn = ReturnType<typeof definePlugin>;

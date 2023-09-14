@@ -1,5 +1,5 @@
-const y = (a, s) => ({ slug: a, plugin: s }), f = y("essentials", (a) => {
-  const s = a.components, { motion: m } = a.framerMotion, t = a.React, u = 5, c = (e) => (t.useEffect(() => {
+const y = (a) => ({ plugin: a }), f = y((a) => {
+  const i = a.components, { motion: m } = a.framerMotion, t = a.React, u = 5, c = (e) => (t.useEffect(() => {
     const o = setTimeout(e.onNext, u * 1e3);
     return () => clearTimeout(o);
   }, []), /* @__PURE__ */ t.createElement(
@@ -46,12 +46,12 @@ const y = (a, s) => ({ slug: a, plugin: s }), f = y("essentials", (a) => {
               const d = n[0];
               r(
                 `<ul>${d.tasks.map(
-                  (i) => `<li>${i.status === "DONE" ? "✅" : i.status === "CANCELED" ? "❌" : "⏳"} ${i.title}</li>`
+                  (s) => `<li>${s.status === "DONE" ? "✅" : s.status === "CANCELED" ? "❌" : "⏳"} ${s.title}</li>`
                 ).join("")}</ul>`
               );
             })();
           }, []), /* @__PURE__ */ t.createElement("div", null, /* @__PURE__ */ t.createElement(
-            s.NoteEditor,
+            i.NoteEditor,
             {
               slug: `flow-essentials_retro-${l.format("YYYY-MM-DD")}`,
               title: `Retro of ${l.format("MMMM D")}`,
@@ -75,7 +75,7 @@ const y = (a, s) => ({ slug: a, plugin: s }), f = y("essentials", (a) => {
             to: o.toDate(),
             toRender: { Day: !0 }
           })), n = r == null ? void 0 : r[0];
-          return l ? /* @__PURE__ */ t.createElement(t.Fragment, null, "Loading...") : /* @__PURE__ */ t.createElement("div", null, /* @__PURE__ */ t.createElement("div", null, /* @__PURE__ */ t.createElement(e.BackButton, null), /* @__PURE__ */ t.createElement(e.NextButton, null)), /* @__PURE__ */ t.createElement(s.Day, { day: n, label: "Today" }));
+          return l ? /* @__PURE__ */ t.createElement(t.Fragment, null, "Loading...") : /* @__PURE__ */ t.createElement("div", null, /* @__PURE__ */ t.createElement("div", null, /* @__PURE__ */ t.createElement(e.BackButton, null), /* @__PURE__ */ t.createElement(e.NextButton, null)), /* @__PURE__ */ t.createElement(i.Day, { day: n, label: "Today" }));
         }
       },
       "today-tomorrow-next-week": {
@@ -86,7 +86,7 @@ const y = (a, s) => ({ slug: a, plugin: s }), f = y("essentials", (a) => {
             dates: [o.toDate(), r.toDate(), l.toDate()],
             toRender: { Day: !0 }
           }));
-          return d ? /* @__PURE__ */ t.createElement(t.Fragment, null, "Loading...") : /* @__PURE__ */ t.createElement("div", null, /* @__PURE__ */ t.createElement("div", null, /* @__PURE__ */ t.createElement(e.BackButton, null), /* @__PURE__ */ t.createElement(e.NextButton, null)), /* @__PURE__ */ t.createElement("div", { className: "flex" }, /* @__PURE__ */ t.createElement(s.Day, { day: n == null ? void 0 : n[0], label: "Today" }), /* @__PURE__ */ t.createElement(s.Day, { day: n == null ? void 0 : n[1], label: "Tomorrow" }), /* @__PURE__ */ t.createElement(s.Day, { day: n == null ? void 0 : n[2], label: "Next week" })));
+          return d ? /* @__PURE__ */ t.createElement(t.Fragment, null, "Loading...") : /* @__PURE__ */ t.createElement("div", null, /* @__PURE__ */ t.createElement("div", null, /* @__PURE__ */ t.createElement(e.BackButton, null), /* @__PURE__ */ t.createElement(e.NextButton, null)), /* @__PURE__ */ t.createElement("div", { className: "flex" }, /* @__PURE__ */ t.createElement(i.Day, { day: n == null ? void 0 : n[0], label: "Today" }), /* @__PURE__ */ t.createElement(i.Day, { day: n == null ? void 0 : n[1], label: "Tomorrow" }), /* @__PURE__ */ t.createElement(i.Day, { day: n == null ? void 0 : n[2], label: "Next week" })));
         }
       },
       // TODO: Implement `decide-shutdown-time` step
@@ -114,12 +114,12 @@ const y = (a, s) => ({ slug: a, plugin: s }), f = y("essentials", (a) => {
               const d = n[0];
               r(
                 `<ul>${d.tasks.map(
-                  (i) => `<li>${i.status === "DONE" ? "✅ " : i.status === "CANCELED" ? "❌ " : ""}${i.title}</li>`
+                  (s) => `<li>${s.status === "DONE" ? "✅ " : s.status === "CANCELED" ? "❌ " : ""}${s.title}</li>`
                 ).join("")}</ul>`
               );
             })();
           }, []), /* @__PURE__ */ t.createElement("div", null, /* @__PURE__ */ t.createElement(
-            s.NoteEditor,
+            i.NoteEditor,
             {
               slug: `flow-essentials_retro-${l.format("YYYY-MM-DD")}`,
               title: `Plan for ${l.format("MMMM D")}`,
@@ -144,7 +144,7 @@ const y = (a, s) => ({ slug: a, plugin: s }), f = y("essentials", (a) => {
             to: o.toDate(),
             toRender: { Day: !0 }
           })), n = r == null ? void 0 : r[0];
-          return l ? /* @__PURE__ */ t.createElement(t.Fragment, null, "Loading...") : /* @__PURE__ */ t.createElement("div", null, /* @__PURE__ */ t.createElement("div", null, /* @__PURE__ */ t.createElement(e.BackButton, null), /* @__PURE__ */ t.createElement(e.NextButton, null)), /* @__PURE__ */ t.createElement(s.Day, { day: n, label: "Today" }));
+          return l ? /* @__PURE__ */ t.createElement(t.Fragment, null, "Loading...") : /* @__PURE__ */ t.createElement("div", null, /* @__PURE__ */ t.createElement("div", null, /* @__PURE__ */ t.createElement(e.BackButton, null), /* @__PURE__ */ t.createElement(e.NextButton, null)), /* @__PURE__ */ t.createElement(i.Day, { day: n, label: "Today" }));
         }
       },
       "retro-on-today": {
@@ -166,12 +166,12 @@ const y = (a, s) => ({ slug: a, plugin: s }), f = y("essentials", (a) => {
               const d = n[0];
               r(
                 `<ul>${d.tasks.map(
-                  (i) => `<li>${i.status === "DONE" ? "✅ " : i.status === "CANCELED" ? "❌ " : ""}${i.title}</li>`
+                  (s) => `<li>${s.status === "DONE" ? "✅ " : s.status === "CANCELED" ? "❌ " : ""}${s.title}</li>`
                 ).join("")}</ul>`
               );
             })();
           }, []), /* @__PURE__ */ t.createElement("div", null, /* @__PURE__ */ t.createElement(
-            s.NoteEditor,
+            i.NoteEditor,
             {
               slug: `flow-essentials_retro-${l.format("YYYY-MM-DD")}`,
               title: `Retro of ${l.format("MMMM D")}`,
@@ -195,7 +195,7 @@ const y = (a, s) => ({ slug: a, plugin: s }), f = y("essentials", (a) => {
             to: o.toDate(),
             toRender: { Day: !0 }
           })), n = r == null ? void 0 : r[0];
-          return l ? /* @__PURE__ */ t.createElement(t.Fragment, null, "Loading...") : /* @__PURE__ */ t.createElement("div", null, /* @__PURE__ */ t.createElement("div", null, /* @__PURE__ */ t.createElement(e.BackButton, null), /* @__PURE__ */ t.createElement(e.NextButton, null)), /* @__PURE__ */ t.createElement(s.Day, { day: n, label: "Tomorrow" }));
+          return l ? /* @__PURE__ */ t.createElement(t.Fragment, null, "Loading...") : /* @__PURE__ */ t.createElement("div", null, /* @__PURE__ */ t.createElement("div", null, /* @__PURE__ */ t.createElement(e.BackButton, null), /* @__PURE__ */ t.createElement(e.NextButton, null)), /* @__PURE__ */ t.createElement(i.Day, { day: n, label: "Tomorrow" }));
         }
       }
     }

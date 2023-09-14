@@ -1,5 +1,5 @@
 import { definePlugin } from "@flowdev/plugin/server";
 
-export default definePlugin("essentials", (opts) => {
+export default definePlugin((opts) => {
   return {};
 });

@@ -1,1 +1,1 @@
-"use strict";const t=(s,e)=>({slug:s,plugin:e}),n=t("essentials",s=>({}));module.exports=n;
+"use strict";const s=e=>({plugin:e}),t=s(e=>({}));module.exports=t;

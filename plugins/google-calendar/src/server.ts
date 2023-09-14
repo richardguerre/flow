@@ -4,7 +4,7 @@ import type { calendar_v3 } from "@googleapis/calendar"; // import type only to 
 const ACCOUNT_TOKENS_STORE_KEY = "account-tokens";
 const CONNECTED_CALENDARS_KEY = "connected-calendars";
 
-export default definePlugin("google-calendar", (opts) => {
+export default definePlugin((opts) => {
   const GET_EVENTS_JOB_NAME = `${opts.pluginSlug}-get-events`; // prefixed with the plugin slug to avoid collisions with other plugins
   const CALENDARS_SYNC_JOB_NAME = `${opts.pluginSlug}-calendars-sync`; // prefixed with the plugin slug to avoid collisions with other plugins
   const UPSERT_EVENT_JOB_NAME = `${opts.pluginSlug}-upsert-item-from-event`; // prefixed with the plugin slug to avoid collisions with other plugins

@@ -42,7 +42,7 @@ export type WebPlugin = (options: WebPluginOptions) => {
   };
 };
 
-export const definePlugin = (slug: string, plugin: WebPlugin) => ({ slug, plugin });
+export const definePlugin = (plugin: WebPlugin) => ({ plugin });
 
 export type DefineWebPluginReturn = ReturnType<typeof definePlugin>;
 

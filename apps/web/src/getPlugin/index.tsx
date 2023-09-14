@@ -28,8 +28,8 @@ export const getPlugin = async (input: Input) => {
       import(/* @vite-ignore */ `${pluginInstallation.url}/web.js`);
 
     // TODO: use plugin's slug if needed
-    const { plugin, slug } = (await importPromise).default as DefineWebPluginReturn;
-    return plugin(getPluginOptions(slug));
+    const { plugin } = (await importPromise).default as DefineWebPluginReturn;
+    return plugin(getPluginOptions(input.pluginSlug));
   } catch (e) {
     console.log(e);
     return { _error: "PLUGIN_LOAD_ERROR" } as const;

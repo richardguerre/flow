@@ -1,6 +1,6 @@
 import { definePlugin } from "@flowdev/plugin/web";
 
-export default definePlugin("google-calendar", (options) => {
+export default definePlugin((options) => {
   // @ts-ignore as React is used during compilation and is required to make sure the plugin works with the host's React version
   const React = options.React;
   const Flow = options.components;
