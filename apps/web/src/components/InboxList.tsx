@@ -20,12 +20,7 @@ export const InboxList = (props: InboxListProps) => {
           __id
           edges {
             node {
-              id
-              isRelevant
-              inboxPoints
-              tasks {
-                createdAt
-              }
+              ...InboxListItemToBeInList_item @relay(mask: false)
               ...ItemCard_item
             }
           }
@@ -91,3 +86,14 @@ export const InboxList = (props: InboxListProps) => {
     </div>
   );
 };
+
+graphql`
+  fragment InboxListItemToBeInList_item on Item {
+    id
+    isRelevant
+    inboxPoints
+    tasks {
+      createdAt
+    }
+  }
+`;

@@ -124,7 +124,7 @@ export const TaskTitleInput = (props: TaskTitleInputProps) => {
 
   return (
     <EditorContent
-      className="CardEditorInput w-full p-0"
+      className="CardEditorInput w-full cursor-text p-0"
       editor={editorRef.current}
       onClick={handleClick}
     />

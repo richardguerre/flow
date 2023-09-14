@@ -12,8 +12,8 @@ export const NewItemCard = (props: NewItemCardProps) => {
   const [createItem] = useMutation<NewItemCardCreateItemMutation>(graphql`
     mutation NewItemCardCreateItemMutation($input: MutationCreateItemInput!) {
       createItem(input: $input) {
-        isRelevant
         ...ItemCard_item
+        ...InboxListItemToBeInList_item # used by the InboxList to determine if the item should be in the list
       }
     }
   `);
