@@ -1,9 +1,11 @@
-import { TaskStatus } from "@prisma/client";
+import { TaskStatus, Item, ItemPluginData, Prisma } from "@prisma/client";
 import { endOfDay, startOfDay } from "../utils/getDays";
 import { prisma } from "../utils/prisma";
 import { builder, u } from "./builder";
 import { DayType } from "./Day";
 import { dayjs } from "@flowdev/server/src/utils/dayjs";
+import { getPlugins } from "@flowdev/server/src/utils/getPlugins";
+import { ServerPluginReturn } from "@flowdev/plugin/server";
 
 // -------------- Task types --------------
 
@@ -49,6 +51,23 @@ export const TaskStatusEnum = builder.enumType("TaskStatus", {
 
 // ------------------ Task mutations ------------------
 
+export type PluginOnCreateTask = (task: {
+  title: string;
+  status?: TaskStatus | null;
+  durationInMinutes?: number | null;
+  date?: Date;
+  item?: (Item & { pluginDatas: ItemPluginData[] }) | null;
+}) => Promise<{
+  pluginData?: {
+    /** The original id of the item given by the plugin, if any */
+    originalId?: string | null;
+    /** The minimum data required to render the information on task cards. */
+    min: JsonValue;
+    /** The full data required by the plugin to be linked to the task. */
+    full: JsonValue;
+  };
+} | void>;
+
 builder.mutationField("createTask", (t) =>
   t.prismaFieldWithInput({
     type: "Task",
@@ -76,9 +95,38 @@ builder.mutationField("createTask", (t) =>
           "The position in the day the task should be placed at. If not specified, it will be placed at the beginning.",
       }),
     },
-    resolve: (query, _, args) => {
+    resolve: async (query, _, args) => {
       const date = args.input.date ?? startOfDay(new Date());
       const index = args.input.atIndex ?? 0;
+      const plugins = getPlugins();
+      const pluginDatas: Prisma.TaskPluginDataCreateManyTaskInput[] = [];
+      let item;
+      if (args.input.itemId) {
+        item = await prisma.item.findUnique({
+          where: { id: parseInt(args.input.itemId?.id) },
+          include: { pluginDatas: true },
+        });
+      }
+      for (const pluginSlug in plugins) {
+        const plugin = plugins[pluginSlug as keyof typeof plugins] as ServerPluginReturn;
+        const result = await plugin
+          .onCreateTask?.({
+            title: args.input.title,
+            status: args.input.status,
+            durationInMinutes: args.input.durationInMinutes,
+            date,
+            item,
+          })
+          .catch(() => null); // ignore errors
+        if (result?.pluginData) {
+          pluginDatas.push({
+            pluginSlug,
+            originalId: result.pluginData.originalId,
+            min: result.pluginData.min,
+            full: result.pluginData.full,
+          });
+        }
+      }
       return prisma.$transaction(async (tx) => {
         const task = await tx.task.create({
           ...query,
@@ -90,6 +138,7 @@ builder.mutationField("createTask", (t) =>
             ...(args.input.itemId
               ? { item: { connect: { id: parseInt(args.input.itemId.id) } } }
               : {}),
+            pluginDatas: { createMany: { data: pluginDatas } },
           },
         });
         const day = await tx.day.findUnique({ where: { date }, select: { tasksOrder: true } });

@@ -25,6 +25,10 @@ import { createTask } from "./createTask";
 import { getStoreUtils } from "./getStoreUtils";
 import React from "react";
 import { getPluginOperationUtils } from "./pluginOperation";
+import { FormInput } from "@flowdev/ui/FormInput";
+import { Input } from "@flowdev/ui/Input";
+import { DropdownMenu, DropdownMenuItem, DropdownMenuTrigger } from "@flowdev/ui/DropdownMenu";
+import { useForm, Controller } from "react-hook-form";
 
 export const getPluginOptions = (slug: string) => ({
   /** The plugin's slug. There is no difference with the one passed into `definePlugin`. It can be used to not repeat it throughout the plugin's code. */
@@ -68,6 +72,11 @@ export const getPluginOptions = (slug: string) => ({
     TaskCard,
     ItemCard,
     Lists,
+    Input,
+    FormInput,
+    DropdownMenu,
+    DropdownMenuTrigger,
+    DropdownMenuItem,
   },
   hooks: {
     /**
@@ -142,6 +151,11 @@ export const getPluginOptions = (slug: string) => ({
    * The dayjs package. This prevents double bundling it in both the web app and in individual plugins.
    */
   dayjs,
+  /** The react-hook-form package. This prevents double bundling it in both the web app and in individual plugins. */
+  reactHookForm: {
+    useForm,
+    Controller,
+  },
 });
 
 export type WebPluginOptions = ReturnType<typeof getPluginOptions>;

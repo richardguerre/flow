@@ -1,8 +1,8 @@
 // ‼️ only import types from the @flowdev/server package, not runtime code otherwise it will be a cyclic dependency
 import { type ServerPluginOptions as _ServerPluginOptions } from "@flowdev/server/src/utils/getPluginOptions";
 import { type PgBossType } from "@flowdev/server/src/utils/pgBoss";
+import type { PluginOnCreateTask } from "@flowdev/server/src/graphql/Task";
 import type { Request, Response } from "express";
-// import type { Prisma } from "@prisma/client";
 
 export type ServerPluginOptions = _ServerPluginOptions;
 
@@ -13,20 +13,14 @@ export type ServerPlugin = (opts: ServerPluginOptions) => {
   onUninstall?: () => Promise<void>;
   /** Hook called after a store item belonging to the plugin was upserted. Use `opts.store` to get the value of setting in the store. */
   onStoreItemUpsert?: (key: string) => Promise<void>;
+  /** Hook called before a task is created. Useful to add plugin data to the task. */
+  onCreateTask?: PluginOnCreateTask;
   /**
    * Hook called when a request is made at `/api/$pluginSlug`.
    *
    * The `req.path` is the path after that. For example if the request is made at `/api/$pluginSlug/foo/bar`, then `req.path` will be `/foo/bar`.
    */
   onRequest?: (req: Request, res: Response) => Promise<any>;
-  /**
-   * Hook called before a task is created in the database:
-   * - When the `createTask` mutation is called.
-   * - When a task is created using the `opts.prisma.task.create` function.
-   *
-   * This allows the plugin to modify the task and any related data before it is created. For example, the plugin could add to the task's `pluginDatas` array.
-   */
-  // onCreateTask?: (input: any) => Promise<Prisma.TaskCreateInput>;
   /**
    * Operations that can be called from the web app through the GraphQL API. This allows the web app to call the plugin's
    * backend code and GraphQL clients like Relay to cache the results for a better user experience.

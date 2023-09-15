@@ -1,12 +1,13 @@
 import { definePlugin } from "@flowdev/plugin/server";
 
 export const TOKEN_STORE_KEY = "gitstart-session-token";
+const USER_INFO_STORE_KEY = "gitstart-user-info";
 const RELEVANT_STATUSES = [
   "PLANNED",
   "IN_PROGRESS",
   "INTERNAL_REVIEW",
   "CLIENT_REVIEW",
-] as PullRequestStatus[];
+] as GitStartPullRequestStatus[];
 
 export default definePlugin((opts) => {
   const GITSTART_LIST_SLUG = "gitstart-items";
@@ -65,6 +66,58 @@ export default definePlugin((opts) => {
         await opts.pgBoss.send(SYNC_ITEMS, {});
       }
     },
+    onCreateTask: async (task) => {
+      const pluginData = task.item?.pluginDatas.find((pd) => pd.pluginSlug === opts.pluginSlug);
+      if (!pluginData?.originalId) return;
+      const userInfoItem = await opts.store.getPluginItem<UserInfo>(USER_INFO_STORE_KEY);
+      if (!userInfoItem) return;
+      const { id: userId } = decodeNodeId(userInfoItem.value.id);
+
+      const token = await getTokenFromStore();
+
+      const itemPluginData = pluginData.full as ItemPluginDataFull;
+      if (itemPluginData.type === "pull_request") {
+        const { id: prId } = decodeNodeId(pluginData.originalId);
+        const data = await gqlRequest<{ createTask: GitStartTask }>(
+          token,
+          /* GraphQL */ `
+            mutation FlowOperationCreateTask($input: CreateTaskInput!) {
+              createTask(input: $input) {
+                ...GitStartTask
+              }
+            }
+            ${GitStartTaskFragment}
+          `,
+          {
+            input: {
+              pullRequestInternalId: prId,
+              title: task.title,
+              type: "CODE", // TODO: make this configurable
+              assigneeInternalId: userId,
+            },
+          }
+        );
+        const min: TaskPluginDataMin = {
+          ticketUrl: itemPluginData.ticketUrl,
+          status: data.createTask.status,
+          githubPrUrl: itemPluginData.url,
+        };
+        const full: TaskPluginDataFull = {
+          ...min,
+          id: data.createTask.id,
+          pullRequest: itemPluginData,
+        };
+        return {
+          pluginData: {
+            originalId: data.createTask.id,
+            min,
+            full,
+          },
+        };
+      } else {
+        // TODO: it's a ticket, so we need to create the pull request first then create the task
+      }
+    },
     operations: {
       sync: async () => {
         await opts.pgBoss.send(SYNC_ITEMS, {});
@@ -75,12 +128,13 @@ export default definePlugin((opts) => {
       work(SYNC_ITEMS, async () => {
         const token = await getTokenFromStore();
         const data1 = await gqlRequest<{
-          viewer: { actionablePullRequests: PullRequestWithTicketTasks[] };
+          viewer: { id: string; actionablePullRequests: PullRequestWithTicketTasks[] };
         }>(
           token,
           /* GraphQL */ `
             query FlowOperationSyncPRsAndTasks {
               viewer {
+                id
                 actionablePullRequests {
                   ...GitStartPullRequest
                   ticket {
@@ -98,6 +152,8 @@ export default definePlugin((opts) => {
           `
         );
 
+        await opts.store.setSecretItem<UserInfo>(USER_INFO_STORE_KEY, { id: data1.viewer.id });
+
         for (const pr of data1.viewer.actionablePullRequests) {
           await opts.pgBoss.send(UPSERT_PR_JOB_NAME, pr);
         }
@@ -112,15 +168,15 @@ export default definePlugin((opts) => {
             include: { pluginDatas: { select: { id: true } } },
           });
 
-          const min = {
+          const min: ItemPluginDataMin = {
+            type: "pull_request",
             ticketUrl: `https://developers.gitstart.com/client/${pr.ticket.client.id}/ticket/${pr.ticket.code}`,
-            githubUrl: pr.url,
+            url: pr.url,
             status: pr.status,
           };
-          const full = {
+          const full: ItemPluginDataFull = {
             ...min,
-            completedAt: pr.completedAt,
-            githubNumber: pr.number,
+            id: pr.id,
             ticket: pr.ticket,
           };
 
@@ -166,11 +222,40 @@ export default definePlugin((opts) => {
   };
 });
 
+const decodeNodeId = <T = number>(nodeId: string): { type: string; id: T } => {
+  // GitStart splits their IDs with a dash, so we can use that to determine the type and ID
+  const [type, id] = nodeId.split("-");
+  const asNum = parseInt(id);
+  if (!Number.isNaN(asNum)) {
+    return { type, id: asNum as T };
+  }
+  return { type, id: id as T };
+};
+
+type TaskPluginDataMin = {
+  ticketUrl: string;
+  githubPrUrl: GitStartPullRequest["url"];
+  status: GitStartTaskStatus;
+};
+
+type TaskPluginDataFull = TaskPluginDataMin & {
+  id: GitStartTask["id"];
+  pullRequest: PrItemPluginDataFull;
+};
+
+type ItemPluginDataMin = TicketItemPluginDataMin | PrItemPluginDataMin;
+type ItemPluginDataFull = TicketItemPluginDataFull | PrItemPluginDataFull;
+
+type UserInfo = {
+  id: string;
+};
+
 type PullRequestWithTicketTasks = GitStartPullRequest & {
   ticket: GitStartTicket;
   tasks: Array<GitStartTask>;
 };
 
+// -------------------- ticket types --------------------
 type GitStartTicket = {
   id: string;
   title: string;
@@ -190,8 +275,18 @@ const GitStartTicketFragment = /* GraphQL */ `
     }
   }
 `;
+type TicketItemPluginDataMin = {
+  type: "ticket"; // matches with node ID type
+  url: string;
+};
+type TicketItemPluginDataFull = TicketItemPluginDataMin & {
+  id: GitStartTicket["id"];
+  code: GitStartTicket["code"];
+  client: GitStartTicket["client"];
+};
 
-type PullRequestStatus =
+// -------------------- PR types --------------------
+type GitStartPullRequestStatus =
   | "PLANNED"
   | "IN_PROGRESS"
   | "INTERNAL_REVIEW"
@@ -201,11 +296,10 @@ type PullRequestStatus =
   | "MERGED";
 type GitStartPullRequest = {
   id: string;
-  status: PullRequestStatus;
+  status: GitStartPullRequestStatus;
   title: string;
   completedAt: string | null;
   url: string | null;
-  number: number | null;
 };
 const GitStartPullRequestFragment = /* GraphQL */ `
   fragment GitStartPullRequest on PullRequest {
@@ -217,10 +311,23 @@ const GitStartPullRequestFragment = /* GraphQL */ `
     number
   }
 `;
+type PrItemPluginDataMin = {
+  type: "pull_request"; // matches with node ID type
+  ticketUrl: string;
+  url: GitStartPullRequest["url"];
+  status: GitStartPullRequestStatus;
+};
 
+type PrItemPluginDataFull = PrItemPluginDataMin & {
+  id: GitStartPullRequest["id"];
+  ticket: GitStartTicket;
+};
+
+// -------------------- task types --------------------
+type GitStartTaskStatus = "CANCELED" | "FINISHED" | "IN_PROGRESS" | "TO_DO";
 type GitStartTask = {
   id: string;
-  status: string;
+  status: GitStartTaskStatus;
   title: string;
 };
 const GitStartTaskFragment = /* GraphQL */ `

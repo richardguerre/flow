@@ -8,4 +8,5 @@ interface ImportMeta {
   readonly env: ImportMetaEnv;
 }
 
+/** Prisma's JSON type for inputs and outputs. */
 type JsonValue = string | number | boolean | { [Key in string]?: JsonValue } | Array<JsonValue>;

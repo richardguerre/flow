@@ -8,10 +8,13 @@ import { DayContent_day$key } from "../relay/__generated__/DayContent_day.graphq
 import { DayUpdateTaskDateMutation } from "../relay/__generated__/DayUpdateTaskDateMutation.graphql";
 import { DayAddTaskActionsBar_day$key } from "../relay/__generated__/DayAddTaskActionsBar_day.graphql";
 import { NewTaskCard } from "./NewTaskCard";
-import { Button } from "@flowdev/ui/Button";
+import { Button, ButtonProps } from "@flowdev/ui/Button";
 import { environment } from "../relay/environment";
 import { toast } from "@flowdev/ui/Toast";
-import { DayCreateTaskFromItemMutation } from "../relay/__generated__/DayCreateTaskFromItemMutation.graphql";
+import {
+  DayCreateTaskFromItemMutation,
+  TaskStatus,
+} from "../relay/__generated__/DayCreateTaskFromItemMutation.graphql";
 import { DayItemRecordToCreateTaskFrom_item$data } from "../relay/__generated__/DayItemRecordToCreateTaskFrom_item.graphql";
 import { DayDismissItemFromInboxMutation } from "../relay/__generated__/DayDismissItemFromInboxMutation.graphql";
 
@@ -279,5 +282,91 @@ graphql`
     list {
       id
     }
+    pluginDatas {
+      pluginSlug
+      min
+    }
   }
 `;
+
+type PluginCreateTaskData = {
+  /** Overrides to the task details. */
+  taskOverrides?: {
+    /** The title of the task if different than what the user inputted. */
+    title?: string;
+    /** The status of the task if different than the default (i.e. TODO). */
+    status?: TaskStatus;
+    /** The durationInMinutes of the task if different than the default. */
+    durationInMinutes?: number;
+    /** The date of the task if different than what the user specified. ⚠️ Recommended not to change it. */
+    date?: string;
+  };
+  /**
+   * Data that will be saved and linked to the task when it's created.
+   *
+   * If you don't want data to be saved but need it for the server plugin's onCreateTask hook, pass in `actionData` instead/as well.
+   */
+  pluginData?: {
+    /** The original id of the item given by the plugin, if any. */
+    originalId?: string | null;
+    /** The minimum data required to render the information on task cards. */
+    min: JsonValue;
+    /** The full data required by the plugin to be linked to the task. */
+    full: JsonValue;
+  };
+  /**
+   * Data that will be passed into the server plugin's onCreateTask hook, but will not be saved nor linked to the task.
+   *
+   * If you want data to be saved and linked to the task, pass in `pluginData` instead/as well.
+   */
+  actionData?: JsonValue;
+};
+export type OnCreateTask = (input: {
+  task?: {
+    /** The title of the task and whether it was already overriden by another plugin. */
+    title: MaybeOverriden<string>;
+    /** The status of the task and whether it was already overriden by another plugin. */
+    status: MaybeOverriden<TaskStatus>;
+    /** The durationInMinutes of the task and whether it was already overriden by another plugin. */
+    durationInMinutes: MaybeOverriden<number>;
+    /** The date of the task and whether it was already overriden by another plugin. */
+    date: MaybeOverriden<string>;
+    /** The item the task is created from. Will be undefined if the task is not created from an item. */
+    item?: DayItemRecordToCreateTaskFrom_item$data & {
+      /**
+       * Whether the item will be dismissed from the inbox after the task is created.
+       *
+       * Note: If the item didn't belong to a list, it will not be dismissed from the inbox,
+       * but it will be hidden for the rest of day as the user has technically triaged the
+       * item out of the inbox. The item will be present the following day.
+       */
+      willBeDimissedFromInbox: boolean;
+    };
+  };
+}) =>
+  | null
+  | PluginCreateTaskData
+  | {
+      /** The component to be rendered in the modal to ask for addditional information needed to create the task. */
+      modalContent: React.ComponentType<{
+        /** The previously saved metadata when the user clicked on next or back and comes back to this plugin's step. Helpful to not render an empty form when they back to the same step. */
+        initialMetdata: PluginCreateTaskData;
+        /** To be triggered when going to the next step. The given data will be passed into the createTask mutation for the server side of the plugin to handle. */
+        onNext: (metadata?: PluginCreateTaskData) => void;
+        /** To be triggered when going to the previous step. The given data will be passed into the createTask mutation for the server side of the plugin to handle. */
+        onBack: (metadata?: PluginCreateTaskData) => void;
+        /** To be triggered when closing the modal. */
+        onClose: () => void;
+        /** Renders a button with the correct label (either `Create task` when it's the last step in the onCreateTask sequence, `Next` if it's not the last step). */
+        NextButton: React.ComponentType<NavigationButtonProps>;
+        /** Renders a button with the correct label (either `Back` when it's not the first step in the onCreateTask sequence, `Cancel` if it's the first step). */
+        BackButton: React.ComponentType<NavigationButtonProps>;
+      }>;
+    };
+
+type NavigationButtonProps = Omit<ButtonProps, "primary" | "secondary" | "tertiary" | "children">;
+
+type MaybeOverriden<T> = {
+  value: T;
+  overriden: boolean;
+};

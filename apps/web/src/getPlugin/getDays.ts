@@ -385,8 +385,6 @@ export const getDaysMax10 = async (opts: GetDaysMax10Options) => {
 
 const toDayId = (date: Date) => `Day_${dayjs(date).format("YYYY-MM-DD")}`;
 
-// const convertToDay = (day: any) => ({
-
 type DeepPartial<T> = {
   [P in keyof T]?: T[P] extends Array<infer U>
     ? Array<DeepPartial<U>>

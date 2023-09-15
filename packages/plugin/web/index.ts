@@ -1,6 +1,7 @@
 // ‼️ only import **types** from the @flowdev/web package, not runtime code otherwise it will be a cyclic dependency
 import type { WebPluginOptions } from "@flowdev/web/src/getPlugin/getPluginOptions";
 import type { PluginRoutineStepProps } from "@flowdev/web/src/components/RoutineStep";
+import type { OnCreateTask } from "@flowdev/web/src/components/Day";
 
 export type { WebPluginOptions, PluginRoutineStepProps };
 
@@ -40,11 +41,8 @@ export type WebPlugin = (options: WebPluginOptions) => {
   settings?: {
     [settingKey: string]: SettingField;
   };
-  onBeforeCreateTaskFromItem?: (props: {
-    item: any;
-    itemWillBeDimissedFromInbox: boolean;
-  }) => Promise<any>;
-  onAfterCreateTaskFromItem?: (props: { item: any }) => Promise<any>;
+  /** Hook called when the user creates a task. */
+  onCreateTask?: OnCreateTask;
 };
 
 export const definePlugin = (plugin: WebPlugin) => ({ plugin });
