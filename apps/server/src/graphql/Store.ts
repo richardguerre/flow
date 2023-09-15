@@ -53,12 +53,15 @@ export const StoreType = builder.prismaNode("Store", {
     createdAt: t.expose("createdAt", { type: "DateTime" }),
     updatedAt: t.expose("updatedAt", { type: "DateTime" }),
     key: t.exposeString("key"),
+    pluginSlug: t.exposeString("pluginSlug"),
+    isSecret: t.exposeBoolean("isSecret"),
+    isServerOnly: t.exposeBoolean("isServerOnly"),
     value: t.field({
       type: "JSON",
+      nullable: true,
       description: "The value of the store item.",
       resolve: (store) => (store.isSecret || store.isServerOnly ? null : store.value),
     }),
-    pluginSlug: t.exposeString("pluginSlug"),
   }),
 });
 
@@ -181,13 +184,13 @@ const PluginInstallationType = builder.objectType(
 builder.mutationField("upsertStoreItem", (t) =>
   t.prismaFieldWithInput({
     type: "Store",
-    description: `Creates a store item. If a store item with the same key exists, it will be updated.
+    description: `Creates a store item. If a store item with the same key exists, only its value will be updated (\`isSecret\` and \`isServerOnly\` will not be updated).
 
 If the \`pluginSlug\` is passed, it will create/update a store item for that plugin. Otherwise, it will create/update a store item for flow.
 
-If \`isSecret\` is set to true, the store item will be set or updated with \`isServerOnly\` set to true as well and will not be returned in the \`storeItems\` query.
+If \`isSecret\` is set to true, \`isServerOnly\` will also be set to true and will not be returned in the \`storeItems\` query (it will be \`null\`). The item will only be accessible by plugin with the same \`pluginSlug\` in the server.
 
-If \`isServerOnly\` is set to true, the store item will not be returned in the \`storeItems\` query.`,
+If \`isServerOnly\` is set to true, the store item will not be returned in the \`storeItems\` query (it will be \`null\`). The item will be accessible by all plugins in the server.`,
     input: {
       key: t.input.string({ required: true }),
       value: t.input.field({ type: "JSON", required: true }),
@@ -196,6 +199,18 @@ If \`isServerOnly\` is set to true, the store item will not be returned in the \
       isServerOnly: t.input.boolean({ required: false }),
     },
     resolve: async (query, _, args) => {
+      if (args.input.pluginSlug === "flow") {
+        throw new GraphQLError(
+          "The slug 'flow' is reserved for internal use. Please use your plugin's slug.",
+          {
+            extensions: {
+              code: "KEY_RESERVED",
+              userFriendlyMessage:
+                "The item couldn't be saved. Please ask the plugin author for more information.",
+            },
+          }
+        );
+      }
       const res = await prisma.store.upsert({
         ...query,
         where: {
@@ -212,7 +227,7 @@ If \`isServerOnly\` is set to true, the store item will not be returned in the \
       });
       const plugins = await getPlugins();
       const plugin = plugins[args.input.pluginSlug];
-      await plugin?.onAfterStoreItemUpsert?.(args.input.key); // TODO: maybe execute in message queue instead of synchronously
+      await plugin?.onStoreItemUpsert?.(args.input.key); // TODO: maybe execute in message queue instead of synchronously
       return res;
     },
   })

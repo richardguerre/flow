@@ -268,13 +268,13 @@ type Mutation {
   updateTaskStatus(input: MutationUpdateTaskStatusInput!): [Day!]!
 
   """
-  Creates a store item. If a store item with the same key exists, it will be updated.
+  Creates a store item. If a store item with the same key exists, only its value will be updated (`isSecret` and `isServerOnly` will not be updated).
   
   If the `pluginSlug` is passed, it will create/update a store item for that plugin. Otherwise, it will create/update a store item for flow.
   
-  If `isSecret` is set to true, the store item will be set or updated with `isServerOnly` set to true as well and will not be returned in the `storeItems` query.
+  If `isSecret` is set to true, `isServerOnly` will also be set to true and will not be returned in the `storeItems` query (it will be `null`). The item will only be accessible by plugin with the same `pluginSlug` in the server.
   
-  If `isServerOnly` is set to true, the store item will not be returned in the `storeItems` query.
+  If `isServerOnly` is set to true, the store item will not be returned in the `storeItems` query (it will be `null`). The item will be accessible by all plugins in the server.
   """
   upsertStoreItem(input: MutationUpsertStoreItemInput!): Store!
 }
@@ -764,13 +764,25 @@ type Store implements Node {
   createdAt: DateTime!
   id: ID!
 
+  """
+  Whether the store item is secret.\nSecret items are automatically server-only as well (even if the value of isServerOnly is false)\nand can only be accessed by the plugin with the same pluginSlug.
+  """
+  isSecret: Boolean!
+
+  """
+  Whether the store item is server-only.\nServer-only items are not sent to the client.
+  """
+  isServerOnly: Boolean!
+
   """The key of the store item"""
   key: String!
 
   """The slug of the plugin the store item is linked to."""
   pluginSlug: String!
   updatedAt: DateTime!
-  value: JSON!
+
+  """The value of the store item."""
+  value: JSON
 }
 
 """A task that the user or a plugin has created."""

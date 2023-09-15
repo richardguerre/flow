@@ -60,7 +60,7 @@ export default definePlugin((opts) => {
         },
       });
     },
-    onAfterStoreItemUpsert: async (itemKey) => {
+    onStoreItemUpsert: async (itemKey) => {
       if (itemKey === TOKEN_STORE_KEY) {
         await opts.pgBoss.send(SYNC_ITEMS, {});
       }
