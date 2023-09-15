@@ -103,6 +103,9 @@ export const DayContent = (props: DayContentProps) => {
         id
         status
         ...TaskCard_task
+        item {
+          ...ItemCard_item # this is to update the item card if the task was created from an item
+        }
       }
     }
   `);

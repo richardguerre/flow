@@ -98,6 +98,7 @@ export default definePlugin((opts) => {
           }
         );
         const min: TaskPluginDataMin = {
+          type: data.createTask.type,
           ticketUrl: itemPluginData.ticketUrl,
           status: data.createTask.status,
           githubPrUrl: itemPluginData.url,
@@ -233,6 +234,7 @@ const decodeNodeId = <T = number>(nodeId: string): { type: string; id: T } => {
 };
 
 type TaskPluginDataMin = {
+  type: GitStartTaskType;
   ticketUrl: string;
   githubPrUrl: GitStartPullRequest["url"];
   status: GitStartTaskStatus;
@@ -325,14 +327,17 @@ type PrItemPluginDataFull = PrItemPluginDataMin & {
 
 // -------------------- task types --------------------
 type GitStartTaskStatus = "CANCELED" | "FINISHED" | "IN_PROGRESS" | "TO_DO";
+type GitStartTaskType = "SPEC" | "CODE" | "REVIEW" | "QA" | "LEARNING";
 type GitStartTask = {
   id: string;
+  type: GitStartTaskType;
   status: GitStartTaskStatus;
   title: string;
 };
 const GitStartTaskFragment = /* GraphQL */ `
   fragment GitStartTask on Task {
     id
+    type
     status
     title
   }
