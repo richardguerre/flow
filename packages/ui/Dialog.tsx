@@ -12,6 +12,7 @@ import {
 import { tw } from "./tw";
 import { forwardRef } from "react";
 import { BsX } from "@flowdev/icons";
+import { Loading } from "./Loading";
 
 export const Dialog = (props: React.ComponentProps<typeof Root> & { onClose?: () => void }) => (
   <Root
@@ -92,3 +93,9 @@ export const DialogDescription = forwardRef<
 >(({ className, ...props }, ref) => (
   <Description ref={ref} className={tw("text-foreground-700 text-sm", className)} {...props} />
 ));
+
+export const DialogLoading = () => (
+  <div className="flex h-96 items-center justify-center">
+    <Loading />
+  </div>
+);

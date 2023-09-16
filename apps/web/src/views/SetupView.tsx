@@ -7,7 +7,7 @@ import { BsInfoCircle, BsLock } from "@flowdev/icons";
 import { Button } from "@flowdev/ui/Button";
 import { SetupView_data$key } from "../relay/__generated__/SetupView_data.graphql";
 import { AnimatePresence, motion } from "framer-motion";
-import { Loading } from "../components/Loading";
+import { Loading } from "@flowdev/ui/Loading";
 import { SetupViewSetTimezoneMutation } from "../relay/__generated__/SetupViewSetTimezoneMutation.graphql";
 import { TimezoneSelect } from "@flowdev/ui/TimezoneSelect";
 import { dayjs } from "../dayjs";

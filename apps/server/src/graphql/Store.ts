@@ -45,6 +45,10 @@ export type PluginInstallation = {
   slug: string;
   /** The plugin's URL. It can be jsdelivr URL or anything that servers application/javascript static files. */
   url: string;
+  /** Whether the plugin has a web runtime. */
+  web: boolean;
+  /** Whether the plugin has a server runtime. */
+  server: boolean;
 };
 
 export const StoreType = builder.prismaNode("Store", {
@@ -175,6 +179,8 @@ const PluginInstallationType = builder.objectType(
     fields: (t) => ({
       slug: t.exposeString("slug"),
       url: t.exposeString("url"),
+      hasWebRuntime: t.exposeBoolean("web"),
+      hasServerRuntime: t.exposeBoolean("server"),
     }),
   }
 );
@@ -282,6 +288,8 @@ builder.mutationField("installPlugin", (t) =>
       installedPlugins.push({
         url: args.input.url,
         slug: newPluginJson.slug,
+        web: newPluginJson.web ?? false,
+        server: newPluginJson.server ?? false,
       });
 
       const newSetting = await prisma.store.upsert({

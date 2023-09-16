@@ -1,4 +1,4 @@
-import { DefineWebPluginReturn } from "@flowdev/plugin/web";
+import { DefineWebPluginReturn, WebPlugin } from "@flowdev/plugin/web";
 import { graphql } from "@flowdev/relay";
 import { fetchQuery } from "@flowdev/relay";
 import { getPluginsQuery } from "@flowdev/web/relay/__generated__/getPluginsQuery.graphql";
@@ -7,11 +7,12 @@ import { getPluginOptions } from "./getPluginOptions";
 
 type Input = {
   pluginSlug: string;
+  installedPlugins?: Awaited<ReturnType<typeof getInstalledPlugins>>;
 };
 
 export const getPlugin = async (input: Input) => {
   try {
-    const plugins = await getInstalledPlugins();
+    const plugins = input.installedPlugins ?? (await getInstalledPlugins());
 
     const pluginInstallation = plugins[input.pluginSlug];
 
@@ -19,21 +20,33 @@ export const getPlugin = async (input: Input) => {
       return { _error: "PLUGIN_NOT_INSTALLED" } as const;
     }
 
-    // This is to make it easier to develop the flow-essentials plugin
-    // TODO: Remove this when the plugin is published
-    const importPromise =
-      //  import.meta.env.DEV
-      //   ? import("@flowdev/essentials/src/web")
-      //   :
-      import(/* @vite-ignore */ `${pluginInstallation.url}/web.js`);
+    if (!pluginInstallation.hasWebRuntime) {
+      return { _error: "PLUGIN_HAS_NO_WEB_RUNTIME" } as const;
+    }
 
-    // TODO: use plugin's slug if needed
+    const importPromise = import(/* @vite-ignore */ `${pluginInstallation.url}/web.js`);
     const { plugin } = (await importPromise).default as DefineWebPluginReturn;
     return plugin(getPluginOptions(input.pluginSlug));
   } catch (e) {
     console.log(e);
     return { _error: "PLUGIN_LOAD_ERROR" } as const;
   }
+};
+
+export const getPlugins = async () => {
+  const installedPlugins = await getInstalledPlugins();
+  const plugins: Record<string, ReturnType<WebPlugin>> = {};
+  for (const pluginSlug in installedPlugins) {
+    const pluginInstallation = installedPlugins[pluginSlug];
+    if (!pluginInstallation.hasWebRuntime) continue;
+    const plugin = await getPlugin({ pluginSlug, installedPlugins });
+    if ("_error" in plugin) {
+      console.log(`Plugin ${pluginSlug} failed to load: ${plugin._error}`);
+      continue;
+    }
+    plugins[pluginSlug] = plugin;
+  }
+  return plugins;
 };
 
 const getInstalledPlugins = async () => {
@@ -44,6 +57,7 @@ const getInstalledPlugins = async () => {
         installedPlugins {
           slug
           url
+          hasWebRuntime
         }
       }
     `,

@@ -349,6 +349,9 @@ input MutationCreateRoutineInput {
 }
 
 input MutationCreateTaskInput {
+  """The actions to be executed after the task is created."""
+  actionDatas: [TaskCreateActionDataInput!]
+
   """
   The position in the day the task should be placed at. If not specified, it will be placed at the beginning.
   """
@@ -362,6 +365,9 @@ input MutationCreateTaskInput {
 
   """The Relay ID of the Item that should be linked to the task."""
   itemId: ID
+
+  """The plugin data to be linked to the task."""
+  pluginDatas: [TaskPluginDataInput!]
 
   """The initial status of the task. Defaults to `TODO`."""
   status: TaskStatus = TODO
@@ -545,6 +551,8 @@ type PageInfo {
 }
 
 type PluginInstallation {
+  hasServerRuntime: Boolean!
+  hasWebRuntime: Boolean!
   slug: String!
   url: String!
 }
@@ -809,6 +817,11 @@ type Task implements Node {
   title: String!
 }
 
+input TaskCreateActionDataInput {
+  data: JSON
+  pluginSlug: String!
+}
+
 """The data required by a plugin to be linked to a task."""
 type TaskPluginData implements Node {
   createdAt: DateTime!
@@ -819,6 +832,13 @@ type TaskPluginData implements Node {
   """The slug of the plugin that created the data"""
   pluginSlug: String!
   updatedAt: DateTime!
+}
+
+input TaskPluginDataInput {
+  full: JSON
+  min: JSON
+  originalId: String
+  pluginSlug: String!
 }
 
 enum TaskStatus {

@@ -21,7 +21,7 @@ export default definePlugin((opts) => {
       }
 
       return {
-        modalContent: ({ NextButton, BackButton, ...props }) => {
+        dialogContent: ({ NextButton, BackButton, ...props }) => {
           type FormValues = {
             title: string;
           };

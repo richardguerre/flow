@@ -51,20 +51,38 @@ export const TaskStatusEnum = builder.enumType("TaskStatus", {
 
 // ------------------ Task mutations ------------------
 
-export type PluginOnCreateTask = (task: {
-  title: string;
-  status?: TaskStatus | null;
-  durationInMinutes?: number | null;
-  date?: Date;
-  item?: (Item & { pluginDatas: ItemPluginData[] }) | null;
+export type PluginOnCreateTask = (input: {
+  /** The actionData that the web runtime of the plugin passed in. */
+  actionData?: Prisma.InputJsonValue | null;
+  task: {
+    /** The title of the task. */
+    title: string;
+    /** The initial status of the task. Defaults to `TODO`. */
+    status?: TaskStatus | null;
+    /** The length of time (in minutes) the task is expected to take. */
+    durationInMinutes?: number | null;
+    /** The date the task is planned for. Defaults to today. */
+    date?: Date;
+    /** The item that the task will be linked to, if any. */
+    item?: (Item & { pluginDatas: ItemPluginData[] }) | null;
+    /** The pluginData that the web runtime of the plugin passed in. */
+    webPluginData?: {
+      /** The original id of the item given by the plugin, if any */
+      originalId?: string | null;
+      /** The minimum data required to render the information on task cards. */
+      min?: Prisma.JsonNullValueInput | Prisma.InputJsonValue | null;
+      /** The full data required by the plugin to be linked to the task. */
+      full?: Prisma.JsonNullValueInput | Prisma.InputJsonValue | null;
+    } | null;
+  };
 }) => Promise<{
   pluginData?: {
     /** The original id of the item given by the plugin, if any */
     originalId?: string | null;
     /** The minimum data required to render the information on task cards. */
-    min: JsonValue;
+    min: Prisma.JsonNullValueInput | Prisma.InputJsonValue;
     /** The full data required by the plugin to be linked to the task. */
-    full: JsonValue;
+    full: Prisma.JsonNullValueInput | Prisma.InputJsonValue;
   };
 } | void>;
 
@@ -94,6 +112,14 @@ builder.mutationField("createTask", (t) =>
         description:
           "The position in the day the task should be placed at. If not specified, it will be placed at the beginning.",
       }),
+      pluginDatas: t.input.field({
+        description: "The plugin data to be linked to the task.",
+        type: [TaskPluginDataInput],
+      }),
+      actionDatas: t.input.field({
+        description: "The actions to be executed after the task is created.",
+        type: [TaskCreateActionDataInput],
+      }),
     },
     resolve: async (query, _, args) => {
       const date = args.input.date ?? startOfDay(new Date());
@@ -109,13 +135,27 @@ builder.mutationField("createTask", (t) =>
       }
       for (const pluginSlug in plugins) {
         const plugin = plugins[pluginSlug as keyof typeof plugins] as ServerPluginReturn;
+        const actionData = args.input.actionDatas?.find(
+          (actionData) => actionData.pluginSlug === pluginSlug
+        )?.data;
+        const webPluginData = args.input.pluginDatas?.find(
+          (pluginData) => pluginData.pluginSlug === pluginSlug
+        );
         const result = await plugin
           .onCreateTask?.({
-            title: args.input.title,
-            status: args.input.status,
-            durationInMinutes: args.input.durationInMinutes,
-            date,
-            item,
+            actionData,
+            task: {
+              title: args.input.title,
+              status: args.input.status,
+              durationInMinutes: args.input.durationInMinutes,
+              date,
+              item,
+              webPluginData: {
+                originalId: webPluginData?.originalId,
+                min: webPluginData?.min,
+                full: webPluginData?.full,
+              },
+            },
           })
           .catch(() => null); // ignore errors
         if (result?.pluginData) {
@@ -153,6 +193,22 @@ builder.mutationField("createTask", (t) =>
     },
   })
 );
+
+const TaskPluginDataInput = builder.inputType("TaskPluginDataInput", {
+  fields: (t) => ({
+    pluginSlug: t.string({ required: true }),
+    originalId: t.string({ required: false }),
+    min: t.field({ type: "JSON" }),
+    full: t.field({ type: "JSON" }),
+  }),
+});
+
+const TaskCreateActionDataInput = builder.inputType("TaskCreateActionDataInput", {
+  fields: (t) => ({
+    pluginSlug: t.string({ required: true }),
+    data: t.field({ type: "JSON" }),
+  }),
+});
 
 builder.mutationField("updateTask", (t) =>
   t.prismaFieldWithInput({
@@ -375,7 +431,7 @@ When the task is:
           include: { day: { select: { date: true, tasksOrder: true } } },
         });
         const originalDay = task.day;
-        const isSameDay = equalDay(task.date, newDate);
+        const isSameDay = dayjs(task.date).isSame(newDate, "day");
         const newDayTasksOrder = args.input.newTasksOrder
           .filter((id) => id.typename === "Task")
           .map((id) => parseInt(id.id));
@@ -395,12 +451,14 @@ When the task is:
           days.push(task.date, newDate);
         } else if (newDate < startOfToday) {
           // When the task is moving into the past,
-          // update the date and update the status to DONE (if not already)
-          newStatus = "DONE";
+          // update the date and update the status to DONE (if not already or it's CANCELED) and completedAt to the end of the day
+          if (task.status !== "CANCELED") {
+            newStatus = "DONE";
+          }
           days.push(task.date, newDate);
         } else if (newDate > endOfToday) {
           // When the task is moving into the future,
-          // update the date and update the status to TODO (if not already)
+          // update the date and update the status to TODO (if not already) and completedAt to null
           newStatus = "TODO";
           days.push(task.date, newDate);
         }
@@ -410,7 +468,12 @@ When the task is:
           where: { id: task.id },
           data: {
             day: { connectOrCreate: { where: { date: newDate }, create: { date: newDate } } },
-            ...(newStatus ? { status: newStatus } : {}),
+            ...(newStatus
+              ? {
+                  status: newStatus,
+                  completedAt: newStatus === "DONE" ? dayjs(newDate).endOf("day").toDate() : null,
+                }
+              : {}),
           },
         });
 
@@ -444,11 +507,3 @@ When the task is:
     },
   })
 );
-
-const equalDay = (date1: Date, date2: Date) => {
-  return (
-    date1.getUTCFullYear() === date2.getUTCFullYear() &&
-    date1.getUTCMonth() === date2.getUTCMonth() &&
-    date1.getUTCDate() === date2.getUTCDate()
-  );
-};

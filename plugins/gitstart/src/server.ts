@@ -66,7 +66,7 @@ export default definePlugin((opts) => {
         await opts.pgBoss.send(SYNC_ITEMS, {});
       }
     },
-    onCreateTask: async (task) => {
+    onCreateTask: async ({ task }) => {
       const pluginData = task.item?.pluginDatas.find((pd) => pd.pluginSlug === opts.pluginSlug);
       if (!pluginData?.originalId) return;
       const userInfoItem = await opts.store.getPluginItem<UserInfo>(USER_INFO_STORE_KEY);
