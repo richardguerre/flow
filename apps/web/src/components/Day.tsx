@@ -80,7 +80,6 @@ export const DayContent = (props: DayContentProps) => {
     CreateTaskFromItemProps,
     "onClose"
   > | null>(null);
-  const [] = useState<[]>([]);
   const day = useFragment(
     graphql`
       fragment DayContent_day on Day {
@@ -121,10 +120,13 @@ export const DayContent = (props: DayContentProps) => {
     if (!item) return;
     const store = environment.getStore().getSource();
     const itemRecord = store.get(item.id) as unknown as
-      | DayItemRecordToCreateTaskFrom_item$data
+      | (Omit<DayItemRecordToCreateTaskFrom_item$data, "pluginDatas"> & {
+          pluginDatas: { __refs: string[] };
+        })
       | undefined
       | null;
     if (!itemRecord) return;
+    const itemRecordPluginDatas = itemRecord.pluginDatas.__refs.map((ref) => store.get(ref));
     const willBeDimissedFromInbox = !!((itemRecord.inboxPoints ?? 0) > 0 && itemRecord.list);
 
     const plugins = await getPlugins();
@@ -145,7 +147,12 @@ export const DayContent = (props: DayContentProps) => {
         status: { value: "TODO", overriden: false },
         durationInMinutes: { value: null, overriden: false },
         date: { value: day.date, overriden: false },
-        item: { ...itemRecord, willBeDimissedFromInbox },
+        item: {
+          ...itemRecord,
+          willBeDimissedFromInbox,
+          pluginDatas:
+            itemRecordPluginDatas as unknown as DayItemRecordToCreateTaskFrom_item$data["pluginDatas"],
+        },
       },
     });
     return;
@@ -280,11 +287,12 @@ type OnCreateTaskStepInfo = {
 };
 
 const CreateTaskFromItem = (props: CreateTaskFromItemProps) => {
+  const rendered = useRef(false);
+  const [openDialog, setOpenDialog] = useState(false); // the dialog is closed by default until one of the plugins resolves having a dialogContent
   const [currentStep, setCurrentStep] = useState<OnCreateTaskStepInfo | null>(null);
   const [previousStep, setPreviousStep] = useState<OnCreateTaskStepInfo | null>(null);
-  const [task, setTask] = useState(props.task);
+  const task = useRef(props.task);
   const [loading, setLoading] = useState(true);
-  const [done, setDone] = useState(false);
   const [pluginCreateTaskDatas, setPluginCreateTaskDatas] = useState<
     Record<string, PluginCreateTaskData>
   >({});
@@ -312,129 +320,169 @@ const CreateTaskFromItem = (props: CreateTaskFromItemProps) => {
     }
   `);
 
+  useAsyncEffect(async () => {
+    if (rendered.current) return;
+    rendered.current = true; // prevents double rendering due to React.StrictMode (strict mode is useful, but not in this case)
+    await processNextStep({ steps: props.steps }); // [1] logic starts here
+    setOpenDialog(true);
+  }, [props.steps]);
+
   const processNextStep = async (props: { steps: StepInfo[] }) => {
     setLoading(true);
     for (let i = 0; i < props.steps.length; i++) {
       const stepInfo = props.steps[i];
-      const onCreateTaskResult = await stepInfo.onCreateTask({ task: task }).catch(() => null);
-      if (!onCreateTaskResult) {
-        continue;
-      } else if (onCreateTaskResult && "dialogContent" in onCreateTaskResult) {
+      const onCreateTaskResult = await stepInfo.onCreateTask({ task: task.current }).catch((e) => {
+        console.log(`Error plugin.onCreateTask from plugin ${stepInfo.pluginSlug}`, e);
+        return null;
+      });
+      if (onCreateTaskResult && "dialogContent" in onCreateTaskResult) {
         setPreviousStep(currentStep);
         setCurrentStep({
           pluginSlug: stepInfo.pluginSlug,
           dialogContent: onCreateTaskResult.dialogContent,
           index: i,
         });
-        break;
+        setLoading(false);
+        return;
+      } else if (onCreateTaskResult === null) {
+        continue;
       } else {
-        setTask((prev) => {
-          if (!onCreateTaskResult.taskOverrides) return prev;
-          return {
-            title: {
-              value: onCreateTaskResult.taskOverrides.title ?? prev.title.value,
-              overriden:
-                onCreateTaskResult.taskOverrides.title !== undefined || prev.title.overriden,
-            },
-            status: {
-              value: onCreateTaskResult.taskOverrides.status ?? prev.status.value,
-              overriden:
-                onCreateTaskResult.taskOverrides.status !== undefined || prev.status.overriden,
-            },
-            durationInMinutes: {
-              value:
-                onCreateTaskResult.taskOverrides.durationInMinutes ?? prev.durationInMinutes.value,
-              overriden:
-                onCreateTaskResult.taskOverrides.durationInMinutes !== undefined ||
-                prev.durationInMinutes.overriden,
-            },
-            date: {
-              value: onCreateTaskResult.taskOverrides.date ?? prev.date.value,
-              overriden: onCreateTaskResult.taskOverrides.date !== undefined || prev.date.overriden,
-            },
-            item: prev.item,
-          };
-        });
         setPluginCreateTaskDatas((prev) => ({
           ...prev,
           [stepInfo.pluginSlug]: onCreateTaskResult,
         }));
+        if (!onCreateTaskResult.taskOverrides) continue;
+        task.current = {
+          title: {
+            value: onCreateTaskResult.taskOverrides.title ?? task.current.title.value,
+            overriden:
+              onCreateTaskResult.taskOverrides.title !== undefined || task.current.title.overriden,
+          },
+          status: {
+            value: onCreateTaskResult.taskOverrides.status ?? task.current.status.value,
+            overriden:
+              onCreateTaskResult.taskOverrides.status !== undefined ||
+              task.current.status.overriden,
+          },
+          durationInMinutes: {
+            value:
+              onCreateTaskResult.taskOverrides.durationInMinutes ??
+              task.current.durationInMinutes.value,
+            overriden:
+              onCreateTaskResult.taskOverrides.durationInMinutes !== undefined ||
+              task.current.durationInMinutes.overriden,
+          },
+          date: {
+            value: onCreateTaskResult.taskOverrides.date ?? task.current.date.value,
+            overriden:
+              onCreateTaskResult.taskOverrides.date !== undefined || task.current.date.overriden,
+          },
+          item: task.current.item,
+        };
       }
     }
-    setLoading(false);
+    // if we went through all the steps and none of them returned a dialogContent, then we're done
+    await handleDone();
   };
 
-  useAsyncEffect(async () => {
-    await processNextStep({ steps: props.steps });
-  }, [props.steps]);
+  const handleDone = async () => {
+    // the user done going through all the steps, so let's create the task
+    const createTask = createTaskFromItem({
+      variables: {
+        input: {
+          date: task.current.date.value,
+          title: task.current.title.value,
+          status: task.current.status.value ?? "TODO",
+          durationInMinutes: task.current.durationInMinutes.value ?? null,
+          itemId: task.current.item?.id ?? null,
+          atIndex: props.atIndex ?? null,
+          pluginDatas: Object.entries(pluginCreateTaskDatas).map(([pluginSlug, value]) => ({
+            pluginSlug,
+            originalId: value.pluginData?.originalId ?? null,
+            min: value.pluginData?.min ?? null,
+            full: value.pluginData?.full ?? null,
+          })),
+          actionDatas: Object.entries(pluginCreateTaskDatas).map(([pluginSlug, pluginData]) => ({
+            pluginSlug,
+            data: pluginData.actionData ?? null,
+          })),
+        },
+      },
+      updater: (updaterStore) => {
+        if (!task.current.item) return;
+        const updaterDay = updaterStore.get(`Day_${task.current.date.value}`);
+        const updaterDayTasks = updaterDay?.getLinkedRecords("tasks") ?? [];
+        const createdTask = updaterStore.getRootField("createTask");
+        // This adds the new task to where the item was dropped
+        updaterDay?.setLinkedRecords(
+          [
+            ...(updaterDayTasks ?? []).slice(0, props.atIndex),
+            createdTask,
+            ...(updaterDayTasks ?? []).slice(props.atIndex),
+          ],
+          "tasks"
+        );
+      },
+    });
+    await toast.promise(createTask, {
+      loading: "Creating task...",
+      error: "Failed to create task",
+      success: "Task created",
+    });
+
+    // if the item was in the inbox (i.e. had inboxPoints) and the item is in a list, we can dismiss it from the inbox
+    if (task.current.item?.willBeDimissedFromInbox) {
+      _dismissItemFromInbox({
+        variables: { input: { id: task.current.item.id } },
+        optimisticUpdater: (updaterStore) => {
+          if (!task.current.item) return;
+          const updaterItem = updaterStore.get(task.current.item.id);
+          updaterItem?.setValue(0, "inboxPoints");
+        },
+      });
+    }
+    props.onClose();
+    return;
+  };
 
   const handleNext = async (metadata?: PluginCreateTaskData) => {
     if (!currentStep) return; // this should never happen since we initialize the currentStep to the first step in the useAsyncEffect above.
+
+    setPluginCreateTaskDatas((prev) => ({
+      ...prev,
+      [currentStep.pluginSlug]: metadata ?? {},
+    }));
+    task.current = {
+      title: {
+        value: metadata?.taskOverrides?.title ?? task.current.title.value,
+        overriden: metadata?.taskOverrides?.title !== undefined || task.current.title.overriden,
+      },
+      status: {
+        value: metadata?.taskOverrides?.status ?? task.current.status.value,
+        overriden: metadata?.taskOverrides?.status !== undefined || task.current.status.overriden,
+      },
+      durationInMinutes: {
+        value: metadata?.taskOverrides?.durationInMinutes ?? task.current.durationInMinutes.value,
+        overriden:
+          metadata?.taskOverrides?.durationInMinutes !== undefined ||
+          task.current.durationInMinutes.overriden,
+      },
+      date: {
+        value: metadata?.taskOverrides?.date ?? task.current.date.value,
+        overriden: metadata?.taskOverrides?.date !== undefined || task.current.date.overriden,
+      },
+      item: task.current.item,
+    };
+    setPreviousStep(currentStep);
+
     const nextStepIndex = currentStep.index + 1;
     if (nextStepIndex >= props.steps.length) {
-      // the user done going through all the steps, so let's create the task
-      setDone(true);
-      const createTask = createTaskFromItem({
-        variables: {
-          input: {
-            date: task.date.value,
-            title: task.title.value,
-            status: task.status.value ?? "TODO",
-            durationInMinutes: task.durationInMinutes.value ?? null,
-            itemId: task.item?.id ?? null,
-            atIndex: props.atIndex ?? null,
-            pluginDatas: Object.entries(pluginCreateTaskDatas).map(([pluginSlug, value]) => ({
-              pluginSlug,
-              originalId: value.pluginData?.originalId ?? null,
-              min: value.pluginData?.min ?? null,
-              full: value.pluginData?.full ?? null,
-            })),
-            actionDatas: Object.entries(pluginCreateTaskDatas).map(([pluginSlug, pluginData]) => ({
-              pluginSlug,
-              data: pluginData.actionData ?? null,
-            })),
-          },
-        },
-        updater: (updaterStore) => {
-          if (!task.item) return;
-          const updaterDay = updaterStore.get(`Day_${task.date.value}`);
-          const updaterDayTasks = updaterDay?.getLinkedRecords("tasks") ?? [];
-          const createdTask = updaterStore.getRootField("createTask");
-          // This adds the new task to where the item was dropped
-          updaterDay?.setLinkedRecords(
-            [
-              ...(updaterDayTasks ?? []).slice(0, props.atIndex),
-              createdTask,
-              ...(updaterDayTasks ?? []).slice(props.atIndex),
-            ],
-            "tasks"
-          );
-          // This adds the new task the item's tasks
-          const updaterItem = updaterStore.get(task.item.id);
-          const updaterItemTasks = updaterItem?.getLinkedRecords("tasks");
-          updaterItem?.setLinkedRecords([createdTask, ...(updaterItemTasks ?? [])], "tasks");
-        },
-      });
-      await toast.promise(createTask, {
-        loading: "Creating task...",
-        error: "Failed to create task",
-        success: "Task created",
-      });
-
-      // if the item was in the inbox (i.e. had inboxPoints) and the item is in a list, we can dismiss it from the inbox
-      if (task.item?.willBeDimissedFromInbox) {
-        _dismissItemFromInbox({
-          variables: { input: { id: task.item.id } },
-          optimisticUpdater: (updaterStore) => {
-            if (!task.item) return;
-            const updaterItem = updaterStore.get(task.item.id);
-            updaterItem?.setValue(0, "inboxPoints");
-          },
-        });
-      }
-      props.onClose();
+      // we're done going through all the steps, so let's create the task
+      await handleDone();
       return;
     }
+    const stepsLeft = props.steps.slice(nextStepIndex);
+    processNextStep({ steps: stepsLeft });
   };
 
   const handleBack = async (metadata?: PluginCreateTaskData) => {
@@ -444,43 +492,39 @@ const CreateTaskFromItem = (props: CreateTaskFromItemProps) => {
       props.onClose();
       return;
     }
-    setTask((prev) => {
-      if (!metadata?.taskOverrides) return prev;
-      return {
-        title: {
-          value: metadata.taskOverrides.title ?? prev.title.value,
-          overriden: metadata.taskOverrides.title !== undefined || prev.title.overriden,
-        },
-        status: {
-          value: metadata.taskOverrides.status ?? prev.status.value,
-          overriden: metadata.taskOverrides.status !== undefined || prev.status.overriden,
-        },
-        durationInMinutes: {
-          value: metadata.taskOverrides.durationInMinutes ?? prev.durationInMinutes.value,
-          overriden:
-            metadata.taskOverrides.durationInMinutes !== undefined ||
-            prev.durationInMinutes.overriden,
-        },
-        date: {
-          value: metadata.taskOverrides.date ?? prev.date.value,
-          overriden: metadata.taskOverrides.date !== undefined || prev.date.overriden,
-        },
-        item: prev.item,
-      };
-    });
+
     setPluginCreateTaskDatas((prev) => ({
       ...prev,
       [currentStep.pluginSlug]: metadata ?? {},
     }));
+    task.current = {
+      title: {
+        value: metadata?.taskOverrides?.title ?? task.current.title.value,
+        overriden: metadata?.taskOverrides?.title !== undefined || task.current.title.overriden,
+      },
+      status: {
+        value: metadata?.taskOverrides?.status ?? task.current.status.value,
+        overriden: metadata?.taskOverrides?.status !== undefined || task.current.status.overriden,
+      },
+      durationInMinutes: {
+        value: metadata?.taskOverrides?.durationInMinutes ?? task.current.durationInMinutes.value,
+        overriden:
+          metadata?.taskOverrides?.durationInMinutes !== undefined ||
+          task.current.durationInMinutes.overriden,
+      },
+      date: {
+        value: metadata?.taskOverrides?.date ?? task.current.date.value,
+        overriden: metadata?.taskOverrides?.date !== undefined || task.current.date.overriden,
+      },
+      item: task.current.item,
+    };
     setCurrentStep(previousStep);
   };
 
   const StepDialogContent = currentStep?.dialogContent;
 
-  if (done) return null;
-
   return (
-    <Dialog>
+    <Dialog open={openDialog} onClose={props.onClose}>
       <DialogContent>
         {StepDialogContent && !loading ? (
           <StepDialogContent
@@ -510,7 +554,7 @@ const CreateTaskFromItem = (props: CreateTaskFromItemProps) => {
 };
 
 export type OnCreateTask = (input: {
-  task?: {
+  readonly task?: {
     /** The title of the task and whether it was already overriden by another plugin. */
     title: MaybeOverriden<string>;
     /** The status of the task and whether it was already overriden by another plugin. */
@@ -520,7 +564,18 @@ export type OnCreateTask = (input: {
     /** The date of the task and whether it was already overriden by another plugin. */
     date: MaybeOverriden<string | null>;
     /** The item the task is created from. Will be undefined if the task is not created from an item. */
-    item?: DayItemRecordToCreateTaskFrom_item$data & {
+    // FIXME: use DayItemRecordToCreateTaskFrom_item$data instead. currently typescript reaches it's max depth limit when using it so it had to be copy pasted here.
+    readonly item?: {
+      id: string;
+      inboxPoints: number | null;
+      list: {
+        id: string;
+      } | null;
+      pluginDatas: ReadonlyArray<{
+        min: JsonValue;
+        pluginSlug: string;
+      }>;
+      title: string;
       /**
        * Whether the item will be dismissed from the inbox after the task is created.
        *

@@ -15,7 +15,7 @@ export default definePlugin((opts) => {
   const SYNC_ITEMS = `${opts.pluginSlug}-sync-items`;
 
   const gqlRequest = async <T>(token: string, query: string, variables?: object) => {
-    const res = await fetch("https://api.gitstart.com/graphql", {
+    const res = await fetch("https://gateway.gitstart.dev/graphql", {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
@@ -46,7 +46,7 @@ export default definePlugin((opts) => {
 
   return {
     onInstall: async () => {
-      opts.prisma.list.upsert({
+      await opts.prisma.list.upsert({
         where: { slug: GITSTART_LIST_SLUG },
         create: {
           slug: GITSTART_LIST_SLUG,
@@ -67,25 +67,36 @@ export default definePlugin((opts) => {
       }
     },
     onCreateTask: async ({ task }) => {
-      const pluginData = task.item?.pluginDatas.find((pd) => pd.pluginSlug === opts.pluginSlug);
-      if (!pluginData?.originalId) return;
+      const itemPluginData = task.item?.pluginDatas.find((pd) => pd.pluginSlug === opts.pluginSlug);
+      if (!itemPluginData?.originalId) return;
       const userInfoItem = await opts.store.getPluginItem<UserInfo>(USER_INFO_STORE_KEY);
       if (!userInfoItem) return;
       const { id: userId } = decodeNodeId(userInfoItem.value.id);
 
       const token = await getTokenFromStore();
 
-      const itemPluginData = pluginData.full as ItemPluginDataFull;
-      if (itemPluginData.type === "pull_request") {
-        const { id: prId } = decodeNodeId(pluginData.originalId);
-        const data = await gqlRequest<{ createTask: GitStartTask }>(
+      const itemPluginDataFull = itemPluginData.full as ItemPluginDataFull;
+      if (itemPluginDataFull.type === "pull_request") {
+        const { id: prId } = decodeNodeId(itemPluginData.originalId);
+        const data = await gqlRequest<{
+          createTask: {
+            pullRequest: GitStartPullRequest;
+            task: GitStartTask;
+          };
+        }>(
           token,
           /* GraphQL */ `
             mutation FlowOperationCreateTask($input: CreateTaskInput!) {
               createTask(input: $input) {
-                ...GitStartTask
+                pullRequest {
+                  ...GitStartPullRequest
+                }
+                task {
+                  ...GitStartTask
+                }
               }
             }
+            ${GitStartPullRequestFragment}
             ${GitStartTaskFragment}
           `,
           {
@@ -93,26 +104,48 @@ export default definePlugin((opts) => {
               pullRequestInternalId: prId,
               title: task.title,
               type: "CODE", // TODO: make this configurable
+              status: "TO_DO", // TODO: make this configurable
               assigneeInternalId: userId,
             },
           }
         );
-        const min: TaskPluginDataMin = {
-          type: data.createTask.type,
-          ticketUrl: itemPluginData.ticketUrl,
-          status: data.createTask.status,
-          githubPrUrl: itemPluginData.url,
+
+        // update the item plugin data from the data returned from the createTask mutation
+        const itemMin: PrItemPluginDataMin = {
+          ...(itemPluginData.min as PrItemPluginDataMin),
+          status: data.createTask.pullRequest.status,
         };
-        const full: TaskPluginDataFull = {
-          ...min,
-          id: data.createTask.id,
-          pullRequest: itemPluginData,
+        const itemFull: PrItemPluginDataFull = {
+          ...(itemPluginData.full as PrItemPluginDataFull),
+          ...itemMin,
+        };
+        await opts.prisma.itemPluginData
+          .update({
+            where: { id: itemPluginData.id },
+            data: {
+              min: itemMin,
+              full: itemFull,
+              item: { update: { title: data.createTask.pullRequest.title } },
+            },
+          })
+          .catch((e) => console.log(e)); // TODO: handle this error better
+
+        const taskMin: TaskPluginDataMin = {
+          type: data.createTask.task.type,
+          ticketUrl: itemPluginDataFull.ticketUrl,
+          status: data.createTask.task.status,
+          githubPrUrl: itemPluginDataFull.url,
+        };
+        const taskFull: TaskPluginDataFull = {
+          ...taskMin,
+          id: data.createTask.task.id,
+          pullRequest: itemPluginDataFull,
         };
         return {
           pluginData: {
-            originalId: data.createTask.id,
-            min,
-            full,
+            originalId: data.createTask.task.id,
+            min: taskMin,
+            full: taskFull,
           },
         };
       } else {
@@ -127,6 +160,7 @@ export default definePlugin((opts) => {
     },
     handlePgBossWork: (work) => [
       work(SYNC_ITEMS, async () => {
+        console.log("sycing items");
         const token = await getTokenFromStore();
         const data1 = await gqlRequest<{
           viewer: { id: string; actionablePullRequests: PullRequestWithTicketTasks[] };
@@ -153,6 +187,8 @@ export default definePlugin((opts) => {
           `
         );
 
+        console.log(data1);
+
         await opts.store.setSecretItem<UserInfo>(USER_INFO_STORE_KEY, { id: data1.viewer.id });
 
         for (const pr of data1.viewer.actionablePullRequests) {
@@ -162,6 +198,7 @@ export default definePlugin((opts) => {
       work(UPSERT_PR_JOB_NAME, { batchSize: 10 }, async (jobs) => {
         for (const job of jobs) {
           const pr = job.data as PullRequestWithTicketTasks;
+          console.log(`Upserting PR ${pr.id}`);
           const isRelevant = RELEVANT_STATUSES.includes(pr.status);
           // need to first get the item from the DB so we can update the plugin data linked to the item
           const item = await opts.prisma.item.findFirst({

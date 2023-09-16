@@ -233,7 +233,11 @@ If \`isServerOnly\` is set to true, the store item will not be returned in the \
       });
       const plugins = await getPlugins();
       const plugin = plugins[args.input.pluginSlug];
-      await plugin?.onStoreItemUpsert?.(args.input.key); // TODO: maybe execute in message queue instead of synchronously
+      await plugin
+        ?.onStoreItemUpsert?.(args.input.key)
+        .catch((e) =>
+          console.log(`Error plugin.onStoreItemUpsert for ${args.input.pluginSlug}`, e)
+        ); // TODO: maybe execute in message queue instead of synchronously
       return res;
     },
   })

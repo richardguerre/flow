@@ -3,6 +3,13 @@
   "description": "Official GitStart plugin for Flow",
   "version": "0.1.0",
   "private": false,
+  "scripts": {
+    "build:web": "vite build -c vite.web.ts",
+    "build:server": "vite build -c vite.server.ts",
+    "build": "npm run build:web && npm run build:server",
+    "dev:web": "vite build -c vite.web.ts --watch",
+    "dev:server": "vite build -c vite.server.dev.ts --watch"
+  },
   "dependencies": {
     "@flowdev/plugin": "*"
   },

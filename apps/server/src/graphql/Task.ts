@@ -66,7 +66,7 @@ export type PluginOnCreateTask = (input: {
     /** The item that the task will be linked to, if any. */
     item?: (Item & { pluginDatas: ItemPluginData[] }) | null;
     /** The pluginData that the web runtime of the plugin passed in. */
-    webPluginData?: {
+    pluginData?: {
       /** The original id of the item given by the plugin, if any */
       originalId?: string | null;
       /** The minimum data required to render the information on task cards. */
@@ -124,7 +124,7 @@ builder.mutationField("createTask", (t) =>
     resolve: async (query, _, args) => {
       const date = args.input.date ?? startOfDay(new Date());
       const index = args.input.atIndex ?? 0;
-      const plugins = getPlugins();
+      const plugins = await getPlugins();
       const pluginDatas: Prisma.TaskPluginDataCreateManyTaskInput[] = [];
       let item;
       if (args.input.itemId) {
@@ -150,14 +150,18 @@ builder.mutationField("createTask", (t) =>
               durationInMinutes: args.input.durationInMinutes,
               date,
               item,
-              webPluginData: {
+              pluginData: {
                 originalId: webPluginData?.originalId,
                 min: webPluginData?.min,
                 full: webPluginData?.full,
               },
             },
           })
-          .catch(() => null); // ignore errors
+          .catch((e) => {
+            console.log(`Error plugin.onCreateTask for ${pluginSlug}`, e);
+            return null;
+          }); // ignore errors
+
         if (result?.pluginData) {
           pluginDatas.push({
             pluginSlug,

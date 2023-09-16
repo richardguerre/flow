@@ -3,6 +3,8 @@ import { TOKEN_STORE_KEY } from "./server";
 
 export default definePlugin((opts) => {
   const Flow = opts.components;
+  // @ts-ignore React is used to when building where JSX is transformed to React.createElement calls
+  const React = opts.React;
 
   return {
     name: "GitStart",
@@ -15,7 +17,7 @@ export default definePlugin((opts) => {
         isSecret: true, // once set, it cannot be seen again, but each time the setting is saved again it will be overwritten
       },
     },
-    onCreateTask: ({ task }) => {
+    onCreateTask: async ({ task }) => {
       if (!task?.item?.pluginDatas.some((pd) => pd.pluginSlug === "gitstart")) {
         return null;
       }

@@ -3,7 +3,7 @@ import type { WebPluginOptions } from "@flowdev/web/src/getPlugin/getPluginOptio
 import type { PluginRoutineStepProps } from "@flowdev/web/src/components/RoutineStep";
 import type { OnCreateTask } from "@flowdev/web/src/components/Day";
 
-export type { WebPluginOptions, PluginRoutineStepProps };
+export type { WebPluginOptions, PluginRoutineStepProps, OnCreateTask };
 
 export type WebPluginRoutineStep = {
   /** The name of the step. */

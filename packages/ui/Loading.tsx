@@ -11,7 +11,7 @@ type LoadingProps = {
 
 export const Loading = (props: LoadingProps) => {
   const maxProgress = props.maxProgress && props.maxProgress > 60 ? props.maxProgress : 60;
-  const duration = props.duration ?? 3;
+  const duration = props.duration ?? 2;
   const min = 96;
   const heightOfWave = 113;
   const max = min - (maxProgress / 100) * heightOfWave;
