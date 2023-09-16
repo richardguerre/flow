@@ -108,7 +108,6 @@ export default definePlugin((opts) => {
       const token = await getTokenFromStore();
 
       const itemPluginDataFull = itemPluginData.full as ItemPluginDataFull;
-      console.log(itemPluginDataFull);
       if (itemPluginDataFull.type === "pull_request") {
         const { id: prId } = decodeNodeId(itemPluginData.originalId);
         const data = await gqlRequest<{
@@ -143,8 +142,6 @@ export default definePlugin((opts) => {
           }
         );
 
-        console.log(JSON.stringify(data, null, 2));
-
         // update the item plugin data from the data returned from the createTask mutation
         const itemMin: PrItemPluginDataMin = {
           ...(itemPluginData.min as PrItemPluginDataMin),
@@ -154,16 +151,14 @@ export default definePlugin((opts) => {
           ...(itemPluginData.full as PrItemPluginDataFull),
           ...itemMin,
         };
-        await opts.prisma.itemPluginData
-          .update({
-            where: { id: itemPluginData.id },
-            data: {
-              min: itemMin,
-              full: itemFull,
-              item: { update: { title: data.createTask.pullRequest.title } },
-            },
-          })
-          .catch((e) => console.log(e)); // TODO: handle this error better
+        await opts.prisma.itemPluginData.update({
+          where: { id: itemPluginData.id },
+          data: {
+            min: itemMin,
+            full: itemFull,
+            item: { update: { title: data.createTask.pullRequest.title } },
+          },
+        });
 
         const taskMin: TaskPluginDataMin = {
           type: data.createTask.task.type,
@@ -223,7 +218,6 @@ export default definePlugin((opts) => {
       }
 
       if (!udpatedTaskPR) return; // this should never happen since we throw an error if the new status doesn't qualify for an update
-      console.log(JSON.stringify(udpatedTaskPR, null, 2));
       const taskMin: TaskPluginDataMin = {
         ...(taskPluginData.min as TaskPluginDataMin),
         status: udpatedTaskPR.updateTaskStatus.task.status,
@@ -265,7 +259,6 @@ export default definePlugin((opts) => {
     },
     handlePgBossWork: (work) => [
       work(SYNC_ITEMS, async () => {
-        console.log("sycing items");
         const token = await getTokenFromStore();
         const data1 = await gqlRequest<{
           viewer: { id: string; actionablePullRequests: PullRequestWithTicketTasks[] };
@@ -291,8 +284,6 @@ export default definePlugin((opts) => {
             ${GitStartTaskFragment}
           `
         );
-
-        console.log(data1);
 
         await opts.store.setSecretItem<UserInfo>(USER_INFO_STORE_KEY, { id: data1.viewer.id });
 
