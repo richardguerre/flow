@@ -19,6 +19,7 @@ import {
   syncTasks,
 } from "./utils";
 import "./utils/dayjs";
+import "./checksum";
 
 const PORT = env.PORT ?? 4000;
 export const app = express();
