@@ -387,6 +387,8 @@ const CreateTaskFromItem = (props: CreateTaskFromItemProps) => {
 
   const handleDone = async () => {
     // the user done going through all the steps, so let's create the task
+    // hide the dialog so that the toast gets all the attention and we don't display stale dialog content
+    props.onClose();
     const createTask = createTaskFromItem({
       variables: {
         input: {
