@@ -9,6 +9,11 @@ export default defineConfig({
   build: {
     outDir: path.resolve(pathToServer, "./plugins"),
     emptyOutDir: false,
+    rollupOptions: {
+      output: {
+        exports: "named",
+      },
+    },
     lib: {
       name: "flow-gitstart",
       entry: "src/server.ts",

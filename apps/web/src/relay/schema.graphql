@@ -350,7 +350,7 @@ input MutationCreateRoutineInput {
 
 input MutationCreateTaskInput {
   """The actions to be executed after the task is created."""
-  actionDatas: [TaskCreateActionDataInput!]
+  actionDatas: [TaskActionDataInput!]
 
   """
   The position in the day the task should be placed at. If not specified, it will be placed at the beginning.
@@ -464,6 +464,9 @@ input MutationUpdateTaskInput {
 }
 
 input MutationUpdateTaskStatusInput {
+  """The action data to be passed to the plugin."""
+  actionData: [TaskActionDataInput!]
+
   """The Relay ID of the task to update."""
   id: ID!
 
@@ -817,7 +820,7 @@ type Task implements Node {
   title: String!
 }
 
-input TaskCreateActionDataInput {
+input TaskActionDataInput {
   data: JSON
   pluginSlug: String!
 }

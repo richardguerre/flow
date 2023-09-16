@@ -1,4 +1,4 @@
-import { TaskStatus, Item, ItemPluginData, Prisma } from "@prisma/client";
+import { TaskStatus, Item, ItemPluginData, Prisma, Task, TaskPluginData } from "@prisma/client";
 import { endOfDay, startOfDay } from "../utils/getDays";
 import { prisma } from "../utils/prisma";
 import { builder, u } from "./builder";
@@ -57,7 +57,7 @@ export type PluginOnCreateTask = (input: {
   task: {
     /** The title of the task. */
     title: string;
-    /** The initial status of the task. Defaults to `TODO`. */
+    /** The specified status of the task. Defaults to `TODO` if null. */
     status?: TaskStatus | null;
     /** The length of time (in minutes) the task is expected to take. */
     durationInMinutes?: number | null;
@@ -118,7 +118,7 @@ builder.mutationField("createTask", (t) =>
       }),
       actionDatas: t.input.field({
         description: "The actions to be executed after the task is created.",
-        type: [TaskCreateActionDataInput],
+        type: [TaskActionDataInput],
       }),
     },
     resolve: async (query, _, args) => {
@@ -207,7 +207,7 @@ const TaskPluginDataInput = builder.inputType("TaskPluginDataInput", {
   }),
 });
 
-const TaskCreateActionDataInput = builder.inputType("TaskCreateActionDataInput", {
+const TaskActionDataInput = builder.inputType("TaskActionDataInput", {
   fields: (t) => ({
     pluginSlug: t.string({ required: true }),
     data: t.field({ type: "JSON" }),
@@ -252,7 +252,13 @@ builder.mutationField("deleteTask", (t) =>
   })
 );
 
-// TODO: add completedAt in the logic
+export type PluginOnUpdateTaskStatus = (input: {
+  /** The actionData that the web runtime of the plugin passed in. */
+  actionData?: Prisma.InputJsonValue | null;
+  newStatus: TaskStatus;
+  task: Task & { pluginDatas: TaskPluginData[] };
+}) => Promise<void>;
+
 builder.mutationField("updateTaskStatus", (t) =>
   t.prismaFieldWithInput({
     type: ["Day"],
@@ -277,15 +283,29 @@ Any other scenario is not possible by nature of the app, where tasks:
         required: true,
         description: "The new status of the task.",
       }),
+      actionData: t.input.field({
+        type: [TaskActionDataInput],
+        description: "The action data to be passed to the plugin.",
+      }),
     },
-    resolve: (query, _, args) => {
-      return prisma.$transaction(async (tx) => {
-        const days: Date[] = [];
+    resolve: async (query, _, args) => {
+      const days: Date[] = [];
+      const plugins = await getPlugins();
+      await prisma.$transaction(async (tx) => {
         const newStatus = args.input.status;
         const task = await tx.task.findUniqueOrThrow({
           where: { id: parseInt(args.input.id.id) },
-          include: { day: { select: { date: true, tasksOrder: true } } },
+          include: { day: { select: { date: true, tasksOrder: true } }, pluginDatas: true },
         });
+        for (const pluginSlug in plugins) {
+          const plugin = plugins[pluginSlug as keyof typeof plugins] as ServerPluginReturn;
+          // errors from plugins should interrupt the transaction and be thrown as GraphQL errors
+          await plugin.onUpdateTaskStatus?.({
+            actionData: args.input.actionData,
+            newStatus,
+            task,
+          });
+        }
         const originalDay = task.day;
         const startOfToday = startOfDay();
         const endOfToday = endOfDay();
@@ -345,6 +365,7 @@ Any other scenario is not possible by nature of the app, where tasks:
               where: { id: task.id },
               data: {
                 status: newStatus,
+                completedAt: null,
                 day: {
                   connectOrCreate: {
                     where: { date: startOfToday },
@@ -386,17 +407,16 @@ Any other scenario is not possible by nature of the app, where tasks:
             days.push(task.date);
           }
         }
-        return prisma.day.findMany({
-          ...query,
-          where: { date: { in: days } },
-          orderBy: { date: "asc" },
-        });
+      });
+      return prisma.day.findMany({
+        ...query,
+        where: { date: { in: days } },
+        orderBy: { date: "asc" },
       });
     },
   })
 );
 
-// TODO: add completedAt in the logic
 builder.mutationField("updateTaskDate", (t) =>
   t.fieldWithInput({
     type: [DayType],
@@ -426,13 +446,14 @@ When the task is:
         description: "The new order of the tasks in the day the task is moved into.",
       }),
     },
-    resolve: (_, args) => {
+    resolve: async (_, args) => {
+      const plugins = await getPlugins();
       return prisma.$transaction(async (tx) => {
         const days: Date[] = [];
         const newDate = args.input.date;
         const task = await tx.task.findUniqueOrThrow({
           where: { id: parseInt(args.input.id.id) },
-          include: { day: { select: { date: true, tasksOrder: true } } },
+          include: { day: { select: { date: true, tasksOrder: true } }, pluginDatas: true },
         });
         const originalDay = task.day;
         const isSameDay = dayjs(task.date).isSame(newDate, "day");
@@ -465,6 +486,20 @@ When the task is:
           // update the date and update the status to TODO (if not already) and completedAt to null
           newStatus = "TODO";
           days.push(task.date, newDate);
+        }
+        if (newStatus === task.status) {
+          newStatus = null;
+        }
+
+        if (newStatus) {
+          for (const pluginSlug in plugins) {
+            const plugin = plugins[pluginSlug as keyof typeof plugins] as ServerPluginReturn;
+            // errors from plugins should interrupt the transaction and be thrown as GraphQL errors
+            await plugin.onUpdateTaskStatus?.({
+              newStatus,
+              task,
+            });
+          }
         }
 
         // Update the task

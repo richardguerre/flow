@@ -1,7 +1,10 @@
 // ‼️ only import types from the @flowdev/server package, not runtime code otherwise it will be a cyclic dependency
 import { type ServerPluginOptions as _ServerPluginOptions } from "@flowdev/server/src/utils/getPluginOptions";
 import { type PgBossType } from "@flowdev/server/src/utils/pgBoss";
-import type { PluginOnCreateTask } from "@flowdev/server/src/graphql/Task";
+import type {
+  PluginOnCreateTask,
+  PluginOnUpdateTaskStatus,
+} from "@flowdev/server/src/graphql/Task";
 import type { Request, Response } from "express";
 
 export type ServerPluginOptions = _ServerPluginOptions;
@@ -15,6 +18,8 @@ export type ServerPlugin = (opts: ServerPluginOptions) => {
   onStoreItemUpsert?: (key: string) => Promise<void>;
   /** Hook called before a task is created. Useful to add plugin data to the task. */
   onCreateTask?: PluginOnCreateTask;
+  /** Hook called before a task's status is updated. */
+  onUpdateTaskStatus?: PluginOnUpdateTaskStatus;
   /**
    * Hook called when a request is made at `/api/$pluginSlug`.
    *

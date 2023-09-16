@@ -29,6 +29,38 @@ export default definePlugin((opts) => {
     }
     return json.data as T;
   };
+  type GitStartUpdateTaskStatusInput = {
+    token: string;
+    input: {
+      taskInternalId: number;
+      status: GitStartTaskStatus;
+    };
+  };
+  const updateTaskStatus = async (params: GitStartUpdateTaskStatusInput) => {
+    return gqlRequest<{
+      updateTaskStatus: {
+        pullRequest: GitStartPullRequest;
+        task: GitStartTask;
+      };
+    }>(
+      params.token,
+      /* GraphQL */ `
+        mutation FlowOperationUpdateTaskStatus($input: UpdateTaskStatusInput!) {
+          updateTaskStatus(input: $input) {
+            pullRequest {
+              ...GitStartPullRequest
+            }
+            task {
+              ...GitStartTask
+            }
+          }
+        }
+        ${GitStartPullRequestFragment}
+        ${GitStartTaskFragment}
+      `,
+      { input: params.input }
+    );
+  };
 
   const getTokenFromStore = async () => {
     const tokenItem = await opts.store.getPluginItem<string>(TOKEN_STORE_KEY);
@@ -76,6 +108,7 @@ export default definePlugin((opts) => {
       const token = await getTokenFromStore();
 
       const itemPluginDataFull = itemPluginData.full as ItemPluginDataFull;
+      console.log(itemPluginDataFull);
       if (itemPluginDataFull.type === "pull_request") {
         const { id: prId } = decodeNodeId(itemPluginData.originalId);
         const data = await gqlRequest<{
@@ -104,11 +137,13 @@ export default definePlugin((opts) => {
               pullRequestInternalId: prId,
               title: task.title,
               type: "CODE", // TODO: make this configurable
-              status: "TO_DO", // TODO: make this configurable
+              status: "IN_PROGRESS", // TODO: make this configurable
               assigneeInternalId: userId,
             },
           }
         );
+
+        console.log(JSON.stringify(data, null, 2));
 
         // update the item plugin data from the data returned from the createTask mutation
         const itemMin: PrItemPluginDataMin = {
@@ -151,6 +186,76 @@ export default definePlugin((opts) => {
       } else {
         // TODO: it's a ticket, so we need to create the pull request first then create the task
       }
+    },
+    onUpdateTaskStatus: async ({ task, newStatus }) => {
+      const taskPluginData = task.pluginDatas.find((pd) => pd.pluginSlug === opts.pluginSlug);
+      if (!taskPluginData?.originalId) return;
+      const taskPluginDataFull = taskPluginData.full as TaskPluginDataFull;
+      const { id: taskId } = decodeNodeId(taskPluginData.originalId);
+      const token = await getTokenFromStore();
+      let udpatedTaskPR;
+      if (task.status === newStatus) return; // ignore if the status is the same as we most likely already updated the status.
+      if (newStatus === "DONE") {
+        if (taskPluginDataFull.status === "TO_DO") {
+          const res = await updateTaskStatus({
+            token,
+            input: { taskInternalId: taskId, status: "IN_PROGRESS" },
+          });
+          if (res.updateTaskStatus.task.status !== "IN_PROGRESS") {
+            throw new opts.GraphQLError(
+              `GitStart task (id: ${taskPluginDataFull.id}) did not change status to In progress. Contact GitStart support for help.`
+            );
+          }
+        }
+        udpatedTaskPR = await updateTaskStatus({
+          token,
+          input: { taskInternalId: taskId, status: "FINISHED" },
+        });
+      } else if (newStatus === "CANCELED") {
+        udpatedTaskPR = await updateTaskStatus({
+          token,
+          input: { taskInternalId: taskId, status: "CANCELED" },
+        });
+      } else if (newStatus === "TODO") {
+        throw new opts.GraphQLError(
+          'GitStart tasks cannot be set back to "To do" from "In progress". If needed, you can cancel the task and create a new one.'
+        );
+      }
+
+      if (!udpatedTaskPR) return; // this should never happen since we throw an error if the new status doesn't qualify for an update
+      console.log(JSON.stringify(udpatedTaskPR, null, 2));
+      const taskMin: TaskPluginDataMin = {
+        ...(taskPluginData.min as TaskPluginDataMin),
+        status: udpatedTaskPR.updateTaskStatus.task.status,
+      };
+      const taskFull: TaskPluginDataFull = {
+        ...taskPluginDataFull,
+        ...taskMin,
+      };
+      await opts.prisma.taskPluginData.update({
+        where: { id: taskPluginData.id },
+        data: { min: taskMin, full: taskFull },
+      });
+      if (!task.itemId) return;
+      const item = await opts.prisma.item.findUnique({
+        where: { id: task.itemId },
+        include: { pluginDatas: true },
+      });
+      if (!item) return;
+      const itemPluginData = item.pluginDatas.find((pd) => pd.pluginSlug === opts.pluginSlug);
+      if (!itemPluginData) return;
+      const itemMin: PrItemPluginDataMin = {
+        ...(itemPluginData.min as PrItemPluginDataMin),
+        status: udpatedTaskPR.updateTaskStatus.pullRequest.status,
+      };
+      const itemFull: PrItemPluginDataFull = {
+        ...(itemPluginData.full as PrItemPluginDataFull),
+        ...itemMin,
+      };
+      await opts.prisma.itemPluginData.update({
+        where: { id: itemPluginData.id },
+        data: { min: itemMin, full: itemFull },
+      });
     },
     operations: {
       sync: async () => {

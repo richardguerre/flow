@@ -35,6 +35,7 @@ import { TaskCardUpdateTaskDurationMutation } from "../relay/__generated__/TaskC
 import { TaskCardUpdateItemStatusMutation } from "../relay/__generated__/TaskCardUpdateItemStatusMutation.graphql";
 import { TaskCardDurationButton_task$key } from "../relay/__generated__/TaskCardDurationButton_task.graphql";
 import { TaskCardDeleteTaskMutation } from "../relay/__generated__/TaskCardDeleteTaskMutation.graphql";
+import { toast } from "@flowdev/ui/Toast";
 
 type TaskCardProps = {
   task: TaskCard_task$key;
@@ -137,6 +138,7 @@ const TaskCardActions = (props: TaskCardActionsProps) => {
         id
         item {
           id
+          isRelevant
         }
         ...TaskCardDurationButton_task
       }
@@ -162,10 +164,15 @@ const TaskCardActions = (props: TaskCardActionsProps) => {
   `);
 
   const updateStatus = async (status: TaskStatus) => {
-    await _updateTaskStatus({
+    const updatePromise = _updateTaskStatus({
       variables: {
         input: { id: task.id, status },
       },
+    });
+    toast.promise(updatePromise, {
+      loading: "Updating task...",
+      success: "Task updated",
+      error: (err) => err.message,
     });
   };
 
@@ -239,7 +246,10 @@ const TaskCardActions = (props: TaskCardActionsProps) => {
     if (task.status === "TODO") {
       return [doneButton, ...(task.item ? [superdoneButton] : []), cancelButton];
     } else if (task.status === "DONE") {
-      return task.item ? [undoSuperdoneButton] : [undoDoneButton];
+      // when the item is relevant, it's considered not done.
+      return task.item && !task.item.isRelevant
+        ? [undoDoneButton, undoSuperdoneButton]
+        : [undoDoneButton];
     } else if (task.status === "CANCELED") {
       return [undoCancelButton];
     }

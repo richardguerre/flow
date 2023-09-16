@@ -12,12 +12,7 @@ export const Providers = (props: Props) => {
       <TooltipProvider>
         <IconContext.Provider value={{ size: "20px" }}>
           {props.children}
-          <Toaster
-            position="bottom-center"
-            toastOptions={{
-              iconTheme: { primary: "#22c55e", secondary: "#f9fafb" },
-            }}
-          />
+          <Toaster position="bottom-center" />
         </IconContext.Provider>
       </TooltipProvider>
     </RelayEnvironmentProvider>

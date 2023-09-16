@@ -56,6 +56,7 @@ export const getPluginOptions = (pluginSlug: string) => ({
     note: prisma.note,
     noteTag: prisma.noteTag,
     task: prisma.task,
+    taskPluginData: prisma.taskPluginData,
     taskTag: prisma.taskTag,
     item: prisma.item,
     itemPluginData: prisma.itemPluginData,
