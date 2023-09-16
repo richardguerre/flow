@@ -4,6 +4,7 @@ import { fetchQuery } from "@flowdev/relay";
 import { getPluginsQuery } from "@flowdev/web/relay/__generated__/getPluginsQuery.graphql";
 import { environment } from "@flowdev/web/relay/environment";
 import { getPluginOptions } from "./getPluginOptions";
+import { devImportMap } from "./dev";
 
 type Input = {
   pluginSlug: string;
@@ -24,8 +25,15 @@ export const getPlugin = async (input: Input) => {
       return { _error: "PLUGIN_HAS_NO_WEB_RUNTIME" } as const;
     }
 
-    const importPromise = import(/* @vite-ignore */ `${pluginInstallation.url}/web.js`);
-    const { plugin } = (await importPromise).default as DefineWebPluginReturn;
+    if (process.env.NODE_ENV === "development" && input.pluginSlug in devImportMap) {
+      const imported = await devImportMap[input.pluginSlug as keyof typeof devImportMap];
+      const { plugin } = imported?.default ?? {};
+      if (plugin) {
+        return plugin(getPluginOptions(input.pluginSlug));
+      }
+    }
+    const importPromise = await import(/* @vite-ignore */ `${pluginInstallation.url}/web.js`);
+    const { plugin } = importPromise.default as DefineWebPluginReturn;
     return plugin(getPluginOptions(input.pluginSlug));
   } catch (e) {
     console.log(e);

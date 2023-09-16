@@ -363,8 +363,8 @@ type PrItemPluginDataFull = PrItemPluginDataMin & {
 };
 
 // -------------------- task types --------------------
-type GitStartTaskStatus = "CANCELED" | "FINISHED" | "IN_PROGRESS" | "TO_DO";
-type GitStartTaskType = "SPEC" | "CODE" | "REVIEW" | "QA" | "LEARNING";
+export type GitStartTaskStatus = "CANCELED" | "FINISHED" | "IN_PROGRESS" | "TO_DO";
+export type GitStartTaskType = "SPEC" | "CODE" | "REVIEW" | "QA" | "LEARNING";
 type GitStartTask = {
   id: string;
   type: GitStartTaskType;

@@ -1,5 +1,6 @@
 import { definePlugin } from "@flowdev/plugin/web";
 import { TOKEN_STORE_KEY } from "./server";
+import type { GitStartTaskStatus, GitStartTaskType } from "./server";
 
 export default definePlugin((opts) => {
   const Flow = opts.components;
@@ -26,6 +27,8 @@ export default definePlugin((opts) => {
         dialogContent: ({ NextButton, BackButton, ...props }) => {
           type FormValues = {
             title: string;
+            type: GitStartTaskType;
+            status: GitStartTaskStatus;
           };
           const { register, handleSubmit, formState, watch } =
             opts.reactHookForm.useForm<FormValues>({ defaultValues: { title: task.title.value } });
@@ -36,18 +39,20 @@ export default definePlugin((opts) => {
           };
 
           return (
-            <form onSubmit={handleSubmit(onSubmit)}>
+            <form onSubmit={handleSubmit(onSubmit)} className="flex flex-col gap-4">
               <Flow.FormInput
                 label="Title"
                 description="The title of the task in GitStart."
                 {...register("title")}
                 error={formState.errors.title}
               />
-              <NextButton type="submit" />
-              <BackButton
-                type="button"
-                onClick={() => props.onBack({ taskOverrides: { title: values.title } })}
-              />
+              <div className="flex gap-2 self-end">
+                <BackButton
+                  type="button"
+                  onClick={() => props.onBack({ taskOverrides: { title: values.title } })}
+                />
+                <NextButton type="submit" />
+              </div>
             </form>
           );
         },
@@ -55,3 +60,20 @@ export default definePlugin((opts) => {
     },
   };
 });
+
+type Option<T = any> = { label: string; value: T };
+
+const taskStatusOptions: Option<GitStartTaskStatus>[] = [
+  { label: "To Do", value: "TO_DO" },
+  { label: "In Progress", value: "IN_PROGRESS" },
+  { label: "Finished", value: "FINISHED" },
+  { label: "Canceled", value: "CANCELED" },
+];
+
+const taskTypeOptions: Option<GitStartTaskType>[] = [
+  { label: "Spec", value: "SPEC" },
+  { label: "Code", value: "CODE" },
+  { label: "Review", value: "REVIEW" },
+  { label: "QA", value: "QA" },
+  { label: "Learning", value: "LEARNING" },
+];

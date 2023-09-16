@@ -16,9 +16,7 @@ export const FormInput = forwardRef<HTMLInputElement, FormInputProps>((props, re
       {props.label && (
         <div className="text-foreground-900 text-base font-medium">{props.label}</div>
       )}
-      {props.description && (
-        <div className="text-foreground-700 text-base">{props.description}</div>
-      )}
+      {props.description && <div className="text-foreground-700 text-sm">{props.description}</div>}
       <Input {...props} ref={ref} hasError={!!errorMessage || props.hasError} />
       {errorMessage && <div className="text-negative-600 text-sm">{errorMessage}</div>}
     </label>
