@@ -46,7 +46,7 @@ type LoginFormValues = {
   password: string;
 };
 
-const LoginForm = () => {
+export const LoginForm = () => {
   const navigate = useNavigate();
   const { register, handleSubmit, formState, setError } = useForm<LoginFormValues>();
   const [login, isLoggingIn] = useMutation<LoginViewLoginMutation>(graphql`
