@@ -21,8 +21,12 @@ export const getPlugins = async (): Promise<Record<string, ServerPluginReturn>> 
     return Object.fromEntries(cache);
   }
   for (const pluginSlug of unCachedPlugins) {
-    const { plugin } = require(path.join(pathToPlugins, pluginSlug)) as DefineServerPluginReturn;
-    cache.set(pluginSlug, plugin(getPluginOptions(pluginSlug)));
+    let exported = require(path.join(pathToPlugins, pluginSlug)) as DefineServerPluginReturn;
+    if ("default" in exported) {
+      // in case the plugin exported other things as well as the default export, then default becomes a named export.
+      exported = exported.default as DefineServerPluginReturn;
+    }
+    cache.set(pluginSlug, exported.plugin(getPluginOptions(pluginSlug)));
   }
   return Object.fromEntries(cache);
 };
@@ -130,7 +134,12 @@ export async function installServerPlugin(opts: Options) {
   }
   if (typeof exported !== "object" || Object.keys(exported).length === 0) {
     throw new GraphQLError(`Couldn't find any exports at "${opts.url}/server.js"`);
-  } else if (typeof exported.plugin !== "function") {
+  }
+  if ("default" in exported) {
+    // in case the plugin exported other things as well as the default export, then default becomes a named export.
+    exported = exported.default as DefineServerPluginReturn;
+  }
+  if (typeof exported.plugin !== "function") {
     throw new GraphQLError(
       `The exports of "${opts.url}/server.js" must have a \`plugin\` property which is a function. Please use \`definePlugin\` from \`@flowdev/plugin/server\`.`
     );
