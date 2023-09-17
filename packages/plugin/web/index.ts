@@ -3,6 +3,7 @@ import type { WebPluginOptions } from "@flowdev/web/src/getPlugin/getPluginOptio
 import type { PluginRoutineStepProps } from "@flowdev/web/src/components/RoutineStep";
 import type { PluginOnCreateTask as OnCreateTask } from "@flowdev/web/src/components/OnCreateTask";
 import type { PluginRenderTaskCardDetails as RenderTaskCardDetails } from "@flowdev/web/src/components/RenderTaskCardDetails";
+import type { PluginRenderItemCardDetails as RenderItemCardDetails } from "@flowdev/web/src/components/RenderItemCardDetails";
 
 export type { WebPluginOptions, PluginRoutineStepProps, OnCreateTask };
 
@@ -51,6 +52,7 @@ export type WebPlugin = (options: WebPluginOptions) => {
    * You can use the `opts.Flow.Badge` component to render badges similar to the default ones on the Task card.
    */
   renderTaskCardDetails?: RenderTaskCardDetails;
+  renderItemCardDetails?: RenderItemCardDetails;
 };
 
 export const definePlugin = (plugin: WebPlugin) => ({ plugin });

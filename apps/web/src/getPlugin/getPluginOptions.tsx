@@ -30,6 +30,7 @@ import { Input } from "@flowdev/ui/Input";
 import { DropdownMenu, DropdownMenuItem, DropdownMenuTrigger } from "@flowdev/ui/DropdownMenu";
 import { useForm, Controller } from "react-hook-form";
 import { tw } from "@flowdev/ui/tw";
+import { Badge } from "@flowdev/ui/Badge";
 
 export const getPluginOptions = (slug: string) => ({
   /** The plugin's slug. There is no difference with the one passed into `definePlugin`. It can be used to not repeat it throughout the plugin's code. */
@@ -80,6 +81,7 @@ export const getPluginOptions = (slug: string) => ({
     DropdownMenu,
     DropdownMenuTrigger,
     DropdownMenuItem,
+    Badge,
   },
   hooks: {
     /**

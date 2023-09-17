@@ -30,7 +30,7 @@ export const RenderTaskCardDetails = (props: Props) => {
     props.task
   );
 
-  const nativeDetails = (
+  const flowDetails = (
     <>
       {task.durationInMinutes && <DurationBadge durationInMinutes={task.durationInMinutes} />}
       {task.item?.scheduledAt && <TimeBadge time={task.item.scheduledAt} />}
@@ -38,8 +38,8 @@ export const RenderTaskCardDetails = (props: Props) => {
   );
 
   return (
-    <Suspense fallback={<div className="flex flex-wrap gap-2">{nativeDetails}</div>}>
-      <RenderTaskCardDetailsPlugins task={task} nativeDetails={nativeDetails} />
+    <Suspense fallback={<div className="flex flex-wrap gap-2">{flowDetails}</div>}>
+      <RenderTaskCardDetailsPlugins task={task} nativeDetails={flowDetails} />
     </Suspense>
   );
 };

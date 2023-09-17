@@ -82,7 +82,7 @@ export default definePlugin((opts) => {
         where: { slug: GITSTART_LIST_SLUG },
         create: {
           slug: GITSTART_LIST_SLUG,
-          name: "GitStart PRs",
+          name: "GitStart Tickets & PRs",
           description:
             "All the PRs you have access to in your GitStart dashboard. List created from the GitStart plugin.",
         },
@@ -378,7 +378,7 @@ type TaskPluginDataFull = TaskPluginDataMin & {
   pullRequest: PrItemPluginDataFull;
 };
 
-type ItemPluginDataMin = TicketItemPluginDataMin | PrItemPluginDataMin;
+export type ItemPluginDataMin = TicketItemPluginDataMin | PrItemPluginDataMin;
 type ItemPluginDataFull = TicketItemPluginDataFull | PrItemPluginDataFull;
 
 type UserInfo = {
@@ -391,10 +391,18 @@ type PullRequestWithTicketTasks = GitStartPullRequest & {
 };
 
 // -------------------- ticket types --------------------
+export type GitStartTicketStatus =
+  | "BACKLOG"
+  | "AVAILABLE"
+  | "IN_PROGRESS"
+  | "PAUSED"
+  | "FINISHED"
+  | "CANCELED";
 type GitStartTicket = {
   id: string;
   title: string;
   code: string;
+  status: GitStartTicketStatus;
   description: string | null;
   descriptionType: "HTML" | "JIRA" | "MARKDOWN" | null;
   client: {
@@ -407,6 +415,7 @@ const GitStartTicketFragment = /* GraphQL */ `
     title
     # to construct the URL to the GitStart dashboard
     code
+    status
     description
     descriptionType
     client {
@@ -417,6 +426,7 @@ const GitStartTicketFragment = /* GraphQL */ `
 type TicketItemPluginDataMin = {
   type: "ticket"; // matches with node ID type
   url: string;
+  status: GitStartTicket["status"];
 };
 type TicketItemPluginDataFull = TicketItemPluginDataMin & {
   id: GitStartTicket["id"];
@@ -425,7 +435,7 @@ type TicketItemPluginDataFull = TicketItemPluginDataMin & {
 };
 
 // -------------------- PR types --------------------
-type GitStartPullRequestStatus =
+export type GitStartPullRequestStatus =
   | "PLANNED"
   | "IN_PROGRESS"
   | "INTERNAL_REVIEW"

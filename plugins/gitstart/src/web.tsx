@@ -1,6 +1,13 @@
 import { definePlugin } from "@flowdev/plugin/web";
 import { TOKEN_STORE_KEY } from "./server";
-import type { GitStartTaskStatus, GitStartTaskType, TaskPluginDataMin } from "./server";
+import type {
+  GitStartTaskStatus,
+  GitStartTaskType,
+  TaskPluginDataMin,
+  ItemPluginDataMin,
+  GitStartPullRequestStatus,
+  GitStartTicketStatus,
+} from "./server";
 
 export default definePlugin((opts) => {
   const Flow = opts.components;
@@ -67,29 +74,106 @@ export default definePlugin((opts) => {
       const typeInfo = taskTypeMap[min.type];
       const statusInfo = taskStatusMap[min.status];
       return [
-        { component: () => <div className={typeInfo.className}>{typeInfo.label}</div> },
-        { component: () => <div className={statusInfo.className}>{statusInfo.label}</div> },
+        {
+          component: () => <Flow.Badge className={typeInfo.className}>{typeInfo.label}</Flow.Badge>,
+        },
+        {
+          component: () => (
+            <Flow.Badge className={statusInfo.className}>{statusInfo.label}</Flow.Badge>
+          ),
+        },
       ];
+    },
+    renderItemCardDetails: async ({ item }) => {
+      const taskPluginData = item.pluginDatas.find((pd) => pd.pluginSlug === "gitstart");
+      if (!taskPluginData) {
+        return null;
+      }
+      const min = taskPluginData.min as ItemPluginDataMin;
+      if (min.type === "pull_request") {
+        const statusInfo = prStatusMap[min.status];
+        return [
+          {
+            component: () => <Flow.Badge className="bg-green-100 text-green-700">PR</Flow.Badge>,
+          },
+          {
+            component: () => (
+              <Flow.Badge className={statusInfo.className}>{statusInfo.label}</Flow.Badge>
+            ),
+          },
+        ];
+      } else if (min.type === "ticket") {
+        const statusInfo = ticketStatusMap[min.status];
+        return [
+          {
+            component: () => (
+              <Flow.Badge className={`bg-gray-200 text-gray-600`}>Ticket</Flow.Badge>
+            ),
+          },
+          {
+            component: () => (
+              <Flow.Badge className={statusInfo.className}>{statusInfo.label}</Flow.Badge>
+            ),
+          },
+        ];
+      }
+      return null;
     },
   };
 });
 
-const badgeClassNames = "inline-flex h-min rounded px-1 py-0.25 text-sm";
 const taskTypeMap: Record<GitStartTaskType, { label: string; className: string }> = {
-  SPEC: { label: "Spec", className: `bg-gray-200 text-gray-600 ${badgeClassNames}` },
-  CODE: { label: "Code", className: `bg-blue-100 text-blue-600 ${badgeClassNames}` },
-  REVIEW: { label: "Review", className: `bg-yellow-100 text-yellow-600 ${badgeClassNames}` },
-  QA: { label: "QA", className: `bg-purple-100 text-purple-600 ${badgeClassNames}` },
-  LEARNING: { label: "Learning", className: `bg-green-100 text-green-700 ${badgeClassNames}` },
+  SPEC: { label: "Spec", className: `bg-gray-200 text-gray-600` },
+  CODE: { label: "Code", className: `bg-blue-100 text-blue-600` },
+  REVIEW: { label: "Review", className: `bg-yellow-100 text-yellow-600` },
+  QA: { label: "QA", className: `bg-purple-100 text-purple-600` },
+  LEARNING: { label: "Learning", className: `bg-green-100 text-green-700` },
 };
 const taskStatusMap: Record<GitStartTaskStatus, { label: string; className: string }> = {
-  TO_DO: { label: "To do", className: `bg-gray-200 text-gray-600 ${badgeClassNames}` },
+  TO_DO: { label: "To do", className: `bg-gray-200 text-gray-600` },
   IN_PROGRESS: {
     label: "In progress",
-    className: `bg-blue-100 text-blue-600 ${badgeClassNames}`,
+    className: `bg-blue-100 text-blue-600`,
   },
-  FINISHED: { label: "Finished", className: `bg-green-100 text-green-700 ${badgeClassNames}` },
-  CANCELED: { label: "Canceled", className: `bg-red-100 text-red-600 ${badgeClassNames}` },
+  FINISHED: { label: "Finished", className: `bg-green-100 text-green-700` },
+  CANCELED: { label: "Canceled", className: `bg-red-100 text-red-600` },
+};
+
+const prStatusMap: Record<GitStartPullRequestStatus, { label: string; className: string }> = {
+  PLANNED: { label: "Planned", className: `bg-gray-200 text-gray-600` },
+  IN_PROGRESS: {
+    label: "In progress",
+    className: `bg-blue-100 text-blue-600`,
+  },
+  INTERNAL_REVIEW: {
+    label: "Internal review",
+    className: `bg-yellow-100 text-yellow-600`,
+  },
+  CLIENT_REVIEW: {
+    label: "Client review",
+    className: `bg-purple-100 text-purple-600`,
+  },
+  CANCELED: { label: "Canceled", className: `bg-red-100 text-red-600` },
+  APPROVED: { label: "Approved", className: `bg-green-100 text-green-700` },
+  MERGED: { label: "Merged", className: `bg-green-100 text-green-700` },
+};
+
+const ticketStatusMap: Record<GitStartTicketStatus, { label: string; className: string }> = {
+  BACKLOG: { label: "Backlog", className: `bg-gray-200 text-gray-600` },
+  AVAILABLE: {
+    label: "Available",
+    className: `bg-blue-100 text-blue-600`,
+  },
+  IN_PROGRESS: {
+    label: "In progress",
+    className: `bg-yellow-100 text-yellow-600`,
+  },
+  PAUSED: {
+    label: "Paused",
+    className: `bg-purple-100 text-purple-600`,
+  },
+  FINISHED: { label: "Finished", className: `bg-green-100 text-green-700` },
+  CANCELED: { label: "Canceled", className: `bg-red-100 text-red-600` },
 };
 
 // type Option<T = any> = { label: string; value: T };

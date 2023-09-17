@@ -1,4 +1,5 @@
 import { dayjs } from "@flowdev/web/dayjs";
+import { Badge } from "@flowdev/ui/Badge";
 
 type DurationBadgeProps = {
   durationInMinutes: number;
@@ -6,10 +7,10 @@ type DurationBadgeProps = {
 
 export const DurationBadge = (props: DurationBadgeProps) => {
   return (
-    <div className="bg-primary-100 text-primary-600 py-0.25 inline-flex h-min rounded px-1 text-sm">
+    <Badge>
       {twoDigits(Math.floor(props.durationInMinutes / 60))}:
       {twoDigits(props.durationInMinutes % 60)}
-    </div>
+    </Badge>
   );
 };
 

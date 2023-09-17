@@ -4,7 +4,10 @@ import { tw } from "./tw";
 
 export const TooltipProvider = Provider;
 export const Tooltip = Root;
-export const TooltipTrigger = Trigger;
+export const TooltipTrigger = forwardRef<
+  React.ElementRef<typeof Trigger>,
+  React.ComponentPropsWithoutRef<typeof Trigger>
+>((props, ref) => <Trigger ref={ref} {...props} className={tw("leading-none", props.className)} />);
 export const TooltipContent = forwardRef<
   React.ElementRef<typeof Content>,
   React.ComponentPropsWithoutRef<typeof Content>

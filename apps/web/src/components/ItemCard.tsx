@@ -1,14 +1,12 @@
 import { graphql, useFragment, useMutation } from "@flowdev/relay";
 import { ItemCard_item$key } from "@flowdev/web/relay/__generated__/ItemCard_item.graphql";
-import { ItemCardDetails_item$key } from "@flowdev/web/relay/__generated__/ItemCardDetails_item.graphql";
 import { ItemCardActions_item$key } from "@flowdev/web/relay/__generated__/ItemCardActions_item.graphql";
-import { DurationBadge } from "./Badges";
 import { ItemTitle } from "./ItemTitle";
 import { BsArchive, BsCheckAll } from "@flowdev/icons";
 import { Tooltip, TooltipContent, TooltipTrigger } from "@flowdev/ui/Tooltip";
-import { pluralize } from "../utils";
 import { ItemCardUpdateItemMutation } from "../relay/__generated__/ItemCardUpdateItemMutation.graphql";
 import { ItemCardDismissFromInboxMutation } from "../relay/__generated__/ItemCardDismissFromInboxMutation.graphql";
+import { RenderItemCardDetails } from "./RenderItemCardDetails";
 
 type ItemCardProps = {
   item: ItemCard_item$key;
@@ -22,7 +20,7 @@ export const ItemCard = (props: ItemCardProps) => {
         title
         durationInMinutes
         ...ItemTitle_item
-        ...ItemCardDetails_item
+        ...RenderItemCardDetails_item
         ...ItemCardActions_item
         ...OnCreateTaskItemRecordToCreateTaskFrom_item # used to create tasks from items
       }
@@ -33,64 +31,8 @@ export const ItemCard = (props: ItemCardProps) => {
   return (
     <div className="bg-background-50 group flex cursor-pointer flex-col gap-1 rounded-lg p-3 shadow-sm hover:shadow-md">
       <ItemTitle item={item} />
-      <ItemCardDetails item={item} />
+      <RenderItemCardDetails item={item} />
       <ItemCardActions item={item} />
-    </div>
-  );
-};
-
-type ItemCardDetailsProps = {
-  item: ItemCardDetails_item$key;
-  inInbox?: boolean;
-};
-
-const ItemCardDetails = (props: ItemCardDetailsProps) => {
-  const item = useFragment(
-    graphql`
-      fragment ItemCardDetails_item on Item {
-        scheduledAt
-        inboxPoints
-        durationInMinutes
-        pluginDatas {
-          pluginSlug
-          min
-        }
-        tasks {
-          id
-        }
-      }
-    `,
-    props.item
-  );
-
-  return (
-    <div className="flex items-center gap-2">
-      {item.durationInMinutes && <DurationBadge durationInMinutes={item.durationInMinutes} />}
-      {item.inboxPoints && (
-        <Tooltip>
-          <TooltipTrigger>
-            <div className="bg-primary-100 text-primary-600 rounded px-1 py-0.5 text-sm">
-              +{item.inboxPoints}
-            </div>
-          </TooltipTrigger>
-          <TooltipContent side="bottom">
-            {item.inboxPoints} inbox {pluralize("point", item.inboxPoints)}
-          </TooltipContent>
-        </Tooltip>
-      )}
-      {!!item.tasks.length && (
-        <Tooltip>
-          <TooltipTrigger>
-            <div className="bg-primary-100 text-primary-600 rounded px-1 py-0.5 text-sm">
-              {item.tasks.length} {pluralize("task", item.tasks.length)}
-            </div>
-          </TooltipTrigger>
-          <TooltipContent side="bottom">
-            {item.tasks.length} {pluralize("task", item.tasks.length)} linked to this item
-          </TooltipContent>
-        </Tooltip>
-      )}
-      {item.scheduledAt && <div>{item.scheduledAt}</div>}
     </div>
   );
 };
