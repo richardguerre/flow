@@ -1,5 +1,5 @@
-const f = (t) => ({ plugin: t }), b = "gitstart-session-token", h = f((t) => {
-  const l = t.components, e = t.React;
+const S = (e) => ({ plugin: e }), b = "gitstart-session-token", h = S((e) => {
+  const o = e.components, t = e.React;
   return {
     name: "GitStart",
     settings: {
@@ -12,27 +12,27 @@ const f = (t) => ({ plugin: t }), b = "gitstart-session-token", h = f((t) => {
       }
     },
     onCreateTask: async ({ task: n }) => {
-      var i;
-      return (i = n == null ? void 0 : n.item) != null && i.pluginDatas.some((r) => r.pluginSlug === "gitstart") ? {
-        dialogContent: ({ NextButton: r, BackButton: a, ...o }) => {
-          const { register: s, handleSubmit: u, formState: c, watch: m } = t.reactHookForm.useForm({ defaultValues: { title: n.title.value } }), d = m(), g = (S) => {
-            o.onNext({ taskOverrides: { title: S.title } });
+      var r;
+      return (r = n == null ? void 0 : n.item) != null && r.pluginDatas.some((l) => l.pluginSlug === "gitstart") ? {
+        dialogContent: ({ NextButton: l, BackButton: a, ...i }) => {
+          const { register: s, handleSubmit: c, formState: u, watch: m } = e.reactHookForm.useForm({ defaultValues: { title: n.title.value } }), d = m(), g = (f) => {
+            i.onNext({ taskOverrides: { title: f.title } });
           };
-          return /* @__PURE__ */ e.createElement("form", { onSubmit: u(g) }, /* @__PURE__ */ e.createElement(
-            l.FormInput,
+          return /* @__PURE__ */ t.createElement("form", { onSubmit: c(g), className: "flex flex-col gap-4" }, /* @__PURE__ */ t.createElement(
+            o.FormInput,
             {
               label: "Title",
               description: "The title of the task in GitStart.",
               ...s("title"),
-              error: c.errors.title
+              error: u.errors.title
             }
-          ), /* @__PURE__ */ e.createElement(r, { type: "submit" }), /* @__PURE__ */ e.createElement(
+          ), /* @__PURE__ */ t.createElement("div", { className: "flex gap-2 self-end" }, /* @__PURE__ */ t.createElement(
             a,
             {
               type: "button",
-              onClick: () => o.onBack({ taskOverrides: { title: d.title } })
+              onClick: () => i.onBack({ taskOverrides: { title: d.title } })
             }
-          ));
+          ), /* @__PURE__ */ t.createElement(l, { type: "submit" })));
         }
       } : null;
     }

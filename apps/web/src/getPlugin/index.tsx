@@ -4,7 +4,7 @@ import { fetchQuery } from "@flowdev/relay";
 import { getPluginsQuery } from "@flowdev/web/relay/__generated__/getPluginsQuery.graphql";
 import { environment } from "@flowdev/web/relay/environment";
 import { getPluginOptions } from "./getPluginOptions";
-import { devImportMap } from "./dev";
+import { devImportMap } from "./plugin.dev";
 
 type Input = {
   pluginSlug: string;
@@ -26,7 +26,9 @@ export const getPlugin = async (input: Input) => {
     }
 
     if (process.env.NODE_ENV === "development" && input.pluginSlug in devImportMap) {
-      const imported = await devImportMap[input.pluginSlug as keyof typeof devImportMap];
+      const imported = await (devImportMap[
+        input.pluginSlug as keyof typeof devImportMap
+      ] as Promise<{ default: DefineWebPluginReturn }>);
       const { plugin } = imported?.default ?? {};
       if (plugin) {
         return plugin(getPluginOptions(input.pluginSlug));
