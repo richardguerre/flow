@@ -3,8 +3,6 @@ import { Spinner } from "./Spinner";
 import { tw } from "./tw";
 
 export type ButtonProps = React.ButtonHTMLAttributes<HTMLButtonElement> & {
-  children: React.ReactNode;
-  className?: string;
   secondary?: boolean;
   tertiary?: boolean;
   danger?: boolean;

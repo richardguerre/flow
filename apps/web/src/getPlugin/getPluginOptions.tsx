@@ -1,3 +1,4 @@
+import React from "react";
 import { Button } from "@flowdev/ui/Button";
 import * as framerMotion from "framer-motion";
 import * as tiptap from "@tiptap/react";
@@ -14,7 +15,7 @@ import { dayjs } from "@flowdev/web/dayjs";
 import { getDays, getDaysMax10 } from "./getDays";
 import { NoteEditor } from "../components/NoteEditor";
 import { Day, DayContent } from "../components/Day";
-import { TaskCard } from "../components/TaskCard";
+import { CardActionButton, TaskCard } from "../components/TaskCard";
 import { ItemCard } from "../components/ItemCard";
 import { Lists } from "../components/Lists";
 import { useAsyncLoader } from "../useAsyncLoader";
@@ -23,7 +24,6 @@ import { useAsyncEffect } from "../useAsyncEffect";
 import { createItem } from "./createItem";
 import { createTask } from "./createTask";
 import { getStoreUtils } from "./getStoreUtils";
-import React from "react";
 import { getPluginOperationUtils } from "./pluginOperation";
 import { FormInput } from "@flowdev/ui/FormInput";
 import { Input } from "@flowdev/ui/Input";
@@ -82,6 +82,7 @@ export const getPluginOptions = (slug: string) => ({
     DropdownMenuTrigger,
     DropdownMenuItem,
     Badge,
+    CardActionButton,
   },
   hooks: {
     /**

@@ -1,4 +1,4 @@
-import { useMemo } from "react";
+import { ReactNode, useMemo, useState } from "react";
 import {
   SelectorStoreUpdater,
   graphql,
@@ -35,6 +35,7 @@ import { TaskCardDurationButton_task$key } from "../relay/__generated__/TaskCard
 import { TaskCardDeleteTaskMutation } from "../relay/__generated__/TaskCardDeleteTaskMutation.graphql";
 import { toast } from "@flowdev/ui/Toast";
 import { RenderTaskCardDetails } from "./RenderTaskCardDetails";
+import { RenderTaskCardActions } from "./RenderTaskCardActions";
 
 type TaskCardProps = {
   task: TaskCard_task$key;
@@ -80,7 +81,7 @@ export const TaskCard = (props: TaskCardProps) => {
       <ContextMenuTrigger>
         <div
           className={tw(
-            "bg-background-50 group flex cursor-pointer flex-col gap-1 rounded-lg p-3 shadow-sm hover:shadow-md",
+            "bg-background-50 flex cursor-pointer flex-col gap-1 rounded-lg p-3 shadow-sm hover:shadow-md",
             task.status !== "TODO" && "opacity-50 hover:opacity-100"
           )}
         >
@@ -111,6 +112,7 @@ const TaskCardActions = (props: TaskCardActionsProps) => {
           isRelevant
         }
         ...TaskCardDurationButton_task
+        ...RenderTaskCardActions_task
       }
     `,
     props.task
@@ -153,66 +155,54 @@ const TaskCardActions = (props: TaskCardActionsProps) => {
   };
 
   const doneButton = (
-    <button
-      key="done"
-      className="bg-background-200 text-foreground-700 hover:bg-background-300 active:bg-background-300 flex h-6 w-6 items-center justify-center rounded-full bg-opacity-50 text-sm hover:bg-opacity-70 active:bg-opacity-100"
-      onClick={() => updateStatus("DONE")}
-    >
+    <CardActionButton key="done" onClick={() => updateStatus("DONE")}>
       <BsCheck />
-    </button>
+    </CardActionButton>
   );
 
   const undoDoneButton = (
-    <button
+    <CardActionButton
       key="undoDone"
-      className="bg-positive-100 text-positive-600 hover:bg-positive-200 active:bg-positive-300 flex h-6 w-6 items-center justify-center rounded-full"
+      className="bg-positive-100 text-positive-600 hover:bg-positive-200 active:bg-positive-300"
       onClick={() => updateStatus("TODO")}
     >
       <BsCheck />
-    </button>
+    </CardActionButton>
   );
 
   const superdoneButton = (
-    <button
-      key="superdone"
-      className="bg-background-200 text-foreground-700 hover:bg-background-300 active:bg-background-300 hidden h-6 w-6 items-center justify-center rounded-full bg-opacity-50 text-sm hover:bg-opacity-70 active:bg-opacity-100 group-hover:flex"
-      onClick={() => markAsSuperdone(true)}
-    >
+    <CardActionButton key="superdone" onClick={() => markAsSuperdone(true)}>
       <BsCheckAll />
-    </button>
+    </CardActionButton>
   );
 
   const undoSuperdoneButton = (
-    <button
+    <CardActionButton
       key="undoSuperdone"
-      className="bg-positive-100 text-positive-600 hover:bg-positive-200 active:bg-positive-300 flex h-6 w-6 items-center justify-center rounded-full"
+      className="bg-positive-100 text-positive-600 hover:bg-positive-200 active:bg-positive-300"
       onClick={() => markAsSuperdone(false)}
     >
       <BsCheckAll />
-    </button>
+    </CardActionButton>
   );
 
   const cancelButton = (
-    <button
-      key="cancel"
-      className="bg-background-200 text-foreground-700 hover:bg-background-300 active:bg-background-300 hidden h-6 w-6 items-center justify-center rounded-full bg-opacity-50 text-sm hover:bg-opacity-70 active:bg-opacity-100 group-hover:flex"
-      onClick={() => updateStatus("CANCELED")}
-    >
+    <CardActionButton key="cancel" onClick={() => updateStatus("CANCELED")}>
       <BsX size={20} />
-    </button>
+    </CardActionButton>
   );
 
   const undoCancelButton = (
-    <button
+    <CardActionButton
       key="undoCancel"
-      className="bg-negative-100 text-negative-600 hover:bg-negative-200 active:bg-negative-300 flex h-6 w-6 items-center justify-center rounded-full"
+      className="bg-negative-100 text-negative-600 hover:bg-negative-200 active:bg-negative-300"
       onClick={() => updateStatus("TODO")}
     >
       <BsX size={20} />
-    </button>
+    </CardActionButton>
   );
 
-  const taskStatusActions: Array<React.ReactNode> = useMemo(() => {
+  const taskStatusActions: Array<ReactNode> = useMemo(() => {
     if (task.status === "TODO") {
       return [doneButton, ...(task.item ? [superdoneButton] : []), cancelButton];
     } else if (task.status === "DONE") {
@@ -230,6 +220,7 @@ const TaskCardActions = (props: TaskCardActionsProps) => {
     <div className="flex gap-2">
       {taskStatusActions.map((action) => action)}
       <TaskDurationButton task={task} />
+      <RenderTaskCardActions task={task} />
     </div>
   );
 };
@@ -256,6 +247,7 @@ const durationOptions = [
 ];
 
 const TaskDurationButton = (props: TaskDurationButtonProps) => {
+  const [isOpen, setIsOpen] = useState(false);
   const task = useFragment(
     graphql`
       fragment TaskCardDurationButton_task on Task {
@@ -287,11 +279,11 @@ const TaskDurationButton = (props: TaskDurationButtonProps) => {
   };
 
   return (
-    <DropdownMenu>
+    <DropdownMenu open={isOpen} onOpenChange={setIsOpen}>
       <DropdownMenuTrigger>
-        <button className="bg-background-200 text-foreground-700 hover:bg-background-300 active:bg-background-300 hidden h-6 w-6 items-center justify-center rounded-full bg-opacity-50 text-sm hover:bg-opacity-70 active:bg-opacity-100 group-hover:flex">
+        <CardActionButton className={tw(isOpen && "flex")}>
           <BsClock size={16} stroke="2px" />
-        </button>
+        </CardActionButton>
       </DropdownMenuTrigger>
       <DropdownMenuContent align="start">
         <DropdownMenuLabel>Duration</DropdownMenuLabel>
@@ -321,5 +313,19 @@ const deleteTaskUpdater: SelectorStoreUpdater<TaskCardDeleteTaskMutation["respon
   day?.setLinkedRecords(
     (dayTasks ?? []).filter((dayTask) => dayTask.getValue("id") !== data.deleteTask.id),
     "tasks"
+  );
+};
+
+type CardActionButtonProps = React.ButtonHTMLAttributes<HTMLButtonElement>;
+export const CardActionButton = (props: CardActionButtonProps) => {
+  return (
+    <button
+      className={tw(
+        "bg-background-200/50 text-foreground-700 hover:bg-background-300/70 active:bg-background-300/100 flex h-6 w-6 items-center justify-center rounded-full text-sm",
+        props.className
+      )}
+    >
+      {props.children}
+    </button>
   );
 };

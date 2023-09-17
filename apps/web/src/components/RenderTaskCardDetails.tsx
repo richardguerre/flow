@@ -18,6 +18,7 @@ export const RenderTaskCardDetails = (props: Props) => {
       fragment RenderTaskCardDetails_task on Task {
         durationInMinutes
         item {
+          id
           scheduledAt
         }
         pluginDatas {
@@ -60,11 +61,9 @@ const RenderTaskCardDetailsPlugins = (props: RenderTaskCardDetailsPluginsProps) 
       if (!result) continue;
       updatedDetails.push(...result);
     }
-    const updatedBlockDetails = updatedDetails.filter((d) => d.fullWidth);
-    const updatedInlineDetails = updatedDetails.filter((d) => !d.fullWidth);
-    setBlockDetails((prev) => [...prev, ...updatedBlockDetails]);
-    setInlineDetails((prev) => [...prev, ...updatedInlineDetails]);
-  }, [plugins]);
+    setBlockDetails(updatedDetails.filter((d) => d.fullWidth));
+    setInlineDetails(updatedDetails.filter((d) => !d.fullWidth));
+  }, [plugins, props.task]);
 
   return (
     <div className="flex w-full flex-col gap-2">
