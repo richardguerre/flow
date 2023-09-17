@@ -48,6 +48,8 @@
     title
     # to construct the URL to the GitStart dashboard
     code
+    description
+    descriptionType
     client {
       id
     }
