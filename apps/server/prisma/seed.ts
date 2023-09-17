@@ -156,6 +156,8 @@ async function script() {
         {
           slug: "essentials",
           url: "https://cdn.jsdelivr.net/gh/richardguerre/flow@main/plugins/essentials/out",
+          web: true,
+          server: true,
         },
       ],
     },

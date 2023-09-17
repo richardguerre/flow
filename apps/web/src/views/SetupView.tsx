@@ -297,7 +297,6 @@ export const SetTimezoneForm = () => {
   `);
 
   const onSubmit = (values: SetTimezoneFormValues) => {
-    console.log(values);
     setTimezone({
       variables: { input: { timezone: values.timezone } },
       onError: (error) => setError("timezone", { message: error.message }),

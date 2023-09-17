@@ -81,7 +81,7 @@ export const TaskCard = (props: TaskCardProps) => {
       <ContextMenuTrigger>
         <div
           className={tw(
-            "bg-background-50 flex cursor-pointer flex-col gap-1 rounded-lg p-3 shadow-sm hover:shadow-md",
+            "bg-background-50 group flex cursor-pointer flex-col gap-1 rounded-lg p-3 shadow-sm hover:shadow-md",
             task.status !== "TODO" && "opacity-50 hover:opacity-100"
           )}
         >
@@ -171,7 +171,11 @@ const TaskCardActions = (props: TaskCardActionsProps) => {
   );
 
   const superdoneButton = (
-    <CardActionButton key="superdone" onClick={() => markAsSuperdone(true)}>
+    <CardActionButton
+      key="superdone"
+      className="hidden group-hover:flex"
+      onClick={() => markAsSuperdone(true)}
+    >
       <BsCheckAll />
     </CardActionButton>
   );
@@ -187,7 +191,11 @@ const TaskCardActions = (props: TaskCardActionsProps) => {
   );
 
   const cancelButton = (
-    <CardActionButton key="cancel" onClick={() => updateStatus("CANCELED")}>
+    <CardActionButton
+      key="cancel"
+      className="hidden group-hover:flex"
+      onClick={() => updateStatus("CANCELED")}
+    >
       <BsX size={20} />
     </CardActionButton>
   );
@@ -281,7 +289,7 @@ const TaskDurationButton = (props: TaskDurationButtonProps) => {
   return (
     <DropdownMenu open={isOpen} onOpenChange={setIsOpen}>
       <DropdownMenuTrigger>
-        <CardActionButton className={tw(isOpen && "flex")}>
+        <CardActionButton className={tw("hidden group-hover:flex", isOpen && "flex")}>
           <BsClock size={16} stroke="2px" />
         </CardActionButton>
       </DropdownMenuTrigger>
