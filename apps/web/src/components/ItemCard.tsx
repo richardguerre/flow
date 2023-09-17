@@ -7,6 +7,7 @@ import { Tooltip, TooltipContent, TooltipTrigger } from "@flowdev/ui/Tooltip";
 import { ItemCardUpdateItemMutation } from "../relay/__generated__/ItemCardUpdateItemMutation.graphql";
 import { ItemCardDismissFromInboxMutation } from "../relay/__generated__/ItemCardDismissFromInboxMutation.graphql";
 import { RenderItemCardDetails } from "./RenderItemCardDetails";
+import { RenderItemCardActions } from "./RenderItemCardActions";
 
 type ItemCardProps = {
   item: ItemCard_item$key;
@@ -51,6 +52,7 @@ const ItemCardActions = (props: ItemCardActionsProps) => {
           pluginSlug
           min
         }
+        ...RenderItemCardActions_item
       }
     `,
     props.item
@@ -126,6 +128,7 @@ const ItemCardActions = (props: ItemCardActionsProps) => {
           <TooltipContent side="bottom">Archive this item.</TooltipContent>
         </Tooltip>
       )}
+      <RenderItemCardActions item={item} />
     </div>
   );
 };

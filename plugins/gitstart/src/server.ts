@@ -425,7 +425,7 @@ const GitStartTicketFragment = /* GraphQL */ `
 `;
 type TicketItemPluginDataMin = {
   type: "ticket"; // matches with node ID type
-  url: string;
+  ticketUrl: string;
   status: GitStartTicket["status"];
 };
 type TicketItemPluginDataFull = TicketItemPluginDataMin & {

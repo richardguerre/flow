@@ -109,11 +109,11 @@ export default definePlugin((opts) => {
       ];
     },
     renderItemCardDetails: async ({ item }) => {
-      const taskPluginData = item.pluginDatas.find((pd) => pd.pluginSlug === "gitstart");
-      if (!taskPluginData) {
+      const itemPluginData = item.pluginDatas.find((pd) => pd.pluginSlug === "gitstart");
+      if (!itemPluginData) {
         return null;
       }
-      const min = taskPluginData.min as ItemPluginDataMin;
+      const min = itemPluginData.min as ItemPluginDataMin;
       if (min.type === "pull_request") {
         const statusInfo = prStatusMap[min.status];
         return [
@@ -142,6 +142,30 @@ export default definePlugin((opts) => {
         ];
       }
       return null;
+    },
+    renderItemCardActions: async ({ item }) => {
+      const itemPluginData = item.pluginDatas.find((pd) => pd.pluginSlug === "gitstart");
+      if (!itemPluginData) {
+        return null;
+      }
+      const min = itemPluginData.min as ItemPluginDataMin;
+      return [
+        {
+          component: () =>
+            min.type === "pull_request" && min.url ? (
+              <a href={min.url} target="_blank" rel="noreferrer">
+                <Flow.CardActionButton>{githubIcon}</Flow.CardActionButton>
+              </a>
+            ) : null,
+        },
+        {
+          component: () => (
+            <a href={min.ticketUrl} target="_blank" rel="noreferrer">
+              {logo}
+            </a>
+          ),
+        },
+      ];
     },
   };
 });

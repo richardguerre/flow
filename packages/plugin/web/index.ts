@@ -5,6 +5,7 @@ import type { PluginOnCreateTask as OnCreateTask } from "@flowdev/web/src/compon
 import type { PluginRenderTaskCardDetails as RenderTaskCardDetails } from "@flowdev/web/src/components/RenderTaskCardDetails";
 import type { PluginRenderTaskCardActions as RenderTaskCardActions } from "@flowdev/web/src/components/RenderTaskCardActions";
 import type { PluginRenderItemCardDetails as RenderItemCardDetails } from "@flowdev/web/src/components/RenderItemCardDetails";
+import type { PluginRenderItemCardActions as RenderItemCardActions } from "@flowdev/web/src/components/RenderItemCardActions";
 
 export type { WebPluginOptions, PluginRoutineStepProps, OnCreateTask };
 
@@ -65,6 +66,11 @@ export type WebPlugin = (options: WebPluginOptions) => {
    * You can use the `opts.Flow.Badge` component to render badges similar to the default ones on the Item card.
    */
   renderItemCardDetails?: RenderItemCardDetails;
+  /**
+   * Function called when rendering the item card actions.
+   * The plugin can either return null or an array of React components.
+   */
+  renderItemCardActions?: RenderItemCardActions;
 };
 
 export const definePlugin = (plugin: WebPlugin) => ({ plugin });
