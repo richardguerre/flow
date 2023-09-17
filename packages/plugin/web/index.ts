@@ -1,7 +1,7 @@
 // ‼️ only import **types** from the @flowdev/web package, not runtime code otherwise it will be a cyclic dependency
 import type { WebPluginOptions } from "@flowdev/web/src/getPlugin/getPluginOptions";
 import type { PluginRoutineStepProps } from "@flowdev/web/src/components/RoutineStep";
-import type { OnCreateTask } from "@flowdev/web/src/components/Day";
+import type { PluginOnCreateTask as OnCreateTask } from "@flowdev/web/src/components/OnCreateTask";
 
 export type { WebPluginOptions, PluginRoutineStepProps, OnCreateTask };
 
