@@ -1,10 +1,13 @@
 import { DefineWebPluginReturn, WebPlugin } from "@flowdev/plugin/web";
-import { graphql } from "@flowdev/relay";
+import { graphql, useLazyLoadQuery } from "@flowdev/relay";
 import { fetchQuery } from "@flowdev/relay";
 import { getPluginsQuery } from "@flowdev/web/relay/__generated__/getPluginsQuery.graphql";
 import { environment } from "@flowdev/web/relay/environment";
 import { getPluginOptions } from "./getPluginOptions";
 import { devImportMap } from "./plugin.dev";
+import { useState } from "react";
+import { useAsyncEffect } from "../useAsyncEffect";
+import { getPluginsUsePluginsQuery } from "../relay/__generated__/getPluginsUsePluginsQuery.graphql";
 
 type Input = {
   pluginSlug: string;
@@ -45,6 +48,7 @@ export const getPlugin = async (input: Input) => {
 
 export const getPlugins = async () => {
   const installedPlugins = await getInstalledPlugins();
+  if (Object.keys(installedPlugins).length === 0) return {};
   const plugins: Record<string, ReturnType<WebPlugin>> = {};
   for (const pluginSlug in installedPlugins) {
     const pluginInstallation = installedPlugins[pluginSlug];
@@ -65,9 +69,7 @@ const getInstalledPlugins = async () => {
     graphql`
       query getPluginsQuery {
         installedPlugins {
-          slug
-          url
-          hasWebRuntime
+          ...getPluginsUsePlugins_pluginInstallation @relay(mask: false)
         }
       }
     `,
@@ -79,3 +81,49 @@ const getInstalledPlugins = async () => {
 
   return Object.fromEntries(plugins.map((plugin) => [plugin.slug, plugin]));
 };
+
+/**
+ * @suspends This hook will suspend. Make sure to wrap the component using this hook in a `Suspense` boundary.
+ */
+export const usePlugins = () => {
+  const [plugins, setPlugins] = useState<Record<string, ReturnType<WebPlugin>>>({});
+  const [loading, setLoading] = useState(true);
+  const data = useLazyLoadQuery<getPluginsUsePluginsQuery>(
+    graphql`
+      query getPluginsUsePluginsQuery {
+        installedPlugins {
+          ...getPluginsUsePlugins_pluginInstallation @relay(mask: false)
+        }
+      }
+    `,
+    {},
+    { fetchPolicy: "store-or-network" }
+  );
+
+  useAsyncEffect(async () => {
+    setLoading(true);
+    const updatedPlugins: Record<string, ReturnType<WebPlugin>> = { ...plugins };
+    for (const pluginInstallation of data.installedPlugins) {
+      if (!pluginInstallation.hasWebRuntime) continue;
+      if (pluginInstallation.slug in plugins) continue;
+      const plugin = await getPlugin({ pluginSlug: pluginInstallation.slug });
+      if ("_error" in plugin) {
+        console.log(`Error loading plugin ${pluginInstallation.slug}: ${plugin._error}`);
+        continue;
+      }
+      updatedPlugins[pluginInstallation.slug] = plugin;
+    }
+    setPlugins(updatedPlugins);
+    setLoading(false);
+  }, [data.installedPlugins.map((plugin) => plugin.slug).join(",")]);
+
+  return { plugins, loading };
+};
+
+graphql`
+  fragment getPluginsUsePlugins_pluginInstallation on PluginInstallation {
+    slug
+    url
+    hasWebRuntime
+  }
+`;

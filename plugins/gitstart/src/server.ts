@@ -366,7 +366,7 @@ const decodeNodeId = <T = number>(nodeId: string): { type: string; id: T } => {
   return { type, id: id as T };
 };
 
-type TaskPluginDataMin = {
+export type TaskPluginDataMin = {
   type: GitStartTaskType;
   ticketUrl: string;
   githubPrUrl: GitStartPullRequest["url"];
@@ -395,6 +395,8 @@ type GitStartTicket = {
   id: string;
   title: string;
   code: string;
+  description: string | null;
+  descriptionType: "HTML" | "JIRA" | "MARKDOWN" | null;
   client: {
     id: string;
   };
@@ -405,6 +407,8 @@ const GitStartTicketFragment = /* GraphQL */ `
     title
     # to construct the URL to the GitStart dashboard
     code
+    description
+    descriptionType
     client {
       id
     }

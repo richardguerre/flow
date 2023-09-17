@@ -29,6 +29,7 @@ import { FormInput } from "@flowdev/ui/FormInput";
 import { Input } from "@flowdev/ui/Input";
 import { DropdownMenu, DropdownMenuItem, DropdownMenuTrigger } from "@flowdev/ui/DropdownMenu";
 import { useForm, Controller } from "react-hook-form";
+import { tw } from "@flowdev/ui/tw";
 
 export const getPluginOptions = (slug: string) => ({
   /** The plugin's slug. There is no difference with the one passed into `definePlugin`. It can be used to not repeat it throughout the plugin's code. */
@@ -49,6 +50,8 @@ export const getPluginOptions = (slug: string) => ({
       return React.createElement(type, props, ...rest);
     },
   },
+  /** The tailwind merge function that Flow uses. It's the same as clsx. */
+  tw,
   /**
    * Components that Flow uses you can re-use in your plugin views to feel more integrated.
    *

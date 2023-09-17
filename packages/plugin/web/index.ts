@@ -2,6 +2,7 @@
 import type { WebPluginOptions } from "@flowdev/web/src/getPlugin/getPluginOptions";
 import type { PluginRoutineStepProps } from "@flowdev/web/src/components/RoutineStep";
 import type { PluginOnCreateTask as OnCreateTask } from "@flowdev/web/src/components/OnCreateTask";
+import type { PluginRenderTaskCardDetails as RenderTaskCardDetails } from "@flowdev/web/src/components/RenderTaskCardDetails";
 
 export type { WebPluginOptions, PluginRoutineStepProps, OnCreateTask };
 
@@ -43,6 +44,13 @@ export type WebPlugin = (options: WebPluginOptions) => {
   };
   /** Hook called when the user creates a task. */
   onCreateTask?: OnCreateTask;
+  /**
+   * Function called when rendering the task card details.
+   * The plugin can either return null or an array of React components.
+   *
+   * You can use the `opts.Flow.Badge` component to render badges similar to the default ones on the Task card.
+   */
+  renderTaskCardDetails?: RenderTaskCardDetails;
 };
 
 export const definePlugin = (plugin: WebPlugin) => ({ plugin });

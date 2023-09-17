@@ -22,10 +22,8 @@ import {
   ContextMenuItem,
   ContextMenuTrigger,
 } from "@flowdev/ui/ContextMenu";
-import { DurationBadge, TimeBadge } from "./Badges";
 import { BsCheck, BsCheckAll, BsClock, BsX } from "@flowdev/icons";
 import { TaskCard_task$key } from "@flowdev/web/relay/__generated__/TaskCard_task.graphql";
-import { TaskCardDetails_task$key } from "@flowdev/web/relay/__generated__/TaskCardDetails_task.graphql";
 import { TaskCardActions_task$key } from "@flowdev/web/relay/__generated__/TaskCardActions_task.graphql";
 import {
   TaskCardUpdateTaskStatusMutation,
@@ -36,6 +34,7 @@ import { TaskCardUpdateItemStatusMutation } from "../relay/__generated__/TaskCar
 import { TaskCardDurationButton_task$key } from "../relay/__generated__/TaskCardDurationButton_task.graphql";
 import { TaskCardDeleteTaskMutation } from "../relay/__generated__/TaskCardDeleteTaskMutation.graphql";
 import { toast } from "@flowdev/ui/Toast";
+import { RenderTaskCardDetails } from "./RenderTaskCardDetails";
 
 type TaskCardProps = {
   task: TaskCard_task$key;
@@ -50,7 +49,7 @@ export const TaskCard = (props: TaskCardProps) => {
         title
         status
         completedAt # updates the CalendarList component to add checkmark at the time of completion
-        ...TaskCardDetails_task
+        ...RenderTaskCardDetails_task
         ...TaskCardActions_task
         ...TaskTitle_task
       }
@@ -86,7 +85,7 @@ export const TaskCard = (props: TaskCardProps) => {
           )}
         >
           <TaskTitle task={task} />
-          <TaskCardDetails task={task} />
+          <RenderTaskCardDetails task={task} />
           <TaskCardActions task={task} />
         </div>
       </ContextMenuTrigger>
@@ -94,35 +93,6 @@ export const TaskCard = (props: TaskCardProps) => {
         <ContextMenuItem onClick={deleteTask}>Delete task</ContextMenuItem>
       </ContextMenuContent>
     </ContextMenu>
-  );
-};
-
-type TaskCardDetailsProps = {
-  task: TaskCardDetails_task$key;
-};
-
-const TaskCardDetails = (props: TaskCardDetailsProps) => {
-  const task = useFragment(
-    graphql`
-      fragment TaskCardDetails_task on Task {
-        durationInMinutes
-        item {
-          scheduledAt
-        }
-        pluginDatas {
-          pluginSlug
-          min
-        }
-      }
-    `,
-    props.task
-  );
-
-  return (
-    <div className="flex gap-2">
-      {task.durationInMinutes && <DurationBadge durationInMinutes={task.durationInMinutes} />}
-      {task.item?.scheduledAt && <TimeBadge time={task.item.scheduledAt} />}
-    </div>
   );
 };
 

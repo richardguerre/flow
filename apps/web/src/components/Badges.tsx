@@ -6,7 +6,7 @@ type DurationBadgeProps = {
 
 export const DurationBadge = (props: DurationBadgeProps) => {
   return (
-    <div className="bg-primary-100 text-primary-600 inline-flex h-min rounded px-1 py-[1px] text-sm">
+    <div className="bg-primary-100 text-primary-600 py-0.25 inline-flex h-min rounded px-1 text-sm">
       {twoDigits(Math.floor(props.durationInMinutes / 60))}:
       {twoDigits(props.durationInMinutes % 60)}
     </div>

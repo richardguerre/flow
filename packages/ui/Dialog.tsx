@@ -35,7 +35,7 @@ export const DialogOverlay = forwardRef<
   <Overlay
     ref={ref}
     className={tw(
-      "data-[state=open]:animate-fade-in data-[state=open]:animate-duration-200 data-[state=closed]:animate-fade-out data-[state=closed]:animate-duration-200 fixed inset-0 z-50 bg-gray-400/30 backdrop-blur-sm duration-200",
+      "data-[state=open]:animate-fade-in data-[state=open]:animate-duration-100 data-[state=closed]:animate-fade-out data-[state=closed]:animate-duration-200 fixed inset-0 z-50 bg-gray-400/30 backdrop-blur-sm duration-200",
       className
     )}
     {...props}
@@ -51,7 +51,7 @@ export const DialogContent = forwardRef<
     <Content
       ref={ref}
       className={tw(
-        "bg-background-50 ring-0.5 ring-primary-100 data-[state=open]:animate-duration-200 data-[state=open]:animate-fade-in data-[state=open]:animate-duration-200 data-[state=closed]:animate-fade-out data-[state=closed]:animate-duration-200 fixed left-1/2 top-1/2 z-50 grid w-full max-w-lg -translate-x-1/2 -translate-y-1/2 gap-4 border p-6 shadow-lg duration-200 sm:rounded-lg md:w-full",
+        "bg-background-50 ring-0.5 ring-primary-100 data-[state=open]:animate-duration-100 data-[state=open]:animate-fade-in data-[state=open]:animate-duration-100 data-[state=closed]:animate-fade-out data-[state=closed]:animate-duration-200 fixed left-1/2 top-1/2 z-50 grid w-full max-w-lg -translate-x-1/2 -translate-y-1/2 gap-4 border p-6 shadow-lg duration-200 sm:rounded-lg md:w-full",
         className
       )}
       {...props}

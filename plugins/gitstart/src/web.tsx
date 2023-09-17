@@ -1,6 +1,6 @@
 import { definePlugin } from "@flowdev/plugin/web";
 import { TOKEN_STORE_KEY } from "./server";
-import type { GitStartTaskStatus, GitStartTaskType } from "./server";
+import type { GitStartTaskStatus, GitStartTaskType, TaskPluginDataMin } from "./server";
 
 export default definePlugin((opts) => {
   const Flow = opts.components;
@@ -58,22 +58,53 @@ export default definePlugin((opts) => {
         },
       };
     },
+    renderTaskCardDetails: async ({ task }) => {
+      const taskPluginData = task.pluginDatas.find((pd) => pd.pluginSlug === "gitstart");
+      if (!taskPluginData) {
+        return null;
+      }
+      const min = taskPluginData.min as TaskPluginDataMin;
+      const typeInfo = taskTypeMap[min.type];
+      const statusInfo = taskStatusMap[min.status];
+      return [
+        { component: () => <div className={typeInfo.className}>{typeInfo.label}</div> },
+        { component: () => <div className={statusInfo.className}>{statusInfo.label}</div> },
+      ];
+    },
   };
 });
 
-type Option<T = any> = { label: string; value: T };
+const badgeClassNames = "inline-flex h-min rounded px-1 py-0.25 text-sm";
+const taskTypeMap: Record<GitStartTaskType, { label: string; className: string }> = {
+  SPEC: { label: "Spec", className: `bg-gray-200 text-gray-600 ${badgeClassNames}` },
+  CODE: { label: "Code", className: `bg-blue-100 text-blue-600 ${badgeClassNames}` },
+  REVIEW: { label: "Review", className: `bg-yellow-100 text-yellow-600 ${badgeClassNames}` },
+  QA: { label: "QA", className: `bg-purple-100 text-purple-600 ${badgeClassNames}` },
+  LEARNING: { label: "Learning", className: `bg-green-100 text-green-700 ${badgeClassNames}` },
+};
+const taskStatusMap: Record<GitStartTaskStatus, { label: string; className: string }> = {
+  TO_DO: { label: "To do", className: `bg-gray-200 text-gray-600 ${badgeClassNames}` },
+  IN_PROGRESS: {
+    label: "In progress",
+    className: `bg-blue-100 text-blue-600 ${badgeClassNames}`,
+  },
+  FINISHED: { label: "Finished", className: `bg-green-100 text-green-700 ${badgeClassNames}` },
+  CANCELED: { label: "Canceled", className: `bg-red-100 text-red-600 ${badgeClassNames}` },
+};
 
-const taskStatusOptions: Option<GitStartTaskStatus>[] = [
-  { label: "To Do", value: "TO_DO" },
-  { label: "In Progress", value: "IN_PROGRESS" },
-  { label: "Finished", value: "FINISHED" },
-  { label: "Canceled", value: "CANCELED" },
-];
+// type Option<T = any> = { label: string; value: T };
 
-const taskTypeOptions: Option<GitStartTaskType>[] = [
-  { label: "Spec", value: "SPEC" },
-  { label: "Code", value: "CODE" },
-  { label: "Review", value: "REVIEW" },
-  { label: "QA", value: "QA" },
-  { label: "Learning", value: "LEARNING" },
-];
+// const taskStatusOptions: Option<GitStartTaskStatus>[] = [
+//   { label: "To Do", value: "TO_DO" },
+//   { label: "In Progress", value: "IN_PROGRESS" },
+//   { label: "Finished", value: "FINISHED" },
+//   { label: "Canceled", value: "CANCELED" },
+// ];
+
+// const taskTypeOptions: Option<GitStartTaskType>[] = [
+//   { label: "Spec", value: "SPEC" },
+//   { label: "Code", value: "CODE" },
+//   { label: "Review", value: "REVIEW" },
+//   { label: "QA", value: "QA" },
+//   { label: "Learning", value: "LEARNING" },
+// ];

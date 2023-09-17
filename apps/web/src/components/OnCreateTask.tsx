@@ -2,7 +2,7 @@ import { graphql, useMutation, useMutationPromise } from "@flowdev/relay";
 import { Button, ButtonProps } from "@flowdev/ui/Button";
 import { Dialog, DialogContent, DialogLoading } from "@flowdev/ui/Dialog";
 import { toast } from "@flowdev/ui/Toast";
-import { useRef, useState } from "react";
+import { ComponentType, useRef, useState } from "react";
 import { OnCreateTaskCreateTaskFromItemMutation } from "@flowdev/web/relay/__generated__/OnCreateTaskCreateTaskFromItemMutation.graphql";
 import { OnCreateTaskDismissItemFromInboxMutation } from "@flowdev/web/relay/__generated__/OnCreateTaskDismissItemFromInboxMutation.graphql";
 import { TaskStatus } from "@flowdev/web/relay/__generated__/getDaysDaysQuery.graphql";
@@ -379,7 +379,7 @@ type PluginCreateTaskData = {
    */
   actionData?: JsonValue;
 };
-type OnCreateTaskStepDialogContent = React.ComponentType<{
+type OnCreateTaskStepDialogContent = ComponentType<{
   /** The previously saved metadata when the user clicked on next or back and comes back to this plugin's step. Helpful to not render an empty form when they back to the same step. */
   initialMetdata: PluginCreateTaskData;
   /** To be triggered when going to the next step. The given data will be passed into the createTask mutation for the server side of the plugin to handle. */
@@ -389,9 +389,9 @@ type OnCreateTaskStepDialogContent = React.ComponentType<{
   /** To be triggered when closing the dialog. */
   onClose: () => void;
   /** Renders a button with the correct label (either `Create task` when it's the last step in the onCreateTask sequence, `Next` if it's not the last step). */
-  NextButton: React.ComponentType<NavigationButtonProps>;
+  NextButton: ComponentType<NavigationButtonProps>;
   /** Renders a button with the correct label (either `Back` when it's not the first step in the onCreateTask sequence, `Cancel` if it's the first step). */
-  BackButton: React.ComponentType<NavigationButtonProps>;
+  BackButton: ComponentType<NavigationButtonProps>;
 }>;
 
 type NavigationButtonProps = Omit<ButtonProps, "primary" | "secondary" | "tertiary" | "children">;
