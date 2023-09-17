@@ -11,7 +11,7 @@
         }
         ${h}
         ${E}
-      `,{input:a.input}),I=async()=>{const a=await t.store.getPluginItem(P);if(!a)throw new t.GraphQLError("Missing session token to access GitStart API",{extensions:{code:"NOT_AUTHENTICATED",userFriendlyMessage:"You need to add your GitStart session token in the plugin settings."}});return a.value};return{onInstall:async()=>{await t.prisma.list.upsert({where:{slug:d},create:{slug:d,name:"GitStart PRs",description:"All the PRs you have access to in your GitStart dashboard. List created from the GitStart plugin."},update:{name:"GitStart PRs",description:"All the PRs you have access to in your GitStart dashboard. List created from the GitStart plugin."}})},onStoreItemUpsert:async a=>{a===P&&await t.pgBoss.send(c,{})},onCreateTask:async({task:a})=>{var u;const i=(u=a.item)==null?void 0:u.pluginDatas.find(l=>l.pluginSlug===t.pluginSlug);if(!(i!=null&&i.originalId))return;const s=await t.store.getPluginItem(G);if(!s)return;const{id:e}=w(s.value.id),n=await I(),r=i.full;if(r.type==="pull_request"){const{id:l}=w(i.originalId),o=await T(n,`
+      `,{input:a.input}),I=async()=>{const a=await t.store.getPluginItem(P);if(!a)throw new t.GraphQLError("Missing session token to access GitStart API",{extensions:{code:"NOT_AUTHENTICATED",userFriendlyMessage:"You need to add your GitStart session token in the plugin settings."}});return a.value};return{onInstall:async()=>{await t.prisma.list.upsert({where:{slug:d},create:{slug:d,name:"GitStart Tickets & PRs",description:"All the PRs you have access to in your GitStart dashboard. List created from the GitStart plugin."},update:{name:"GitStart PRs",description:"All the PRs you have access to in your GitStart dashboard. List created from the GitStart plugin."}})},onStoreItemUpsert:async a=>{a===P&&await t.pgBoss.send(c,{})},onCreateTask:async({task:a})=>{var u;const i=(u=a.item)==null?void 0:u.pluginDatas.find(l=>l.pluginSlug===t.pluginSlug);if(!(i!=null&&i.originalId))return;const s=await t.store.getPluginItem(G);if(!s)return;const{id:e}=w(s.value.id),n=await I(),r=i.full;if(r.type==="pull_request"){const{id:l}=w(i.originalId),o=await T(n,`
             mutation FlowOperationCreateTask($input: CreateTaskInput!) {
               createTask(input: $input) {
                 pullRequest {
@@ -48,6 +48,7 @@
     title
     # to construct the URL to the GitStart dashboard
     code
+    status
     description
     descriptionType
     client {
