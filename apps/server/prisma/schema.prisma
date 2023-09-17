@@ -33,9 +33,9 @@ model Note {
   /// The id of the note
   id        Int      @id @default(autoincrement())
   /// The date and time of creation of the note
-  createdAt DateTime @default(now())
+  createdAt DateTime @default(now()) @db.Timestamptz()
   /// The date and time the note was last updated
-  updatedAt DateTime @updatedAt
+  updatedAt DateTime @updatedAt @db.Timestamptz()
   /// The date the note was created
   date      DateTime @db.Date
   /// The day the note was created
@@ -58,9 +58,9 @@ model NoteTag {
   /// The id of the note tag
   id        Int      @id @default(autoincrement())
   /// The date and time of creation of the note tag
-  createdAt DateTime @default(now())
+  createdAt DateTime @default(now()) @db.Timestamptz()
   /// The date and time the note tag was last updated
-  updatedAt DateTime @updatedAt
+  updatedAt DateTime @updatedAt @db.Timestamptz()
   /// The name of the note tag
   name      String
   /// The slug (i.e. the url-safe version) of the note tag name
@@ -79,15 +79,15 @@ model Task {
   /// The id of the task.
   id                Int        @id @default(autoincrement())
   /// The date and time of creation of the task
-  createdAt         DateTime   @default(now())
+  createdAt         DateTime   @default(now()) @db.Timestamptz()
   /// The date and time the task was last updated
-  updatedAt         DateTime   @updatedAt
+  updatedAt         DateTime   @updatedAt @db.Timestamptz()
   /// The title of the task in text or HTML.
   title             String
   /// The status of the task
   status            TaskStatus @default(TODO)
   /// The date and time the task was completed.
-  completedAt       DateTime?
+  completedAt       DateTime?  @db.Timestamptz()
   /// The day the task is scheduled for
   day               Day        @relation(fields: [date], references: [date])
   /// The date the task is scheduled for
@@ -127,9 +127,9 @@ model TaskTag {
   /// The id of the task tag
   id        Int      @id @default(autoincrement())
   /// The date and time of creation of the task tag
-  createdAt DateTime @default(now())
+  createdAt DateTime @default(now()) @db.Timestamptz()
   /// The date and time the task tag was last updated
-  updatedAt DateTime @updatedAt
+  updatedAt DateTime @updatedAt @db.Timestamptz()
   /// The name of the task tag
   name      String
   /// The slug (i.e. the url-safe version) of the task tag name
@@ -147,9 +147,9 @@ model TaskPluginData {
   /// The id of the task plugin data
   id         Int      @id @default(autoincrement())
   /// The date and time of creation of the task plugin data
-  createdAt  DateTime @default(now())
+  createdAt  DateTime @default(now()) @db.Timestamptz()
   /// The date and time the task plugin data was last updated
-  updatedAt  DateTime @updatedAt
+  updatedAt  DateTime @updatedAt @db.Timestamptz()
   /// The minimum data required to render the information on task cards.
   min        Json
   /// The full data required by the plugin to be linked to the task.
@@ -169,9 +169,9 @@ model ItemPluginData {
   /// The id of the item plugin data
   id         Int      @id @default(autoincrement())
   /// The date and time of creation of the item plugin data
-  createdAt  DateTime @default(now())
+  createdAt  DateTime @default(now()) @db.Timestamptz()
   /// The date and time the item plugin data was last updated
-  updatedAt  DateTime @updatedAt
+  updatedAt  DateTime @updatedAt @db.Timestamptz()
   /// The minimum data required to render the information on item cards.
   min        Json
   /// The full data required by the plugin to be linked to the item.
@@ -192,9 +192,9 @@ model Item {
   /// The id of the item
   id                Int       @id @default(autoincrement())
   /// The date and time of creation of the item
-  createdAt         DateTime  @default(now())
+  createdAt         DateTime  @default(now()) @db.Timestamptz()
   /// The date and time the item was last updated
-  updatedAt         DateTime  @updatedAt
+  updatedAt         DateTime  @updatedAt @db.Timestamptz()
   /// The title of the item.
   /// It is used as the initial title when creating a task from the item.
   title             String
@@ -202,7 +202,7 @@ model Item {
   /// For example when a plugin creates an item for a Trello task, then later on the user arhives the task, the item is no longer relevant.
   isRelevant        Boolean   @default(true)
   /// The date and time the item is scheduled for.
-  scheduledAt       DateTime?
+  scheduledAt       DateTime? @db.Timestamptz()
   /// The length of time the item is expected to take. If the item is all-day, this is null.
   durationInMinutes Int?
   /// Whether the item is all-day on the date of `scheduledAt`.
@@ -227,9 +227,9 @@ model List {
   /// The id of the list
   id          Int      @id @default(autoincrement())
   /// The date and time of creation of the list
-  createdAt   DateTime @default(now())
+  createdAt   DateTime @default(now()) @db.Timestamptz()
   /// The date and time the list was last updated
-  updatedAt   DateTime @updatedAt
+  updatedAt   DateTime @updatedAt @db.Timestamptz()
   /// The name of the list
   name        String
   /// The slug (i.e. the url-safe version) of the list name
@@ -246,9 +246,9 @@ model Store {
   /// The id of the store item
   id           Int      @id @default(autoincrement())
   /// The date and time of creation of the store item
-  createdAt    DateTime @default(now())
+  createdAt    DateTime @default(now()) @db.Timestamptz()
   /// The date and time the store item was last updated
-  updatedAt    DateTime @updatedAt
+  updatedAt    DateTime @updatedAt @db.Timestamptz()
   /// The key of the store item
   key          String
   /// The value of the store item
@@ -271,9 +271,9 @@ model Routine {
   /// The id of the routine
   id              Int                 @id @default(autoincrement())
   /// The date and time of creation of the routine
-  createdAt       DateTime            @default(now())
+  createdAt       DateTime            @default(now()) @db.Timestamptz()
   /// The date and time the routine was last updated
-  updatedAt       DateTime            @updatedAt
+  updatedAt       DateTime            @updatedAt @db.Timestamptz()
   /// The name of the routine
   name            String
   /// Action name used on the button to start the routine

@@ -18,8 +18,8 @@ CREATE TABLE "Day" (
 -- CreateTable
 CREATE TABLE "Note" (
     "id" SERIAL NOT NULL,
-    "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
-    "updatedAt" TIMESTAMP(3) NOT NULL,
+    "createdAt" TIMESTAMPTZ NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    "updatedAt" TIMESTAMPTZ NOT NULL,
     "date" DATE NOT NULL,
     "slug" TEXT NOT NULL,
     "title" TEXT NOT NULL,
@@ -31,8 +31,8 @@ CREATE TABLE "Note" (
 -- CreateTable
 CREATE TABLE "NoteTag" (
     "id" SERIAL NOT NULL,
-    "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
-    "updatedAt" TIMESTAMP(3) NOT NULL,
+    "createdAt" TIMESTAMPTZ NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    "updatedAt" TIMESTAMPTZ NOT NULL,
     "name" TEXT NOT NULL,
     "slug" TEXT NOT NULL,
     "color" "Color" NOT NULL,
@@ -44,11 +44,11 @@ CREATE TABLE "NoteTag" (
 -- CreateTable
 CREATE TABLE "Task" (
     "id" SERIAL NOT NULL,
-    "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
-    "updatedAt" TIMESTAMP(3) NOT NULL,
+    "createdAt" TIMESTAMPTZ NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    "updatedAt" TIMESTAMPTZ NOT NULL,
     "title" TEXT NOT NULL,
     "status" "TaskStatus" NOT NULL DEFAULT 'TODO',
-    "completedAt" TIMESTAMP(3),
+    "completedAt" TIMESTAMPTZ,
     "date" DATE NOT NULL,
     "durationInMinutes" INTEGER,
     "itemId" INTEGER,
@@ -60,8 +60,8 @@ CREATE TABLE "Task" (
 -- CreateTable
 CREATE TABLE "TaskTag" (
     "id" SERIAL NOT NULL,
-    "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
-    "updatedAt" TIMESTAMP(3) NOT NULL,
+    "createdAt" TIMESTAMPTZ NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    "updatedAt" TIMESTAMPTZ NOT NULL,
     "name" TEXT NOT NULL,
     "slug" TEXT NOT NULL,
     "color" "Color" NOT NULL,
@@ -73,8 +73,8 @@ CREATE TABLE "TaskTag" (
 -- CreateTable
 CREATE TABLE "TaskPluginData" (
     "id" SERIAL NOT NULL,
-    "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
-    "updatedAt" TIMESTAMP(3) NOT NULL,
+    "createdAt" TIMESTAMPTZ NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    "updatedAt" TIMESTAMPTZ NOT NULL,
     "min" JSONB NOT NULL,
     "full" JSONB NOT NULL,
     "pluginSlug" TEXT NOT NULL,
@@ -87,8 +87,8 @@ CREATE TABLE "TaskPluginData" (
 -- CreateTable
 CREATE TABLE "ItemPluginData" (
     "id" SERIAL NOT NULL,
-    "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
-    "updatedAt" TIMESTAMP(3) NOT NULL,
+    "createdAt" TIMESTAMPTZ NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    "updatedAt" TIMESTAMPTZ NOT NULL,
     "min" JSONB NOT NULL,
     "full" JSONB NOT NULL,
     "pluginSlug" TEXT NOT NULL,
@@ -101,16 +101,16 @@ CREATE TABLE "ItemPluginData" (
 -- CreateTable
 CREATE TABLE "Item" (
     "id" SERIAL NOT NULL,
-    "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
-    "updatedAt" TIMESTAMP(3) NOT NULL,
+    "createdAt" TIMESTAMPTZ NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    "updatedAt" TIMESTAMPTZ NOT NULL,
     "title" TEXT NOT NULL,
     "isRelevant" BOOLEAN NOT NULL DEFAULT true,
-    "scheduledAt" TIMESTAMP(3),
+    "scheduledAt" TIMESTAMPTZ,
     "durationInMinutes" INTEGER,
     "isAllDay" BOOLEAN NOT NULL DEFAULT false,
     "color" "Color",
-    "listId" INTEGER,
     "inboxPoints" INTEGER,
+    "listId" INTEGER,
 
     CONSTRAINT "Item_pkey" PRIMARY KEY ("id")
 );
@@ -118,8 +118,8 @@ CREATE TABLE "Item" (
 -- CreateTable
 CREATE TABLE "List" (
     "id" SERIAL NOT NULL,
-    "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
-    "updatedAt" TIMESTAMP(3) NOT NULL,
+    "createdAt" TIMESTAMPTZ NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    "updatedAt" TIMESTAMPTZ NOT NULL,
     "name" TEXT NOT NULL,
     "slug" TEXT NOT NULL,
     "description" TEXT,
@@ -130,8 +130,8 @@ CREATE TABLE "List" (
 -- CreateTable
 CREATE TABLE "Store" (
     "id" SERIAL NOT NULL,
-    "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
-    "updatedAt" TIMESTAMP(3) NOT NULL,
+    "createdAt" TIMESTAMPTZ NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    "updatedAt" TIMESTAMPTZ NOT NULL,
     "key" TEXT NOT NULL,
     "value" JSONB NOT NULL,
     "pluginSlug" TEXT NOT NULL,
@@ -144,8 +144,8 @@ CREATE TABLE "Store" (
 -- CreateTable
 CREATE TABLE "Routine" (
     "id" SERIAL NOT NULL,
-    "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
-    "updatedAt" TIMESTAMP(3) NOT NULL,
+    "createdAt" TIMESTAMPTZ NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    "updatedAt" TIMESTAMPTZ NOT NULL,
     "name" TEXT NOT NULL,
     "actionName" TEXT NOT NULL,
     "time" TIME(0) NOT NULL,
@@ -218,7 +218,7 @@ ALTER TABLE "Task" ADD CONSTRAINT "Task_date_fkey" FOREIGN KEY ("date") REFERENC
 -- AddForeignKey
 ALTER TABLE "Task" ADD CONSTRAINT "Task_itemId_fkey" FOREIGN KEY ("itemId") REFERENCES "Item"("id") ON DELETE SET NULL ON UPDATE CASCADE;
 
--- AddForeignKey (added manually)
+-- AddForeignKey
 ALTER TABLE "Task" ADD CONSTRAINT "Task_parentTaskId_fkey" FOREIGN KEY ("parentTaskId") REFERENCES "Task"("id") ON DELETE SET NULL ON UPDATE CASCADE;
 
 -- AddForeignKey
