@@ -9,7 +9,7 @@ export const Badge = (props: Props) => {
   return (
     <div
       className={tw(
-        "bg-primary-100 text-primary-600 py-0.25 inline-flex h-min rounded px-1 text-sm",
+        "bg-primary-100 text-primary-600 inline-flex h-min rounded px-1 py-px text-sm",
         props.className
       )}
     >

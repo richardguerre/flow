@@ -1,15 +1,17 @@
 import { Button } from "@flowdev/ui/Button";
-import {
-  Dialog,
-  DialogContent,
-  DialogDescription,
-  DialogFooter,
-  DialogTitle,
-  DialogTrigger,
-} from "@flowdev/ui/Dialog";
+import { Dialog, DialogContent, DialogTrigger } from "@flowdev/ui/Dialog";
 import { LoginForm } from "./LoginView";
-
+import { FormSelect } from "@flowdev/ui/FormSelect";
+import { SelectContent, SelectItem, SelectTrigger, SelectValue } from "@flowdev/ui/Select";
+import { useForm } from "react-hook-form";
+type FormValues = {
+  type: string;
+};
 export default () => {
+  const { control, handleSubmit } = useForm<FormValues>();
+  const onSubmit = (values: FormValues) => {
+    console.log(values);
+  };
   return (
     <div>
       <Dialog defaultOpen>
@@ -17,15 +19,19 @@ export default () => {
           <Button>Open test dialog</Button>
         </DialogTrigger>
         <DialogContent>
-          <div>Test to see where this fits.</div>
-          <DialogTitle>Are you sure absolutely sure?</DialogTitle>
-          <DialogDescription>
-            This action cannot be undone. Are you sure you want to permanently delete this file from
-            our servers?
-          </DialogDescription>
-          <DialogFooter>
-            <Button type="submit">Confirm</Button>
-          </DialogFooter>
+          <form onSubmit={handleSubmit(onSubmit)} className="flex flex-col gap-2">
+            Title
+            <FormSelect name="type" control={control}>
+              <SelectTrigger>
+                <SelectValue placeholder="Select type" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="CODE">Code</SelectItem>
+                <SelectItem value="REVIEW">Review</SelectItem>
+              </SelectContent>
+            </FormSelect>
+            <Button type="submit">Submit</Button>
+          </form>
         </DialogContent>
       </Dialog>
       <LoginForm />

@@ -26,11 +26,37 @@ import { createTask } from "./createTask";
 import { getStoreUtils } from "./getStoreUtils";
 import { getPluginOperationUtils } from "./pluginOperation";
 import { FormInput } from "@flowdev/ui/FormInput";
+import { FormSelect } from "@flowdev/ui/FormSelect";
 import { Input } from "@flowdev/ui/Input";
-import { DropdownMenu, DropdownMenuItem, DropdownMenuTrigger } from "@flowdev/ui/DropdownMenu";
+import {
+  DropdownMenu,
+  DropdownMenuCheckboxItem,
+  DropdownMenuContent,
+  DropdownMenuGroup,
+  DropdownMenuItem,
+  DropdownMenuLabel,
+  DropdownMenuPortal,
+  DropdownMenuRadioGroup,
+  DropdownMenuRadioItem,
+  DropdownMenuSeparator,
+  DropdownMenuShortcut,
+  DropdownMenuSub,
+  DropdownMenuSubContent,
+  DropdownMenuTrigger,
+} from "@flowdev/ui/DropdownMenu";
 import { useForm, Controller } from "react-hook-form";
 import { tw } from "@flowdev/ui/tw";
 import { Badge } from "@flowdev/ui/Badge";
+import {
+  Select,
+  SelectContent,
+  SelectGroup,
+  SelectItem,
+  SelectLabel,
+  SelectSeparator,
+  SelectTrigger,
+  SelectValue,
+} from "@flowdev/ui/Select";
 
 export const getPluginOptions = (slug: string) => ({
   /** The plugin's slug. There is no difference with the one passed into `definePlugin`. It can be used to not repeat it throughout the plugin's code. */
@@ -78,9 +104,29 @@ export const getPluginOptions = (slug: string) => ({
     Lists,
     Input,
     FormInput,
+    FormSelect,
+    Select,
+    SelectGroup,
+    SelectValue,
+    SelectTrigger,
+    SelectContent,
+    SelectLabel,
+    SelectItem,
+    SelectSeparator,
     DropdownMenu,
+    DropdownMenuGroup,
+    DropdownMenuPortal,
+    DropdownMenuSub,
+    DropdownMenuRadioGroup,
     DropdownMenuTrigger,
+    DropdownMenuSubContent,
+    DropdownMenuContent,
     DropdownMenuItem,
+    DropdownMenuCheckboxItem,
+    DropdownMenuRadioItem,
+    DropdownMenuLabel,
+    DropdownMenuSeparator,
+    DropdownMenuShortcut,
     Badge,
     CardActionButton,
   },

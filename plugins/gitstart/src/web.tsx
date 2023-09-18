@@ -70,7 +70,7 @@ export default definePlugin((opts) => {
             type: GitStartTaskType;
             status: GitStartTaskStatus;
           };
-          const { register, handleSubmit, formState, watch } =
+          const { register, handleSubmit, formState, watch, control } =
             opts.reactHookForm.useForm<FormValues>({ defaultValues: { title: task.title.value } });
           const values = watch();
 
@@ -86,6 +86,11 @@ export default definePlugin((opts) => {
                 {...register("title")}
                 error={formState.errors.title}
               />
+              <Flow.FormSelect name="type" control={control}>
+                <Flow.SelectTrigger>
+                  <Flow.SelectValue placeholder="Select type" />
+                </Flow.SelectTrigger>
+              </Flow.FormSelect>
               <div className="flex gap-2 self-end">
                 <BackButton
                   type="button"

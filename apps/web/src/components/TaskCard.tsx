@@ -239,7 +239,6 @@ type TaskDurationButtonProps = {
 
 const durationOptions = [
   { label: "None", value: null },
-  { label: "2 minutes", value: 2 },
   { label: "5 minutes", value: 5 },
   { label: "10 minutes", value: 10 },
   { label: "15 minutes", value: 15 },
