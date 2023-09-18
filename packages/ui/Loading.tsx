@@ -1,4 +1,5 @@
 import { motion } from "framer-motion";
+import { ReactNode, Suspense } from "react";
 
 const WAVELENGTH = 82;
 
@@ -118,4 +119,9 @@ export const LoadingView = () => {
       <Loading minProgress={40} />
     </div>
   );
+};
+
+/** This component will delay rendering the children so that the LoadingView is shown for at least 500ms */
+export const SuspenseLoadingView = (props: { children: ReactNode }) => {
+  return <Suspense fallback={<LoadingView />}>{props.children}</Suspense>;
 };

@@ -1,4 +1,4 @@
-import React, { Suspense } from "react";
+import React from "react";
 import ReactDOM from "react-dom/client";
 import { createBrowserRouter, Outlet, redirect, RouterProvider } from "react-router-dom";
 import { LOCAL_STORAGE_USER_TOKEN_KEY } from "@flowdev/web/relay/environment";
@@ -8,7 +8,7 @@ import { Navbar } from "@flowdev/web/components/Navbar";
 import { getClosestRoutineRoutePathAndName } from "@flowdev/web/views/RoutineView";
 import { Providers } from "@flowdev/web/components/Providers";
 import { ViewErrorBoundary } from "@flowdev/web/components/ViewErrorBoundary";
-import { LoadingView } from "@flowdev/ui/Loading";
+import { SuspenseLoadingView } from "@flowdev/ui/Loading";
 
 initUnocssRuntime({
   autoPrefix: true,
@@ -49,9 +49,9 @@ const router = createBrowserRouter([
       <ViewErrorBoundary>
         <div className="flex">
           <Navbar />
-          <Suspense fallback={<LoadingView />}>
+          <SuspenseLoadingView>
             <Outlet />
-          </Suspense>
+          </SuspenseLoadingView>
         </div>
       </ViewErrorBoundary>
     ),
@@ -90,9 +90,9 @@ const router = createBrowserRouter([
 ReactDOM.createRoot(document.getElementById("root") as HTMLElement).render(
   <React.StrictMode>
     <Providers>
-      <Suspense fallback={<LoadingView />}>
+      <SuspenseLoadingView>
         <RouterProvider router={router} />
-      </Suspense>
+      </SuspenseLoadingView>
     </Providers>
   </React.StrictMode>
 );
