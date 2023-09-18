@@ -4,6 +4,7 @@ import { useEffect, useState } from "react";
 import { getPlugin } from "@flowdev/web/getPlugin";
 import { Button, ButtonProps } from "@flowdev/ui/Button";
 import { BsArrowLeft, BsArrowRight } from "@flowdev/icons";
+import { LoadingView } from "@flowdev/ui/Loading";
 
 type RoutineStepProps = {
   step: RoutineStep_step$key;
@@ -44,7 +45,7 @@ export type PluginRoutineStepProps = {
   lastStep?: boolean;
 };
 
-const LoadingStep = () => <>Loading...</>;
+const LoadingStep = () => <LoadingView />;
 
 export const RoutineStep = (props: RoutineStepProps) => {
   const step = useFragment(

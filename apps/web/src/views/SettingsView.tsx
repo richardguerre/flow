@@ -5,6 +5,8 @@ import { useAsyncLoader } from "../useAsyncLoader";
 import { Link, Outlet } from "react-router-dom";
 import { tw } from "@flowdev/ui/tw";
 import { useActiveLink } from "../useActiveLink";
+import { Suspense } from "react";
+import { LoadingView } from "@flowdev/ui/Loading";
 
 const settingsViewQuery = graphql`
   query SettingsViewQuery {
@@ -55,7 +57,9 @@ const SettingsViewContent = (props: SettingsViewProps) => {
           ))}
         </div>
       </div>
-      <Outlet context={data} />
+      <Suspense fallback={<LoadingView />}>
+        <Outlet context={data} />
+      </Suspense>
     </div>
   );
 };

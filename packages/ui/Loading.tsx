@@ -3,6 +3,8 @@ import { motion } from "framer-motion";
 const WAVELENGTH = 82;
 
 type LoadingProps = {
+  /** 0 - 40. The loader will animate from this minProgress up to 60. Starts at 0 as the fast part  */
+  minProgress?: number;
   /** 60 - 100. The loader will animate from 0 up to this maxProgress. Starts at 60 as the slow part  */
   maxProgress?: number;
   /** Duration in seconds. */
@@ -10,9 +12,11 @@ type LoadingProps = {
 };
 
 export const Loading = (props: LoadingProps) => {
-  const maxProgress = props.maxProgress && props.maxProgress > 60 ? props.maxProgress : 60;
+  const maxProgress = props.maxProgress && props.maxProgress >= 60 ? props.maxProgress : 60;
   const duration = props.duration ?? 2;
-  const min = 96;
+  // progress starts at 96 and ends at -17
+  const min =
+    props.minProgress && props.minProgress <= 40 ? 96 - (props.minProgress / 100) * 113 : 96;
   const heightOfWave = 113;
   const max = min - (maxProgress / 100) * heightOfWave;
   return (
@@ -111,7 +115,7 @@ export const Loading = (props: LoadingProps) => {
 export const LoadingView = () => {
   return (
     <div className="flex h-screen w-full items-center justify-center">
-      <Loading />
+      <Loading minProgress={40} />
     </div>
   );
 };

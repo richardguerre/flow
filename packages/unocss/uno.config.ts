@@ -295,6 +295,13 @@ export const tailwindColors = {
 };
 
 export default defineConfig({
+  // TODO: maybe replace this with UnoCSS vite plugin so it's built into the development flow
+  cli: {
+    entry: {
+      patterns: ["**/*.{html,tsx}"],
+      outFile: "apps/web/uno.css",
+    },
+  },
   presets: [presetWind(), presetTypography()],
   theme: {
     colors: {
