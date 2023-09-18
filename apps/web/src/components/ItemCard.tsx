@@ -32,8 +32,8 @@ export const ItemCard = (props: ItemCardProps) => {
   return (
     <div className="bg-background-50 group flex cursor-pointer flex-col gap-1 rounded-lg p-3 shadow-sm hover:shadow-md">
       <ItemTitle item={item} />
-      <RenderItemCardDetails item={item} />
-      <ItemCardActions item={item} />
+      <RenderItemCardDetails item={item} inInbox={props.inInbox} />
+      <ItemCardActions item={item} inInbox={props.inInbox} />
     </div>
   );
 };

@@ -311,6 +311,7 @@ export default definePlugin((opts) => {
           const full: ItemPluginDataFull = {
             ...min,
             id: pr.id,
+            title: pr.title,
             ticket: pr.ticket,
           };
 
@@ -431,6 +432,7 @@ type TicketItemPluginDataMin = {
 type TicketItemPluginDataFull = TicketItemPluginDataMin & {
   id: GitStartTicket["id"];
   code: GitStartTicket["code"];
+  title: GitStartTicket["title"];
   client: GitStartTicket["client"];
 };
 
@@ -469,6 +471,7 @@ type PrItemPluginDataMin = {
 
 type PrItemPluginDataFull = PrItemPluginDataMin & {
   id: GitStartPullRequest["id"];
+  title: GitStartPullRequest["title"];
   ticket: GitStartTicket;
 };
 

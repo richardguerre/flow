@@ -12,6 +12,7 @@ import { pluralize } from "../utils";
 import { Badge } from "@flowdev/ui/Badge";
 
 type Props = {
+  inInbox?: boolean;
   item: RenderItemCardDetails_item$key;
 };
 export const RenderItemCardDetails = (props: Props) => {
@@ -35,8 +36,7 @@ export const RenderItemCardDetails = (props: Props) => {
 
   const flowDetails = (
     <>
-      {item.durationInMinutes && <DurationBadge durationInMinutes={item.durationInMinutes} />}
-      {item.inboxPoints && (
+      {props.inInbox && item.inboxPoints && (
         <Tooltip>
           <TooltipTrigger>
             <Badge>+{item.inboxPoints}</Badge>
@@ -58,6 +58,7 @@ export const RenderItemCardDetails = (props: Props) => {
           </TooltipContent>
         </Tooltip>
       )}
+      {item.durationInMinutes && <DurationBadge durationInMinutes={item.durationInMinutes} />}
       {item.scheduledAt && <div>{item.scheduledAt}</div>}
     </>
   );

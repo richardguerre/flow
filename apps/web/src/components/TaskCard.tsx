@@ -294,9 +294,9 @@ const TaskDurationButton = (props: TaskDurationButtonProps) => {
         </CardActionButton>
       </DropdownMenuTrigger>
       <DropdownMenuContent align="start">
-        <DropdownMenuLabel>Duration</DropdownMenuLabel>
+        <DropdownMenuLabel>How long will you take?</DropdownMenuLabel>
         <DropdownMenuSeparator />
-        <div className="no-scrollbar w-30 max-h-40 overflow-y-scroll">
+        <div className="no-scrollbar max-h-40 overflow-y-scroll">
           {durationOptions.map((option) => (
             <DropdownMenuCheckboxItem
               key={option.value}

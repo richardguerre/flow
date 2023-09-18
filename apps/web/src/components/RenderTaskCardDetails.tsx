@@ -7,6 +7,7 @@ import {
   RenderTaskCardDetails_task$key,
 } from "../relay/__generated__/RenderTaskCardDetails_task.graphql";
 import { DurationBadge, TimeBadge } from "./Badges";
+import { Skeleton } from "@flowdev/ui/Skeleton";
 
 type Props = {
   /** The details provided by Flow. */
@@ -39,7 +40,14 @@ export const RenderTaskCardDetails = (props: Props) => {
   );
 
   return (
-    <Suspense fallback={<div className="flex flex-wrap gap-2">{flowDetails}</div>}>
+    <Suspense
+      fallback={
+        <div className="flex flex-wrap gap-2">
+          {flowDetails}
+          {!!task.item && skeletonBadges}
+        </div>
+      }
+    >
       <RenderTaskCardDetailsPlugins task={task} nativeDetails={flowDetails} />
     </Suspense>
   );
@@ -85,3 +93,13 @@ export type PluginRenderTaskCardDetails = (input: {
 }) => Promise<null | Details[]>;
 
 type Details = { component: ComponentType; fullWidth?: boolean };
+
+const randomInt = (min: number, max: number) => Math.floor(Math.random() * (max - min + 1) + min);
+
+const skeletonBadges = (
+  <>
+    {new Array(randomInt(1, 3)).fill(0).map((_, i) => (
+      <Skeleton key={i} className={`w-${randomInt(8, 12)} h-5.5`} />
+    ))}
+  </>
+);
