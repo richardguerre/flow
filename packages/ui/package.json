@@ -15,6 +15,7 @@
     "@radix-ui/react-select": "^1.2.2",
     "@radix-ui/react-tooltip": "^1.0.6",
     "clsx": "^1.2.1",
+    "cmdk": "^0.2.0",
     "framer-motion": "^10.12.10",
     "react-hot-toast": "^2.4.1",
     "react-timezone-select": "^2.1.2",

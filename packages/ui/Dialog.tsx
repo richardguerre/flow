@@ -58,7 +58,7 @@ export const DialogContent = forwardRef<
     >
       {children}
       <Close className="ring-offset-background-50 focus:ring-primary-300 data-[state=open]:bg-background-100 data-[state=open]:text-foreground-700 absolute right-4 top-4 rounded-sm opacity-70 transition-opacity hover:opacity-100 focus:outline-none focus:ring-2 focus:ring-offset-2 disabled:pointer-events-none">
-        <BsX size="20" />
+        <BsX size="24" />
         <span className="sr-only">Close</span>
       </Close>
     </Content>
