@@ -356,7 +356,7 @@ type PluginCreateTaskData = {
     status?: TaskStatus;
     /** The durationInMinutes of the task if different than the default. */
     durationInMinutes?: number;
-    /** The date of the task if different than what the user specified. ⚠️ Recommended not to change it. */
+    /** The date of the task if different than what the user specified. ❗️Recommended not to change it. */
     date?: string;
   };
   /**

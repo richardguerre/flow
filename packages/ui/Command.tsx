@@ -93,6 +93,10 @@ export const CommandSeparator = forwardRef<
   />
 ));
 
+/**
+ * ❗️Note: The value of the `CommandItem` component is case-sensitive as the cmdk package was patched not to lowercase the values.
+ * It is recommended to create a mapping function from the label to the value.
+ */
 export const CommandItem = forwardRef<
   ElementRef<typeof CommandPrimitive.Item>,
   ComponentPropsWithoutRef<typeof CommandPrimitive.Item>
@@ -110,7 +114,7 @@ export const CommandItem = forwardRef<
 export const CommandShortcut = ({ className, ...props }: HTMLAttributes<HTMLSpanElement>) => {
   return (
     <span
-      className={tw("text-foreground-700 ml-auto text-xs tracking-widest", className)}
+      className={tw("text-foreground-600 ml-auto text-xs tracking-widest", className)}
       {...props}
     />
   );
