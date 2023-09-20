@@ -1,11 +1,4 @@
-// import { Button } from "@flowdev/ui/Button";
-// import { Dialog, DialogContent, DialogTrigger } from "@flowdev/ui/Dialog";
-// import { LoginForm } from "./LoginView";
-// import { FormSelect } from "@flowdev/ui/FormSelect";
-// import { SelectContent, SelectItem, SelectTrigger, SelectValue } from "@flowdev/ui/Select";
-// import { useForm } from "react-hook-form";
-import { BsCheck, HiChevronUpDown } from "@flowdev/icons";
-import { Button } from "@flowdev/ui/Button";
+import { BsCheck, BsCircleFill } from "@flowdev/icons";
 import {
   Combobox,
   ComboboxContent,
@@ -18,130 +11,80 @@ import {
   ComboboxValue,
 } from "@flowdev/ui/Combobox";
 
-const frameworks = [
-  {
-    value: "Next.js 2.0 different",
-    label: "Next.js 2.0",
-  },
-  {
-    value: "SvelteKit",
-    label: "SvelteKit",
-  },
-  {
-    value: "Nuxt.js",
-    label: "Nuxt.js",
-  },
-  {
-    value: "Remix",
-    label: "Remix",
-  },
-  {
-    value: "Astro",
-    label: "Astro",
-  },
-];
+const types: Record<string, { label: string; iconClassName: string }> = {
+  CODE: { label: "Code", iconClassName: "text-blue-600" },
+  SPEC: { label: "Spec", iconClassName: "text-gray-600" },
+  REVIEW: { label: "Review", iconClassName: "text-yellow-600" },
+  QA: { label: "QA", iconClassName: "text-purple-600" },
+  LEARNING: { label: "Learning", iconClassName: "text-green-700" },
+};
 
 export default function ComboboxDemo() {
   return (
-    <Combobox multiselect>
-      <ComboboxTrigger asChild>
-        <Button role="combobox" className="w-50 flex justify-between">
-          <ComboboxValue
-            placeholder="Select a framework..."
-            renderValues={(values) => {
-              return values
-                .map((value) => {
-                  const framework = frameworks.find((f) => f.value === value);
-                  return framework?.label;
-                })
-                .join(", ");
-            }}
-          />
-          <HiChevronUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
-        </Button>
-      </ComboboxTrigger>
-      <ComboboxContent className="w-50 p-0">
-        <ComboboxInput placeholder="Search framework..." />
-        <ComboboxEmpty>No framework found.</ComboboxEmpty>
-        <ComboboxGroup>
-          {frameworks.map((framework) => (
-            <ComboboxItem key={framework.value} value={framework.value}>
-              <ComboboxSelected className="mr-2 h-4 w-4 opacity-0" selectedClassName="opacity-100">
-                <BsCheck />
-              </ComboboxSelected>
-              {framework.label}
-            </ComboboxItem>
-          ))}
-        </ComboboxGroup>
-      </ComboboxContent>
-    </Combobox>
+    <div className="flex h-screen items-center justify-center">
+      <div className="w-75 bg-background-50 flex h-20 items-center justify-center gap-2 rounded-lg shadow-md">
+        <Combobox defaultValue="CODE">
+          <ComboboxTrigger asChild>
+            <button
+              role="combobox"
+              className="bg-background-50 ring-background-300 flex items-center gap-1 rounded-sm px-2 py-px text-sm  shadow-md ring"
+            >
+              <ComboboxValue renderValue={(value) => types[value as keyof typeof types].label} />
+            </button>
+          </ComboboxTrigger>
+          <ComboboxContent className="w-50 p-0" align="start">
+            <ComboboxInput placeholder="Search type..." />
+            <ComboboxEmpty>No type found.</ComboboxEmpty>
+            <ComboboxGroup>
+              {Object.entries(types).map(([value, taskType]) => (
+                <ComboboxItem key={value} value={value}>
+                  <ComboboxSelected
+                    className="mr-2 h-4 w-4 opacity-0"
+                    selectedClassName="opacity-100"
+                  >
+                    <BsCheck />
+                  </ComboboxSelected>
+                  {taskType.label}
+                </ComboboxItem>
+              ))}
+            </ComboboxGroup>
+          </ComboboxContent>
+        </Combobox>
+        <Combobox defaultValue="CODE">
+          <ComboboxTrigger asChild>
+            <button
+              role="combobox"
+              className="bg-background-50 ring-background-300 flex items-center gap-0.5 rounded-sm py-px pl-1 pr-2 text-sm  shadow-md ring"
+            >
+              <ComboboxValue
+                renderValue={(value) => (
+                  <>
+                    <BsCircleFill
+                      className={`${types[value as keyof typeof types].iconClassName} h-2`}
+                    />
+                    {types[value as keyof typeof types].label}
+                  </>
+                )}
+              />
+            </button>
+          </ComboboxTrigger>
+          <ComboboxContent className="w-50 p-0" align="start">
+            <ComboboxInput placeholder="Search type..." />
+            <ComboboxEmpty>No type found.</ComboboxEmpty>
+            <ComboboxGroup>
+              {Object.entries(types).map(([value, taskType]) => (
+                <ComboboxItem key={value} value={value} className="flex items-center gap-1">
+                  <ComboboxSelected className="opacity-0" selectedClassName="opacity-100">
+                    <BsCheck className="text-foreground-900 h-6" />
+                  </ComboboxSelected>
+                  <BsCircleFill className={`${taskType.iconClassName} h-2`} />
+                  {taskType.label}
+                </ComboboxItem>
+              ))}
+            </ComboboxGroup>
+          </ComboboxContent>
+        </Combobox>
+      </div>
+    </div>
   );
 }
-
-// type FormValues = {
-//   title: string;
-//   type: string;
-// };
-// export default () => {
-//   // const { register, control, handleSubmit, formState } = useForm<FormValues>();
-//   // const onSubmit = (values: FormValues) => {
-//   //   console.log(values);
-//   // };
-//   return (
-//     <div>
-//       {/* <Dialog defaultOpen>
-//         <DialogTrigger asChild>
-//           <Button>Open test dialog</Button>
-//         </DialogTrigger>
-//         <DialogContent>
-//           <form onSubmit={handleSubmit(onSubmit)} className="flex flex-col gap-2">
-//             <input
-//               className="placeholder:text-foreground-700 placeholder:font-300 bg-transparent outline-none"
-//               type="text"
-//               placeholder="What do you want to do?"
-//               {...register("title")}
-//             />
-//             {formState.errors.title && (
-//               <div className="text-negative-600 text-sm">{formState.errors.title.message}</div>
-//             )}
-//             <FormSelect name="type" control={control}>
-//               <SelectTrigger>
-//                 <SelectValue placeholder="Select type" />
-//               </SelectTrigger>
-//               <SelectContent>
-//                 <SelectItem value="CODE">Code</SelectItem>
-//                 <SelectItem value="REVIEW">Review</SelectItem>
-//               </SelectContent>
-//             </FormSelect>
-//             <Button type="submit">Submit</Button>
-//           </form>
-//         </DialogContent>
-//       </Dialog> */}
-//       <div className="flex h-screen items-center justify-center">
-//         <div className="w-full max-w-lg">
-//           <Command>
-//             <CommandInput placeholder="Type a command or search..." />
-//             <CommandList>
-//               <CommandEmpty>No results found.</CommandEmpty>
-//               <CommandGroup heading="Suggestions">
-//                 <CommandItem>Calendar</CommandItem>
-//                 <CommandItem>Search Emoji</CommandItem>
-//                 <CommandItem>
-//                   Calculator
-//                   <CommandShortcut>C</CommandShortcut>
-//                 </CommandItem>
-//               </CommandGroup>
-//               <CommandSeparator />
-//               <CommandGroup heading="Settings">
-//                 <CommandItem>Profile</CommandItem>
-//                 <CommandItem>Billing</CommandItem>
-//                 <CommandItem>Settings</CommandItem>
-//               </CommandGroup>
-//             </CommandList>
-//           </Command>
-//         </div>
-//       </div>
-//       {/* <LoginForm /> */}
-//     </div>
-//   );
-// };

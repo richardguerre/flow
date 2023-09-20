@@ -46,11 +46,12 @@ const ComboboxContext = createContext<ComboboxContextType>({
  * Some components, like this one, are just renamed versions of other components. This is done to make the API more intuitive.
  */
 export const Combobox = (
-  props: ComponentProps<typeof Popover> &
-    (
+  props: ComponentProps<typeof Popover> & {} & (
       | {
           /** Whether the combobox should allow multiple values to be selected. */
           multiselect: true;
+          /** The default values when the combobox is first rendered. */
+          defaultValues?: string[];
           /** The values that are selected. */
           values?: string[];
           /** A function that is called when the values change. */
@@ -59,6 +60,8 @@ export const Combobox = (
       | {
           /** Whether the combobox should allow multiple values to be selected. */
           multiselect?: false;
+          /** The default value when the combobox is first rendered. */
+          defaultValue?: string;
           /** The value that is selected. */
           value?: string;
           /** A function that is called when the value changes. */
@@ -154,7 +157,7 @@ export const ComboboxContent = forwardRef<
   }
 >((props, ref) => {
   return (
-    <PopoverContent {...props} ref={ref}>
+    <PopoverContent {...props} ref={ref} sideOffset={props.sideOffset ?? 4}>
       <Command {...props.commandProps}>{props.children}</Command>
     </PopoverContent>
   );
@@ -210,7 +213,10 @@ export const ComboboxSelected = (
      *
      * @example
      * ```
-     * <ComboboxSelected className="mr-2 h-4 w-4 opacity-0" selectedClassName="opacity-100">
+     * <ComboboxSelected
+     *   className="mr-2 h-4 w-4 opacity-0"
+     *   selectedClassName="opacity-100"
+     * >
      *   <Check />
      * </ComboboxSelected>
      * ```
