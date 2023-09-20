@@ -47,6 +47,20 @@ export default definePlugin((opts) => {
       <path d="M9 19c-5 1.5-5-2.5-7-3m14 6v-3.87a3.37 3.37 0 0 0-.94-2.61c3.14-.35 6.44-1.54 6.44-7A5.44 5.44 0 0 0 20 4.77 5.07 5.07 0 0 0 19.91 1S18.73.65 16 2.48a13.38 13.38 0 0 0-7 0C6.27.65 5.09 1 5.09 1A5.07 5.07 0 0 0 5 4.77a5.44 5.44 0 0 0-1.5 3.78c0 5.42 3.3 6.61 6.44 7A3.37 3.37 0 0 0 9 18.13V22"></path>
     </svg>
   );
+
+  const CheckIcon = (props: { className?: string; size?: string }) => (
+    <svg
+      xmlns="http://www.w3.org/2000/svg"
+      width={props.size ?? "16"}
+      height={props.size ?? "16"}
+      fill="currentColor"
+      className={props.className}
+      viewBox="0 0 16 16"
+    >
+      <path d="M10.97 4.97a.75.75 0 0 1 1.07 1.05l-3.99 4.99a.75.75 0 0 1-1.08.02L4.324 8.384a.75.75 0 1 1 1.06-1.06l2.094 2.093 3.473-4.425a.267.267 0 0 1 .02-.022z"></path>
+    </svg>
+  );
+
   return {
     name: "GitStart",
     settings: {
@@ -71,30 +85,130 @@ export default definePlugin((opts) => {
             status: GitStartTaskStatus;
           };
           const { register, handleSubmit, formState, watch, control } =
-            opts.reactHookForm.useForm<FormValues>({ defaultValues: { title: task.title.value } });
+            opts.reactHookForm.useForm<FormValues>();
           const values = watch();
 
           const onSubmit = (values: FormValues) => {
-            props.onNext({ taskOverrides: { title: values.title } });
+            props.onNext({
+              taskOverrides: { title: values.title },
+              actionData: { type: values.type, status: values.status },
+            });
           };
 
+          const isToday = opts.dayjs().isSame(task.date.value, "day");
+          const isInThePast = opts.dayjs().isAfter(task.date.value, "day");
+
           return (
-            <form onSubmit={handleSubmit(onSubmit)} className="flex flex-col gap-4">
-              <Flow.FormInput
-                label="Title"
-                description="The title of the task in GitStart."
-                {...register("title")}
-                error={formState.errors.title}
+            <form onSubmit={handleSubmit(onSubmit)} className="mt-4 flex flex-col gap-4">
+              <input
+                defaultValue={task.title.value}
+                className="ring-none placeholder:text-foreground-700 text-foreground-900 bg-transparent text-lg focus:outline-none"
+                {...register("title", { required: "The task's title is required." })}
               />
-              <Flow.FormSelect name="type" control={control}>
-                <Flow.SelectTrigger>
-                  <Flow.SelectValue placeholder="Select type" />
-                </Flow.SelectTrigger>
-              </Flow.FormSelect>
+              <div className="flex items-center gap-2">
+                <Flow.FormCombobox
+                  name="type"
+                  defaultValue="CODE"
+                  control={control}
+                  rules={{
+                    required: "The task's type is required.",
+                  }}
+                >
+                  <Flow.ComboboxTrigger role="combobox">
+                    <Flow.ComboboxValue
+                      renderValue={(value) => {
+                        const typeInfo = taskTypeMap[value as keyof typeof taskTypeMap];
+                        return (
+                          <Flow.Badge className={typeInfo.className}>{typeInfo.label}</Flow.Badge>
+                        );
+                      }}
+                    />
+                  </Flow.ComboboxTrigger>
+                  <Flow.ComboboxContent className="w-50 p-0" align="start">
+                    <Flow.ComboboxInput placeholder="Search type..." />
+                    <Flow.ComboboxEmpty>No type found.</Flow.ComboboxEmpty>
+                    <Flow.ComboboxGroup>
+                      {Object.entries(taskTypeMap).map(([value, typeInfo]) => (
+                        <Flow.ComboboxItem
+                          key={value}
+                          value={value}
+                          className="flex items-center gap-2"
+                        >
+                          <Flow.ComboboxSelected
+                            className="opacity-0"
+                            selectedClassName="opacity-100"
+                          >
+                            <CheckIcon className="text-foreground-900 h-6" />
+                          </Flow.ComboboxSelected>
+                          <Flow.Badge className={typeInfo.className}>{typeInfo.label}</Flow.Badge>
+                        </Flow.ComboboxItem>
+                      ))}
+                    </Flow.ComboboxGroup>
+                  </Flow.ComboboxContent>
+                </Flow.FormCombobox>
+                <Flow.FormCombobox
+                  name="status"
+                  defaultValue={isToday || isInThePast ? "IN_PROGRESS" : "TO_DO"} // can't set to finished directly since GitStart doesn't allow it. The user will have to tick the task after creating it.
+                  control={control}
+                  rules={{
+                    required: "The task's status is required.",
+                  }}
+                >
+                  <Flow.ComboboxTrigger>
+                    <Flow.ComboboxValue
+                      renderValue={(value) => {
+                        const statusInfo = taskStatusMap[value as keyof typeof taskStatusMap];
+                        return (
+                          <Flow.Badge className={statusInfo.className}>
+                            {statusInfo.label}
+                          </Flow.Badge>
+                        );
+                      }}
+                    />
+                  </Flow.ComboboxTrigger>
+                  <Flow.ComboboxContent className="w-50 p-0" align="start">
+                    <Flow.ComboboxInput placeholder="Search status..." />
+                    <Flow.ComboboxEmpty>No status found.</Flow.ComboboxEmpty>
+                    <Flow.ComboboxGroup>
+                      {Object.entries(taskStatusMap).map(([value, statusInfo]) => (
+                        <Flow.ComboboxItem
+                          key={value}
+                          value={value}
+                          className="flex items-center gap-2"
+                        >
+                          <Flow.ComboboxSelected
+                            className="opacity-0"
+                            selectedClassName="opacity-100"
+                          >
+                            <CheckIcon className="text-foreground-900 h-6" />
+                          </Flow.ComboboxSelected>
+                          <Flow.Badge className={statusInfo.className}>
+                            {statusInfo.label}
+                          </Flow.Badge>
+                        </Flow.ComboboxItem>
+                      ))}
+                    </Flow.ComboboxGroup>
+                  </Flow.ComboboxContent>
+                </Flow.FormCombobox>
+              </div>
+              {formState.errors.title && (
+                <div className="text-negative-600 text-sm">{formState.errors.title.message}</div>
+              )}
+              {formState.errors.type && (
+                <div className="text-negative-600 text-sm">{formState.errors.type.message}</div>
+              )}
+              {formState.errors.status && (
+                <div className="text-negative-600 text-sm">{formState.errors.status.message}</div>
+              )}
               <div className="flex gap-2 self-end">
                 <BackButton
                   type="button"
-                  onClick={() => props.onBack({ taskOverrides: { title: values.title } })}
+                  onClick={() =>
+                    props.onBack({
+                      taskOverrides: { title: values.title },
+                      actionData: { type: values.type, status: values.status },
+                    })
+                  }
                 />
                 <NextButton type="submit" />
               </div>
@@ -216,50 +330,47 @@ const taskTypeMap: Record<GitStartTaskType, { label: string; className: string }
   LEARNING: { label: "Learning", className: `bg-green-100 text-green-700` },
 };
 const taskStatusMap: Record<GitStartTaskStatus, { label: string; className: string }> = {
-  TO_DO: { label: "To do", className: `bg-gray-200 text-gray-600` },
-  IN_PROGRESS: {
-    label: "In progress",
-    className: `bg-blue-100 text-blue-600`,
-  },
-  FINISHED: { label: "Finished", className: `bg-green-100 text-green-700` },
-  CANCELED: { label: "Canceled", className: `bg-red-100 text-red-600` },
+  TO_DO: { label: "To do", className: "bg-gray-200 text-gray-600" },
+  IN_PROGRESS: { label: "In progress", className: "bg-blue-100 text-blue-600" },
+  FINISHED: { label: "Finished", className: "bg-green-100 text-green-700" },
+  CANCELED: { label: "Canceled", className: "bg-red-100 text-red-600" },
 };
 
 const prStatusMap: Record<GitStartPullRequestStatus, { label: string; className: string }> = {
-  PLANNED: { label: "Planned", className: `bg-gray-200 text-gray-600` },
+  PLANNED: { label: "Planned", className: "bg-gray-200 text-gray-600" },
   IN_PROGRESS: {
     label: "In progress",
-    className: `bg-blue-100 text-blue-600`,
+    className: "bg-blue-100 text-blue-600",
   },
   INTERNAL_REVIEW: {
     label: "Internal review",
-    className: `bg-yellow-100 text-yellow-600`,
+    className: "bg-yellow-100 text-yellow-600",
   },
   CLIENT_REVIEW: {
     label: "Client review",
-    className: `bg-purple-100 text-purple-600`,
+    className: "bg-purple-100 text-purple-600",
   },
-  CANCELED: { label: "Canceled", className: `bg-red-100 text-red-600` },
-  APPROVED: { label: "Approved", className: `bg-green-100 text-green-700` },
-  MERGED: { label: "Merged", className: `bg-green-100 text-green-700` },
+  CANCELED: { label: "Canceled", className: "bg-red-100 text-red-600" },
+  APPROVED: { label: "Approved", className: "bg-green-100 text-green-700" },
+  MERGED: { label: "Merged", className: "bg-green-100 text-green-700" },
 };
 
 const ticketStatusMap: Record<GitStartTicketStatus, { label: string; className: string }> = {
-  BACKLOG: { label: "Backlog", className: `bg-gray-200 text-gray-600` },
+  BACKLOG: { label: "Backlog", className: "bg-gray-200 text-gray-600" },
   AVAILABLE: {
     label: "Available",
-    className: `bg-blue-100 text-blue-600`,
+    className: "bg-blue-100 text-blue-600",
   },
   IN_PROGRESS: {
     label: "In progress",
-    className: `bg-yellow-100 text-yellow-600`,
+    className: "bg-yellow-100 text-yellow-600",
   },
   PAUSED: {
     label: "Paused",
-    className: `bg-purple-100 text-purple-600`,
+    className: "bg-purple-100 text-purple-600",
   },
-  FINISHED: { label: "Finished", className: `bg-green-100 text-green-700` },
-  CANCELED: { label: "Canceled", className: `bg-red-100 text-red-600` },
+  FINISHED: { label: "Finished", className: "bg-green-100 text-green-700" },
+  CANCELED: { label: "Canceled", className: "bg-red-100 text-red-600" },
 };
 
 // type Option<T = any> = { label: string; value: T };

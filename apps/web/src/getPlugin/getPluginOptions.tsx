@@ -57,6 +57,18 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@flowdev/ui/Select";
+import {
+  Combobox,
+  ComboboxContent,
+  ComboboxEmpty,
+  ComboboxGroup,
+  ComboboxInput,
+  ComboboxItem,
+  ComboboxSelected,
+  ComboboxTrigger,
+  ComboboxValue,
+} from "@flowdev/ui/Combobox";
+import { FormCombobox } from "@flowdev/ui/FormCombobox";
 
 export const getPluginOptions = (slug: string) => ({
   /** The plugin's slug. There is no difference with the one passed into `definePlugin`. It can be used to not repeat it throughout the plugin's code. */
@@ -105,6 +117,7 @@ export const getPluginOptions = (slug: string) => ({
     Input,
     FormInput,
     FormSelect,
+    FormCombobox,
     Select,
     SelectGroup,
     SelectValue,
@@ -129,6 +142,15 @@ export const getPluginOptions = (slug: string) => ({
     DropdownMenuShortcut,
     Badge,
     CardActionButton,
+    Combobox,
+    ComboboxContent,
+    ComboboxEmpty,
+    ComboboxGroup,
+    ComboboxInput,
+    ComboboxItem,
+    ComboboxSelected,
+    ComboboxTrigger,
+    ComboboxValue,
   },
   hooks: {
     /**

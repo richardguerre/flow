@@ -327,6 +327,7 @@ type CardActionButtonProps = React.ButtonHTMLAttributes<HTMLButtonElement>;
 export const CardActionButton = (props: CardActionButtonProps) => {
   return (
     <button
+      {...props}
       className={tw(
         "bg-background-200/50 text-foreground-700 hover:bg-background-300/70 active:bg-background-300/100 flex h-6 w-6 items-center justify-center rounded-full text-sm",
         props.className

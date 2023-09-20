@@ -19,7 +19,12 @@ type FormComboboxProps<
  *
  * Then add any Combobox child component like ComboboxTrigger, ComboboxContent, ComboboxInput, ComboboxItem, etc. as children.
  */
-export const FormCombobox = (props: FormComboboxProps) => {
+export const FormCombobox = <
+  TFieldValues extends FieldValues = FieldValues,
+  TName extends FieldPath<TFieldValues> = FieldPath<TFieldValues>
+>(
+  props: FormComboboxProps<TFieldValues, TName>
+) => {
   const errorMessage = typeof props.error === "object" ? props.error.message : props.error;
   return (
     <label className={tw("flex flex-col gap-1", props.fullWidth && "w-full")}>

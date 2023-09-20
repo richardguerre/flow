@@ -48,7 +48,7 @@ export const OnCreateTask = (props: OnCreateTaskProps) => {
     Record<string, PluginCreateTaskData>
   >({});
 
-  const [createTaskFromItem] = useMutationPromise<OnCreateTaskCreateTaskFromItemMutation>(graphql`
+  const [$createTask] = useMutationPromise<OnCreateTaskCreateTaskFromItemMutation>(graphql`
     mutation OnCreateTaskCreateTaskFromItemMutation($input: MutationCreateTaskInput!) {
       createTask(input: $input) {
         __typename
@@ -62,7 +62,7 @@ export const OnCreateTask = (props: OnCreateTaskProps) => {
     }
   `);
 
-  const [_dismissItemFromInbox] = useMutation<OnCreateTaskDismissItemFromInboxMutation>(graphql`
+  const [$dismissItemFromInbox] = useMutation<OnCreateTaskDismissItemFromInboxMutation>(graphql`
     mutation OnCreateTaskDismissItemFromInboxMutation($input: MutationDismissItemFromInboxInput!) {
       dismissItemFromInbox(input: $input) {
         id
@@ -140,7 +140,7 @@ export const OnCreateTask = (props: OnCreateTaskProps) => {
     // the user done going through all the steps, so let's create the task
     // hide the dialog so that the toast gets all the attention and we don't display stale dialog content
     props.onClose();
-    const createTask = createTaskFromItem({
+    const createTask = $createTask({
       variables: {
         input: {
           date: task.current.date.value,
@@ -185,7 +185,7 @@ export const OnCreateTask = (props: OnCreateTaskProps) => {
 
     // if the item was in the inbox (i.e. had inboxPoints) and the item is in a list, we can dismiss it from the inbox
     if (task.current.item?.willBeDimissedFromInbox) {
-      _dismissItemFromInbox({
+      $dismissItemFromInbox({
         variables: { input: { id: task.current.item.id } },
         optimisticUpdater: (updaterStore) => {
           if (!task.current.item) return;

@@ -98,7 +98,8 @@ export default definePlugin((opts) => {
         await opts.pgBoss.send(SYNC_ITEMS, {});
       }
     },
-    onCreateTask: async ({ task }) => {
+    onCreateTask: async ({ task, actionData: _actionData }) => {
+      const actionData = _actionData as { type: GitStartTaskType; status: GitStartTaskStatus };
       const itemPluginData = task.item?.pluginDatas.find((pd) => pd.pluginSlug === opts.pluginSlug);
       if (!itemPluginData?.originalId) return;
       const userInfoItem = await opts.store.getPluginItem<UserInfo>(USER_INFO_STORE_KEY);
@@ -135,12 +136,31 @@ export default definePlugin((opts) => {
             input: {
               pullRequestInternalId: prId,
               title: task.title,
-              type: "CODE", // TODO: make this configurable
-              status: "IN_PROGRESS", // TODO: make this configurable
+              type: actionData.type,
+              status: "TODO", // the task is always created as TODO, then we update it to the desired status
               assigneeInternalId: userId,
             },
           }
         );
+        const taskId = decodeNodeId(data.createTask.task.id).id;
+        if (actionData.status === "IN_PROGRESS" || actionData.status === "FINISHED") {
+          await updateTaskStatus({
+            token,
+            input: { taskInternalId: taskId, status: "IN_PROGRESS" },
+          });
+        }
+        if (actionData.status === "FINISHED") {
+          await updateTaskStatus({
+            token,
+            input: { taskInternalId: taskId, status: "FINISHED" },
+          });
+        }
+        if (actionData.status === "CANCELED") {
+          await updateTaskStatus({
+            token,
+            input: { taskInternalId: taskId, status: "CANCELED" },
+          });
+        }
 
         // update the item plugin data from the data returned from the createTask mutation
         const itemMin: PrItemPluginDataMin = {
@@ -302,9 +322,10 @@ export default definePlugin((opts) => {
             include: { pluginDatas: { select: { id: true } } },
           });
 
+          const clientId = decodeNodeId(pr.ticket.client.id).id;
           const min: ItemPluginDataMin = {
             type: "pull_request",
-            ticketUrl: `https://developers.gitstart.com/client/${pr.ticket.client.id}/ticket/${pr.ticket.code}`,
+            ticketUrl: `https://developers.gitstart.com/client/${clientId}/ticket/${pr.ticket.code}`,
             url: pr.url,
             status: pr.status,
           };
