@@ -38,10 +38,15 @@ Pass the \`where\` argument to override these defaults.`,
       where: t.arg({ type: ItemWhereInput, required: false }),
       orderBy: t.arg({ type: ItemOrderByEnum, required: false }),
     },
+    // smartSubscription: true,
+    // subscribe: (subs) => {
+    //   subs.register("testSubscription");
+    // },
     resolve: (query, _, args) => {
       return prisma.item.findMany({
         ...query,
         where: createItemWhere(args.where ?? {}),
+        // orderBy: { inboxPoints: Math.random() > 0.5 ? "asc" : "desc" },
         orderBy:
           args.orderBy === "inboxPoints_ASC"
             ? { inboxPoints: "asc" }

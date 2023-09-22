@@ -9,6 +9,8 @@ import { DateResolver, DateTimeResolver, PositiveIntResolver, JSONResolver } fro
 import { dayjs } from "../utils/dayjs";
 import { GraphQLError } from "graphql";
 import ScopeAuthPlugin from "@pothos/plugin-scope-auth";
+import SmartSubscriptionsPlugin from "@pothos/plugin-smart-subscriptions";
+import { pubsub } from "../pubsub";
 
 export const encodeGlobalID = (typename: string, id: string | number | bigint) => {
   return `${typename}_${id}`;
@@ -39,7 +41,7 @@ export const builder = new SchemaBuilder<{
   };
 }>({
   // the order of plugins matters. see https://pothos-graphql.dev/docs/plugins/scope-auth#important
-  plugins: [RelayPlugin, ScopeAuthPlugin, PrismaPlugin, WithInputPlugin],
+  plugins: [RelayPlugin, ScopeAuthPlugin, PrismaPlugin, WithInputPlugin, SmartSubscriptionsPlugin],
   relayOptions: {
     clientMutationId: "omit",
     cursorType: "ID",
@@ -80,10 +82,20 @@ export const builder = new SchemaBuilder<{
       });
     },
   },
+  smartSubscriptions: {
+    subscribe: async ($name, _context, callback) => {
+      const name = $name as PubSubKeys;
+      for await (const data of pubsub.subscribe(name)) {
+        callback(undefined, data);
+      }
+    },
+    unsubscribe: (_name, _context) => {}, // not sure if this is needed
+  },
 });
 
 builder.queryType({ authScopes: { authenticated: true } }); // this initializes the query type, so that builder.queryField() works
 builder.mutationType({ authScopes: { authenticated: true } }); // this initializes the mutation type, so that builder.mutationField() works
+builder.subscriptionType({ authScopes: { authenticated: true } }); // this initializes the subscription type, so that builder.subscriptionField() works
 
 builder.addScalarType("Date", DateResolver, {});
 builder.addScalarType("DateTime", DateTimeResolver, {});

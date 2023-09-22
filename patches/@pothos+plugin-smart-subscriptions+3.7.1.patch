@@ -1,0 +1,26 @@
+diff --git a/node_modules/@pothos/plugin-smart-subscriptions/dts/manager/field.d.ts b/node_modules/@pothos/plugin-smart-subscriptions/dts/manager/field.d.ts
+index 2319113..ddf642b 100644
+--- a/node_modules/@pothos/plugin-smart-subscriptions/dts/manager/field.d.ts
++++ b/node_modules/@pothos/plugin-smart-subscriptions/dts/manager/field.d.ts
+@@ -6,6 +6,6 @@ import type SubscriptionManager from '.';
+ export default class FieldSubscriptionManager<Types extends SchemaTypes> extends BaseSubscriptionManager {
+     cacheNode: CacheNode<Types>;
+     constructor(manager: SubscriptionManager, cacheNode: CacheNode<Types>);
+-    register<T>(name: string, { filter, invalidateCache }?: RegisterFieldSubscriptionOptions<T>): void;
++    register<T>(name: PubSubKeys, { filter, invalidateCache }?: RegisterFieldSubscriptionOptions<T>): void;
+ }
+ //# sourceMappingURL=field.d.ts.map
+\ No newline at end of file
+diff --git a/node_modules/@pothos/plugin-smart-subscriptions/dts/manager/type.d.ts b/node_modules/@pothos/plugin-smart-subscriptions/dts/manager/type.d.ts
+index c201a33..df6910e 100644
+--- a/node_modules/@pothos/plugin-smart-subscriptions/dts/manager/type.d.ts
++++ b/node_modules/@pothos/plugin-smart-subscriptions/dts/manager/type.d.ts
+@@ -6,6 +6,6 @@ export default class TypeSubscriptionManager<ParentShape = unknown> extends Base
+     replace: (value: unknown) => void;
+     refetchParent: () => MaybePromise<void>;
+     constructor(manager: SubscriptionManager, replace: (value: unknown) => void, refetchParent: () => MaybePromise<void>);
+-    register<T = unknown>(name: string, { filter, invalidateCache, refetch }?: RegisterTypeSubscriptionOptions<T, ParentShape>): void;
++    register<T = unknown>(name: PubSubKeys, { filter, invalidateCache, refetch }?: RegisterTypeSubscriptionOptions<T, ParentShape>): void;
+ }
+ //# sourceMappingURL=type.d.ts.map
+\ No newline at end of file

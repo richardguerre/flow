@@ -15,6 +15,7 @@ import "./Task";
 import "./TaskTag";
 import "./TaskPluginData";
 import "./PluginOperation";
+import "./TestSubscriptions";
 import { env } from "../env";
 
 export const schema = builder.toSchema();

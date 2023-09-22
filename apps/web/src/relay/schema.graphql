@@ -659,6 +659,7 @@ type Query {
     """Filters to use when querying task tags."""
     where: TaskTagWhereInput
   ): QueryTaskTagsConnection!
+  testSubscription: String!
 
   """The timezone set for the Flow instance. `null` if no timezone is set."""
   timezoneSet: String
@@ -794,6 +795,10 @@ type Store implements Node {
 
   """The value of the store item."""
   value: JSON
+}
+
+type Subscription {
+  testSubscription: String!
 }
 
 """A task that the user or a plugin has created."""

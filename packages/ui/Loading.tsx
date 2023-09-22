@@ -121,7 +121,7 @@ export const LoadingView = () => {
       transition={{ duration: 0.3 }}
       initial={{ opacity: 0 }}
       animate={{ opacity: 1 }}
-      exit={{ opacity: 0 }} // TODO: this exit animation still doesn't work, the component get's unmouted immediately instead of fading out
+      exit={{ opacity: 0 }} // TODO: this exit animation still doesn't work, the component get's unmouted immediately instead of fading out. Look into https://github.com/framer/motion/issues/1193 and react-freeze maybe?
     >
       <Loading minProgress={40} />
     </motion.div>

@@ -44,3 +44,8 @@ builder.queryField("lists", (t) =>
     },
   })
 );
+
+// builder.queryField("list", (t) =>
+//   t.prismaField({
+//   })
+// )
