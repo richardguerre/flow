@@ -1,5 +1,6 @@
-import { motion } from "framer-motion";
+import { AnimatePresence, motion } from "framer-motion";
 import { ReactNode, Suspense } from "react";
+import { suspend } from "./suspend";
 
 const WAVELENGTH = 82;
 
@@ -115,13 +116,31 @@ export const Loading = (props: LoadingProps) => {
 
 export const LoadingView = () => {
   return (
-    <div className="flex h-screen w-full items-center justify-center">
+    <motion.div
+      className="flex h-screen w-full items-center justify-center"
+      transition={{ duration: 0.3 }}
+      initial={{ opacity: 0 }}
+      animate={{ opacity: 1 }}
+      exit={{ opacity: 0 }} // TODO: this exit animation still doesn't work, the component get's unmouted immediately instead of fading out
+    >
       <Loading minProgress={40} />
-    </div>
+    </motion.div>
   );
 };
 
-/** This component will delay rendering the children so that the LoadingView is shown for at least 500ms */
+const wait = (ms: number) => new Promise((resolve) => setTimeout(() => resolve(true), ms));
+/** This component will suspend for the given time (in ms). 500ms by default. Also, yes, it's a play on words. */
+const WaitInSuspense = ({ waitFor = 500 }: { waitFor?: number }) => {
+  suspend(wait(waitFor), [waitFor]);
+  return null;
+};
 export const SuspenseLoadingView = (props: { children: ReactNode }) => {
-  return <Suspense fallback={<LoadingView />}>{props.children}</Suspense>;
+  return (
+    <AnimatePresence mode="wait">
+      <Suspense fallback={<LoadingView />}>
+        <WaitInSuspense waitFor={500} />
+        {props.children}
+      </Suspense>
+    </AnimatePresence>
+  );
 };
