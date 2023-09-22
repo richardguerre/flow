@@ -152,7 +152,7 @@ export const ComboboxValue = (props: {
   } else if (props.renderValues) {
     return props.renderValues(values);
   }
-  return multiselect ? values.join(", ") : values[0];
+  return multiselect ? values.join(", ") : values[0] ?? "Select...";
 };
 export const ComboboxContent = forwardRef<
   ElementRef<typeof PopoverContent>,
