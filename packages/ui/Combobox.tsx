@@ -145,14 +145,14 @@ export const ComboboxValue = (props: {
 }) => {
   const { values, multiselect } = useContext(ComboboxContext);
   if (values.length === 0) {
-    return props.placeholder ?? "Select...";
+    return <>{props.placeholder ?? "Select..."}</>;
   }
   if (props.renderValue) {
-    return props.renderValue(values[0]);
+    return <>{props.renderValue(values[0])}</>;
   } else if (props.renderValues) {
-    return props.renderValues(values);
+    return <>{props.renderValues(values)}</>;
   }
-  return multiselect ? values.join(", ") : values[0] ?? "Select...";
+  return <>{multiselect ? values.join(", ") : values[0]}</>;
 };
 export const ComboboxContent = forwardRef<
   ElementRef<typeof PopoverContent>,
