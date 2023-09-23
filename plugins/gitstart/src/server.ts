@@ -8,9 +8,9 @@ const RELEVANT_STATUSES = [
   "INTERNAL_REVIEW",
   "CLIENT_REVIEW",
 ] as GitStartPullRequestStatus[];
+export const GITSTART_LIST_SLUG = "gitstart-items";
 
 export default definePlugin((opts) => {
-  const GITSTART_LIST_SLUG = "gitstart-items";
   const UPSERT_PR_JOB_NAME = `${opts.pluginSlug}-upsert-pr-as-item`;
   const SYNC_ITEMS = `${opts.pluginSlug}-sync-items`;
 

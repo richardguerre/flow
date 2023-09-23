@@ -1,0 +1,17 @@
+{
+  "name": "@flowdev/plugin-github",
+  "description": "Official GitHub plugin for Flow",
+  "version": "0.1.0",
+  "private": false,
+  "scripts": {
+    "build:web": "vite build -c vite.web.ts",
+    "build:server": "vite build -c vite.server.ts",
+    "build": "npm run build:web && npm run build:server",
+    "dev:web": "vite build -c vite.web.ts --watch",
+    "dev:server": "vite build -c vite.server.dev.ts --watch"
+  },
+  "dependencies": {
+    "@octokit/core": "^5.0.1",
+    "@vitejs/plugin-react": "^4.0.2"
+  }
+}
