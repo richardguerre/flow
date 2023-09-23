@@ -36,6 +36,7 @@ export {
   useRefetchableFragment,
   useLazyLoadQuery,
   ConnectionHandler,
+  useSubscription,
 } from "react-relay";
 export { type RecordSourceSelectorProxy, type SelectorStoreUpdater } from "relay-runtime";
 

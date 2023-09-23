@@ -58,7 +58,7 @@
     "express": "^4.18.1",
     "graphql": "^16.6.0",
     "graphql-scalars": "^1.18.0",
-    "graphql-yoga": "^3.3.0",
+    "graphql-yoga": "^4.0.4",
     "pg-boss": "^9.0.3"
   }
 }
