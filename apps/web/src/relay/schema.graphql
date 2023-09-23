@@ -640,6 +640,9 @@ type Query {
   """
   items(after: ID, before: ID, first: Int, last: Int, orderBy: ItemOrderBy, where: ItemFilter): QueryItemsConnection!
 
+  """Get a list by its id or slug."""
+  list(id: ID, slug: String): List
+
   """Get all lists."""
   lists(
     """
@@ -836,6 +839,9 @@ type Subscription {
   Pass the `where` argument to override these defaults.
   """
   items(after: ID, before: ID, first: Int, last: Int, orderBy: ItemOrderBy, where: ItemFilter): QueryItemsConnection!
+
+  """Get a list by its id or slug."""
+  list(id: ID, slug: String): List
   notifications: Notifications!
 }
 

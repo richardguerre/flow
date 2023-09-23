@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import {
   OperationType,
   type MutationParameters,
@@ -137,14 +137,17 @@ export const commitMutationPromise = async <
  */
 export const useSubscription = <TSubscription extends OperationType>(
   subscription: GraphQLTaggedNode,
-  variables: Record<string, unknown> = {},
-  config?: Omit<GraphQLSubscriptionConfig<TSubscription>, "subscription" | "variables">
+  variables: TSubscription["variables"] = {},
+  $config?: Omit<GraphQLSubscriptionConfig<TSubscription>, "subscription" | "variables">
 ) => {
-  useRelaySubscription({
-    ...config,
-    subscription,
-    variables,
-  });
+  const config = useMemo(() => {
+    return {
+      ...$config,
+      subscription,
+      variables,
+    };
+  }, [subscription, variables, $config]);
+  useRelaySubscription(config);
 };
 
 /**
@@ -154,7 +157,7 @@ export const useSubscription = <TSubscription extends OperationType>(
  */
 export const useSmartSubscription = <TSubscription extends OperationType>(
   subscription: GraphQLTaggedNode,
-  variables: Record<string, unknown> = {},
+  variables: TSubscription["variables"] = {},
   config?: Omit<GraphQLSubscriptionConfig<TSubscription>, "subscription" | "variables">
 ) => {
   const [data, setData] = useState<TSubscription["response"] | null>(null);
@@ -167,5 +170,5 @@ export const useSmartSubscription = <TSubscription extends OperationType>(
       config?.onNext?.(response);
     },
   });
-  return data;
+  return [data] as const;
 };

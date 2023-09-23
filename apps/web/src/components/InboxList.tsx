@@ -1,41 +1,34 @@
-import { graphql, useRefetchableFragment } from "@flowdev/relay";
-import { InboxList_data$key } from "@flowdev/web/relay/__generated__/InboxList_data.graphql";
+import { graphql, useSmartSubscription } from "@flowdev/relay";
 import { ItemCard } from "./ItemCard";
 import { ReactSortable } from "react-sortablejs";
 import { useMemo, useState } from "react";
 import { Button } from "@flowdev/ui/Button";
 import { NewItemCard } from "./NewItemCard";
 import { dayjs } from "../dayjs";
+import { InboxListSubscription } from "../relay/__generated__/InboxListSubscription.graphql";
 
-type InboxListProps = {
-  data: InboxList_data$key;
-};
+type InboxListProps = {};
 
 export const InboxList = (props: InboxListProps) => {
   const [showNewTaskCard, setShowNewTaskCard] = useState(false);
-  const [data] = useRefetchableFragment(
-    graphql`
-      fragment InboxList_data on Query @refetchable(queryName: "InboxListRefetchQuery") {
-        items(
-          where: { isRelevant: true, inboxPoints: { gte: 1 } }
-          orderBy: { inboxPoints: Desc }
-        ) {
-          __id
-          edges {
-            node {
-              ...InboxListItemToBeInList_item @relay(mask: false)
-              ...ItemCard_item
-            }
+  const [data] = useSmartSubscription<InboxListSubscription>(graphql`
+    subscription InboxListSubscription {
+      items(where: { isRelevant: true, inboxPoints: { gte: 1 } }, orderBy: { inboxPoints: Desc }) {
+        __id
+        edges {
+          node {
+            ...InboxListItemToBeInList_item @relay(mask: false)
+            ...ItemCard_item
           }
         }
       }
-    `,
-    props.data
-  );
+    }
+  `);
+
   const items = useMemo(
     () =>
       structuredClone(
-        data.items.edges
+        data?.items.edges
           .map((edge) => edge.node)
           .filter((node) => {
             const passesBaseFilter = !!node.isRelevant && (node.inboxPoints ?? 0) > 0;
@@ -44,10 +37,12 @@ export const InboxList = (props: InboxListProps) => {
               dayjs(task.createdAt).isSame(today, "day")
             );
             return passesBaseFilter && !hasTaskCreatedToday;
-          })
+          }) ?? []
       ),
-    [data.items.edges]
+    [data?.items.edges]
   );
+
+  if (!data) return null; // TODO: loading state
 
   return (
     <div className="bg-background-100 flex h-full flex-col gap-4 pt-3">

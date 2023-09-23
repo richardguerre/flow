@@ -17,13 +17,8 @@ type ListType = "calendar" | "inbox" | (string & {});
 export const Lists = (props: ListsProps) => {
   const data = useFragment(
     graphql`
-      fragment Lists_data on Query
-      @argumentDefinitions(
-        scheduledAt: { type: "PrismaDateTimeFilter!" }
-        dayIdInFocus: { type: "ID!" }
-      ) {
-        ...CalendarList_data @arguments(scheduledAt: $scheduledAt, dayIdInFocus: $dayIdInFocus)
-        ...InboxList_data
+      fragment Lists_data on Query @argumentDefinitions(dayIdInFocus: { type: "ID!" }) {
+        ...CalendarList_data @arguments(dayIdInFocus: $dayIdInFocus)
         lists {
           id
           name
@@ -33,14 +28,13 @@ export const Lists = (props: ListsProps) => {
     props.data
   );
 
-  // if selectedList null, show the calendar
   const [selectedList, setSelectedList] = useState<ListType>("inbox");
 
   return (
     <div className="bg-background-50 z-10 flex h-full shadow-xl">
       <div className="h-full w-72 flex-1">
         {selectedList === "inbox" ? (
-          <InboxList data={data} />
+          <InboxList />
         ) : selectedList === "calendar" ? (
           <CalendarList data={data} />
         ) : (

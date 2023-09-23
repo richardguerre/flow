@@ -1,4 +1,4 @@
-import { builder, u } from "./builder";
+import { builder, u, uParseInt } from "./builder";
 import { prisma } from "../utils/prisma";
 import { ItemWhereInputType } from "./Item";
 
@@ -45,7 +45,26 @@ builder.queryField("lists", (t) =>
   })
 );
 
-// builder.queryField("list", (t) =>
-//   t.prismaField({
-//   })
-// )
+builder.queryField("list", (t) =>
+  t.prismaField({
+    type: "List",
+    description: "Get a list by its id or slug.",
+    nullable: true,
+    smartSubscription: true,
+    subscribe: (subs) => {
+      subs.register("itemsCreated");
+      subs.register("itemsUpdated");
+      subs.register("itemsDeleted");
+    },
+    args: {
+      id: t.arg.globalID({ required: false }),
+      slug: t.arg.string({ required: false }),
+    },
+    resolve: (query, _, args) => {
+      return prisma.list.findFirst({
+        ...query,
+        where: { id: uParseInt(args.id?.id), slug: args.slug ?? undefined },
+      });
+    },
+  })
+);

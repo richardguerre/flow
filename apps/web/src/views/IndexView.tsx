@@ -7,14 +7,9 @@ import { useEffect, useRef } from "react";
 import { useFlowNotitications } from "../useFlowNotitications";
 
 const indexViewQuery = graphql`
-  query IndexViewQuery(
-    $daysAfter: ID
-    $firstDays: Int
-    $scheduledAt: PrismaDateTimeFilter!
-    $dayIdInFocus: ID!
-  ) {
+  query IndexViewQuery($daysAfter: ID, $firstDays: Int, $dayIdInFocus: ID!) {
     ...Days_data @arguments(after: $daysAfter, first: $firstDays)
-    ...Lists_data @arguments(scheduledAt: $scheduledAt, dayIdInFocus: $dayIdInFocus)
+    ...Lists_data @arguments(dayIdInFocus: $dayIdInFocus)
   }
 `;
 
@@ -24,10 +19,6 @@ export default () => {
   const { queryRef, loadQuery } = useQueryLoader<IndexViewQuery>(indexViewQuery, {
     daysAfter: today.current.subtract(7, "day").format("YYYY-MM-DD"),
     firstDays: 17, // 7 days before and 10 days after today
-    scheduledAt: {
-      gte: today.current.toISOString(),
-      lt: today.current.add(1, "day").toISOString(),
-    },
     dayIdInFocus: `Day_${today.current.format("YYYY-MM-DD")}`,
   });
 
@@ -40,10 +31,6 @@ export default () => {
         {
           daysAfter: today.current.subtract(7, "day").format("YYYY-MM-DD"),
           firstDays: 17, // 7 days before and 10 days after today
-          scheduledAt: {
-            gte: today.current.toISOString(),
-            lt: today.current.add(1, "day").toISOString(),
-          },
           dayIdInFocus: `Day_${today.current.format("YYYY-MM-DD")}`,
         },
         { fetchPolicy: "store-and-network" }
