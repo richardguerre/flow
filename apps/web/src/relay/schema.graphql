@@ -806,6 +806,12 @@ type Store implements Node {
 }
 
 type Subscription {
+  """
+  Get all external items. Useuful to get list of items for a specific day to show in a calendar.
+  By default, only items where `isRelevant` is true.
+  Pass the `where` argument to override these defaults.
+  """
+  items(after: ID, before: ID, first: Int, last: Int, orderBy: ItemOrderBy, where: ItemWhereInput): QueryItemsConnection!
   notifications: Notifications!
 }
 

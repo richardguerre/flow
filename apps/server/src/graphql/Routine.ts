@@ -78,6 +78,7 @@ export const RoutineType = builder.prismaNode("Routine", {
 });
 
 export const RoutineStepType = builder.simpleObject("RoutineStep", {
+  description: "A step in a routine. To know which plugin the step belongs to, see `pluginSlug`.",
   fields: (t) => ({
     pluginSlug: t.string({ description: "The slug of the plugin that the step belongs to." }),
     stepSlug: t.string({ description: "The slug of the step." }),

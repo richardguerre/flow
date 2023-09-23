@@ -38,10 +38,12 @@ Pass the \`where\` argument to override these defaults.`,
       where: t.arg({ type: ItemWhereInput, required: false }),
       orderBy: t.arg({ type: ItemOrderByEnum, required: false }),
     },
-    // smartSubscription: true,
-    // subscribe: (subs) => {
-    //   subs.register("testSubscription");
-    // },
+    smartSubscription: true,
+    subscribe: (subs) => {
+      subs.register("itemsCreated");
+      subs.register("itemsUpdated");
+      subs.register("itemsDeleted");
+    },
     resolve: (query, _, args) => {
       return prisma.item.findMany({
         ...query,
