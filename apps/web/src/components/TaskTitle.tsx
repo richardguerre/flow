@@ -122,6 +122,12 @@ export const TaskTitleInput = (props: TaskTitleInputProps) => {
     }
   }, [editable, editorRef.current]);
 
+  useEffect(() => {
+    if (!editorRef.current) return;
+    if (props.initialValue === undefined) return;
+    if (props.initialValue === editorRef.current.getHTML()) return;
+    editorRef.current.commands.setContent(props.initialValue);
+  }, [editorRef.current, props.initialValue]);
   return (
     <EditorContent
       className="CardEditorInput w-full cursor-text p-0"

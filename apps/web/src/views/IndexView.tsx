@@ -4,6 +4,7 @@ import { Days } from "../components/Days";
 import { Lists } from "../components/Lists";
 import { dayjs } from "@flowdev/web/dayjs";
 import { useEffect, useRef } from "react";
+import { useFlowNotitications } from "../useFlowNotitications";
 
 const indexViewQuery = graphql`
   query IndexViewQuery(
@@ -61,6 +62,8 @@ type IndexViewProps = {
 
 const IndexViewContent = (props: IndexViewProps) => {
   const data = usePreloadedQuery(indexViewQuery, props.queryRef);
+  useFlowNotitications(); // establish the `notifications` subscription and will update the Relay store with any updates that it receives. Done once the query is loaded so we don't ask too many things at once.
+
   return (
     <div className="flex h-screen w-[calc(100%-60px)]">
       <Days data={data} />

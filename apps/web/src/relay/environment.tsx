@@ -20,7 +20,7 @@ const subscriptionsClient = createClient({
   headers: () => {
     const token = window.localStorage.getItem(LOCAL_STORAGE_USER_TOKEN_KEY);
     return {
-      ...(token ? { Authorization: `Bearer ${token.slice(-1)}` } : {}),
+      ...(token ? { Authorization: `Bearer ${token}` } : {}),
     };
   },
 });

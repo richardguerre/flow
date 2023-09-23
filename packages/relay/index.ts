@@ -1,5 +1,10 @@
-import { useEffect } from "react";
-import { OperationType, type MutationParameters, type MutationConfig } from "relay-runtime";
+import { useEffect, useState } from "react";
+import {
+  OperationType,
+  type MutationParameters,
+  type MutationConfig,
+  type GraphQLSubscriptionConfig,
+} from "relay-runtime";
 import {
   GraphQLTaggedNode,
   PreloadableConcreteRequest,
@@ -11,6 +16,7 @@ import {
   type UseMutationConfig,
   commitMutation as relayCommitMutation,
   Environment,
+  useSubscription as useRelaySubscription,
 } from "react-relay";
 
 export type FlowPayloadError = {
@@ -36,7 +42,6 @@ export {
   useRefetchableFragment,
   useLazyLoadQuery,
   ConnectionHandler,
-  useSubscription,
 } from "react-relay";
 export { type RecordSourceSelectorProxy, type SelectorStoreUpdater } from "relay-runtime";
 
@@ -125,4 +130,42 @@ export const commitMutationPromise = async <
       },
     });
   });
+};
+
+/**
+ * Wrapper around Relay's useSubscription hook so that it can be used like useQueryLoader (where the GraphQLTaggedNode is the first argument and the variables are the second argument)
+ */
+export const useSubscription = <TSubscription extends OperationType>(
+  subscription: GraphQLTaggedNode,
+  variables: Record<string, unknown> = {},
+  config?: Omit<GraphQLSubscriptionConfig<TSubscription>, "subscription" | "variables">
+) => {
+  useRelaySubscription({
+    ...config,
+    subscription,
+    variables,
+  });
+};
+
+/**
+ * Wrapper around useSubscription to be used with "smart" subscriptions from the server. Smart subscriptions are ones that first return initial data from the resolver and then update the data as the subscription updates.
+ *
+ * Named after the @pothos/plugin-smart-subscription package in the server. (thanks @ishmam-mahmud for thinking of the name)
+ */
+export const useSmartSubscription = <TSubscription extends OperationType>(
+  subscription: GraphQLTaggedNode,
+  variables: Record<string, unknown> = {},
+  config?: Omit<GraphQLSubscriptionConfig<TSubscription>, "subscription" | "variables">
+) => {
+  const [data, setData] = useState<TSubscription["response"] | null>(null);
+  useRelaySubscription({
+    ...config,
+    subscription,
+    variables,
+    onNext: (response) => {
+      setData(response);
+      config?.onNext?.(response);
+    },
+  });
+  return data;
 };
