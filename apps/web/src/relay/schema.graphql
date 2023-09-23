@@ -546,6 +546,15 @@ input NoteTagWhereInput {
   nameIsLike: String
 }
 
+type Notifications {
+  itemsCreated: [Item!]!
+  itemsDeleted: [Item!]!
+  itemsUpdated: [Item!]!
+  tasksCreated: [Task!]!
+  tasksDeleted: [Task!]!
+  tasksUpdated: [Task!]!
+}
+
 type PageInfo {
   endCursor: ID
   hasNextPage: Boolean!
@@ -659,7 +668,6 @@ type Query {
     """Filters to use when querying task tags."""
     where: TaskTagWhereInput
   ): QueryTaskTagsConnection!
-  testSubscription: String!
 
   """The timezone set for the Flow instance. `null` if no timezone is set."""
   timezoneSet: String
@@ -798,7 +806,7 @@ type Store implements Node {
 }
 
 type Subscription {
-  testSubscription: String!
+  notifications: Notifications!
 }
 
 """A task that the user or a plugin has created."""

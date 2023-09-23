@@ -20,7 +20,7 @@ const $prisma = new PrismaClient({
 // TODO: better types for the deletegate
 const withPubsub = (
   delegate: any,
-  pub: <T>(action: "Created" | "Updated" | "Upserted" | "Deleted", rows: T) => void
+  pub: <T>(action: "Created" | "Updated" | "Deleted", rows: T) => void
 ) => ({
   ...delegate,
   // @ts-ignore as the types are too complex but runtime works
@@ -56,7 +56,11 @@ const withPubsub = (
   // @ts-ignore as the types are too complex but runtime works
   async upsert(args) {
     const res = await delegate.upsert(args);
-    pub("Upserted", [res]);
+    if (dayjs(res.updatedAt).isSame(dayjs(res.createdAt))) {
+      pub("Created", [res]);
+    } else {
+      pub("Updated", [res]);
+    }
     return res;
   },
   // @ts-ignore as the types are too complex but runtime works
@@ -95,11 +99,9 @@ export const prisma: typeof $prisma = {
   ): Promise<R> {
     const tasksCreated: Task[] = [];
     const tasksUpdated: Task[] = [];
-    const tasksUpserted: Task[] = [];
     const tasksDeleted: Task[] = [];
     const itemsCreated: Item[] = [];
     const itemsUpdated: Item[] = [];
-    const itemsUpserted: Item[] = [];
     const itemsDeleted: Item[] = [];
 
     if (typeof fn !== "function") {
@@ -118,9 +120,6 @@ export const prisma: typeof $prisma = {
             case "Updated":
               tasksUpdated.push(...rows);
               break;
-            case "Upserted":
-              tasksUpserted.push(...rows);
-              break;
             case "Deleted":
               tasksDeleted.push(...rows);
               break;
@@ -135,9 +134,6 @@ export const prisma: typeof $prisma = {
             case "Updated":
               itemsUpdated.push(...rows);
               break;
-            case "Upserted":
-              itemsUpserted.push(...rows);
-              break;
             case "Deleted":
               itemsDeleted.push(...rows);
               break;
@@ -147,11 +143,9 @@ export const prisma: typeof $prisma = {
     }, options);
     if (tasksCreated.length) pubsub.publish("tasksCreated", tasksCreated);
     if (tasksUpdated.length) pubsub.publish("tasksUpdated", tasksUpdated);
-    if (tasksUpserted.length) pubsub.publish("tasksUpserted", tasksUpserted);
     if (tasksDeleted.length) pubsub.publish("tasksDeleted", tasksDeleted);
     if (itemsCreated.length) pubsub.publish("itemsCreated", itemsCreated);
     if (itemsUpdated.length) pubsub.publish("itemsUpdated", itemsUpdated);
-    if (itemsUpserted.length) pubsub.publish("itemsUpserted", itemsUpserted);
     if (itemsDeleted.length) pubsub.publish("itemsDeleted", itemsDeleted);
 
     return res;

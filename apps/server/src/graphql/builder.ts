@@ -10,6 +10,7 @@ import { dayjs } from "../utils/dayjs";
 import { GraphQLError } from "graphql";
 import ScopeAuthPlugin from "@pothos/plugin-scope-auth";
 import SmartSubscriptionsPlugin from "@pothos/plugin-smart-subscriptions";
+import SimpleObjectsPlugin from "@pothos/plugin-simple-objects";
 import { pubsub } from "../pubsub";
 
 export const encodeGlobalID = (typename: string, id: string | number | bigint) => {
@@ -41,7 +42,14 @@ export const builder = new SchemaBuilder<{
   };
 }>({
   // the order of plugins matters. see https://pothos-graphql.dev/docs/plugins/scope-auth#important
-  plugins: [RelayPlugin, ScopeAuthPlugin, PrismaPlugin, WithInputPlugin, SmartSubscriptionsPlugin],
+  plugins: [
+    RelayPlugin,
+    ScopeAuthPlugin,
+    PrismaPlugin,
+    WithInputPlugin,
+    SmartSubscriptionsPlugin,
+    SimpleObjectsPlugin,
+  ],
   relayOptions: {
     clientMutationId: "omit",
     cursorType: "ID",
