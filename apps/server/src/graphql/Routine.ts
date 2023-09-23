@@ -77,26 +77,16 @@ export const RoutineType = builder.prismaNode("Routine", {
   }),
 });
 
-export const RoutineStepType = builder.objectType(
-  builder.objectRef<{
-    pluginSlug: string;
-    stepSlug: string;
-    shouldSkip: boolean;
-  }>("RoutineStep"),
-  {
-    description: "A step in a routine. To know which plugin the step belongs to, see `pluginSlug`.",
-    fields: (t) => ({
-      pluginSlug: t.exposeString("pluginSlug", {
-        description: "The slug of the plugin that the step belongs to.",
-      }),
-      stepSlug: t.exposeString("stepSlug", { description: "The slug of the step." }),
-      shouldSkip: t.exposeBoolean("shouldSkip", {
-        description:
-          "Whether the step should be skipped if the previous routine was done (i.e. routine.done = true).",
-      }),
+export const RoutineStepType = builder.simpleObject("RoutineStep", {
+  fields: (t) => ({
+    pluginSlug: t.string({ description: "The slug of the plugin that the step belongs to." }),
+    stepSlug: t.string({ description: "The slug of the step." }),
+    shouldSkip: t.boolean({
+      description:
+        "Whether the step should be skipped if the previous routine was done (i.e. routine.done = true).",
     }),
-  }
-);
+  }),
+});
 
 const RoutineStepInput = builder.inputType(
   builder.inputRef<{
