@@ -18,8 +18,11 @@ export const Lists = (props: ListsProps) => {
   const data = useFragment(
     graphql`
       fragment Lists_data on Query
-      @argumentDefinitions(dateInFocus: { type: "Date!" }, dayIdInFocus: { type: "ID!" }) {
-        ...CalendarList_data @arguments(dateInFocus: $dateInFocus, dayIdInFocus: $dayIdInFocus)
+      @argumentDefinitions(
+        scheduledAt: { type: "PrismaDateTimeFilter!" }
+        dayIdInFocus: { type: "ID!" }
+      ) {
+        ...CalendarList_data @arguments(scheduledAt: $scheduledAt, dayIdInFocus: $dayIdInFocus)
         ...InboxList_data
         lists {
           id

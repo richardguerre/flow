@@ -9,7 +9,8 @@ generator client {
 }
 
 generator pothos {
-  provider = "prisma-pothos-types"
+  provider    = "prisma-pothos-types"
+  prismaUtils = true
 }
 
 /// A day a user has planned or already done.

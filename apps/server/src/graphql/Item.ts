@@ -1,10 +1,8 @@
 import { builder, u } from "./builder";
 import { prisma } from "../utils/prisma";
-import { startOfDayScheduledAt, endOfDayScheduledAt } from "../utils/getDays";
-import { InputFieldRef, InputShapeFromFields } from "@pothos/core";
 import { ColorEnum } from "./Color";
 import { ItemPluginDataInput } from "./ItemPluginData";
-import type { Prisma } from "@prisma/client";
+import { DateTimeFilter, IntFilter } from "./PrismaFilters";
 
 // -------------- Item types --------------
 
@@ -31,12 +29,12 @@ builder.queryField("items", (t) =>
   t.prismaConnection({
     type: "Item",
     cursor: "id",
-    description: `Get all external items. Useuful to get list of items for a specific day to show in a calendar.
+    description: `Get all external items. Useuful to get list of items for a specific day to show in a calendar, or get items with inboxPoints to show in the inbox.
 By default, only items where \`isRelevant\` is true.
 Pass the \`where\` argument to override these defaults.`,
     args: {
-      where: t.arg({ type: ItemWhereInput, required: false }),
-      orderBy: t.arg({ type: ItemOrderByEnum, required: false }),
+      where: t.arg({ type: ItemWhereInputType, required: false }),
+      orderBy: t.arg({ type: ItemOrderByType, required: false }),
     },
     smartSubscription: true,
     subscribe: (subs) => {
@@ -47,64 +45,28 @@ Pass the \`where\` argument to override these defaults.`,
     resolve: (query, _, args) => {
       return prisma.item.findMany({
         ...query,
-        where: createItemWhere(args.where ?? {}),
-        // orderBy: { inboxPoints: Math.random() > 0.5 ? "asc" : "desc" },
-        orderBy:
-          args.orderBy === "inboxPoints_ASC"
-            ? { inboxPoints: "asc" }
-            : args.orderBy === "inboxPoints_DESC"
-            ? { inboxPoints: "desc" }
-            : undefined,
+        where: args.where ?? undefined,
+        orderBy: args.orderBy ?? undefined,
       });
     },
   })
 );
 
-export const createItemWhere = (
-  where: InputShapeFromFields<{
-    isRelevant: InputFieldRef<boolean | null | undefined, "InputObject">;
-    scheduledFor: InputFieldRef<Date | null | undefined, "InputObject">;
-    minInboxPoints: InputFieldRef<number | null | undefined, "InputObject">;
-  }>
-): Prisma.ItemWhereInput => {
-  const scheduledFor = where.scheduledFor;
-  return {
-    ...(where.isRelevant ? { isRelevant: true } : {}),
-    ...(scheduledFor
-      ? {
-          scheduledAt: {
-            gte: startOfDayScheduledAt(scheduledFor),
-            lte: endOfDayScheduledAt(scheduledFor),
-          },
-        }
-      : { scheduledAt: null }),
-    ...(typeof where.minInboxPoints === "number"
-      ? { inboxPoints: { gte: where.minInboxPoints } }
-      : {}),
-  };
-};
-
-export const ItemWhereInput = builder.inputType("ItemWhereInput", {
-  fields: (t) => ({
-    isRelevant: t.boolean({
-      required: false,
-      description: `If set to true, it will return items where isRelevant is true.`,
-      defaultValue: true,
-    }),
-    scheduledFor: t.field({
-      type: "Date",
-      required: false,
-      description: `If set, it will return items where scheduledAt is the given date.`,
-    }),
-    minInboxPoints: t.int({
-      required: false,
-      description: `If set, it will return items where inboxPoints is greater than or equal to this value.`,
-    }),
-  }),
+export const ItemWhereInputType = builder.prismaWhere("Item", {
+  fields: {
+    isRelevant: "Boolean",
+    scheduledAt: DateTimeFilter,
+    inboxPoints: IntFilter,
+  },
 });
 
-export const ItemOrderByEnum = builder.enumType("ItemOrderBy", {
-  values: ["inboxPoints_ASC", "inboxPoints_DESC"],
+const ItemOrderByType = builder.prismaOrderBy("Item", {
+  fields: {
+    inboxPoints: true,
+    scheduledAt: true,
+    createdAt: true,
+    updatedAt: true,
+  },
 });
 
 // --------------- Item mutation types ---------------

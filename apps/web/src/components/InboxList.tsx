@@ -16,7 +16,10 @@ export const InboxList = (props: InboxListProps) => {
   const [data] = useRefetchableFragment(
     graphql`
       fragment InboxList_data on Query @refetchable(queryName: "InboxListRefetchQuery") {
-        items(where: { isRelevant: true, minInboxPoints: 1 }, orderBy: inboxPoints_DESC) {
+        items(
+          where: { isRelevant: true, inboxPoints: { gte: 1 } }
+          orderBy: { inboxPoints: Desc }
+        ) {
           __id
           edges {
             node {

@@ -3,6 +3,7 @@ import { Prisma } from "@prisma/client";
 import { prisma } from "../utils/prisma";
 import RelayPlugin from "@pothos/plugin-relay";
 import PrismaPlugin from "@pothos/plugin-prisma";
+import PrismaUtils from "@pothos/plugin-prisma-utils";
 import WithInputPlugin from "@pothos/plugin-with-input";
 import type PrismaTypes from "@pothos/plugin-prisma/generated";
 import { DateResolver, DateTimeResolver, PositiveIntResolver, JSONResolver } from "graphql-scalars";
@@ -46,6 +47,7 @@ export const builder = new SchemaBuilder<{
     RelayPlugin,
     ScopeAuthPlugin,
     PrismaPlugin,
+    PrismaUtils,
     WithInputPlugin,
     SmartSubscriptionsPlugin,
     SimpleObjectsPlugin,

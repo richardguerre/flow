@@ -102,9 +102,17 @@ type Item implements Node {
   title: String!
 }
 
-enum ItemOrderBy {
-  inboxPoints_ASC
-  inboxPoints_DESC
+input ItemFilter {
+  inboxPoints: PrismaIntFilter
+  isRelevant: Boolean
+  scheduledAt: PrismaDateTimeFilter
+}
+
+input ItemOrderBy {
+  createdAt: OrderBy
+  inboxPoints: OrderBy
+  scheduledAt: OrderBy
+  updatedAt: OrderBy
 }
 
 """The data a plugin links to an item."""
@@ -126,19 +134,6 @@ input ItemPluginDataInput {
   pluginSlug: String!
 }
 
-input ItemWhereInput {
-  """If set to true, it will return items where isRelevant is true."""
-  isRelevant: Boolean = true
-
-  """
-  If set, it will return items where inboxPoints is greater than or equal to this value.
-  """
-  minInboxPoints: Int
-
-  """If set, it will return items where scheduledAt is the given date."""
-  scheduledFor: Date
-}
-
 """
 The `JSON` scalar type represents JSON values as specified by [ECMA-404](http://www.ecma-international.org/publications/files/ECMA-ST/ECMA-404.pdf).
 """
@@ -153,7 +148,7 @@ type List implements Node {
   id: ID!
 
   """The items linked to the list"""
-  items(after: ID, before: ID, first: Int, last: Int, where: ItemWhereInput): ListItemsConnection!
+  items(after: ID, before: ID, first: Int, last: Int, where: ItemFilter): ListItemsConnection!
 
   """The name of the list"""
   name: String!
@@ -555,6 +550,11 @@ type Notifications {
   tasksUpdated: [Task!]!
 }
 
+enum OrderBy {
+  Asc
+  Desc
+}
+
 type PageInfo {
   endCursor: ID
   hasNextPage: Boolean!
@@ -577,6 +577,30 @@ type PluginOperation implements Node {
 
 """Integers that will have a value greater than 0."""
 scalar PositiveInt
+
+"""Filter input of DateTime"""
+input PrismaDateTimeFilter {
+  equals: DateTime
+  gt: DateTime
+  gte: DateTime
+  in: [DateTime!]
+  lt: DateTime
+  lte: DateTime
+  not: PrismaDateTimeFilter
+  notIn: [DateTime!]
+}
+
+"""Filter input of Int"""
+input PrismaIntFilter {
+  equals: Int
+  gt: Int
+  gte: Int
+  in: [Int!]
+  lt: Int
+  lte: Int
+  not: PrismaIntFilter
+  notIn: [Int!]
+}
 
 type Query {
   """
@@ -610,11 +634,11 @@ type Query {
   isSessionValid: Boolean!
 
   """
-  Get all external items. Useuful to get list of items for a specific day to show in a calendar.
+  Get all external items. Useuful to get list of items for a specific day to show in a calendar, or get items with inboxPoints to show in the inbox.
   By default, only items where `isRelevant` is true.
   Pass the `where` argument to override these defaults.
   """
-  items(after: ID, before: ID, first: Int, last: Int, orderBy: ItemOrderBy, where: ItemWhereInput): QueryItemsConnection!
+  items(after: ID, before: ID, first: Int, last: Int, orderBy: ItemOrderBy, where: ItemFilter): QueryItemsConnection!
 
   """Get all lists."""
   lists(
@@ -807,11 +831,11 @@ type Store implements Node {
 
 type Subscription {
   """
-  Get all external items. Useuful to get list of items for a specific day to show in a calendar.
+  Get all external items. Useuful to get list of items for a specific day to show in a calendar, or get items with inboxPoints to show in the inbox.
   By default, only items where `isRelevant` is true.
   Pass the `where` argument to override these defaults.
   """
-  items(after: ID, before: ID, first: Int, last: Int, orderBy: ItemOrderBy, where: ItemWhereInput): QueryItemsConnection!
+  items(after: ID, before: ID, first: Int, last: Int, orderBy: ItemOrderBy, where: ItemFilter): QueryItemsConnection!
   notifications: Notifications!
 }
 

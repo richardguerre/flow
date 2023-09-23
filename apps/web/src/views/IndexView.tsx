@@ -6,31 +6,43 @@ import { dayjs } from "@flowdev/web/dayjs";
 import { useEffect, useRef } from "react";
 
 const indexViewQuery = graphql`
-  query IndexViewQuery($daysAfter: ID, $firstDays: Int, $dateInFocus: Date!, $dayIdInFocus: ID!) {
+  query IndexViewQuery(
+    $daysAfter: ID
+    $firstDays: Int
+    $scheduledAt: PrismaDateTimeFilter!
+    $dayIdInFocus: ID!
+  ) {
     ...Days_data @arguments(after: $daysAfter, first: $firstDays)
-    ...Lists_data @arguments(dateInFocus: $dateInFocus, dayIdInFocus: $dayIdInFocus)
+    ...Lists_data @arguments(scheduledAt: $scheduledAt, dayIdInFocus: $dayIdInFocus)
   }
 `;
 
 export default () => {
-  const today = useRef(dayjs());
+  // today 4am
+  const today = useRef(dayjs().startOf("day").add(4, "hours"));
   const { queryRef, loadQuery } = useQueryLoader<IndexViewQuery>(indexViewQuery, {
     daysAfter: today.current.subtract(7, "day").format("YYYY-MM-DD"),
     firstDays: 17, // 7 days before and 10 days after today
-    dateInFocus: today.current.format("YYYY-MM-DD"),
+    scheduledAt: {
+      gte: today.current.toISOString(),
+      lt: today.current.add(1, "day").toISOString(),
+    },
     dayIdInFocus: `Day_${today.current.format("YYYY-MM-DD")}`,
   });
 
   useEffect(() => {
     const interval = setInterval(() => {
-      const threshold = today.current.startOf("day").add(1, "day").add(4, "hours");
+      const threshold = today.current.startOf("day").add(1, "day");
       if (threshold.isAfter(dayjs())) return;
-      today.current = dayjs();
+      today.current = dayjs().startOf("day");
       loadQuery(
         {
           daysAfter: today.current.subtract(7, "day").format("YYYY-MM-DD"),
           firstDays: 17, // 7 days before and 10 days after today
-          dateInFocus: today.current.format("YYYY-MM-DD"),
+          scheduledAt: {
+            gte: today.current.toISOString(),
+            lt: today.current.add(1, "day").toISOString(),
+          },
           dayIdInFocus: `Day_${today.current.format("YYYY-MM-DD")}`,
         },
         { fetchPolicy: "store-and-network" }
