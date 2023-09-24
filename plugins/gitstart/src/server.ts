@@ -96,6 +96,7 @@ export default definePlugin((opts) => {
     onStoreItemUpsert: async (itemKey) => {
       if (itemKey === TOKEN_STORE_KEY) {
         await opts.pgBoss.send(SYNC_ITEMS, {});
+        await opts.pgBoss.schedule(SYNC_ITEMS, "*/5 * * * *"); // every 5 minutes
       }
     },
     onCreateTask: async ({ task, actionData: _actionData }) => {
@@ -275,6 +276,12 @@ export default definePlugin((opts) => {
       sync: async () => {
         await opts.pgBoss.send(SYNC_ITEMS, {});
         return { data: "Job sent to sync the GitStart items." };
+      },
+      scheduleSync: async () => {
+        await opts.pgBoss
+          .schedule(SYNC_ITEMS, "*/5 * * * *") // every 5 minutes
+          .catch((err) => new opts.GraphQLError(err));
+        return { data: "Schedule successfully set." };
       },
     },
     handlePgBossWork: (work) => [
