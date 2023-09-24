@@ -5,7 +5,6 @@ import { builder, u } from "./builder";
 import { DayType } from "./Day";
 import { dayjs } from "@flowdev/server/src/utils/dayjs";
 import { getPlugins } from "@flowdev/server/src/utils/getPlugins";
-import { ServerPluginReturn } from "@flowdev/plugin/server";
 
 // -------------- Task types --------------
 
