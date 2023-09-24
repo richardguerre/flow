@@ -9,7 +9,7 @@ export const GITHUB_NOTIFICATIONS_LIST_SLUG = "github-notifications";
 export default definePlugin((opts) => {
   const SYNC_NOTIFICATIONS = `${opts.pluginSlug}-sync-notifications`;
   const LAST_SYNCED_NOTIFICATIONS_AT = `last-synced-notifications-at`;
-  const getOctokitClient = async () => {
+  const getToken = async () => {
     const tokenItem = await opts.store.getPluginItem<string>(TOKEN_STORE_KEY);
     if (!tokenItem) {
       throw new opts.GraphQLError("Missing token to access GitHub API", {
@@ -19,7 +19,11 @@ export default definePlugin((opts) => {
         },
       });
     }
-    return new Octokit({ auth: tokenItem.value });
+    return tokenItem.value;
+  };
+  const getOctokitClient = async () => {
+    const token = await getToken();
+    return new Octokit({ auth: token });
   };
 
   return {
