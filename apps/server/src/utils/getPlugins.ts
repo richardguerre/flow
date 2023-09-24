@@ -127,7 +127,8 @@ export async function installServerPlugin(opts: Options) {
   let exported: DefineServerPluginReturn | undefined;
   try {
     exported = require(pathToTemp) as DefineServerPluginReturn | undefined;
-  } catch {
+  } catch (e) {
+    console.log(e);
     throw new GraphQLError(
       `Couldn't install the server part of the plugin. Contact the plugin author to fix this.`
     );

@@ -5,7 +5,6 @@ import { builder, u } from "./builder";
 import { DayType } from "./Day";
 import { dayjs } from "@flowdev/server/src/utils/dayjs";
 import { getPlugins } from "@flowdev/server/src/utils/getPlugins";
-import { ServerPluginReturn } from "@flowdev/plugin/server";
 
 // -------------- Task types --------------
 
@@ -134,7 +133,7 @@ builder.mutationField("createTask", (t) =>
         });
       }
       for (const pluginSlug in plugins) {
-        const plugin = plugins[pluginSlug as keyof typeof plugins] as ServerPluginReturn;
+        const plugin = plugins[pluginSlug]!;
         const actionData = args.input.actionDatas?.find(
           (actionData) => actionData.pluginSlug === pluginSlug
         )?.data;
@@ -298,7 +297,7 @@ Any other scenario is not possible by nature of the app, where tasks:
           include: { day: { select: { date: true, tasksOrder: true } }, pluginDatas: true },
         });
         for (const pluginSlug in plugins) {
-          const plugin = plugins[pluginSlug as keyof typeof plugins] as ServerPluginReturn;
+          const plugin = plugins[pluginSlug]!;
           // errors from plugins should interrupt the transaction and be thrown as GraphQL errors
           await plugin.onUpdateTaskStatus?.({
             actionData: args.input.actionData,
@@ -493,12 +492,9 @@ When the task is:
 
         if (newStatus) {
           for (const pluginSlug in plugins) {
-            const plugin = plugins[pluginSlug as keyof typeof plugins] as ServerPluginReturn;
+            const plugin = plugins[pluginSlug]!;
             // errors from plugins should interrupt the transaction and be thrown as GraphQL errors
-            await plugin.onUpdateTaskStatus?.({
-              newStatus,
-              task,
-            });
+            await plugin.onUpdateTaskStatus?.({ newStatus, task });
           }
         }
 

@@ -3,6 +3,8 @@ import { prisma } from "../utils/prisma";
 import { ColorEnum } from "./Color";
 import { ItemPluginDataInput } from "./ItemPluginData";
 import { DateTimeFilter, IntFilter } from "./PrismaFilters";
+import { Item, ItemPluginData } from "@prisma/client";
+import { getPlugins } from "../utils/getPlugins";
 
 // -------------- Item types --------------
 
@@ -173,6 +175,13 @@ builder.mutationField("updateItem", (t) =>
   })
 );
 
+export type PluginOnUpdateItemStatus = (input: {
+  /** Whether the item is being marked as done or not done. */
+  settingToDone: boolean;
+  /** The item. */
+  item: Item & { pluginDatas: ItemPluginData[] };
+}) => Promise<void>;
+
 builder.mutationField("updateItemStatus", (t) =>
   t.prismaFieldWithInput({
     type: "Item",
@@ -181,8 +190,24 @@ builder.mutationField("updateItemStatus", (t) =>
       id: t.input.globalID({ required: true, description: "The ID of the item." }),
       done: t.input.boolean({ required: true, description: "Whether the item is done or not." }),
     },
-    resolve: (query, _, args) => {
-      return prisma.item.update({
+    resolve: async (query, _, args) => {
+      const plugins = await getPlugins();
+      const item = await prisma.item.findUnique({
+        where: { id: parseInt(args.input.id.id) },
+        include: { pluginDatas: true },
+      });
+      if (!item) throw new Error(`Item with id ${args.input.id} not found.`);
+      for (const pluginSlug in plugins) {
+        const plugin = plugins[pluginSlug]!;
+        if (plugin.onUpdateItemStatus) {
+          // errors from plugins should interrupt the update
+          await plugin.onUpdateItemStatus({
+            settingToDone: args.input.done,
+            item,
+          });
+        }
+      }
+      return await prisma.item.update({
         ...query,
         where: { id: parseInt(args.input.id.id) },
         data: { isRelevant: !args.input.done },

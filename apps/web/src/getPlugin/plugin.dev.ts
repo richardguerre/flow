@@ -10,6 +10,7 @@
 // (1) you can uncomment the following lines during development
 // export const devImportMap = {
 //   essentials: import("../../../../plugins/essentials/src/web"),
+//   github: import("../../../../plugins/github/src/web"),
 //   gitstart: import("../../../../plugins/gitstart/src/web"),
 //   "google-calendar": import("../../../../plugins/google-calendar/src/web"),
 // } as const;

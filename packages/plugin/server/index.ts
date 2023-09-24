@@ -5,6 +5,7 @@ import type {
   PluginOnCreateTask,
   PluginOnUpdateTaskStatus,
 } from "@flowdev/server/src/graphql/Task";
+import { PluginOnUpdateItemStatus } from "@flowdev/server/src/graphql/Item";
 import type { Request, Response } from "express";
 
 export type ServerPluginOptions = _ServerPluginOptions;
@@ -20,6 +21,8 @@ export type ServerPlugin = (opts: ServerPluginOptions) => {
   onCreateTask?: PluginOnCreateTask;
   /** Hook called before a task's status is updated. */
   onUpdateTaskStatus?: PluginOnUpdateTaskStatus;
+  /** Hook called before an item's status is updated. */
+  onUpdateItemStatus?: PluginOnUpdateItemStatus;
   /**
    * Hook called when a request is made at `/api/$pluginSlug`.
    *
