@@ -137,10 +137,23 @@ export default definePlugin((opts) => {
         await opts.store.setItem(LAST_SYNCED_NOTIFICATIONS_AT, new Date().toISOString());
       }),
     ],
+    onCreateTask: async ({ task }) => {
+      const itemPluginData = task.item?.pluginDatas?.find(
+        (pd) => pd.pluginSlug === opts.pluginSlug
+      );
+      if (!itemPluginData?.originalId) return;
+      return {
+        pluginData: {
+          originalId: itemPluginData.originalId,
+          min: itemPluginData.min as NotificationItemPluginDataMin,
+          full: itemPluginData.full as NotificationItemPluginDataFull,
+        },
+      };
+    },
   };
 });
 
-type NotificationItemPluginDataMin = {
+export type NotificationItemPluginDataMin = {
   /** The type of the notification. */
   type: string;
   /** The reason for the notification. */
@@ -152,4 +165,4 @@ type NotificationItemPluginDataMin = {
   /** The date the notification was updated. */
   updatedAt: string;
 };
-type NotificationItemPluginDataFull = components["schemas"]["thread"];
+export type NotificationItemPluginDataFull = components["schemas"]["thread"];

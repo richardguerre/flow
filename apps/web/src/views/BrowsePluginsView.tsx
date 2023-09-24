@@ -42,6 +42,22 @@ const PLUGINS: Plugin[] = [
     version: "0.1.0",
     authors: [{ name: "Flow", avatarUrl: "FlowIcon.svg" }],
   },
+  {
+    iconUrl: "https://cdn-icons-png.flaticon.com/512/25/25231.png",
+    name: "GitHub Notifications",
+    description: "Official GitHub plugin for Flow. It currently only gets your requested reviews.",
+    installUrl: "https://cdn.jsdelivr.net/npm/@flowdev/github@0.1.0/out",
+    version: "0.1.0",
+    authors: [{ name: "Flow", avatarUrl: "FlowIcon.svg" }],
+  },
+  {
+    iconUrl: "https://gitstart.com/_astro/logo_black_small.e7d67670.svg",
+    name: "GitStart",
+    description: "Official GitStart plugin for Flow.",
+    installUrl: "https://cdn.jsdelivr.net/npm/@flowdev/gitstart@0.1.0/out",
+    version: "0.1.0",
+    authors: [{ name: "Flow", avatarUrl: "FlowIcon.svg" }],
+  },
 ];
 
 export default () => {
