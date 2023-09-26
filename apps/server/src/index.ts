@@ -37,6 +37,7 @@ const graphqlAPI = createYoga({
       sessionToken,
       // had to do this as having the isSessionValid function in builder.ts caused an error (maybe circular dependency error)
       isSessionValid: () => isSessionTokenValid(sessionToken),
+      subscriptions: {},
     };
   },
   graphiql: {

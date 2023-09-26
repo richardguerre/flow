@@ -36,6 +36,7 @@ export const builder = new SchemaBuilder<{
     userAgent?: string;
     sessionToken?: string;
     isSessionValid: () => Promise<boolean>;
+    subscriptions: Record<PubSubKeys, AsyncIterableIterator<any>>;
   };
   AuthScopes: {
     public: true;
@@ -93,13 +94,18 @@ export const builder = new SchemaBuilder<{
     },
   },
   smartSubscriptions: {
-    subscribe: async ($name, _context, callback) => {
+    subscribe: async ($name, context, callback) => {
       const name = $name as PubSubKeys;
-      for await (const data of pubsub.subscribe(name)) {
+      if (!context.subscriptions[name]) context.subscriptions[name] = pubsub.subscribe(name);
+      for await (const data of context.subscriptions[name]) {
         callback(undefined, data);
       }
     },
-    unsubscribe: (_name, _context) => {}, // not sure if this is needed
+    unsubscribe: ($name, context) => {
+      const name = $name as PubSubKeys;
+      context.subscriptions[name]?.return?.();
+      delete context.subscriptions[name];
+    },
   },
 });
 
