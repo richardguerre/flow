@@ -146,7 +146,7 @@ export const useSubscription = <TSubscription extends OperationType>(
       subscription,
       variables,
     };
-  }, [subscription, variables, $config]);
+  }, [JSON.stringify({ variables, $config })]);
   useRelaySubscription(config);
 };
 
@@ -158,17 +158,20 @@ export const useSubscription = <TSubscription extends OperationType>(
 export const useSmartSubscription = <TSubscription extends OperationType>(
   subscription: GraphQLTaggedNode,
   variables: TSubscription["variables"] = {},
-  config?: Omit<GraphQLSubscriptionConfig<TSubscription>, "subscription" | "variables">
+  $config?: Omit<GraphQLSubscriptionConfig<TSubscription>, "subscription" | "variables">
 ) => {
   const [data, setData] = useState<TSubscription["response"] | null>(null);
-  useRelaySubscription({
-    ...config,
-    subscription,
-    variables,
-    onNext: (response) => {
-      setData(response);
-      config?.onNext?.(response);
-    },
-  });
+  const config = useMemo(() => {
+    return {
+      ...$config,
+      subscription,
+      variables,
+      onNext: (response: TSubscription["response"]) => {
+        setData(response);
+        $config?.onNext?.(response);
+      },
+    };
+  }, [JSON.stringify({ variables, $config })]);
+  useRelaySubscription(config);
   return [data] as const;
 };
