@@ -151,7 +151,7 @@ export const prisma: typeof $prisma = {
     return res;
   },
   $executeRaw: $prisma.$executeRaw,
-  $executeRawUnsafe: $prisma.$executeRawUnsafe,
+  $executeRawUnsafe: (...args) => $prisma.$executeRawUnsafe(...args),
   $on: $prisma.$on,
   $use: $prisma.$use,
   $connect: $prisma.$connect,
