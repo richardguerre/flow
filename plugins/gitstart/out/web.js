@@ -1,4 +1,4 @@
-const I = (c) => ({ plugin: c }), k = "gitstart-session-token", D = I((c) => {
+const k = (c) => ({ plugin: c }), I = "gitstart-session-token", D = k((c) => {
   const t = c.components, e = c.React, p = /* @__PURE__ */ e.createElement("svg", { width: "24", height: "24", viewBox: "0 0 82 81", fill: "none", xmlns: "http://www.w3.org/2000/svg" }, /* @__PURE__ */ e.createElement("ellipse", { cx: "41", cy: "40.5", rx: "41", ry: "40.5", fill: "#FCEED4" }), /* @__PURE__ */ e.createElement(
     "path",
     {
@@ -43,18 +43,19 @@ const I = (c) => ({ plugin: c }), k = "gitstart-session-token", D = I((c) => {
   return {
     name: "GitStart",
     settings: {
-      [k]: {
+      [I]: {
         type: "textfield",
         label: "Token",
-        helper: "You can find this in your localStorage when logged in to GitStart under the key `user_token`.",
+        description: "You can find this in your localStorage when logged in to GitStart under the key `user_token`.",
+        placeholder: "Paste your GitStart token here",
         isSecret: !0
         // once set, it cannot be seen again, but each time the setting is saved again it will be overwritten
       }
     },
     onCreateTask: async ({ task: l }) => {
-      var r;
-      return (r = l == null ? void 0 : l.item) != null && r.pluginDatas.some((a) => a.pluginSlug === "gitstart") ? {
-        dialogContent: ({ NextButton: a, BackButton: n, ...i }) => {
+      var n;
+      return (n = l == null ? void 0 : l.item) != null && n.pluginDatas.some((a) => a.pluginSlug === "gitstart") ? {
+        dialogContent: ({ NextButton: a, BackButton: r, ...i }) => {
           const { register: u, handleSubmit: C, formState: m, watch: y, control: x } = c.reactHookForm.useForm(), g = y(), f = (s) => {
             i.onNext({
               taskOverrides: { title: s.title },
@@ -141,7 +142,7 @@ const I = (c) => ({ plugin: c }), k = "gitstart-session-token", D = I((c) => {
               /* @__PURE__ */ e.createElement(t.Badge, { className: o.className }, o.label)
             ))))
           )), m.errors.title && /* @__PURE__ */ e.createElement("div", { className: "text-negative-600 text-sm" }, m.errors.title.message), m.errors.type && /* @__PURE__ */ e.createElement("div", { className: "text-negative-600 text-sm" }, m.errors.type.message), m.errors.status && /* @__PURE__ */ e.createElement("div", { className: "text-negative-600 text-sm" }, m.errors.status.message), /* @__PURE__ */ e.createElement("div", { className: "flex gap-2 self-end" }, /* @__PURE__ */ e.createElement(
-            n,
+            r,
             {
               type: "button",
               onClick: () => i.onBack({
@@ -154,13 +155,13 @@ const I = (c) => ({ plugin: c }), k = "gitstart-session-token", D = I((c) => {
       } : null;
     },
     renderTaskCardDetails: async ({ task: l }) => {
-      const r = l.pluginDatas.find((u) => u.pluginSlug === "gitstart");
-      if (!r)
+      const n = l.pluginDatas.find((u) => u.pluginSlug === "gitstart");
+      if (!n)
         return null;
-      const a = r.min, n = b[a.type], i = d[a.status];
+      const a = n.min, r = b[a.type], i = d[a.status];
       return [
         {
-          component: () => /* @__PURE__ */ e.createElement(t.Badge, { className: n.className }, n.label)
+          component: () => /* @__PURE__ */ e.createElement(t.Badge, { className: r.className }, r.label)
         },
         {
           component: () => /* @__PURE__ */ e.createElement(t.Badge, { className: i.className }, i.label)
@@ -168,10 +169,10 @@ const I = (c) => ({ plugin: c }), k = "gitstart-session-token", D = I((c) => {
       ];
     },
     renderTaskCardActions: async ({ task: l }) => {
-      const r = l.pluginDatas.find((n) => n.pluginSlug === "gitstart");
-      if (!r)
+      const n = l.pluginDatas.find((r) => r.pluginSlug === "gitstart");
+      if (!n)
         return null;
-      const a = r.min;
+      const a = n.min;
       return [
         {
           component: () => a.githubPrUrl ? /* @__PURE__ */ e.createElement("a", { href: a.githubPrUrl, target: "_blank", rel: "noreferrer" }, /* @__PURE__ */ e.createElement(t.CardActionButton, null, E)) : null
@@ -182,38 +183,38 @@ const I = (c) => ({ plugin: c }), k = "gitstart-session-token", D = I((c) => {
       ];
     },
     renderItemCardDetails: async ({ item: l }) => {
-      const r = l.pluginDatas.find((n) => n.pluginSlug === "gitstart");
-      if (!r)
+      const n = l.pluginDatas.find((r) => r.pluginSlug === "gitstart");
+      if (!n)
         return null;
-      const a = r.min;
+      const a = n.min;
       if (a.type === "pull_request") {
-        const n = w[a.status];
+        const r = w[a.status];
         return [
           {
             component: () => /* @__PURE__ */ e.createElement(t.Badge, { className: "bg-green-100 text-green-700" }, "PR")
           },
           {
-            component: () => /* @__PURE__ */ e.createElement(t.Badge, { className: n.className }, n.label)
+            component: () => /* @__PURE__ */ e.createElement(t.Badge, { className: r.className }, r.label)
           }
         ];
       } else if (a.type === "ticket") {
-        const n = v[a.status];
+        const r = v[a.status];
         return [
           {
             component: () => /* @__PURE__ */ e.createElement(t.Badge, { className: "bg-gray-200 text-gray-600" }, "Ticket")
           },
           {
-            component: () => /* @__PURE__ */ e.createElement(t.Badge, { className: n.className }, n.label)
+            component: () => /* @__PURE__ */ e.createElement(t.Badge, { className: r.className }, r.label)
           }
         ];
       }
       return null;
     },
     renderItemCardActions: async ({ item: l }) => {
-      const r = l.pluginDatas.find((n) => n.pluginSlug === "gitstart");
-      if (!r)
+      const n = l.pluginDatas.find((r) => r.pluginSlug === "gitstart");
+      if (!n)
         return null;
-      const a = r.min;
+      const a = n.min;
       return [
         {
           component: () => a.type === "pull_request" && a.url ? /* @__PURE__ */ e.createElement("a", { href: a.url, target: "_blank", rel: "noreferrer" }, /* @__PURE__ */ e.createElement(t.CardActionButton, null, E)) : null
