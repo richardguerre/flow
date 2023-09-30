@@ -80,7 +80,7 @@ const ItemCardActions = (props: ItemCardActionsProps) => {
     });
   };
 
-  const [_dismissFromInbox] = useMutation<ItemCardDismissFromInboxMutation>(graphql`
+  const [$dismissFromInbox] = useMutation<ItemCardDismissFromInboxMutation>(graphql`
     mutation ItemCardDismissFromInboxMutation($input: MutationDismissItemFromInboxInput!) {
       dismissItemFromInbox(input: $input) {
         id
@@ -91,7 +91,7 @@ const ItemCardActions = (props: ItemCardActionsProps) => {
   `);
 
   const dismissFromInbox = () => {
-    _dismissFromInbox({
+    $dismissFromInbox({
       variables: { input: { id: item.id } },
       optimisticUpdater: (store) => {
         const itemRecord = store.get(item.id);

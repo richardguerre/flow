@@ -76,6 +76,25 @@ export default definePlugin((opts) => {
     return tokenItem.value;
   };
 
+  const isTokenValid = async () => {
+    const token = await getTokenFromStore();
+    try {
+      await gqlRequest<{ viewer: { id: string } }>(
+        token,
+        /* GraphQL */ `
+          query FlowOperationIsTokenValid {
+            viewer {
+              id
+            }
+          }
+        `
+      );
+      return true;
+    } catch (err) {
+      return false;
+    }
+  };
+
   return {
     onInstall: async () => {
       await opts.prisma.list.upsert({
@@ -95,6 +114,8 @@ export default definePlugin((opts) => {
     },
     onStoreItemUpsert: async (itemKey) => {
       if (itemKey === TOKEN_STORE_KEY) {
+        const hasValidToken = await isTokenValid();
+        if (!hasValidToken) return;
         await opts.pgBoss.send(SYNC_ITEMS, {});
         await opts.pgBoss.schedule(SYNC_ITEMS, "*/5 * * * *"); // every 5 minutes
       }

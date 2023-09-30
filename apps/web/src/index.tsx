@@ -23,7 +23,7 @@ const GeneralSettingsView = React.lazy(() => import("./views/GeneralSettingsView
 const TaskSettingsView = React.lazy(() => import("./views/TaskSettingsView"));
 const RoutineSettingsView = React.lazy(() => import("./views/RoutineSettingsView"));
 const BrowsePluginsView = React.lazy(() => import("./views/BrowsePluginsView"));
-// const PluginSettingsView = React.lazy(() => import("./views/PluginSettingsView"));
+const PluginSettingsView = React.lazy(() => import("./views/PluginSettingsView"));
 const RoutineView = React.lazy(() => import("./views/RoutineView"));
 const LoginView = React.lazy(() => import("./views/LoginView"));
 const TestView = React.lazy(() => import("./views/TestView"));
@@ -49,9 +49,11 @@ const router = createBrowserRouter([
       <ViewErrorBoundary>
         <div className="flex">
           <Navbar />
-          <SuspenseLoadingView>
-            <Outlet />
-          </SuspenseLoadingView>
+          <ViewErrorBoundary>
+            <SuspenseLoadingView>
+              <Outlet />
+            </SuspenseLoadingView>
+          </ViewErrorBoundary>
         </div>
       </ViewErrorBoundary>
     ),
@@ -67,7 +69,7 @@ const router = createBrowserRouter([
           { path: "tasks", element: <TaskSettingsView /> },
           { path: "routines", element: <RoutineSettingsView /> },
           { path: "browse-plugins", element: <BrowsePluginsView /> },
-          // { path: "plugin/:pluginId", element: <PluginSettingsView /> },
+          { path: "plugin/:pluginSlug", element: <PluginSettingsView /> },
           { path: "*", element: <NotFoundView /> },
         ],
       },

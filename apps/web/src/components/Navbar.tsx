@@ -8,7 +8,7 @@ import { getClosestRoutineRoutePathAndName } from "@flowdev/web/views/RoutineVie
 import { useActiveLink } from "../useActiveLink";
 
 export const Navbar = () => {
-  // routinePath is loaded non-blocking so that the navbar can render immediately
+  // routine is loaded non-blocking so that the navbar can render immediately
   const [routine] = useAsyncLoader(async () => await getClosestRoutineRoutePathAndName());
 
   return (

@@ -63,7 +63,8 @@ export default defineConfig({
   },
   plugins: [
     react({
-      jsxImportSource: "@flowdev/react", // wrapper around react jsx runtime that extracts classnames for unocss
+      // TODO: clean up and remove @flowdev/react everywhere and rely on unocss CLI to generate CSS upfront. This doesn't work (check screenshots of Sep 30 2023 for error).
+      // jsxImportSource: "@flowdev/react", // wrapper around react jsx runtime that extracts classnames for unocss
     }),
     // @ts-ignore as tsconfigPaths types are not updated to those of Vite 4.0, but the plugin works fine
     tsconfigPaths({

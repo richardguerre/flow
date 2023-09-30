@@ -5,7 +5,7 @@ export type TextareaProps = React.TextareaHTMLAttributes<HTMLTextAreaElement> & 
   hasError?: boolean;
 };
 
-const Textarea = React.forwardRef<HTMLTextAreaElement, TextareaProps>((props, ref) => {
+export const Textarea = React.forwardRef<HTMLTextAreaElement, TextareaProps>((props, ref) => {
   return (
     <textarea
       {...props}
@@ -19,6 +19,3 @@ const Textarea = React.forwardRef<HTMLTextAreaElement, TextareaProps>((props, re
     />
   );
 });
-Textarea.displayName = "Textarea";
-
-export { Textarea };

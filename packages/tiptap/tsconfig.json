@@ -1,0 +1,4 @@
+{
+  "extends": "../../apps/web/tsconfig.json",
+  "include": ["**/*.tsx", "suspend.ts"]
+}

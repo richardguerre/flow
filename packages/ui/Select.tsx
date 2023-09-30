@@ -27,7 +27,7 @@ export const SelectTrigger = forwardRef<
   <Trigger
     ref={ref}
     className={tw(
-      "ring-primary-200 placeholder:text-foreground-700 text-foreground-900 hover:ring-primary-300 disabled:bg-background-300/50 focus:ring-primary-500 disabled:ring-none flex h-9 w-full items-center justify-between rounded-md border bg-transparent px-3 py-2 text-sm shadow-sm ring focus:outline-none focus:ring-1 disabled:cursor-not-allowed disabled:opacity-50",
+      "bg-background-50 ring-primary-200 placeholder:text-foreground-700 text-foreground-900 hover:ring-primary-300 disabled:bg-background-300/50 focus:ring-primary-500 disabled:ring-none flex h-9 w-full items-center justify-between rounded-md border px-3 py-2 text-sm shadow-sm ring focus:outline-none focus:ring-1 disabled:cursor-not-allowed disabled:opacity-50",
       className
     )}
     {...props}
@@ -80,12 +80,12 @@ export const SelectItem = forwardRef<
   ComponentPropsWithoutRef<typeof Item>
 >(({ className, children, ...props }, ref) => (
   <Item
+    {...props}
     ref={ref}
     className={tw(
       "focus:bg-primary-100/70 focus:text-primary-500 relative flex w-full cursor-default select-none items-center rounded-sm py-1.5 pl-2 pr-8 text-sm outline-none data-[disabled]:pointer-events-none data-[disabled]:opacity-50",
       className
     )}
-    {...props}
   >
     <span className="absolute right-2 flex h-3.5 w-3.5 items-center justify-center">
       <ItemIndicator>

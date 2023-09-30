@@ -58,7 +58,7 @@ export const TaskCard = (props: TaskCardProps) => {
     props.task
   );
 
-  const [_deleteTask] = useMutation<TaskCardDeleteTaskMutation>(graphql`
+  const [$deleteTask] = useMutation<TaskCardDeleteTaskMutation>(graphql`
     mutation TaskCardDeleteTaskMutation($id: ID!) {
       deleteTask(id: $id) {
         id
@@ -68,7 +68,7 @@ export const TaskCard = (props: TaskCardProps) => {
   `);
 
   const deleteTask = () => {
-    _deleteTask({
+    $deleteTask({
       variables: { id: task.id },
       optimisticResponse: { id: task.id, date: task.date },
       optimisticUpdater: deleteTaskUpdater,
@@ -118,7 +118,7 @@ const TaskCardActions = (props: TaskCardActionsProps) => {
     props.task
   );
 
-  const [_updateTaskStatus] = useMutationPromise<TaskCardUpdateTaskStatusMutation>(graphql`
+  const [$updateTaskStatus] = useMutationPromise<TaskCardUpdateTaskStatusMutation>(graphql`
     mutation TaskCardUpdateTaskStatusMutation($input: MutationUpdateTaskStatusInput!) {
       updateTaskStatus(input: $input) {
         ...Day_day
@@ -136,7 +136,7 @@ const TaskCardActions = (props: TaskCardActionsProps) => {
   `);
 
   const updateStatus = async (status: TaskStatus) => {
-    const updatePromise = _updateTaskStatus({
+    const updatePromise = $updateTaskStatus({
       variables: {
         input: { id: task.id, status },
       },

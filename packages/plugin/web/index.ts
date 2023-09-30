@@ -6,6 +6,7 @@ import type { PluginRenderTaskCardDetails as RenderTaskCardDetails } from "@flow
 import type { PluginRenderTaskCardActions as RenderTaskCardActions } from "@flowdev/web/src/components/RenderTaskCardActions";
 import type { PluginRenderItemCardDetails as RenderItemCardDetails } from "@flowdev/web/src/components/RenderItemCardDetails";
 import type { PluginRenderItemCardActions as RenderItemCardActions } from "@flowdev/web/src/components/RenderItemCardActions";
+import type { PluginSettingFieldProps as SettingField } from "@flowdev/web/src/views/PluginSettingsView";
 
 export type { WebPluginOptions, PluginRoutineStepProps, OnCreateTask };
 
@@ -76,90 +77,3 @@ export type WebPlugin = (options: WebPluginOptions) => {
 export const definePlugin = (plugin: WebPlugin) => ({ plugin });
 
 export type DefineWebPluginReturn = ReturnType<typeof definePlugin>;
-
-// copied from prisma types
-type JsonValue = string | number | boolean | { [Key in string]?: JsonValue } | Array<JsonValue>;
-
-type SettingField =
-  | TextfieldSetting
-  | TextareaSetting
-  | NumberSetting
-  | CheckboxSetting
-  | SelectSetting
-  | CustomSetting;
-
-type CommonSetting = {
-  /**
-   * Whether the value is secret and should only be accessed in the server by the plugin that set it.
-   * Once set, the value cannot be read by the client.
-   */
-  isSecret?: boolean;
-  /**
-   * Whether the value is only accessible in the server by the plugin that set it.
-   * Once set, the value cannot be read by the client.
-   */
-  isServerOnly?: boolean;
-  /** The default value of the setting. */
-  defaultValue?: JsonValue;
-  /** A function that validates the value. */
-  validate?: ((value: JsonValue) => string | undefined)[];
-};
-
-type TextfieldSetting = CommonSetting & {
-  /** The type of the setting. This is used to render the setting in the UI. */
-  type: "textfield";
-  /** The label of the text field. This is a human-readable version of the key of the setting. */
-  label: string;
-  /** A helper text to show below the label of the textfield. Accepts markdown. */
-  helper?: string;
-};
-
-type TextareaSetting = CommonSetting & {
-  /** The type of the setting. This is used to render the setting in the UI. */
-  type: "textarea";
-  /** The label of the text area. This is a human-readable version of the key of the setting. */
-  label: string;
-  /** A helper text to show below the label of the textarea. Accepts markdown. */
-  helper?: string;
-};
-
-type NumberSetting = CommonSetting & {
-  /** The type of the setting. This is used to render the setting in the UI. */
-  type: "number";
-  /** The label of the number field. This is a human-readable version of the key of the setting. */
-  label: string;
-  /** A helper text to show below the label of the number field. Accepts markdown. */
-  helper?: string;
-};
-
-type CheckboxSetting = CommonSetting & {
-  /** The type of the setting. This is used to render the setting in the UI. */
-  type: "checkbox";
-  /** The label of the checkbox. This is a human-readable version of the key of the setting. */
-  label: string;
-  /**
-   * The text to show next to the checkbox. Accepts markdown. For example, this could be what the checkbox setting could look like:
-   *
-   * **Short label**
-   *
-   * [ ] This is the \*\*helper\*\* text. It can be very long and wrap to the next line. It can include \[links\](https://example.com) using markdown notation.
-   */
-  helper: string;
-};
-
-type SelectSetting = CommonSetting & {
-  /** The type of the setting. This is used to render the setting in the UI. */
-  type: "select";
-  /** The label of the select field. This is a human-readable version of the key of the setting. */
-  label: string;
-  /** A helper text to show below the label of the select field. */
-  helper?: string;
-  options: Array<{ label: string; value: JsonValue }>;
-};
-
-type CustomSetting = CommonSetting & {
-  /** The type of the setting. This is used to render the setting in the UI. */
-  type: "custom";
-  /** The function to render the custom setting. It does **not** need to call `onUpdate` when the value changes. */
-  render: (props: { onUpdate: (value: JsonValue) => void; value: JsonValue }) => JSX.Element;
-};

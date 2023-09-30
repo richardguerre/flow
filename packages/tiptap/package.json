@@ -1,0 +1,31 @@
+{
+  "name": "@flowdev/tiptap",
+  "description": "Wrapper around tiptap.dev packages (@tiptap/core, @tiptap/starter-kit, extensions, etc.)",
+  "version": "0.1.0",
+  "private": false,
+  "dependencies": {
+    "@tiptap/extension-blockquote": "^2.1.11",
+    "@tiptap/extension-bold": "^2.1.11",
+    "@tiptap/extension-bullet-list": "^2.1.11",
+    "@tiptap/extension-code": "^2.1.11",
+    "@tiptap/extension-code-block": "^2.1.11",
+    "@tiptap/extension-document": "^2.1.11",
+    "@tiptap/extension-dropcursor": "^2.1.11",
+    "@tiptap/extension-gapcursor": "^2.1.11",
+    "@tiptap/extension-hard-break": "^2.1.11",
+    "@tiptap/extension-heading": "^2.1.11",
+    "@tiptap/extension-history": "^2.1.11",
+    "@tiptap/extension-horizontal-rule": "^2.1.11",
+    "@tiptap/extension-italic": "^2.1.11",
+    "@tiptap/extension-link": "^2.1.11",
+    "@tiptap/extension-list-item": "^2.1.11",
+    "@tiptap/extension-mention": "^2.1.11",
+    "@tiptap/extension-ordered-list": "^2.1.11",
+    "@tiptap/extension-paragraph": "^2.1.11",
+    "@tiptap/extension-strike": "^2.1.11",
+    "@tiptap/extension-text": "^2.1.11",
+    "@tiptap/pm": "^2.1.11",
+    "@tiptap/react": "^2.1.11",
+    "tiptap-markdown": "^0.8.2"
+  }
+}

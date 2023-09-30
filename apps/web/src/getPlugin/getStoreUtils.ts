@@ -9,15 +9,15 @@ export const getStoreUtils = (defaultSlug: string) => {
     const data = await fetchQuery<getStoreUtilsGetQuery>(
       environment,
       graphql`
-        query getStoreUtilsGetQuery($input: QueryStoreItemsInput!) {
-          storeItems(input: $input) {
+        query getStoreUtilsGetQuery($where: QueryStoreItemsInput!) {
+          storeItems(where: $where) {
             key
             value
           }
         }
       `,
       {
-        input: {
+        where: {
           keys,
           pluginSlug: pluginSlug === undefined ? defaultSlug : pluginSlug,
         },

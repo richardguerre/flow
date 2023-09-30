@@ -22,7 +22,7 @@ export const ViewErrorBoundary = (props: Props) => {
           window.localStorage.removeItem(LOCAL_STORAGE_USER_TOKEN_KEY);
         }
         return (
-          <div className="flex h-screen items-center justify-center">
+          <div className="flex h-screen w-full items-center justify-center">
             <div className="text-center">
               {unauthenticatedError ? (
                 <>

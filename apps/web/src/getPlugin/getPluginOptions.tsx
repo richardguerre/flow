@@ -1,16 +1,7 @@
 import React from "react";
 import { Button } from "@flowdev/ui/Button";
 import * as framerMotion from "framer-motion";
-import * as tiptap from "@tiptap/react";
-import { StarterKit } from "@tiptap/starter-kit";
-import { Document } from "@tiptap/extension-document";
-import { Paragraph } from "@tiptap/extension-paragraph";
-import { Text } from "@tiptap/extension-text";
-import { Mention } from "@tiptap/extension-mention";
-import { History } from "@tiptap/extension-history";
-import { BulletList } from "@tiptap/extension-bullet-list";
-import { OrderedList } from "@tiptap/extension-ordered-list";
-import { ListItem } from "@tiptap/extension-list-item";
+import * as tiptap from "@flowdev/tiptap";
 import { dayjs } from "@flowdev/web/dayjs";
 import { getDays, getDaysMax10 } from "./getDays";
 import { NoteEditor } from "../components/NoteEditor";
@@ -76,19 +67,7 @@ export const getPluginOptions = (slug: string) => ({
   /**
    * React version that Flow uses.
    */
-  React: {
-    ...React,
-    createElement: (type: any, props: any, ...rest: any) => {
-      if (!("unocssExtracted" in window) || !window.unocssExtracted) {
-        window.unocssExtracted = new Set<string>();
-      }
-      if (props?.className && !window.unocssExtracted?.has(props.className)) {
-        window.__unocss_runtime?.extract(props.className);
-        window.unocssExtracted?.add(props.className);
-      }
-      return React.createElement(type, props, ...rest);
-    },
-  },
+  React,
   /** The tailwind merge function that Flow uses. It's the same as clsx. */
   tw,
   /**
@@ -199,28 +178,10 @@ export const getPluginOptions = (slug: string) => ({
    */
   framerMotion,
   /**
-   * The @tiptap/react package.
+   * The @flowdev/tiptap package which is a wrapper around a lot of tiptap packages and extensions.
    * This prevents double bundling it in both the web app and in individual plugins.
-   *
-   * You can also use the TextEditor component in `options.components`.
    */
   tiptap,
-  /**
-   * The tiptap extensions. Using these extensions in plugins prevents double bundling them.
-   *
-   * If this object is missing an extension you need, you will have to npm install it in your plugin.
-   */
-  tiptapExtensions: {
-    StarterKit,
-    Document,
-    Paragraph,
-    Text,
-    Mention,
-    History,
-    BulletList,
-    OrderedList,
-    ListItem,
-  },
   /**
    * The dayjs package. This prevents double bundling it in both the web app and in individual plugins.
    */

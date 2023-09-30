@@ -84,15 +84,14 @@ Pass the \`pluginSlug\` if you want to get items created by a specific plugin. N
     },
     argOptions: {
       required: false,
+      name: "where",
     },
     resolve: (query, _, args) => {
       return prisma.store.findMany({
         ...query,
         where: {
-          isSecret: false,
-          isServerOnly: false,
-          ...(args.input?.pluginSlug ? { pluginSlug: args.input?.pluginSlug } : {}),
-          ...(args.input?.keys?.length ? { key: { in: args.input.keys } } : {}),
+          ...(args.where?.pluginSlug ? { pluginSlug: args.where?.pluginSlug } : {}),
+          ...(args.where?.keys?.length ? { key: { in: args.where.keys } } : {}),
         },
       });
     },

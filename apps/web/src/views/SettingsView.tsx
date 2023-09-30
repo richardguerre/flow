@@ -6,6 +6,7 @@ import { Link, Outlet } from "react-router-dom";
 import { tw } from "@flowdev/ui/tw";
 import { useActiveLink } from "../useActiveLink";
 import { SuspenseLoadingView } from "@flowdev/ui/Loading";
+import { ViewErrorBoundary } from "../components/ViewErrorBoundary";
 
 const settingsViewQuery = graphql`
   query SettingsViewQuery {
@@ -56,9 +57,11 @@ const SettingsViewContent = (props: SettingsViewProps) => {
           ))}
         </div>
       </div>
-      <SuspenseLoadingView>
-        <Outlet context={data} />
-      </SuspenseLoadingView>
+      <ViewErrorBoundary>
+        <SuspenseLoadingView>
+          <Outlet context={data} />
+        </SuspenseLoadingView>
+      </ViewErrorBoundary>
     </div>
   );
 };
@@ -90,7 +93,7 @@ type SettingsViewPluginTabProps = {
 
 const SettingsViewPluginTab = (props: SettingsViewPluginTabProps) => {
   const [plugin, loading] = useAsyncLoader(async () => getPlugin({ pluginSlug: props.slug }));
-  const to = `settings/plugin/${props.slug}`;
+  const to = `plugin/${props.slug}`;
 
   if (loading) return <SettingTab to={to}>{props.slug}</SettingTab>;
   if (!plugin) return null;

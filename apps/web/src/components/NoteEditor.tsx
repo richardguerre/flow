@@ -1,6 +1,5 @@
 import { graphql, useLazyLoadQuery, useMutationPromise } from "@flowdev/relay";
-import { useEditor, EditorContent } from "@tiptap/react";
-import { StarterKit } from "@tiptap/starter-kit";
+import { StarterKit, useEditor, EditorContent } from "@flowdev/tiptap";
 import { Suspense, useEffect, useRef } from "react";
 import { NoteEditorQuery } from "@flowdev/web/relay/__generated__/NoteEditorQuery.graphql";
 import { NoteEditorUpsertNoteMutation } from "@flowdev/web/relay/__generated__/NoteEditorUpsertNoteMutation.graphql";

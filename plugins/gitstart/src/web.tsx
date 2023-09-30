@@ -67,8 +67,9 @@ export default definePlugin((opts) => {
       [TOKEN_STORE_KEY]: {
         type: "textfield",
         label: "Token",
-        helper:
+        description:
           "You can find this in your localStorage when logged in to GitStart under the key `user_token`.",
+        placeholder: "Paste your GitStart token here",
         isSecret: true, // once set, it cannot be seen again, but each time the setting is saved again it will be overwritten
       },
     },

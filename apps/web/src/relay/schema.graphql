@@ -681,7 +681,7 @@ type Query {
   
   Pass the `pluginSlug` if you want to get items created by a specific plugin. Not passing the `pluginSlug` will return items created by flow.
   """
-  storeItems(input: QueryStoreItemsInput): [Store!]!
+  storeItems(where: QueryStoreItemsInput): [Store!]!
 
   """
   Get all task tags ordered by usage in descending order. `before` and `after` cursors are ignored, and `first` and `last` act the same and are limited to 100.

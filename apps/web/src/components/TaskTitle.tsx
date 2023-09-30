@@ -1,16 +1,16 @@
+import { useCallback, useEffect, useRef, useState } from "react";
 import { graphql, useFragment, useMutation } from "@flowdev/relay";
-import { useEditor, EditorContent, Editor } from "@tiptap/react";
+import {
+  useEditor,
+  EditorContent,
+  Editor,
+  Mention,
+  CatchNewLines,
+  MinimumKit,
+} from "@flowdev/tiptap";
 import { TaskTitle_task$key } from "@flowdev/web/relay/__generated__/TaskTitle_task.graphql";
 import { TaskTitleUpdateTaskTitleMutation } from "../relay/__generated__/TaskTitleUpdateTaskTitleMutation.graphql";
-import { Document } from "@tiptap/extension-document";
-import { Paragraph } from "@tiptap/extension-paragraph";
-import { Text } from "@tiptap/extension-text";
-import { Mention } from "@tiptap/extension-mention";
-import { History } from "@tiptap/extension-history";
-import { Extension } from "@tiptap/core";
-import { Plugin, PluginKey } from "prosemirror-state";
 import "./TaskTitle.scss";
-import { useCallback, useEffect, useRef, useState } from "react";
 
 type TaskTitleProps = {
   task: TaskTitle_task$key;
@@ -94,13 +94,10 @@ export const TaskTitleInput = (props: TaskTitleInputProps) => {
 
   editorRef.current = useEditor({
     extensions: [
-      Document,
-      Paragraph,
-      Text,
+      MinimumKit,
       CatchNewLines(() => {
         handleSave();
       }),
-      History,
       Mention.configure({
         suggestion: {
           char: "#",
@@ -136,24 +133,3 @@ export const TaskTitleInput = (props: TaskTitleInputProps) => {
     />
   );
 };
-
-export const CatchNewLines = (onNewLine?: () => void) =>
-  Extension.create({
-    name: "no_new_line",
-
-    addProseMirrorPlugins() {
-      return [
-        new Plugin({
-          key: new PluginKey("eventHandler"),
-          props: {
-            handleKeyDown: (_view, event) => {
-              if (event.key === "Enter") {
-                onNewLine?.();
-                return true;
-              }
-            },
-          },
-        }),
-      ];
-    },
-  });

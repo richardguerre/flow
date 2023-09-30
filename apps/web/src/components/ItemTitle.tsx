@@ -1,11 +1,15 @@
 import { useCallback, useEffect, useRef, useState } from "react";
-import { Editor, EditorContent, useEditor } from "@tiptap/react";
-import { Document } from "@tiptap/extension-document";
-import { Paragraph } from "@tiptap/extension-paragraph";
-import { Text } from "@tiptap/extension-text";
-import { Mention } from "@tiptap/extension-mention";
-import { History } from "@tiptap/extension-history";
-import { CatchNewLines } from "./TaskTitle";
+import {
+  Editor,
+  EditorContent,
+  useEditor,
+  Document,
+  Paragraph,
+  Text,
+  Mention,
+  History,
+} from "@flowdev/tiptap";
+import { CatchNewLines } from "@flowdev/tiptap";
 import { graphql, useFragment, useMutation } from "@flowdev/relay";
 import { ItemTitle_item$key } from "../relay/__generated__/ItemTitle_item.graphql";
 import { ItemTitleUpdateItemTitleMutation } from "../relay/__generated__/ItemTitleUpdateItemTitleMutation.graphql";
