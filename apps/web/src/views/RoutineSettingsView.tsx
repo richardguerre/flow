@@ -392,7 +392,7 @@ const RoutineDetailedSettings = (props: RoutineDetailedSettingsProps) => {
           defaultValue={[]}
           render={({ field }) => (
             <ReactSortable
-              className="max-h-70 overflow-auto"
+              className="max-h-70 min-h-8 overflow-auto"
               list={field.value}
               setList={field.onChange}
               group="shared"
