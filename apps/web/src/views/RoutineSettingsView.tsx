@@ -104,7 +104,10 @@ export default () => {
       <div className="grid grid-cols-[minmax(0,_576px)_minmax(0,_1fr)] gap-4">
         <div className="flex flex-col items-start gap-2">
           {data.routines.map((routine) => (
-            <div className="hover:bg-background-100 flex w-full justify-between gap-4 rounded-md px-4 py-2 transition-colors">
+            <button
+              className="hover:bg-background-100 flex w-full justify-between gap-4 rounded-md px-4 py-2 transition-colors"
+              onClick={() => setSelectedRoutine(routine.id)}
+            >
               <div className="flex items-center gap-2">
                 <ActiveCheckbox routine={routine} />
                 {routine.name}
@@ -112,11 +115,13 @@ export default () => {
               <div className="flex items-center gap-2">
                 <Repeats routine={routine} />
                 <Badge className="bg-gray-200 text-gray-600">{routine.time}</Badge>
-                <button className="" onClick={() => setSelectedRoutine(routine.id)}>
-                  <BsArrowRightShort />
-                </button>
+                <BsArrowRightShort
+                  className={tw(
+                    selectedRoutine === routine.id ? "text-foreground-900" : "text-foreground-700"
+                  )}
+                />
               </div>
-            </div>
+            </button>
           ))}
           <Button tertiary sm onClick={handleNewRoutine}>
             New routine
@@ -291,7 +296,7 @@ const RoutineDetailedSettings = (props: RoutineDetailedSettingsProps) => {
   const values = watch();
   const [, , cancelDebounce] = useDebounce(
     { values, isDirty: formState.isDirty, isValid: formState.isValid },
-    2000,
+    1000,
     ({ values, isDirty, isValid }) => {
       if (!isDirty || !isValid) return;
       onSubmit(values);
