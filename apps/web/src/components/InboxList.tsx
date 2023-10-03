@@ -4,7 +4,6 @@ import { ReactSortable } from "react-sortablejs";
 import { useMemo, useState } from "react";
 import { Button } from "@flowdev/ui/Button";
 import { NewItemCard } from "./NewItemCard";
-import { dayjs } from "../dayjs";
 import { InboxListSubscription } from "../relay/__generated__/InboxListSubscription.graphql";
 
 type InboxListProps = {};
@@ -32,11 +31,8 @@ export const InboxList = (props: InboxListProps) => {
           .map((edge) => edge.node)
           .filter((node) => {
             const passesBaseFilter = !!node.isRelevant && (node.inboxPoints ?? 0) > 0;
-            const today = dayjs();
-            const hasTaskCreatedToday = node.tasks.find((task) =>
-              dayjs(task.createdAt).isSame(today, "day")
-            );
-            return passesBaseFilter && !hasTaskCreatedToday;
+            const hasTodoTasks = node.tasks.some((task) => task.status === "TODO");
+            return passesBaseFilter && !hasTodoTasks;
           }) ?? []
       ),
     [data?.items.edges]
@@ -91,7 +87,7 @@ graphql`
     isRelevant
     inboxPoints
     tasks {
-      createdAt
+      status
     }
   }
 `;
