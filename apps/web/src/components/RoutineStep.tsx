@@ -89,37 +89,44 @@ export const RoutineStep = (props: RoutineStepProps) => {
   };
 
   return (
-    <StepComponent
-      onNext={props.onNext}
-      onBack={props.onBack}
-      NextButton={(p) => (
-        <Button
-          {...p}
-          secondary
-          onClick={() => handleNext(p.onClick)}
-          children={props.hasNext ? "Next" : "Done"}
-        />
-      )}
-      BackButton={(p) => (
-        <Button
-          {...p}
-          secondary
-          onClick={() => handleBack(p.onClick)}
-          children={props.hasPrevious ? "Back" : "Cancel"}
-        />
-      )}
-      ArrowNextButton={(p) => (
-        <Button
-          {...p}
-          secondary
-          onClick={() => handleNext(p.onClick)}
-          children={<BsArrowRight />}
-        />
-      )}
-      ArrowBackButton={(p) => (
-        <Button {...p} secondary onClick={() => handleBack(p.onClick)} children={<BsArrowLeft />} />
-      )}
-    />
+    <div className="max-h-screen overflow-auto">
+      <StepComponent
+        onNext={props.onNext}
+        onBack={props.onBack}
+        NextButton={(p) => (
+          <Button
+            {...p}
+            secondary
+            onClick={() => handleNext(p.onClick)}
+            children={props.hasNext ? "Next" : "Done"}
+          />
+        )}
+        BackButton={(p) => (
+          <Button
+            {...p}
+            secondary
+            onClick={() => handleBack(p.onClick)}
+            children={props.hasPrevious ? "Back" : "Cancel"}
+          />
+        )}
+        ArrowNextButton={(p) => (
+          <Button
+            {...p}
+            secondary
+            onClick={() => handleNext(p.onClick)}
+            children={<BsArrowRight />}
+          />
+        )}
+        ArrowBackButton={(p) => (
+          <Button
+            {...p}
+            secondary
+            onClick={() => handleBack(p.onClick)}
+            children={<BsArrowLeft />}
+          />
+        )}
+      />
+    </div>
   );
 };
 
