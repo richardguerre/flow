@@ -20,7 +20,7 @@ export const Loading = (props: LoadingProps) => {
   const min =
     props.minProgress && props.minProgress <= 40 ? 96 - (props.minProgress / 100) * 113 : 96;
   const heightOfWave = 113;
-  const max = min - (maxProgress / 100) * heightOfWave;
+  const max = 96 - (maxProgress / 100) * heightOfWave;
   return (
     <div className="ring-primary-500/10 ring-5 rounded-full p-1">
       <div className="relative h-24 w-24 overflow-clip rounded-full">
@@ -123,7 +123,7 @@ export const LoadingView = () => {
       animate={{ opacity: 1 }}
       exit={{ opacity: 0 }} // TODO: this exit animation still doesn't work, the component get's unmouted immediately instead of fading out. Look into https://github.com/framer/motion/issues/1193 and react-freeze maybe?
     >
-      <Loading minProgress={40} />
+      <Loading minProgress={40} maxProgress={60} />
     </motion.div>
   );
 };

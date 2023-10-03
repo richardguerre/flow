@@ -1,6 +1,6 @@
 import { tw } from "@flowdev/ui/tw";
 import { FlowIcon } from "@flowdev/web/components/FlowIcon";
-import { BsGear, BsGlobe2, BsJournalCheck, BsKanban, BsListCheck } from "@flowdev/icons";
+import { BsGear, BsGlobe2, BsJournalCheck, BsKanban } from "@flowdev/icons";
 import { Link } from "react-router-dom";
 import { Tooltip, TooltipTrigger, TooltipContent } from "@flowdev/ui/Tooltip";
 import { useAsyncLoader } from "@flowdev/web/useAsyncLoader";
@@ -20,9 +20,9 @@ export const Navbar = () => {
         <NavItem to="/" tooltip="Kanban view">
           <BsKanban size="16px" />
         </NavItem>
-        <NavItem to="/list" tooltip="List view">
+        {/* <NavItem to="/list" tooltip="List view">
           <BsListCheck />
-        </NavItem>
+        </NavItem> */}
         <NavItem
           to={routine?.path ?? "/routine"}
           tooltip={`Do your ${routine?.name ?? "latest"}${

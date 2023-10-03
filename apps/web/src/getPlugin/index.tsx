@@ -82,11 +82,12 @@ const getInstalledPlugins = async () => {
   return Object.fromEntries(plugins.map((plugin) => [plugin.slug, plugin]));
 };
 
+export type PluginsRecord = Record<string, ReturnType<WebPlugin>>;
 /**
  * @suspends This hook will suspend. Make sure to wrap the component using this hook in a `Suspense` boundary.
  */
 export const usePlugins = () => {
-  const [plugins, setPlugins] = useState<Record<string, ReturnType<WebPlugin>>>({});
+  const [plugins, setPlugins] = useState<PluginsRecord>({});
   const [loading, setLoading] = useState(true);
   const data = useLazyLoadQuery<getPluginsUsePluginsQuery>(
     graphql`

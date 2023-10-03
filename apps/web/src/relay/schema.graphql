@@ -236,7 +236,7 @@ type Mutation {
   Mark an item as done or not done. Plugins can use this to mark the item as done or not done in the external system. For example, if the item is a trello task and is marked as done in Flow, it will be marked as done in trello (by the Trello plugin).
   """
   updateItemStatus(input: MutationUpdateItemStatusInput!): Item!
-  updateRoutineSteps(input: MutationUpdateRoutineStepsInput!): Routine!
+  updateRoutine(input: MutationUpdateRoutineInput!): Routine!
 
   """Update a task."""
   updateTask(input: MutationUpdateTaskInput!): Task!
@@ -428,12 +428,27 @@ input MutationUpdateItemStatusInput {
   id: ID!
 }
 
-input MutationUpdateRoutineStepsInput {
+input MutationUpdateRoutineInput {
+  """The action name to update the routine with."""
+  actionName: String
+
+  """Whether the routine is active."""
+  isActive: Boolean
+
+  """The name to update the routine with."""
+  name: String
+
+  """The repetition patterns to update the routine with."""
+  repeats: [RepetitionPattern!]
+
   """The ID of the routine to update."""
   routineId: ID!
 
   """The steps to update the routine with."""
-  steps: [RoutineStepInput!]!
+  steps: [RoutineStepInput!]
+
+  """The time to update the routine with."""
+  time: Time
 }
 
 input MutationUpdateTaskDateInput {

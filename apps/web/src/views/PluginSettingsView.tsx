@@ -79,9 +79,9 @@ const PluginSettingsViewContent = (props: Props) => {
   };
 
   return (
-    <div className="flex w-full flex-col gap-4 p-8">
+    <div className="bg-background-50 flex w-full flex-col gap-4 p-8">
       <div className="flex w-full justify-between">
-        <div className="text-xl font-medium">{plugin.name}</div>
+        <h1 className="text-xl font-medium">{plugin.name}</h1>
         <div className="flex gap-2">
           <UpdatePluginButton pluginInstallation={pluginInstallation} />
           <Button onClick={handleUninstallPlugin} loading={isUninstallingPlugin}>

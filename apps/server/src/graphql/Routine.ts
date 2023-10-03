@@ -1,6 +1,6 @@
 import { GraphQLError } from "graphql";
 import { prisma } from "../utils/prisma";
-import { builder } from "./builder";
+import { builder, u } from "./builder";
 import { RepetitionPatternEnum } from "./RepetitionPattern";
 
 // -------------- Routine types --------------
@@ -126,7 +126,7 @@ builder.mutationField("createRoutine", (t) =>
       repeats: t.input.field({ type: [RepetitionPatternEnum], required: true }),
       steps: t.input.field({ type: [RoutineStepInput], required: true }),
     },
-    resolve: (query, _, args) => {
+    resolve: async (query, _, args) => {
       return prisma.routine.create({
         ...query,
         data: {
@@ -145,7 +145,7 @@ builder.mutationField("createRoutine", (t) =>
   })
 );
 
-builder.mutationField("updateRoutineSteps", (t) =>
+builder.mutationField("updateRoutine", (t) =>
   t.prismaFieldWithInput({
     type: "Routine",
     input: {
@@ -153,20 +153,48 @@ builder.mutationField("updateRoutineSteps", (t) =>
         description: "The ID of the routine to update.",
         required: true,
       }),
+      isActive: t.input.boolean({
+        description: "Whether the routine is active.",
+        required: false,
+      }),
+      name: t.input.string({
+        description: "The name to update the routine with.",
+        required: false,
+      }),
+      actionName: t.input.string({
+        description: "The action name to update the routine with.",
+        required: false,
+      }),
+      time: t.input.field({
+        type: "Time",
+        description: "The time to update the routine with.",
+        required: false,
+      }),
       steps: t.input.field({
         type: [RoutineStepInput],
         description: "The steps to update the routine with.",
-        required: true,
+        required: false,
+      }),
+      repeats: t.input.field({
+        type: [RepetitionPatternEnum],
+        description: "The repetition patterns to update the routine with.",
+        required: false,
       }),
     },
-    resolve: (query, _, args) => {
+    resolve: async (query, _, args) => {
       return prisma.routine.update({
         ...query,
         where: { id: parseInt(args.input.routineId.id) },
         data: {
-          steps: args.input.steps.map(
-            (step) => `${step.pluginSlug}_${step.stepSlug}_${step.shouldSkip}`
-          ),
+          isActive: u(args.input.isActive),
+          name: u(args.input.name),
+          actionName: u(args.input.actionName),
+          time: u(args.input.time),
+          repeats: u(args.input.repeats),
+          steps:
+            args.input.steps?.map(
+              (step) => `${step.pluginSlug}_${step.stepSlug}_${step.shouldSkip}`
+            ) ?? undefined,
         },
       });
     },

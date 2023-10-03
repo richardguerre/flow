@@ -46,7 +46,7 @@ const SettingsViewContent = (props: SettingsViewProps) => {
         <div className="text-base font-semibold">Settings</div>
         <div className="flex flex-col gap-2">
           <SettingTab to="/settings/general">General</SettingTab>
-          <SettingTab to="/settings/tasks">Tasks</SettingTab>
+          {/* <SettingTab to="/settings/tasks">Tasks</SettingTab> */}
           <SettingTab to="/settings/routines">Routines</SettingTab>
           <SettingTab to="/settings/browse-plugins">Browse plugins</SettingTab>
         </div>
