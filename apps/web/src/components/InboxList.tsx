@@ -1,10 +1,11 @@
-import { graphql, useSmartSubscription } from "@flowdev/relay";
+import { graphql, useFragment, useSmartSubscription } from "@flowdev/relay";
 import { ItemCard } from "./ItemCard";
 import { ReactSortable } from "react-sortablejs";
-import { useMemo, useState } from "react";
+import { useState } from "react";
 import { Button } from "@flowdev/ui/Button";
 import { NewItemCard } from "./NewItemCard";
 import { InboxListSubscription } from "../relay/__generated__/InboxListSubscription.graphql";
+import { InboxListItemToBeInList_item$key } from "../relay/__generated__/InboxListItemToBeInList_item.graphql";
 
 type InboxListProps = {};
 
@@ -16,26 +17,35 @@ export const InboxList = (props: InboxListProps) => {
         __id
         edges {
           node {
-            ...InboxListItemToBeInList_item @relay(mask: false)
-            ...ItemCard_item
+            ...InboxListItemToBeInList_item
           }
         }
       }
     }
   `);
 
-  const items = useMemo(
-    () =>
-      structuredClone(
-        data?.items.edges
-          .map((edge) => edge.node)
-          .filter((node) => {
-            const passesBaseFilter = !!node.isRelevant && (node.inboxPoints ?? 0) > 0;
-            const hasTodoTasks = node.tasks.some((task) => task.status === "TODO");
-            return passesBaseFilter && !hasTodoTasks;
-          }) ?? []
-      ),
-    [data?.items.edges]
+  // fragment on items so we can subscribe to changes on items (i.e. when a task is created in the item, then we can filter out the item from the inbox)
+  const $items = useFragment<InboxListItemToBeInList_item$key>(
+    graphql`
+      fragment InboxListItemToBeInList_item on Item @relay(plural: true) {
+        id
+        isRelevant
+        inboxPoints
+        tasks {
+          status
+        }
+        ...ItemCard_item
+      }
+    `,
+    data?.items.edges.map((edge) => edge.node) ?? []
+  );
+
+  const items = structuredClone(
+    $items.filter((node) => {
+      const passesBaseFilter = !!node.isRelevant && (node.inboxPoints ?? 0) > 0;
+      const hasTodoTasks = node.tasks.some((task) => task.status === "TODO");
+      return passesBaseFilter && !hasTodoTasks;
+    }) ?? []
   );
 
   if (!data) return null; // TODO: loading state
@@ -80,14 +90,3 @@ export const InboxList = (props: InboxListProps) => {
     </div>
   );
 };
-
-graphql`
-  fragment InboxListItemToBeInList_item on Item {
-    id
-    isRelevant
-    inboxPoints
-    tasks {
-      status
-    }
-  }
-`;
