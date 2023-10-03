@@ -28,7 +28,8 @@
     "clean:root": "rm -rf ./node_modules",
     "clean:apps": "rm -rf ./apps/**/node_modules",
     "clean:packages": "rm -rf ./packages/**/node_modules",
-    "relay": "npm run relay -w apps/web"
+    "relay": "npm run relay -w apps/web",
+    "unocss": "unocss"
   },
   "devDependencies": {
     "dotenv": "^16.0.2",
