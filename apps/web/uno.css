@@ -306,6 +306,7 @@
 .py-\[1px\],
 .py-px{padding-top:1px;padding-bottom:1px;}
 .py-0{padding-top:0;padding-bottom:0;}
+.py-0\.5{padding-top:0.125rem;padding-bottom:0.125rem;}
 .py-1{padding-top:0.25rem;padding-bottom:0.25rem;}
 .py-2{padding-top:0.5rem;padding-bottom:0.5rem;}
 .py-2\.5{padding-top:0.625rem;padding-bottom:0.625rem;}
@@ -349,6 +350,7 @@
 .leading-none{line-height:1;}
 .tracking-tight{letter-spacing:-0.025em;}
 .tracking-widest{letter-spacing:0.1em;}
+.font-mono{font-family:ui-monospace,SFMono-Regular,Menlo,Monaco,Consolas,"Liberation Mono","Courier New",monospace;}
 .uppercase{text-transform:uppercase;}
 .lowercase{text-transform:lowercase;}
 .italic{font-style:italic;}
@@ -386,6 +388,7 @@
 .placeholder\:text-foreground-700::placeholder{--un-text-opacity:1;color:rgba(107,114,128,var(--un-text-opacity));}
 .placeholder\:text-negative-600::placeholder{--un-text-opacity:1;color:rgba(220,38,38,var(--un-text-opacity));}
 .hover\:underline:hover{text-decoration-line:underline;}
+.no-underline{text-decoration:none;}
 .data-\[disabled\]\:opacity-50[data-disabled],
 .opacity-50{opacity:0.5;}
 .opacity-0{opacity:0;}
