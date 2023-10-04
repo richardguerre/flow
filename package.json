@@ -15,7 +15,7 @@
     "db:dev": "npm run db:dev -w apps/server",
     "db:reset": "npm run db:reset -w apps/server",
     "db:seed": "npm run db:seed -w apps/server",
-    "build": "turbo run build && npm run post-build -w apps/server",
+    "build": "npm run unocss && turbo run build && npm run post-build -w apps/server",
     "format": "prettier --write .",
     "format:check": "prettier --check .",
     "---------patch---------": "",

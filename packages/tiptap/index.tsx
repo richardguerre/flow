@@ -3,7 +3,7 @@ import { Document } from "@tiptap/extension-document";
 import { useEditor, Editor, EditorContent } from "@tiptap/react";
 import { Blockquote, BlockquoteOptions } from "@tiptap/extension-blockquote";
 import { BulletList, BulletListOptions } from "@tiptap/extension-bullet-list";
-import { CodeBlock, CodeBlockOptions } from "@tiptap/extension-code-block";
+import { CodeBlock as $CodeBlock, CodeBlockOptions } from "@tiptap/extension-code-block";
 import { HardBreak, HardBreakOptions } from "@tiptap/extension-hard-break";
 import { Heading, HeadingOptions } from "@tiptap/extension-heading";
 import { HorizontalRule, HorizontalRuleOptions } from "@tiptap/extension-horizontal-rule";
@@ -11,8 +11,9 @@ import { ListItem, ListItemOptions } from "@tiptap/extension-list-item";
 import { OrderedList, OrderedListOptions } from "@tiptap/extension-ordered-list";
 import { Paragraph, ParagraphOptions } from "@tiptap/extension-paragraph";
 import { Text } from "@tiptap/extension-text";
+import { Link as $Link, LinkOptions } from "@tiptap/extension-link";
 import { Bold, BoldOptions } from "@tiptap/extension-bold";
-import { Code, CodeOptions } from "@tiptap/extension-code";
+import { Code as $Code, CodeOptions } from "@tiptap/extension-code";
 import { Italic, ItalicOptions } from "@tiptap/extension-italic";
 import { Strike, StrikeOptions } from "@tiptap/extension-strike";
 import { Dropcursor, DropcursorOptions } from "@tiptap/extension-dropcursor";
@@ -30,7 +31,6 @@ export {
   EditorContent,
   Blockquote,
   BulletList,
-  CodeBlock,
   HardBreak,
   Heading,
   HorizontalRule,
@@ -38,7 +38,6 @@ export {
   OrderedList,
   Text,
   Bold,
-  Code,
   Italic,
   Strike,
   Dropcursor,
@@ -47,6 +46,31 @@ export {
   Mention,
   MarkdownExtension,
 };
+
+export const Link = $Link.configure({
+  HTMLAttributes: {
+    ...$Link.options?.HTMLAttributes,
+    class: $Link.options?.HTMLAttributes?.class ?? "text-primary-600 hover:underline no-underline",
+  },
+});
+
+export const Code = $Code.configure({
+  HTMLAttributes: {
+    ...$Code.options?.HTMLAttributes,
+    class:
+      $Code.options?.HTMLAttributes?.class ??
+      "text-sm font-mono bg-background-200 text-foreground-900 rounded py-0.5 px-1 not-prose",
+  },
+});
+
+export const CodeBlock = $CodeBlock.configure({
+  HTMLAttributes: {
+    ...$CodeBlock.options?.HTMLAttributes,
+    class:
+      $CodeBlock.options?.HTMLAttributes?.class ??
+      "text-sm font-mono bg-background-200 text-foreground-900 rounded px-2 py-1 not-prose",
+  },
+});
 
 export const CatchNewLines = (onNewLine?: () => void) =>
   Extension.create({
@@ -72,6 +96,7 @@ interface MinimumKitOptions {
   document: false;
   paragraph: false;
   text: false;
+  link: Partial<LinkOptions> | false;
   bold: Partial<BoldOptions> | false;
   code: Partial<CodeOptions> | false;
   italic: Partial<ItalicOptions> | false;
@@ -107,6 +132,9 @@ export const MinimumKit = Extension.create<MinimumKitOptions>({
     if (this.options.text !== false) {
       extensions.push(Text.configure(this.options?.text));
     }
+    if (this.options.link !== false) {
+      extensions.push(Link.configure(this.options?.link));
+    }
     if (this.options.bold !== false) {
       extensions.push(Bold.configure(this.options?.bold));
     }
@@ -133,6 +161,7 @@ export interface StarterKitOptions {
   blockquote: Partial<BlockquoteOptions> | false;
   bold: Partial<BoldOptions> | false;
   bulletList: Partial<BulletListOptions> | false;
+  link: Partial<LinkOptions> | false;
   code: Partial<CodeOptions> | false;
   codeBlock: Partial<CodeBlockOptions> | false;
   document: false;
@@ -164,6 +193,9 @@ export const StarterKit = Extension.create<StarterKitOptions>({
     }
     if (this.options.bulletList !== false) {
       extensions.push(BulletList.configure(this.options?.bulletList));
+    }
+    if (this.options.link !== false) {
+      extensions.push(Link.configure(this.options?.link));
     }
     if (this.options.code !== false) {
       extensions.push(Code.configure(this.options?.code));
