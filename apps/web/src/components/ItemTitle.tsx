@@ -1,14 +1,5 @@
 import { useCallback, useEffect, useRef, useState } from "react";
-import {
-  Editor,
-  EditorContent,
-  useEditor,
-  Document,
-  Paragraph,
-  Text,
-  Mention,
-  History,
-} from "@flowdev/tiptap";
+import { Editor, EditorContent, useEditor, Mention, MinimumKit } from "@flowdev/tiptap";
 import { CatchNewLines } from "@flowdev/tiptap";
 import { graphql, useFragment, useMutation } from "@flowdev/relay";
 import { ItemTitle_item$key } from "../relay/__generated__/ItemTitle_item.graphql";
@@ -90,13 +81,10 @@ export const ItemTitleInput = (props: ItemTitleInputProps) => {
 
   editorRef.current = useEditor({
     extensions: [
-      Document,
-      Paragraph,
-      Text,
+      MinimumKit,
       CatchNewLines(() => {
         handleSave();
       }),
-      History,
       Mention.configure({
         suggestion: {
           char: "#",
