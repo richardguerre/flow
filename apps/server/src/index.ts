@@ -1,6 +1,6 @@
 import { Elysia } from "elysia";
+import { staticPlugin } from "@elysiajs/static";
 import { createYoga } from "graphql-yoga";
-import path from "node:path";
 import { schema } from "./graphql";
 import {
   getPluginJson,
@@ -22,12 +22,9 @@ import "./utils/dayjs";
 import "./checksum";
 
 const PORT = env.PORT ?? 4000;
-export const app = new Elysia();
-app.use(express.json());
 
 // -------------------------- GraphQL ----------------------------
-
-const graphqlAPI = createYoga({
+const yoga = createYoga({
   schema,
   context: async (req) => {
     const sessionToken = req.request.headers.get("authorization")?.replace("Bearer ", "");
@@ -47,59 +44,67 @@ const graphqlAPI = createYoga({
     }),
   },
 });
-app.use("/graphql", graphqlAPI);
 
-// ---------------------- Plugin endpoints -----------------------
-
-app.use("/api/plugin/:pluginSlug", async (req, res) => {
-  const pluginSlug = req.params.pluginSlug;
-  const installedPlugins = await getPlugins();
-  const plugin = installedPlugins[pluginSlug];
-  if (!plugin) {
-    res
-      .status(404)
-      .send(
-        `Plugin ${pluginSlug} not found. It may be in the process of being installed. Please try again later.`
+// -------------------------- Server ------------------------------
+export const app = new Elysia()
+  .get("/graphql", async ({ request }) => yoga.fetch(request))
+  .post("/graphql", async ({ request }) => yoga.fetch(request), {
+    type: "none",
+  })
+  // ---------------------- Plugin endpoints -----------------------
+  .all("/api/plugin/:pluginSlug", async (req) => {
+    const pluginSlug = req.params.pluginSlug;
+    const installedPlugins = await getPlugins();
+    const plugin = installedPlugins[pluginSlug];
+    if (!plugin) {
+      return new Response(
+        `Plugin ${pluginSlug} not found. It may be in the process of being installed. Please try again later.`,
+        { status: 404 }
       );
-    return;
-  }
-  if (!plugin.onRequest) {
-    res
-      .status(404)
-      .send(`Plugin ${pluginSlug} has no \`onRequest\` function to handle the request.`);
-    return;
-  }
-  await plugin.onRequest(req, res);
-  try {
-    return res.status(404).send(`Plugin ${pluginSlug} has no endpoint for ${req.path}.`);
-  } catch (e: any) {
-    if (e?.message === "Cannot set headers after they are sent to the client") {
-      // this means the plugin has already sent a response, and we can ignore this error
-      return;
     }
-    console.error(e);
-  }
-});
+    if (!plugin.onRequest) {
+      return new Response(
+        `Plugin ${pluginSlug} has no \`onRequest\` function to handle the request.`,
+        { status: 404 }
+      );
+    }
+
+    const res = await plugin.onRequest(req as any);
+    if (res) return res;
+    return new Response(`Plugin ${pluginSlug} has no endpoint for ${req.path}.`, { status: 404 });
+  });
 
 // -------------------------- Web app -----------------------------
 
-app.use(express.static("web"));
-app.get("*", (req, res) => {
-  res.sendFile(path.join(__dirname, "./web/index.html"), async () => {
-    if (env.NODE_ENV === "development") {
-      const developmentPath = `http://localhost:3000${req.path}`;
-      try {
-        const result = await fetch(developmentPath);
-        if (result.ok) {
-          return res.redirect(developmentPath);
-        }
-      } catch {
-        return res.status(404).send("Local frontend is not running on port 3000.");
+console.log("before error");
+app.use(async (app) => {
+  try {
+    // if this throws, fallback to .get("*") below
+    return ((await staticPlugin({ assets: "web", prefix: "/", alwaysStatic: true })) as any)(app); // types are too hard to fix, but runtime works
+  } catch {
+    return app;
+  }
+});
+app.get("*", async (req) => {
+  // if in development mode, try to redirect to the local frontend
+  // otherwise return 404
+  if (env.NODE_ENV === "development") {
+    const developmentPath = `http://localhost:3000${req.path}`;
+    try {
+      const result = await fetch(developmentPath);
+      if (result.ok) {
+        return Response.redirect(developmentPath);
       }
+    } catch {
+      return new Response("Local frontend is not running on port 3000.", { status: 404 });
     }
-    // in prouduction the web app is served from the web folder so it should never get here
-    return res.status(404).send("404 Not Found");
-  });
+  }
+  if (req.path === "/") {
+    // serve index.html if the requested path is the root
+    const path = await Bun.resolve("./web/index.html", import.meta.dir);
+    return new Response(Bun.file(path));
+  }
+  return new Response("404 Not Found", { status: 404 });
 });
 
 if (env.NODE_ENV !== "test") {

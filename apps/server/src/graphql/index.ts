@@ -21,7 +21,7 @@ import { env } from "../env";
 export const schema = builder.toSchema();
 if (env.NODE_ENV === "development") {
   const schemaAsString = printSchema(schema);
-  const path = join(__dirname, "../../../web/src/relay/schema.graphql");
+  const path = join(import.meta.dir, "../../../web/src/relay/schema.graphql");
   writeFileSync(path, schemaAsString);
   console.log("\n✅ GraphQL schema generated into apps/web/src/relay/schema.graphql");
 }

@@ -1,0 +1,14 @@
+diff --git a/node_modules/prisma/build/index.js b/node_modules/prisma/build/index.js
+index 618591d..2769c8e 100755
+--- a/node_modules/prisma/build/index.js
++++ b/node_modules/prisma/build/index.js
+@@ -120264,6 +120264,9 @@ function simpleDebounce(fn2) {
+   };
+ }
+ 
++var performance = {
++  now: () => new Date().getTime(),
++};
+ // src/Generate.ts
+ var pkg = eval(`require('../package.json')`);
+ var _Generate = class _Generate {

@@ -75,26 +75,27 @@ export default definePlugin((opts) => {
   };
 
   return {
-    onRequest: async (req, res) => {
+    onRequest: async (req) => {
       if (req.path === "/auth") {
-        return res.redirect(
+        return Response.redirect(
           `https://google-calendar-api-flow-dev.vercel.app/api/auth?api_endpoint=${opts.serverOrigin}/api/plugin/${opts.pluginSlug}/auth/callback`
         );
-      } else if (req.path === "/auth/callback" && req.method === "POST") {
+      } else if (req.path === "/auth/callback" && req.request.method === "POST") {
         // not using getTokensFromStore here because it throws an error if the item doesn't exist, but we want to create it if it doesn't exist
         const accountsTokensItem = await opts.store.getPluginItem<AccountsTokens>(
           ACCOUNT_TOKENS_STORE_KEY
         );
+        const body = req.body as Tokens;
         // store the access token in the user's Flow instance and return 200
         const tokenData = {
-          ...req.body,
+          ...body,
           // the refresh token may not be returned if the user has already connected their account before
           // and they are connecting it again, so as a fallback use the one from the store if it exists
           refresh_token:
-            req.body.refresh_token ?? accountsTokensItem?.value?.[req.body.email].refresh_token,
+            body.refresh_token ?? accountsTokensItem?.value?.[body.email].refresh_token,
           expires_at: opts
             .dayjs()
-            .add((req.body.expires_in ?? 10) - 10, "seconds") // -10 is a 10 second buffer to account for latency in network requests
+            .add((body.expires_in ?? 10) - 10, "seconds") // -10 is a 10 second buffer to account for latency in network requests
             .toISOString(),
         } as Tokens;
         if ("expires_in" in tokenData) delete tokenData.expires_in; // delete expires_in because it's not needed
@@ -103,17 +104,17 @@ export default definePlugin((opts) => {
           ...(accountsTokensItem?.value ?? {}),
           [tokenData.email]: tokenData,
         });
-        return res.status(200).send();
-      } else if (req.path === "/events/webhook" && req.method === "POST") {
+        return new Response(); // return 200
+      } else if (req.path === "/events/webhook" && req.request.method === "POST") {
         const resourceUri = req.headers["x-goog-resource-uri"] as string; // example: https://www.googleapis.com/calendar/v3/calendars/calendarId/events?alt=json
         const calendarIdRaw = resourceUri.match(/\/calendars\/(.*)\/events/)?.[1];
         if (!calendarIdRaw) {
           console.log("❌ Could not find calendarId in x-goog-resource-uri header", resourceUri);
-          return res.status(200).send();
+          return new Response(); // return 200 to avoid Google retrying the request
         }
         const calendarId = decodeURIComponent(calendarIdRaw);
         await opts.pgBoss.send(PROCESS_EVENTS_WEBHOOK_JOB_NAME, { calendarId });
-        return res.status(200).send();
+        return new Response(); // return 200
       }
     },
     operations: {

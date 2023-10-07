@@ -6,7 +6,7 @@ import type {
   PluginOnUpdateTaskStatus,
 } from "@flowdev/server/src/graphql/Task";
 import { PluginOnUpdateItemStatus } from "@flowdev/server/src/graphql/Item";
-import type { Request, Response } from "express";
+import type { Elysia } from "elysia";
 export type { Prisma, TaskStatus } from "@flowdev/server/src/exportedTypes";
 
 export type ServerPluginOptions = _ServerPluginOptions;
@@ -25,11 +25,11 @@ export type ServerPlugin = (opts: ServerPluginOptions) => {
   /** Hook called before an item's status is updated. */
   onUpdateItemStatus?: PluginOnUpdateItemStatus;
   /**
-   * Hook called when a request is made at `/api/$pluginSlug`.
+   * Hook called when a request is made at `/api/plugin/:pluginSlug`.
    *
    * The `req.path` is the path after that. For example if the request is made at `/api/$pluginSlug/foo/bar`, then `req.path` will be `/foo/bar`.
    */
-  onRequest?: (req: Request, res: Response) => Promise<any>;
+  onRequest?: Parameters<Elysia["all"]>[1];
   /**
    * Operations that can be called from the web app through the GraphQL API. This allows the web app to call the plugin's
    * backend code and GraphQL clients like Relay to cache the results for a better user experience.
