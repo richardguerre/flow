@@ -7,7 +7,7 @@ import type {
 } from "@flowdev/server/src/graphql/Task";
 import { PluginOnUpdateItemStatus } from "@flowdev/server/src/graphql/Item";
 import type { Request, Response } from "express";
-export type * from "@flowdev/server/src/exportedTypes";
+export type { Prisma, TaskStatus } from "@flowdev/server/src/exportedTypes";
 
 export type ServerPluginOptions = _ServerPluginOptions;
 
