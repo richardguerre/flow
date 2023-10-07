@@ -29,7 +29,9 @@ export type ServerPlugin = (opts: ServerPluginOptions) => {
    *
    * The `req.path` is the path after that. For example if the request is made at `/api/$pluginSlug/foo/bar`, then `req.path` will be `/foo/bar`.
    */
-  onRequest?: Parameters<Elysia["all"]>[1];
+  onRequest?: (
+    req: Parameters<Parameters<Elysia["all"]>[1]>[0]
+  ) => void | null | Response | Promise<void | null | Response>;
   /**
    * Operations that can be called from the web app through the GraphQL API. This allows the web app to call the plugin's
    * backend code and GraphQL clients like Relay to cache the results for a better user experience.

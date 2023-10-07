@@ -52,7 +52,7 @@ export const app = new Elysia()
     type: "none",
   })
   // ---------------------- Plugin endpoints -----------------------
-  .all("/api/plugin/:pluginSlug", async (req) => {
+  .all("/api/plugin/:pluginSlug/*", async (req) => {
     const pluginSlug = req.params.pluginSlug;
     const installedPlugins = await getPlugins();
     const plugin = installedPlugins[pluginSlug];
@@ -69,14 +69,15 @@ export const app = new Elysia()
       );
     }
 
-    const res = await plugin.onRequest(req as any);
+    const maybePromise = plugin.onRequest(req as any);
+    if (maybePromise instanceof Response) return maybePromise;
+    const res = await maybePromise?.catch(() => null);
     if (res) return res;
     return new Response(`Plugin ${pluginSlug} has no endpoint for ${req.path}.`, { status: 404 });
   });
 
 // -------------------------- Web app -----------------------------
 
-console.log("before error");
 app.use(async (app) => {
   try {
     // if this throws, fallback to .get("*") below
@@ -85,7 +86,9 @@ app.use(async (app) => {
     return app;
   }
 });
-app.get("*", async (req) => {
+
+// this needs to be .all instead of .get because .get takes precedence over .all and .all("/api/plugin/:pluginSlug/*") needs to take precedence before .all("*")
+app.all("*", async (req) => {
   // if in development mode, try to redirect to the local frontend
   // otherwise return 404
   if (env.NODE_ENV === "development") {

@@ -1,6 +1,4 @@
 import { builder } from "./builder";
-import { writeFileSync } from "node:fs";
-import { join } from "node:path";
 import { printSchema } from "graphql";
 import "./Day";
 import "./Item";
@@ -21,7 +19,7 @@ import { env } from "../env";
 export const schema = builder.toSchema();
 if (env.NODE_ENV === "development") {
   const schemaAsString = printSchema(schema);
-  const path = join(import.meta.dir, "../../../web/src/relay/schema.graphql");
-  writeFileSync(path, schemaAsString);
+  const path = Bun.resolveSync("../../../web/src/relay/schema.graphql", import.meta.dir);
+  await Bun.write(path, schemaAsString);
   console.log("\n✅ GraphQL schema generated into apps/web/src/relay/schema.graphql");
 }

@@ -9,7 +9,7 @@ import { prisma } from "./prisma";
 import { env } from "../env";
 
 const cache = new Map<string, ServerPluginReturn>();
-const pathToPlugins = path.join(__dirname, env.PATH_TO_PLUGINS ?? "../../plugins");
+const pathToPlugins = path.join(import.meta.dir, env.PATH_TO_PLUGINS ?? "../../plugins");
 const pathToTemp = path.join(pathToPlugins, "__temp.js"); // this __temp.js is used to get the plugin's slug. see installServerPlugin below.
 
 export const getPlugins = async (): Promise<Record<string, ServerPluginReturn>> => {
@@ -126,7 +126,7 @@ export async function installServerPlugin(opts: Options) {
     );
   }
 
-  await fs.writeFile(pathToTemp, text); // we can keep overwriting this file because we only need it to get the plugin's slug.
+  await Bun.write(pathToTemp, text); // we can keep overwriting this file because we only need it to get the plugin's slug.
   delete require.cache[pathToTemp]; // make sure we get what was just written to the file and not what was cached before.
   let exported: DefineServerPluginReturn | undefined;
   try {
