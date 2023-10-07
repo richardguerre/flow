@@ -15,7 +15,7 @@ jobs:
       - name: Setup environment (node, npm install)
         uses: ./.github/actions/setup
       - name: Format check
-        run: npm run format:check
+        run: bun run format:check
 
   build-check:
     runs-on: ubuntu-latest
@@ -26,7 +26,7 @@ jobs:
       - name: Setup environment (node, npm install)
         uses: ./.github/actions/setup
       - name: Build check
-        run: npm run build
+        run: bun run build
 
   # server-test:
   #   services:
@@ -57,6 +57,6 @@ jobs:
   #     - name: Setup environment (node, npm install)
   #       uses: ./.github/actions/setup
   #     - name: Run DB migrations
-  #       run: DATABASE_URL=postgres://postgres:postgres@localhost:5432/flow_test npm run db:dev
+  #       run: DATABASE_URL=postgres://postgres:postgres@localhost:5432/flow_test bun run db:dev
   #     - name: Run tests
-  #       run: npm run test -w apps/server
+  #       run: bun run test -w apps/server

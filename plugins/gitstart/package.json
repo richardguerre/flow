@@ -6,12 +6,12 @@
   "scripts": {
     "build:web": "vite build -c vite.web.ts",
     "build:server": "vite build -c vite.server.ts",
-    "build": "npm run build:web && npm run build:server",
+    "build": "bun run build:web && bun run build:server",
     "dev:web": "vite build -c vite.web.ts --watch",
     "dev:server": "vite build -c vite.server.dev.ts --watch"
   },
   "dependencies": {
-    "@flowdev/plugin": "*"
+    "@flowdev/plugin": "workspace:*"
   },
   "devDependencies": {
     "@vitejs/plugin-react": "^4.0.2"

@@ -12,32 +12,34 @@
   ],
   "scripts": {
     "dev": "turbo run dev",
-    "db:dev": "npm run db:dev -w apps/server",
-    "db:reset": "npm run db:reset -w apps/server",
-    "db:seed": "npm run db:seed -w apps/server",
-    "build": "npm run unocss && turbo run build && npm run post-build -w apps/server",
+    "db:dev": "bun run db:dev -w apps/server",
+    "db:reset": "bun run db:reset -w apps/server",
+    "db:seed": "bun run db:seed -w apps/server",
+    "build": "bun run unocss && turbo run build && bun run post-build -w apps/server",
     "format": "prettier --write .",
     "format:check": "prettier --check .",
     "---------patch---------": "",
-    "postinstall": "patch-package",
+    "postinstall": "bunx patch-package",
     "-------codespaces-------": "",
-    "codepsaces": "npm run env:codespaces && npm run db:reset",
+    "codepsaces": "bun run env:codespaces && bun run db:reset",
     "env:codespaces": "turbo run env:codespaces",
     "---------util---------": "",
-    "clean": "npm run clean:root && npm run clean:apps && npm run clean:packages",
+    "clean": "bun run clean:root && bun run clean:apps && bun run clean:packages",
     "clean:root": "rm -rf ./node_modules",
     "clean:apps": "rm -rf ./apps/**/node_modules",
     "clean:packages": "rm -rf ./packages/**/node_modules",
-    "relay": "npm run relay -w apps/web",
+    "relay": "bun run relay -w apps/web",
     "unocss": "unocss"
   },
   "devDependencies": {
+    "bun-types": "1.0.4",
     "dotenv": "^16.0.2",
     "dotenv-expand": "^9.0.0",
     "patch-package": "^6.0.2",
     "prettier": "^2.8.8",
     "prettier-plugin-tailwindcss": "^0.2.8",
-    "turbo": "^1.10.4"
+    "turbo": "^1.10.4",
+    "typescript": "5.2.2"
   },
   "prettier": {
     "printWidth": 100

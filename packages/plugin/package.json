@@ -5,8 +5,8 @@
   "private": false,
   "main": "index.ts",
   "peerDependencies": {
-    "@flowdev/web": "*",
-    "@flowdev/server": "*",
+    "@flowdev/web": "workspace:*",
+    "@flowdev/server": "workspace:*",
     "react": "^18.2.0"
   },
   "devDependencies": {

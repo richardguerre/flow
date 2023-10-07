@@ -1,4 +1,4 @@
-import express from "express";
+import { Elysia } from "elysia";
 import { createYoga } from "graphql-yoga";
 import path from "node:path";
 import { schema } from "./graphql";
@@ -22,7 +22,7 @@ import "./utils/dayjs";
 import "./checksum";
 
 const PORT = env.PORT ?? 4000;
-export const app = express();
+export const app = new Elysia();
 app.use(express.json());
 
 // -------------------------- GraphQL ----------------------------

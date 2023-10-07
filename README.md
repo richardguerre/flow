@@ -42,7 +42,7 @@ When you open the web app in the browser, you may see nothing or "Hello world". 
 1. Fork and clone the repository
 2. Install dependencies:
    ```bash
-   npm install
+   bun install
    ```
 3. Start a Postgres database
 4. Copy the `.env.example` file in `apps/server` into a `.env` file and modify the `DATABASE_URL` environment variable to point to your database
@@ -51,15 +51,15 @@ When you open the web app in the browser, you may see nothing or "Hello world". 
     ```
 5. Run the migrations
    ```bash
-   npm run db:dev
+   bun run db:dev
    ```
    or reset it if you have already run it before. This will also seed the database with some data so you can skip the next step.
    ```bash
-   npm run db:reset
+   bun run db:reset
    ```
 6. (optional) Seed the database
    ```bash
-   npm run db:seed
+   bun run db:seed
    ```
 7. Copy the `.env.example` file in `apps/web` into a `.env` file. No need to modify anything.
    ```bash
@@ -67,7 +67,7 @@ When you open the web app in the browser, you may see nothing or "Hello world". 
     ```
 8. Start the `server` and `web` app
    ```bash
-   npm run dev
+   bun dev
    ```
 9. Open the web app at http://localhost:3000
 10. Add a `token` as an item in localStorage and refresh. The value can be any string (authentication is not done yet). This is used to authenticate the user. You can do this in the browser console:
@@ -90,14 +90,14 @@ If you are using VS Code, you will be prompted to install the recommended extens
 To run tests, run the following command:
 
 ```bash
-npm run test
+bun run test
 ```
 
 For now there are only tests in the `server` app, so you can also run them directly from the `server` app:
 
 ```bash
 cd apps/server
-npm run test
+bun run test
 ```
 
 # FAQ/Pointers

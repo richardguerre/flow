@@ -1,8 +1,8 @@
 diff --git a/node_modules/@pothos/plugin-prisma/lib/schema-builder.js b/node_modules/@pothos/plugin-prisma/lib/schema-builder.js
-index 77e8b81..7e83410 100644
+index 51ada45..d568f9c 100644
 --- a/node_modules/@pothos/plugin-prisma/lib/schema-builder.js
 +++ b/node_modules/@pothos/plugin-prisma/lib/schema-builder.js
-@@ -123,7 +123,7 @@ schemaBuilderProto.prismaNode = function prismaNode(type, { id: { field , resolv
+@@ -150,7 +150,7 @@ schemaBuilderProto.prismaNode = function prismaNode(type, { id: { field, resolve
                  }
              }));
              (0, _core.brandWithType)(record, typeName);
