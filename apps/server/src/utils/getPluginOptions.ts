@@ -6,6 +6,7 @@ import { nearestTailwindColor } from "./nearestTailwindColor";
 import type { Color, Store } from "@prisma/client";
 import { env } from "../env";
 import { GraphQLError } from "graphql";
+import { FlowPluginSlug, StoreKeys } from "../graphql/Store";
 
 type PrismaJsonInput = string | number | boolean | Prisma.JsonObject | Prisma.JsonArray;
 
@@ -184,6 +185,17 @@ export const getPluginOptions = (pluginSlug: string) => ({
       });
       return result as (Omit<Store, "value"> & { value: T }) | null;
     },
+  },
+  /**
+   * Get the user's timezone.
+   * @returns [dayjs timezone string](https://day.js.org/docs/en/plugin/timezone)
+   * @example "America/New_York"
+   */
+  getUsersTimezone: async () => {
+    const timezoneItem = await prisma.store.findFirst({
+      where: { key: StoreKeys.TIMEZONE, pluginSlug: FlowPluginSlug },
+    });
+    return (timezoneItem?.value ?? null) as string | null;
   },
   /** Get the nearest valid Item.color to the specified Hex. */
   getNearestItemColor: (hex: string) => nearestTailwindColor(hex) as Color,

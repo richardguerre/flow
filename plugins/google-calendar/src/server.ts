@@ -1,4 +1,4 @@
-import { definePlugin } from "@flowdev/plugin/server";
+import { definePlugin, type Prisma } from "@flowdev/plugin/server";
 import type { calendar_v3 } from "@googleapis/calendar"; // import type only to avoid bundling the library in the plugin which contains unsafe code (process.env access, etc.)
 
 const ACCOUNT_TOKENS_STORE_KEY = "account-tokens";
@@ -249,8 +249,9 @@ export default definePlugin((opts) => {
           CONNECTED_CALENDARS_KEY,
           Array.from(connectedCalendarsMap.values())
         );
-        // schedule a job to sync calendars every 3 days. If the schedule already exists, it will be updated.
-        await opts.pgBoss.schedule(CALENDARS_SYNC_JOB_NAME, "0 0 */3 * *", {
+        // schedule a job to sync calendars every 3 days at 3am (least busy time and not midnight so less likely to be peak time for Google).
+        // If the schedule already exists, it will be updated.
+        await opts.pgBoss.schedule(CALENDARS_SYNC_JOB_NAME, "0 3 */3 * *", {
           calendarIds: input.calendarIds,
         });
         console.log("✔ Scheduled calendars sync job");
@@ -279,7 +280,7 @@ export default definePlugin((opts) => {
     },
     handlePgBossWork: (work) => [
       work(UPSERT_EVENT_JOB_NAME, { batchSize: 5 }, async (jobs) => {
-        // process 5 events at a time to go a little faster
+        // process 5 events at a time to go a little faster (processing 100s at a time might consume too much memory as Google Calendar events can be quite large, especially if it includes conference data)
         for (const job of jobs) {
           const event = job.data as calendar_v3.Schema$Event & { calendarColor: string | null };
           const item = await opts.prisma.item.findFirst({
@@ -291,52 +292,114 @@ export default definePlugin((opts) => {
                 where: { originalId: event.id, pluginSlug: opts.pluginSlug },
                 select: { id: true },
               },
+              // there should only be at most one task per item for calendar events
+              tasks: {
+                select: {
+                  id: true,
+                  pluginDatas: {
+                    select: { id: true },
+                    take: 1,
+                    orderBy: { createdAt: "asc" }, // it should be the first plugin data that was created
+                  },
+                },
+                take: 1,
+                orderBy: { createdAt: "asc" },
+              },
             },
           });
-          if (event.status === "cancelled" && !!item) {
-            try {
-              await opts.prisma.itemPluginData.delete({ where: { id: item.pluginDatas[0]?.id } });
-              await opts.prisma.item.delete({ where: { id: item.id } });
-            } catch (e) {
-              console.log("Error deleting item and it's dependencies:", e);
-            }
-            console.log("✔ Deleted item from event", item.title, item.scheduledAt);
+
+          if (!item && event.status === "cancelled") {
+            // no need to create item if the event was cancelled
             continue;
           }
-          const commonBetweenUpdateAndCreate = {
+
+          const usersTimezone = (await opts.getUsersTimezone()) ?? "Etc/GMT-0"; // this should not be null, but just in case
+
+          const task = item?.tasks[0];
+          const isAllDay = !!event.start?.date;
+          const scheduledStart = event.start?.date
+            ? opts.dayjs(event.start.date).startOf("day")
+            : event.start?.dateTime
+            ? opts.dayjs(event.start.dateTime)
+            : opts.dayjs(); // it should never default to today, but at least we make it a valid day instead of null
+          const scheduledEnd = event.end?.date
+            ? opts.dayjs(event.end.date).endOf("day")
+            : event.end?.dateTime
+            ? opts.dayjs(event.end.dateTime)
+            : scheduledStart.add(1, "millisecond");
+          const isOver = scheduledEnd.isBefore(opts.dayjs());
+          const scheduledAtDate = scheduledStart.tz(usersTimezone).utc(true).format("YYYY-MM-DD");
+
+          const itemCommonBetweenUpdateAndCreate = {
             title: event.summary ?? "No title",
             color: event.calendarColor ? opts.getNearestItemColor(event.calendarColor) : null,
-            isAllDay: !!event.start?.date ? true : false,
-            scheduledAt: event.start?.dateTime ?? null,
-            durationInMinutes: opts
-              .dayjs(event.end?.dateTime)
-              .diff(event.start?.dateTime, "minute"),
-            isRelevant: true, // for now all calendar events are relevant
-          };
+            isAllDay,
+            scheduledAt: scheduledStart.toISOString(),
+            durationInMinutes: isAllDay
+              ? null
+              : opts.dayjs(scheduledStart).diff(scheduledEnd, "minute"),
+            isRelevant: event.status !== "cancelled",
+          } satisfies Prisma.ItemUpdateInput;
+
           const min = {
-            status: event.status,
-            htmlLink: event.htmlLink,
+            status: event.status as PluginDataMin["status"],
+            htmlLink: event.htmlLink!,
             numOfAttendees: event.attendees?.length ?? 0,
-          };
+            conferenceData: event.conferenceData as any,
+            hexBackgroundColor: event.calendarColor,
+          } satisfies PluginDataMin;
           const full = {
+            ...event,
             ...min,
-            description: event.description,
-            attendees: event.attendees as any, // the any is required to make typescript happy with Prisma's type system
-            eventType: event.eventType,
-            organizer: event.organizer,
-            hangoutLink: event.hangoutLink,
-            conferenceData: event.conferenceData as any, // the any is required to make typescript happy with Prisma's type system
-            backgroundColor: event.calendarColor,
-          };
+            eventType: event.eventType as PluginDataFull["eventType"],
+          } satisfies PluginDataFull as any; // the any is required to make typescript happy with Prisma's type system (theoretically there are no issues since we are getting all events from Google's REST API, which returns serialized JSON)
+
+          const taskCommonBetweenUpdateAndCreate = {
+            title: itemCommonBetweenUpdateAndCreate["title"],
+            completedAt: isOver ? scheduledEnd.toISOString() : null,
+            status: event.status !== "cancelled" ? "CANCELED" : isOver ? "DONE" : "TODO",
+            day: {
+              connectOrCreate: {
+                where: { date: scheduledAtDate },
+                create: { date: scheduledAtDate, tasksOrder: task?.id ? [task.id] : [] },
+              },
+            },
+          } satisfies Prisma.TaskUpdateInput;
+
           if (item) {
             await opts.prisma.item.update({
               where: { id: item.id },
               data: {
-                ...commonBetweenUpdateAndCreate,
+                ...itemCommonBetweenUpdateAndCreate,
                 pluginDatas: {
                   update: {
                     where: { id: item.pluginDatas[0]?.id },
                     data: { min, full },
+                  },
+                },
+                tasks: {
+                  upsert: {
+                    where: { id: task?.id },
+                    update: {
+                      ...taskCommonBetweenUpdateAndCreate,
+                      pluginDatas: {
+                        update: {
+                          where: { id: task?.pluginDatas[0]?.id },
+                          data: { min, full },
+                        },
+                      },
+                    },
+                    create: {
+                      ...taskCommonBetweenUpdateAndCreate,
+                      pluginDatas: {
+                        create: {
+                          pluginSlug: opts.pluginSlug,
+                          originalId: event.id,
+                          min,
+                          full,
+                        },
+                      },
+                    },
                   },
                 },
               },
@@ -344,7 +407,7 @@ export default definePlugin((opts) => {
           } else {
             await opts.prisma.item.create({
               data: {
-                ...commonBetweenUpdateAndCreate,
+                ...itemCommonBetweenUpdateAndCreate,
                 pluginDatas: {
                   create: {
                     pluginSlug: opts.pluginSlug,
@@ -353,10 +416,23 @@ export default definePlugin((opts) => {
                     full,
                   },
                 },
+                tasks: {
+                  create: {
+                    ...taskCommonBetweenUpdateAndCreate,
+                    pluginDatas: {
+                      create: {
+                        pluginSlug: opts.pluginSlug,
+                        originalId: event.id,
+                        min,
+                        full,
+                      },
+                    },
+                  },
+                },
               },
             });
           }
-          console.log("✔ Upserted item from event", event.summary, event.start?.dateTime);
+          console.log("✔ Upserted item from event", event.summary, scheduledStart?.toISOString());
         }
       }),
       work(GET_EVENTS_JOB_NAME, async (job) => {
@@ -453,6 +529,19 @@ export default definePlugin((opts) => {
     ],
   };
 });
+
+export type PluginDataMin = {
+  status: "confirmed" | "tentative" | "cancelled";
+  htmlLink: NonNullable<calendar_v3.Schema$Event["htmlLink"]>;
+  numOfAttendees: number;
+  conferenceData: calendar_v3.Schema$Event["conferenceData"];
+  hexBackgroundColor: string | null;
+};
+
+export type PluginDataFull = PluginDataMin &
+  Omit<calendar_v3.Schema$Event, keyof PluginDataMin | "eventType"> & {
+    eventType: "default" | "outOfOffice" | "focusTime" | "workingLocation";
+  };
 
 type GetTokenParams = {
   account: string;
