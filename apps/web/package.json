@@ -6,7 +6,7 @@
     "relay": "cd ../.. && relay-compiler && echo '✅ Relay compiled!'",
     "relay:watch": "bun run relay -- --watch",
     "predev": "bun run relay",
-    "dev": "vite --port 3000",
+    "dev": "bun --bun vite --port 3000",
     "prebuild": "DATABASE_URL=this_makes_it_run_wo_server_envs ORIGIN=sam_as_db_url bun run print-schema -w=@flowdev/server && mkdir -p src/relay/__generated__ && bun run relay",
     "build": "NODE_ENV=production tsc && vite build",
     "preview": "vite preview",
@@ -33,7 +33,8 @@
     "react-dom": "^18.2.0",
     "react-hook-form": "^7.44.1",
     "react-router-dom": "^6.6.2",
-    "react-sortablejs": "^6.1.4"
+    "react-sortablejs": "^6.1.4",
+    "sortablejs": "^1.15.0"
   },
   "devDependencies": {
     "@swc/plugin-relay": "^1.5.36",

@@ -1,5 +1,4 @@
 import { Elysia } from "elysia";
-import { staticPlugin } from "@elysiajs/static";
 import { createYoga } from "graphql-yoga";
 import { schema } from "./graphql";
 import {
@@ -78,15 +77,6 @@ export const app = new Elysia()
 
 // -------------------------- Web app -----------------------------
 
-app.use(async (app) => {
-  try {
-    // if this throws, fallback to .get("*") below
-    return ((await staticPlugin({ assets: "web", prefix: "/", alwaysStatic: true })) as any)(app); // types are too hard to fix, but runtime works
-  } catch {
-    return app;
-  }
-});
-
 // this needs to be .all instead of .get because .get takes precedence over .all and .all("/api/plugin/:pluginSlug/*") needs to take precedence before .all("*")
 app.all("*", async (req) => {
   // if in development mode, try to redirect to the local frontend
@@ -102,78 +92,85 @@ app.all("*", async (req) => {
       return new Response("Local frontend is not running on port 3000.", { status: 404 });
     }
   }
-  if (req.path === "/") {
-    // serve index.html if the requested path is the root
-    const path = await Bun.resolve("./web/index.html", import.meta.dir);
+  const webDir = "./web";
+  try {
+    const path = await Bun.resolve(`${webDir}${req.path}`, import.meta.dir);
     return new Response(Bun.file(path));
+  } catch {
+    try {
+      const path = await Bun.resolve(`${webDir}/index.html`, import.meta.dir);
+      return new Response(Bun.file(path));
+    } catch {
+      return new Response(
+        "Not sure how you got here. Contact Richard Guerre (through Slack or @richardguerre_ on Twitter) with a screenshot of this screen with the URL.",
+        { status: 404 }
+      );
+    }
   }
-  return new Response("404 Not Found", { status: 404 });
 });
 
 if (env.NODE_ENV !== "test") {
-  (async () => {
-    const plugins = await getPlugins(); // this will refresh the plugin cache to make sure it's up to date before installing plugins and is also used below to handle the pgBoss jobs
-    if (env.NODE_ENV !== "development") {
-      // ---------------------- Install plugins -------------------------
+  const plugins = await getPlugins(); // this will refresh the plugin cache to make sure it's up to date before installing plugins and is also used below to handle the pgBoss jobs
+  if (env.NODE_ENV !== "development") {
+    // ---------------------- Install plugins -------------------------
 
-      // Try installing plugins before starting the server so that requests
-      // to the plugin endpoints don't fail. Only if this is production (not development)
-      // as during development plugins can be installed manually.
-      try {
-        const installedPlugins = await getPluginsInStore().catch(() => {
-          console.log("Failed to get plugins from DB.");
-          return [];
-        });
-        for (const pluginInfo of installedPlugins) {
-          const pluginJson = await getPluginJson(pluginInfo).catch(() => null);
-          if (!pluginJson) {
-            console.log(`Invalid plugin.json for "${pluginInfo.slug}".`);
-            continue;
-          }
-          if (Object.keys(plugins).find((p) => p === pluginJson.slug)) {
-            console.log(`Plugin "${pluginJson.slug}" already installed on server.`);
-            continue;
-          }
-          if (!pluginJson.server) {
-            console.log(`Plugin "${pluginJson.slug}" has no server entrypoint.`);
-            continue;
-          }
-          await installServerPlugin(pluginInfo).catch((e) => {
-            if (e.message.includes("PLUGIN_WITH_SAME_SLUG")) {
-              console.log(`Plugin "${pluginInfo.slug}" already installed on server.`);
-              return;
-            }
-            console.log(`Failed to install "${pluginInfo.slug}": ${e}`);
-          });
+    // Try installing plugins before starting the server so that requests
+    // to the plugin endpoints don't fail. Only if this is production (not development)
+    // as during development plugins can be installed manually.
+    try {
+      const installedPlugins = await getPluginsInStore().catch(() => {
+        console.log("Failed to get plugins from DB.");
+        return [];
+      });
+      for (const pluginInfo of installedPlugins) {
+        const pluginJson = await getPluginJson(pluginInfo).catch(() => null);
+        if (!pluginJson) {
+          console.log(`Invalid plugin.json for "${pluginInfo.slug}".`);
+          continue;
         }
-      } catch (e) {
-        // this should never happen, but better be safe than sorry
-        console.log("Failed to install plugins from DB.");
-        console.error(e);
+        if (Object.keys(plugins).find((p) => p === pluginJson.slug)) {
+          console.log(`Plugin "${pluginJson.slug}" already installed on server.`);
+          continue;
+        }
+        if (!pluginJson.server) {
+          console.log(`Plugin "${pluginJson.slug}" has no server entrypoint.`);
+          continue;
+        }
+        await installServerPlugin(pluginInfo).catch((e) => {
+          if (e.message.includes("PLUGIN_WITH_SAME_SLUG")) {
+            console.log(`Plugin "${pluginInfo.slug}" already installed on server.`);
+            return;
+          }
+          console.log(`Failed to install "${pluginInfo.slug}": ${e}`);
+        });
       }
+    } catch (e) {
+      // this should never happen, but better be safe than sorry
+      console.log("Failed to install plugins from DB.");
+      console.error(e);
     }
+  }
 
-    // -------------------------- Server ------------------------------
+  // -------------------------- Server ------------------------------
 
-    app.listen(PORT, () => {
-      console.log(`✅ Server started at: http://localhost:${PORT}`);
-      console.log(`🟣 GraphQL API: http://localhost:${PORT}/graphql`);
-    });
+  app.listen(PORT, () => {
+    console.log(`✅ Server started at: http://localhost:${PORT}`);
+    console.log(`🟣 GraphQL API: http://localhost:${PORT}/graphql`);
+  });
 
-    // -------------------------- PgBoss ------------------------------
-    await pgBoss.start();
-    console.log("✅ PgBoss started.");
-    for (const plugin of Object.values(plugins)) {
-      const handlers = plugin.handlePgBossWork?.(pgBoss.work) ?? [];
-      await Promise.all(handlers);
-    }
-    if (env.NODE_ENV !== "development") {
-      await pgBoss.work(ROLLOVER_TASKS_JOB_NAME, syncTasks);
-      const timezone = await getTimezone();
-      await scheduleRolloverTasks(timezone);
-      await syncTasks(); // initial sync on server start
-    }
-  })();
+  // -------------------------- PgBoss ------------------------------
+  await pgBoss.start();
+  console.log("✅ PgBoss started.");
+  for (const plugin of Object.values(plugins)) {
+    const handlers = plugin.handlePgBossWork?.(pgBoss.work) ?? [];
+    await Promise.all(handlers);
+  }
+  if (env.NODE_ENV !== "development") {
+    await pgBoss.work(ROLLOVER_TASKS_JOB_NAME, syncTasks);
+    const timezone = await getTimezone();
+    await scheduleRolloverTasks(timezone);
+    await syncTasks(); // initial sync on server start
+  }
 } else {
   app.listen(0);
   // by defaulting to port 0, it will randomly assign a port that is not in use
