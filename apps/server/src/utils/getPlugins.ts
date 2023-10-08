@@ -122,15 +122,15 @@ export async function installServerPlugin(opts: Options) {
     )
   ) {
     throw new GraphQLError(
-      `The plugin is unsafe to install as it can gain access to sensitive data. Contact the plugin author or Install a different plugin.`
+      `The plugin is unsafe to install as it can gain access to sensitive data. Contact the plugin author or install a different plugin.`
     );
   }
 
   await Bun.write(pathToTemp, text); // we can keep overwriting this file because we only need it to get the plugin's slug.
-  delete require.cache[pathToTemp]; // make sure we get what was just written to the file and not what was cached before.
+  delete import.meta.require.cache[pathToTemp]; // make sure we get what was just written to the file and not what was cached before.
   let exported: DefineServerPluginReturn | undefined;
   try {
-    exported = require(pathToTemp) as DefineServerPluginReturn | undefined;
+    exported = import.meta.require(pathToTemp) as DefineServerPluginReturn | undefined;
   } catch (e) {
     console.log(e);
     throw new GraphQLError(

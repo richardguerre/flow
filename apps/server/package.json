@@ -6,7 +6,7 @@
     "print-schema": "bun run gen && NODE_ENV=development bun run src/graphql/index.ts",
     "dev": "NODE_ENV=development bun --watch run src/index.ts",
     "type-check": "bun run gen && tsc --noEmit && echo '✅ Type checking passed!'",
-    "build": "bun build ./src/index.ts --outdir dist --target bun",
+    "build": "bun build ./src/index.ts --outdir dist --target bun --define \"__dirname=import.meta.dir\"",
     "copy-web": "rm -rf ./dist/web && cp -r ../web/dist ./dist/web && echo '✅ apps/web/dist copied to apps/server/dist/web'",
     "move-prisma-binary": "mv dist/client/* dist || echo '🔵 Ignore above error. Prisma binary was already moved.' && rm -r dist/client || echo '🔵 Ignore above error. dist/client was already removed.' && echo '✅ Prisma binary successfully moved from dist/client to dist'",
     "post-build": "bun run copy-web && bun run move-prisma-binary",
