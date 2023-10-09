@@ -1,5 +1,4 @@
 // For format details, see https://aka.ms/devcontainer.json. For config options, see the
-// README at: https://github.com/devcontainers/templates/tree/main/src/javascript-node-postgres
 {
   "name": "Default", // this is the default container for working in the project
   "dockerComposeFile": "docker-compose.yml",
@@ -25,10 +24,10 @@
     }
   },
   "postAttachCommand": {
-    "server": "cd apps/server && bun run dev",
-    "web": "cd apps/web && bun run dev",
-    "prisma": "cd apps/server && npx prisma studio"
-    // "relay": "cd apps/web && bun run relay:watch" // TODO: install watchman as part of docker containre to make this work
+    "server": "cd apps/server && bun dev",
+    "web": "cd apps/web && bun dev",
+    "prisma": "cd apps/server && bunx --bun prisma studio"
+    // "relay": "cd apps/web && bun relay:watch" // TODO: install watchman as part of docker containre to make this work
   }
 
   // Uncomment to connect as root instead. More info: https://aka.ms/dev-containers-non-root.

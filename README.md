@@ -21,6 +21,10 @@ If you have suggestions for how Flow could be improved, or want to report a bug,
 
 ## Getting started with GitHub Codespaces
 
+> [!NOTE]
+> Since migrating to bun, the setup for GitHub Codespaces has not been maintained. It may or may not work.
+> The Codespaces setup is not the primary focus of the project right now, but if you want to help with it, please open an issue describing the problems you faced. If you want to help fix it, please open a PR.
+
 You can create a GitHub Codespace from this repository by clicking the green button at the top of the page and selecting "New codespace". This will create a Codespace with with everything you need to start developing on Flow:
 
 - Starts a Postgres database on port 5432
@@ -51,15 +55,15 @@ When you open the web app in the browser, you may see nothing or "Hello world". 
     ```
 5. Run the migrations
    ```bash
-   bun run db:dev
+   bun db:dev
    ```
    or reset it if you have already run it before. This will also seed the database with some data so you can skip the next step.
    ```bash
-   bun run db:reset
+   bun db:reset
    ```
 6. (optional) Seed the database
    ```bash
-   bun run db:seed
+   bun db:seed
    ```
 7. Copy the `.env.example` file in `apps/web` into a `.env` file. No need to modify anything.
    ```bash
@@ -86,6 +90,10 @@ If you are using VS Code, you will be prompted to install the recommended extens
 - [Prisma](https://marketplace.visualstudio.com/items?itemName=Prisma.prisma) for [Prisma](https://www.prisma.io) support.
 
 ## Running tests
+
+> [!NOTE]
+> Since migrating to bun, the tests have not been maintained. They may or may not work.
+> Test are not the primary focus of the project right now.
 
 To run tests, run the following command:
 

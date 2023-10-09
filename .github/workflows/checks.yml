@@ -54,7 +54,7 @@ jobs:
   #   steps:
   #     - name: Check out repository code
   #       uses: actions/checkout@v3
-  #     - name: Setup environment (node, npm install)
+  #     - name: Setup environment (bun, bun install)
   #       uses: ./.github/actions/setup
   #     - name: Run DB migrations
   #       run: DATABASE_URL=postgres://postgres:postgres@localhost:5432/flow_test bun run db:dev
