@@ -30,7 +30,7 @@
     "clean:root": "rm -rf ./node_modules",
     "clean:apps": "rm -rf ./apps/**/node_modules",
     "clean:packages": "rm -rf ./packages/**/node_modules",
-    "relay": "bun run relay -w apps/web",
+    "relay": "cd apps/web && bun run relay",
     "unocss": "bunx --bun unocss"
   },
   "devDependencies": {
