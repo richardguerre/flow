@@ -137,7 +137,7 @@ export async function installServerPlugin(opts: Options) {
       `Couldn't install the server part of the plugin. Contact the plugin author to fix this.`
     );
   }
-  if (typeof exported !== "object" || Object.keys(exported).length === 0) {
+  if (typeof exported !== "object") {
     throw new GraphQLError(`Couldn't find any exports at "${opts.url}/server.js"`);
   }
   if ("default" in exported) {

@@ -4,6 +4,11 @@ export default defineConfig({
   build: {
     outDir: "out",
     emptyOutDir: false,
+    rollupOptions: {
+      output: {
+        exports: "named",
+      },
+    },
     lib: {
       name: "flow-gitstart",
       entry: "src/server.ts",
