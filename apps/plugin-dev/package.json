@@ -3,7 +3,7 @@
   "description": "Express app for plugin development.",
   "private": true,
   "scripts": {
-    "dev": "bunx serve ../../plugins -p 4040"
+    "dev": "bunx serve --cors ../../plugins -p 4040"
   },
   "dependencies": {
     "serve": "14.2.1"
