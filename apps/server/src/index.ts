@@ -1,4 +1,5 @@
 import { Elysia } from "elysia";
+import { cors } from "@elysiajs/cors";
 import { createYoga } from "graphql-yoga";
 import { schema } from "./graphql";
 import {
@@ -23,31 +24,39 @@ import "./checksum";
 const PORT = env.PORT ?? 4000;
 
 // -------------------------- GraphQL ----------------------------
-const yoga = createYoga({
-  schema,
-  context: async (req) => {
-    const sessionToken = req.request.headers.get("authorization")?.replace("Bearer ", "");
+const yogaHandler = async (request: Request) => {
+  const res = await createYoga({
+    schema,
+    cors: {
+      origin: undefined,
+    },
+    context: async (req) => {
+      const sessionToken = req.request.headers.get("authorization")?.replace("Bearer ", "");
 
-    return {
-      userAgent: req.request.headers.get("user-agent") ?? undefined,
-      sessionToken,
-      // had to do this as having the isSessionValid function in builder.ts caused an error (maybe circular dependency error)
-      isSessionValid: () => isSessionTokenValid(sessionToken),
-      subscriptions: {},
-    };
-  },
-  graphiql: {
-    title: "Flow GraphQL API",
-    headers: JSON.stringify({
-      Authorization: `Bearer COPY_TOKEN_FROM_BROWSER_CONSOLE_OR_LOGIN_MUTATION`,
-    }),
-  },
-});
+      return {
+        userAgent: req.request.headers.get("user-agent") ?? undefined,
+        sessionToken,
+        // had to do this as having the isSessionValid function in builder.ts caused an error (maybe circular dependency error)
+        isSessionValid: () => isSessionTokenValid(sessionToken),
+        subscriptions: {},
+      };
+    },
+    graphiql: {
+      title: "Flow GraphQL API",
+      headers: JSON.stringify({
+        Authorization: `Bearer COPY_TOKEN_FROM_BROWSER_CONSOLE_OR_LOGIN_MUTATION`,
+      }),
+    },
+  }).handle(request);
+  res.headers.delete("Access-Control-Allow-Origin"); // let elysia handle CORS
+  return res;
+};
 
 // -------------------------- Server ------------------------------
 export const app = new Elysia()
-  .get("/graphql", async ({ request }) => yoga.fetch(request))
-  .post("/graphql", async ({ request }) => yoga.fetch(request), {
+  .use(cors())
+  .get("/graphql", async ({ request }) => yogaHandler(request))
+  .post("/graphql", async ({ request }) => yogaHandler(request), {
     type: "none",
   })
   // ---------------------- Plugin endpoints -----------------------
@@ -193,3 +202,6 @@ process.on("SIGINT", () => {
       process.exit(1);
     });
 });
+
+// curl to introspect schema
+// curl -X POST http://localhost:4000/graphql -H "Content-Type: application/json" -d '{"query":"{__schema {types {name}} }"}'

@@ -40,8 +40,9 @@
     "vitest": "0.23.4"
   },
   "dependencies": {
-    "@flowdev/nearest-color": "workspace:*",
+    "@elysiajs/cors": "^0.7.1",
     "@elysiajs/static": "0.7.1",
+    "@flowdev/nearest-color": "workspace:*",
     "@pothos/core": "3.30.0",
     "@pothos/plugin-prisma": "3.61.0",
     "@pothos/plugin-prisma-utils": "0.11.0",
