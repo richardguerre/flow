@@ -10,3 +10,4 @@ runs:
       with:
         bun-version: 1.0.4
     - run: bun install
+      shell: bash
