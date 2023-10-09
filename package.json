@@ -1,6 +1,6 @@
 {
   "name": "flow",
-  "version": "1.0.0",
+  "version": "0.1.0",
   "private": true,
   "author": "@richardguerre",
   "license": "MIT",
@@ -11,11 +11,13 @@
     "plugin-apps/*"
   ],
   "scripts": {
-    "dev": "turbo run dev",
-    "db:dev": "bun run db:dev -w apps/server",
-    "db:reset": "bun run db:reset -w apps/server",
-    "db:seed": "bun run db:seed -w apps/server",
-    "build": "bun run unocss && turbo run build && bun run post-build -w apps/server",
+    "dev": "bunx --bun turbo run dev",
+    "db:dev": "cd apps/server && bun run db:dev",
+    "db:reset": "cd apps/server && bun run db:reset",
+    "db:seed": "cd apps/server && bun run db:seed",
+    "web:build": "cd apps/web && bun run build",
+    "build": "bun run unocss && bun run web:build && bunx --bun turbo run build --filter=!@flowdev/web && bun run post-build",
+    "post-build": "cd apps/server && bun run post-build",
     "format": "prettier --write .",
     "format:check": "prettier --check .",
     "---------patch---------": "",
@@ -29,7 +31,7 @@
     "clean:apps": "rm -rf ./apps/**/node_modules",
     "clean:packages": "rm -rf ./packages/**/node_modules",
     "relay": "bun run relay -w apps/web",
-    "unocss": "unocss"
+    "unocss": "bunx --bun unocss"
   },
   "devDependencies": {
     "bun-types": "1.0.4",

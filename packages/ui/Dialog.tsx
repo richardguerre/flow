@@ -24,9 +24,7 @@ export const Dialog = (props: React.ComponentProps<typeof Root> & { onClose?: ()
   />
 );
 export const DialogTrigger = Trigger;
-export const DialogPortal = ({ className, ...props }: DialogPortalProps) => (
-  <Portal className={tw(className)} {...props} />
-);
+export const DialogPortal = ({ ...props }: DialogPortalProps) => <Portal {...props} />;
 
 export const DialogOverlay = forwardRef<
   React.ElementRef<typeof Overlay>,

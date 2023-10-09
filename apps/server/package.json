@@ -8,8 +8,7 @@
     "type-check": "bun run gen && tsc --noEmit && echo '✅ Type checking passed!'",
     "build": "bun build ./src/index.ts --outdir dist --target bun --define \"__dirname=import.meta.dir\"",
     "copy-web": "rm -rf ./dist/web && cp -r ../web/dist ./dist/web && echo '✅ apps/web/dist copied to apps/server/dist/web'",
-    "move-prisma-binary": "mv dist/client/* dist || echo '🔵 Ignore above error. Prisma binary was already moved.' && rm -r dist/client || echo '🔵 Ignore above error. dist/client was already removed.' && echo '✅ Prisma binary successfully moved from dist/client to dist'",
-    "post-build": "bun run copy-web && bun run move-prisma-binary",
+    "post-build": "bun run copy-web",
     "build:prod": "bun run build && bun run post-build && echo '✅ Successfully built for prod!",
     "start": "bun run build -W && bun run get-web && cd dist && node index.js",
     "test": "vitest --config .vitest/config.ts",
@@ -41,8 +40,8 @@
     "vitest": "0.23.4"
   },
   "dependencies": {
-    "@elysiajs/static": "0.7.1",
     "@flowdev/nearest-color": "workspace:*",
+    "@elysiajs/static": "0.7.1",
     "@pothos/core": "3.30.0",
     "@pothos/plugin-prisma": "3.61.0",
     "@pothos/plugin-prisma-utils": "0.11.0",

@@ -3,12 +3,14 @@
   "private": true,
   "type": "module",
   "scripts": {
+    "setup:relay": "mkdir -p src/relay/__generated__",
     "relay": "cd ../.. && relay-compiler && echo '✅ Relay compiled!'",
     "relay:watch": "bun run relay -- --watch",
     "predev": "bun run relay",
-    "dev": "bun --bun vite --port 3000",
-    "prebuild": "DATABASE_URL=this_makes_it_run_wo_server_envs ORIGIN=sam_as_db_url bun run print-schema -w=@flowdev/server && mkdir -p src/relay/__generated__ && bun run relay",
-    "build": "NODE_ENV=production tsc && vite build",
+    "dev": "bunx --bun vite --port 3000",
+    "print-schema": "cd ../server && DATABASE_URL=this_makes_it_run_wo_server_envs ORIGIN=same_as_db_url bun run print-schema",
+    "prebuild": "bun run print-schema && bun run setup:relay && bun run relay",
+    "build": "bunx --bun vite build",
     "preview": "vite preview",
     "env:example": "cp -n .env.example .env || true",
     "env:codespaces": "cp .env.codespaces .env"
@@ -42,12 +44,11 @@
     "@types/react-dom": "^18.0.9",
     "@vitejs/plugin-react": "^3.0.1",
     "autoprefixer": "^10.4.14",
-    "graphql": "^16.6.0",
     "postcss": "^8.4.23",
     "relay-compiler": "^14.1.0",
     "sass": "^1.62.0",
     "typescript": "^4.9.3",
-    "vite": "^4.0.0",
+    "vite": "4.4.11",
     "vite-tsconfig-paths": "^4.0.5"
   }
 }

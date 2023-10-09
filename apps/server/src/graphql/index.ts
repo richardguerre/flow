@@ -1,19 +1,21 @@
 import { builder } from "./builder";
 import { printSchema } from "graphql";
+import "./Color";
 import "./Day";
 import "./Item";
 import "./ItemPluginData";
 import "./List";
 import "./Note";
 import "./NoteTag";
+import "./Notifications";
+import "./PluginOperation";
+import "./PrismaFilters";
 import "./RepetitionPattern";
 import "./Routine";
 import "./Store";
 import "./Task";
-import "./TaskTag";
 import "./TaskPluginData";
-import "./PluginOperation";
-import "./Notifications";
+import "./TaskTag";
 import { env } from "../env";
 
 export const schema = builder.toSchema();
