@@ -21,7 +21,7 @@
     "format": "prettier --write .",
     "format:check": "prettier --check .",
     "---------patch---------": "",
-    "postinstall": "bunx patch-package",
+    "postinstall": "patch-package",
     "-------codespaces-------": "",
     "codepsaces": "bun run env:codespaces && bun run db:reset",
     "env:codespaces": "turbo run env:codespaces",
