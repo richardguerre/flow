@@ -5,7 +5,7 @@
   "private": true,
   "main": "index.tsx",
   "dependencies": {
-    "@flowdev/unocss": "*"
+    "@flowdev/unocss": "workspace:*"
   },
   "peerDependencies": {
     "react": "*"

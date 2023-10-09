@@ -7,7 +7,7 @@
     "react": "*"
   },
   "dependencies": {
-    "@flowdev/icons": "*",
+    "@flowdev/icons": "workspace:*",
     "@radix-ui/react-checkbox": "^1.0.4",
     "@radix-ui/react-context-menu": "^2.1.4",
     "@radix-ui/react-dialog": "^1.0.4",
@@ -19,6 +19,7 @@
     "cmdk": "^0.2.0",
     "framer-motion": "^10.12.10",
     "react-hot-toast": "^2.4.1",
+    "react-select": "^5.7.7",
     "react-timezone-select": "^2.1.2",
     "tailwind-merge": "^1.13.2"
   }

@@ -12,10 +12,10 @@ jobs:
     steps:
       - name: Check out repository code
         uses: actions/checkout@v3
-      - name: Setup environment (node, npm install)
+      - name: Setup environment (bun, bun install)
         uses: ./.github/actions/setup
       - name: Format check
-        run: npm run format:check
+        run: bun run format:check
 
   build-check:
     runs-on: ubuntu-latest
@@ -23,10 +23,10 @@ jobs:
     steps:
       - name: Check out repository code
         uses: actions/checkout@v3
-      - name: Setup environment (node, npm install)
+      - name: Setup environment (bun, bun install)
         uses: ./.github/actions/setup
       - name: Build check
-        run: npm run build
+        run: bun run build
 
   # server-test:
   #   services:
@@ -54,9 +54,9 @@ jobs:
   #   steps:
   #     - name: Check out repository code
   #       uses: actions/checkout@v3
-  #     - name: Setup environment (node, npm install)
+  #     - name: Setup environment (bun, bun install)
   #       uses: ./.github/actions/setup
   #     - name: Run DB migrations
-  #       run: DATABASE_URL=postgres://postgres:postgres@localhost:5432/flow_test npm run db:dev
+  #       run: DATABASE_URL=postgres://postgres:postgres@localhost:5432/flow_test bun run db:dev
   #     - name: Run tests
-  #       run: npm run test -w apps/server
+  #       run: bun run test -w apps/server

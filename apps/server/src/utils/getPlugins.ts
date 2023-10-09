@@ -9,7 +9,7 @@ import { prisma } from "./prisma";
 import { env } from "../env";
 
 const cache = new Map<string, ServerPluginReturn>();
-const pathToPlugins = path.join(__dirname, env.PATH_TO_PLUGINS ?? "../../plugins");
+const pathToPlugins = path.join(import.meta.dir, env.PATH_TO_PLUGINS ?? "../../plugins");
 const pathToTemp = path.join(pathToPlugins, "__temp.js"); // this __temp.js is used to get the plugin's slug. see installServerPlugin below.
 
 export const getPlugins = async (): Promise<Record<string, ServerPluginReturn>> => {
@@ -116,24 +116,28 @@ export async function installServerPlugin(opts: Options) {
   // the above creates the plugins folder if it doesn't exist.
 
   // check if server.js contains unsafe code (require(), eval(), etc.)
-  if (/require|eval|setTimeout|setInterval|setImmidiate|process|__dirname|__filename/.test(text)) {
+  if (
+    /Bun|require|eval|setTimeout|setInterval|setImmidiate|process|__dirname|__filename|spawn|spawnSync|write|import.meta|ffi|transpile|transform/.test(
+      text
+    )
+  ) {
     throw new GraphQLError(
-      `The plugin is unsafe to install as it can gain access to sensitive data. Contact the plugin author or Install a different plugin.`
+      `The plugin is unsafe to install as it can gain access to sensitive data. Contact the plugin author or install a different plugin.`
     );
   }
 
-  await fs.writeFile(pathToTemp, text); // we can keep overwriting this file because we only need it to get the plugin's slug.
-  delete require.cache[pathToTemp]; // make sure we get what was just written to the file and not what was cached before.
+  await Bun.write(pathToTemp, text); // we can keep overwriting this file because we only need it to get the plugin's slug.
+  delete import.meta.require.cache[pathToTemp]; // make sure we get what was just written to the file and not what was cached before.
   let exported: DefineServerPluginReturn | undefined;
   try {
-    exported = require(pathToTemp) as DefineServerPluginReturn | undefined;
+    exported = import.meta.require(pathToTemp) as DefineServerPluginReturn | undefined;
   } catch (e) {
     console.log(e);
     throw new GraphQLError(
       `Couldn't install the server part of the plugin. Contact the plugin author to fix this.`
     );
   }
-  if (typeof exported !== "object" || Object.keys(exported).length === 0) {
+  if (typeof exported !== "object") {
     throw new GraphQLError(`Couldn't find any exports at "${opts.url}/server.js"`);
   }
   if ("default" in exported) {

@@ -1,0 +1,28 @@
+diff --git a/node_modules/@pothos/plugin-prisma/lib/generator.js b/node_modules/@pothos/plugin-prisma/lib/generator.js
+index 7997140..c4073b7 100644
+--- a/node_modules/@pothos/plugin-prisma/lib/generator.js
++++ b/node_modules/@pothos/plugin-prisma/lib/generator.js
+@@ -2,8 +2,8 @@
+ Object.defineProperty(exports, "__esModule", {
+     value: true
+ });
+-const _nodefs = require("node:fs");
+-const _nodepath = require("node:path");
++const _nodefs = require("fs");
++const _nodepath = require("path");
+ const _typescript = /*#__PURE__*/ _interop_require_wildcard(require("typescript"));
+ const _generatorhelper = require("@prisma/generator-helper");
+ function _getRequireWildcardCache(nodeInterop) {
+diff --git a/node_modules/@pothos/plugin-prisma/lib/schema-builder.js b/node_modules/@pothos/plugin-prisma/lib/schema-builder.js
+index 51ada45..d568f9c 100644
+--- a/node_modules/@pothos/plugin-prisma/lib/schema-builder.js
++++ b/node_modules/@pothos/plugin-prisma/lib/schema-builder.js
+@@ -150,7 +150,7 @@ schemaBuilderProto.prismaNode = function prismaNode(type, { id: { field, resolve
+                 }
+             }));
+             (0, _core.brandWithType)(record, typeName);
+-            return record;
++            return record ?? options.extensions.resolveWhenNull?.(rawFindUnique(id, context)) ?? null;
+         }
+     };
+     const ref = this.prismaObject(type, extendedOptions);
