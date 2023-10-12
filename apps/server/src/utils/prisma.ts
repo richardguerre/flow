@@ -32,10 +32,10 @@ const withPubsub = (
   // @ts-ignore as the types are too complex but runtime works
   async createMany(args) {
     const now = dayjs().subtract(1, "second").toDate();
-    await delegate.createMany(args);
+    const res = await delegate.createMany(args);
     // ❗️ this might not be reliable, but should do the trick for pubsub
-    const res = await delegate.findMany({ where: { createdAt: { gte: now } } });
-    pub("Created", res);
+    const created = await delegate.findMany({ where: { createdAt: { gte: now } } });
+    pub("Created", created);
     return res;
   },
   // @ts-ignore as the types are too complex but runtime works
@@ -47,10 +47,10 @@ const withPubsub = (
   // @ts-ignore as the types are too complex but runtime works
   async updateMany(args) {
     const now = dayjs().subtract(1, "second").toDate();
-    await delegate.updateMany(args);
+    const res = await delegate.updateMany(args);
     // ❗️ this might not be reliable, but should do the trick for pubsub
-    const res = await delegate.findMany({ where: { updatedAt: { gte: now } } });
-    pub("Updated", res);
+    const updated = await delegate.findMany({ where: { updatedAt: { gte: now } } });
+    pub("Updated", updated);
     return res;
   },
   // @ts-ignore as the types are too complex but runtime works
@@ -72,9 +72,9 @@ const withPubsub = (
   // @ts-ignore as the types are too complex but runtime works
   async deleteMany(args) {
     // first get the rows to be deleted so we can publish them after they are deleted
-    const res = await delegate.findMany(args);
-    await delegate.deleteMany(args);
-    pub("Deleted", res);
+    const toBeDeleted = await delegate.findMany(args);
+    const res = await delegate.deleteMany(args);
+    pub("Deleted", toBeDeleted);
     return res;
   },
 });
