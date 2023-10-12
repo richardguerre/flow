@@ -5,6 +5,7 @@ import { ItemPluginDataInput } from "./ItemPluginData";
 import { DateTimeFilter, IntFilter } from "./PrismaFilters";
 import { Item, ItemPluginData } from "@prisma/client";
 import { getPlugins } from "../utils/getPlugins";
+import { TaskListWhereInputType } from "./Task";
 
 // -------------- Item types --------------
 
@@ -23,6 +24,24 @@ export const ItemType = builder.prismaNode("Item", {
     tasks: t.relation("tasks"),
     list: t.relation("list", { nullable: true }),
   }),
+});
+
+export const ItemWhereInputType = builder.prismaWhere("Item", {
+  fields: {
+    isRelevant: "Boolean",
+    scheduledAt: DateTimeFilter,
+    inboxPoints: IntFilter,
+    tasks: TaskListWhereInputType,
+  },
+});
+
+const ItemOrderByType = builder.prismaOrderBy("Item", {
+  fields: {
+    inboxPoints: true,
+    scheduledAt: true,
+    createdAt: true,
+    updatedAt: true,
+  },
 });
 
 // --------------- Item query types ---------------
@@ -47,29 +66,13 @@ Pass the \`where\` argument to override these defaults.`,
     resolve: (query, _, args) => {
       return prisma.item.findMany({
         ...query,
+        take: undefined, // prevents `query` from overriding `take` and return all items
         where: args.where ?? undefined,
         orderBy: args.orderBy ?? undefined,
       });
     },
   })
 );
-
-export const ItemWhereInputType = builder.prismaWhere("Item", {
-  fields: {
-    isRelevant: "Boolean",
-    scheduledAt: DateTimeFilter,
-    inboxPoints: IntFilter,
-  },
-});
-
-const ItemOrderByType = builder.prismaOrderBy("Item", {
-  fields: {
-    inboxPoints: true,
-    scheduledAt: true,
-    createdAt: true,
-    updatedAt: true,
-  },
-});
 
 // --------------- Item mutation types ---------------
 

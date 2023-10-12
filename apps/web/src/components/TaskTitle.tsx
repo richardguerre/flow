@@ -109,7 +109,11 @@ export const TaskTitleInput = (props: TaskTitleInputProps) => {
   });
 
   const handleClick = () => {
-    setEditable(true);
+    // the following setTimeout allows the user to click on links within the editor
+    // without first having to make the editor editable (i.e. no need to double click)
+    setTimeout(() => {
+      setEditable(true);
+    }, 1);
   };
 
   useEffect(() => {

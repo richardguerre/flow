@@ -5,6 +5,7 @@ import { builder, u } from "./builder";
 import { DayType } from "./Day";
 import { dayjs } from "@flowdev/server/src/utils/dayjs";
 import { getPlugins } from "@flowdev/server/src/utils/getPlugins";
+import { DateFilter, DateTimeFilter } from "./PrismaFilters";
 
 // -------------- Task types --------------
 
@@ -46,6 +47,22 @@ export const TaskStatusEnum = builder.enumType("TaskStatus", {
       value: "DONE",
     },
   } as Record<TaskStatus, { value: TaskStatus; description?: string }>,
+});
+
+export const TaskStatusFilter = builder.prismaFilter(TaskStatusEnum, {
+  ops: ["equals", "not", "in", "notIn"],
+});
+
+export const TaskWhereInputType = builder.prismaWhere("Task", {
+  fields: {
+    status: TaskStatusFilter,
+    date: DateFilter,
+    completedAt: DateTimeFilter,
+  },
+});
+
+export const TaskListWhereInputType = builder.prismaListFilter(TaskWhereInputType, {
+  ops: ["every", "some", "none"],
 });
 
 // ------------------ Task mutations ------------------

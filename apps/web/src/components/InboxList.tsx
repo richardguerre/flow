@@ -13,7 +13,14 @@ export const InboxList = (props: InboxListProps) => {
   const [showNewTaskCard, setShowNewTaskCard] = useState(false);
   const [data] = useSmartSubscription<InboxListSubscription>(graphql`
     subscription InboxListSubscription {
-      items(where: { isRelevant: true, inboxPoints: { gte: 1 } }, orderBy: { inboxPoints: Desc }) {
+      items(
+        where: {
+          isRelevant: true
+          inboxPoints: { gte: 1 }
+          tasks: { none: { status: { equals: TODO } } }
+        }
+        orderBy: { inboxPoints: Desc }
+      ) {
         __id
         edges {
           node {
@@ -41,6 +48,8 @@ export const InboxList = (props: InboxListProps) => {
   );
 
   const items = structuredClone(
+    // this filter matches the where clause in the subscription
+    // it ensures that the correct items are shown after Relay store udpates
     $items.filter((node) => {
       const passesBaseFilter = !!node.isRelevant && (node.inboxPoints ?? 0) > 0;
       const hasTodoTasks = node.tasks.some((task) => task.status === "TODO");

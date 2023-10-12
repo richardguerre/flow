@@ -111,6 +111,7 @@ input ItemFilter {
   inboxPoints: PrismaIntFilter
   isRelevant: Boolean
   scheduledAt: PrismaDateTimeFilter
+  tasks: TaskListFilter
 }
 
 input ItemOrderBy {
@@ -615,6 +616,18 @@ type PluginOperation implements Node {
 """Integers that will have a value greater than 0."""
 scalar PositiveInt
 
+"""Filter input of Date"""
+input PrismaDateFilter {
+  equals: Date
+  gt: Date
+  gte: Date
+  in: [Date!]
+  lt: Date
+  lte: Date
+  not: PrismaDateFilter
+  notIn: [Date!]
+}
+
 """Filter input of DateTime"""
 input PrismaDateTimeFilter {
   equals: DateTime
@@ -927,6 +940,18 @@ input TaskActionDataInput {
   pluginSlug: String!
 }
 
+input TaskFilter {
+  completedAt: PrismaDateTimeFilter
+  date: PrismaDateFilter
+  status: TaskStatusFilter
+}
+
+input TaskListFilter {
+  every: TaskFilter
+  none: TaskFilter
+  some: TaskFilter
+}
+
 """The data required by a plugin to be linked to a task."""
 type TaskPluginData implements Node {
   """The date and time of creation of the task plugin data"""
@@ -962,6 +987,13 @@ enum TaskStatus {
 
   """When the task is planned or in progress."""
   TODO
+}
+
+input TaskStatusFilter {
+  equals: TaskStatus
+  in: [TaskStatus!]
+  not: TaskStatusFilter
+  notIn: [TaskStatus!]
 }
 
 """A tag that can be applied to a task."""
