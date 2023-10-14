@@ -6,9 +6,11 @@ import { Popover, PopoverContent, PopoverTrigger } from "@flowdev/ui/Popover";
 import { useForm } from "react-hook-form";
 import { graphql, useMutation } from "@flowdev/relay";
 import { Button } from "@flowdev/ui/Button";
+import { BrowsePluginsViewInstallMutation } from "../relay/__generated__/BrowsePluginsViewInstallMutation.graphql";
 import { BrowsePluginsViewInstallFromUrlMutation } from "@flowdev/web/relay/__generated__/BrowsePluginsViewInstallFromUrlMutation.graphql";
-import { useState } from "react";
+import { useMemo, useState } from "react";
 import { toast } from "@flowdev/ui/Toast";
+import { usePlugins } from "../getPlugin";
 
 type PluginAuthor = {
   name: string;
@@ -18,6 +20,7 @@ type PluginAuthor = {
 type Plugin = {
   iconUrl: string;
   name: string;
+  slug: string;
   description: string;
   installUrl: string;
   version: string;
@@ -28,6 +31,7 @@ const PLUGINS: Plugin[] = [
   {
     iconUrl: "FlowIcon.svg",
     name: "Essentials",
+    slug: "essentials",
     description:
       "The official and default plugin for Flow containing essential features such as a morning routine and a shutdown routine.",
     installUrl: "https://cdn.jsdelivr.net/npm/@flowdev/essentials@0.1.0/out",
@@ -37,6 +41,7 @@ const PLUGINS: Plugin[] = [
   {
     iconUrl: "https://ssl.gstatic.com/calendar/images/dynamiclogo_2020q4/calendar_19_2x.png",
     name: "Google Calendar",
+    slug: "google-calendar",
     description: "Official Google Calendar plugin for Flow.",
     installUrl: "https://cdn.jsdelivr.net/npm/@flowdev/google-calendar@0.1.0/out",
     version: "0.1.0",
@@ -44,8 +49,10 @@ const PLUGINS: Plugin[] = [
   },
   {
     iconUrl: "https://cdn-icons-png.flaticon.com/512/25/25231.png",
-    name: "GitHub Notifications",
-    description: "Official GitHub plugin for Flow. It currently only gets your requested reviews.",
+    name: "GitHub Requested Reviews",
+    slug: "github",
+    description:
+      "Official GitHub plugin for Flow. It currently only gets your requested reviews and adds them as items in your inbox. More features coming soon.",
     installUrl: "https://cdn.jsdelivr.net/npm/@flowdev/github@0.1.0/out",
     version: "0.1.0",
     authors: [{ name: "Flow", avatarUrl: "FlowIcon.svg" }],
@@ -53,6 +60,7 @@ const PLUGINS: Plugin[] = [
   {
     iconUrl: "https://gitstart.com/_astro/logo_black_small.e7d67670.svg",
     name: "GitStart",
+    slug: "gitstart",
     description: "Official GitStart plugin for Flow.",
     installUrl: "https://cdn.jsdelivr.net/npm/@flowdev/gitstart@0.1.0/out",
     version: "0.1.0",
@@ -61,7 +69,16 @@ const PLUGINS: Plugin[] = [
 ];
 
 export default () => {
+  const { plugins } = usePlugins();
   const [openInstallPluginFromUrl, setOpenInstallPluginFromUrl] = useState(false);
+
+  const [installPlugin, installingPlugin] = useMutation<BrowsePluginsViewInstallMutation>(graphql`
+    mutation BrowsePluginsViewInstallMutation($url: String!) {
+      installPlugin(input: { url: $url }) {
+        ...SettingsView_pluginInstallation
+      }
+    }
+  `);
 
   return (
     <div className="max-w-1488px mx-auto flex w-full flex-col gap-8 p-16">
@@ -94,36 +111,46 @@ export default () => {
           </Popover>
         </div>
         <div className="grid grid-cols-3 gap-4">
-          {PLUGINS.map((plugin) => (
-            <div
-              key={plugin.name}
-              className="bg-background-50 min-w-xs flex flex-col gap-2 rounded p-4 shadow-md"
-            >
-              <div className="flex flex-col gap-1">
-                <div className="flex items-center justify-between">
-                  <div className="flex items-center gap-2">
-                    <img src={plugin.iconUrl} className="h-5 w-5" />
-                    <div className="text-base font-medium">{plugin.name}</div>
+          {PLUGINS.map((plugin) => {
+            const installed = !!plugins[plugin.slug];
+            return (
+              <div
+                key={plugin.name}
+                className="bg-background-50 min-w-xs flex flex-col gap-2 rounded p-4 shadow-md"
+              >
+                <div className="flex flex-col gap-1">
+                  <div className="flex items-center justify-between">
+                    <div className="flex items-center gap-2">
+                      <img src={plugin.iconUrl} className="h-5 w-5" />
+                      <div className="text-base font-medium">{plugin.name}</div>
+                    </div>
+                    <Button
+                      secondary
+                      loading={installingPlugin}
+                      disabled={installed}
+                      onClick={() => installPlugin({ variables: { url: plugin.installUrl } })}
+                    >
+                      {installed ? "Installed" : "Install"}
+                    </Button>
                   </div>
-                  <Button secondary>Install</Button>
+                  <div className="text-foreground-700 text-sm">{plugin.description}</div>
                 </div>
-                <div className="text-foreground-700 text-sm">{plugin.description}</div>
+                <div className="text-foreground-700 flex items-center gap-4 text-sm">
+                  <div className="flex gap-2">v{plugin.version}</div>
+                </div>
+                <div className="text-foreground-900 flex items-center gap-2 text-sm">
+                  {plugin.authors[0].avatarUrl && (
+                    <img
+                      src={plugin.authors[0].avatarUrl}
+                      className="ring-primary-100 inline-block h-5 w-5 rounded-full ring"
+                    />
+                  )}
+                  {plugin.authors[0].name}
+                  {plugin.authors.length > 1 && ` & ${plugin.authors.length - 1} more`}
+                </div>
               </div>
-              <div className="text-foreground-700 flex items-center gap-4 text-sm">
-                <div className="flex gap-2">v{plugin.version}</div>
-              </div>
-              <div className="text-foreground-900 flex items-center gap-2 text-sm">
-                {plugin.authors[0].avatarUrl && (
-                  <img
-                    src={plugin.authors[0].avatarUrl}
-                    className="ring-primary-100 inline-block h-5 w-5 rounded-full ring"
-                  />
-                )}
-                {plugin.authors[0].name}
-                {plugin.authors.length > 1 && ` & ${plugin.authors.length - 1} more`}
-              </div>
-            </div>
-          ))}
+            );
+          })}
         </div>
       </div>
     </div>

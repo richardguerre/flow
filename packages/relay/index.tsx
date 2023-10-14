@@ -19,6 +19,9 @@ import {
   useSubscription as useRelaySubscription,
 } from "react-relay";
 
+// peer dependency imports
+import { toast } from "@flowdev/ui/Toast";
+
 export type FlowPayloadError = {
   message: string;
   locations: {
@@ -72,11 +75,52 @@ export function useQueryLoader<TQuery extends OperationType>(
   return { queryRef, loadQuery };
 }
 
-export const useMutation = useRelayMutation;
+const handleMutationError =
+  <TMutation extends MutationParameters>(
+    mutationConfig: UseMutationConfig<TMutation> | MutationConfig<TMutation>
+  ) =>
+  (error: Error) => {
+    console.log("mutation.onError error:", error);
+    if (mutationConfig.onError) {
+      mutationConfig.onError(error);
+    } else {
+      toast.error(error.message);
+    }
+  };
+
+const getMessageFromErrors = (errors: readonly any[]) => {
+  const errorsSet = new Set(errors.map((e) => e.extensions?.userFriendlyMessage ?? e.message));
+  return Array.from(errorsSet).join("\n");
+};
+
+export function useMutation<TMutation extends MutationParameters>(mutation: GraphQLTaggedNode) {
+  const [mutate, ...rest] = useRelayMutation(mutation);
+
+  const newMutate = (mutationConfig: UseMutationConfig<TMutation>) => {
+    mutate({
+      ...mutationConfig,
+      onError: handleMutationError(mutationConfig),
+      onCompleted: (data, errors) => {
+        // theoretically, there should never be `errors` in onCompleted since payload errors are re-thrown and handled in onError, so this is just a safety check
+        if (errors) {
+          console.log("useMutation.onCompleted errors:", errors);
+          handleMutationError(mutationConfig)(
+            new Error(getMessageFromErrors(errors), { cause: errors })
+          );
+          return;
+        }
+        mutationConfig.onCompleted?.(data, null);
+      },
+    });
+  };
+
+  return [newMutate, ...rest] as const;
+}
+
 export function useMutationPromise<TMutation extends MutationParameters>(
   mutation: GraphQLTaggedNode
-): [(config: UseMutationConfig<TMutation>) => Promise<TMutation["response"]>, boolean] {
-  const [mutate, ...rest] = useRelayMutation(mutation);
+) {
+  const [mutate, ...rest] = useMutation(mutation);
 
   const newMutate = (mutationConfig: UseMutationConfig<TMutation>) =>
     new Promise<TMutation["response"]>((resolve, reject) => {
@@ -99,7 +143,7 @@ export function useMutationPromise<TMutation extends MutationParameters>(
       });
     });
 
-  return [newMutate, ...rest];
+  return [newMutate, ...rest] as const;
 }
 
 export const fetchQuery = relayFetchQuery;
