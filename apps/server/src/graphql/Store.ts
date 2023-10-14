@@ -376,7 +376,9 @@ builder.mutationField("setPassword", (t) =>
     resolve: async (_, args, context) => {
       // check password length
       if (args.input.password.length < 8) {
-        throw new GraphQLError("PASSWORD_TOO_SHORT: The password must be at least 8 characters.");
+        throw new GraphQLError("The password must be at least 8 characters long.", {
+          extensions: { code: "PASSWORD_TOO_SHORT" },
+        });
       }
 
       // check if password was already set
@@ -388,7 +390,8 @@ builder.mutationField("setPassword", (t) =>
 
       if (passwordSetting) {
         throw new GraphQLError(
-          "PASSWORD_ALREADY_SET: The password can only be set once. Use the `changePassword` mutation to change the password."
+          "The password can only be set once. Use the `changePassword` mutation to change the password.",
+          { extensions: { code: "PASSWORD_ALREADY_SET" } }
         );
       }
 
@@ -406,7 +409,12 @@ builder.mutationField("setPassword", (t) =>
         })
         .catch((e) => {
           console.error(e);
-          throw new GraphQLError("Something went wrong while setting the password.");
+          throw new GraphQLError(e.message ?? "Something went wrong while setting the password.", {
+            extensions: {
+              code: "PASSWORD_SET_ERROR",
+              userFriendlyMessage: "Something went wrong while setting the password.",
+            },
+          });
         });
 
       // generate session token
@@ -418,7 +426,7 @@ builder.mutationField("setPassword", (t) =>
         expiresAt: dayjs().add(1, "year").toISOString(),
         token: sessionToken,
       };
-      const authSessionKey = StoreKeys.AUTH_SESSION_PREFIX + "primary";
+      const authSessionKey = StoreKeys.AUTH_SESSION_PREFIX + dayjs().toISOString();
 
       // store session token
       await prisma.store.upsert({
@@ -450,9 +458,9 @@ builder.mutationField("changePassword", (t) =>
     resolve: async (_, args, context) => {
       // check newPassword length
       if (args.input.newPassword.length < 8) {
-        throw new GraphQLError(
-          "PASSWORD_TOO_SHORT: The new password must be at least 8 characters."
-        );
+        throw new GraphQLError("The new password must be at least 8 characters.", {
+          extensions: { code: "PASSWORD_TOO_SHORT" },
+        });
       }
 
       // check if password was already set
@@ -464,7 +472,14 @@ builder.mutationField("changePassword", (t) =>
 
       if (!passwordSetting) {
         throw new GraphQLError(
-          "PASSWORD_NOT_SET: The password is not set. Use the `setPassword` mutation to set the password."
+          "The password is not set. Use the `setPassword` mutation to set the password.",
+          {
+            extensions: {
+              code: "PASSWORD_NOT_SET",
+              userFriendlyMessage:
+                "No password was set for your Flow yet. Please refresh the page to set the password.",
+            },
+          }
         );
       }
 
@@ -475,7 +490,9 @@ builder.mutationField("changePassword", (t) =>
       );
 
       if (!isOldPasswordCorrect) {
-        throw new GraphQLError("PASSWORD_INCORRECT: The old password is incorrect.");
+        throw new GraphQLError("The old password is incorrect.", {
+          extensions: { code: "PASSWORD_INCORRECT" },
+        });
       }
 
       await prisma.store
@@ -487,7 +504,12 @@ builder.mutationField("changePassword", (t) =>
         })
         .catch((e) => {
           console.error(e);
-          throw new GraphQLError("Something went wrong while changing the password.");
+          throw new GraphQLError(e.message ?? "Something went wrong while changing the password.", {
+            extensions: {
+              code: "PASSWORD_CHANGE_ERROR",
+              userFriendlyMessage: "Something went wrong while changing the password.",
+            },
+          });
         });
 
       // generate new session token
@@ -499,7 +521,7 @@ builder.mutationField("changePassword", (t) =>
         expiresAt: dayjs().add(1, "year").toISOString(),
         token: sessionToken,
       };
-      const authSessionKey = StoreKeys.AUTH_SESSION_PREFIX + "primary";
+      const authSessionKey = StoreKeys.AUTH_SESSION_PREFIX + dayjs().toISOString();
 
       // store session token
       await prisma.store.upsert({
@@ -512,6 +534,11 @@ builder.mutationField("changePassword", (t) =>
           isSecret: true,
           isServerOnly: true,
         },
+      });
+
+      // delete all other sessions
+      await prisma.store.deleteMany({
+        where: { pluginSlug: FlowPluginSlug, key: { not: authSessionKey } },
       });
 
       return sessionToken;
@@ -539,7 +566,14 @@ builder.mutationField("login", (t) =>
 
       if (!passwordSetting) {
         throw new GraphQLError(
-          "PASSWORD_NOT_SET: The password is not set. Use the `setPassword` mutation to set the password."
+          "The password is not set. Use the `setPassword` mutation to set the password.",
+          {
+            extensions: {
+              code: "PASSWORD_NOT_SET",
+              userFriendlyMessage:
+                "No password was set for your Flow yet. Please refresh the page to set the password.",
+            },
+          }
         );
       }
 
@@ -560,7 +594,7 @@ builder.mutationField("login", (t) =>
         expiresAt: dayjs().add(1, "year").toISOString(),
         token: sessionToken,
       };
-      const authSessionKey = StoreKeys.AUTH_SESSION_PREFIX + "primary";
+      const authSessionKey = StoreKeys.AUTH_SESSION_PREFIX + dayjs().toISOString();
 
       // store session token
       await prisma.store.upsert({
