@@ -18,7 +18,7 @@ export const Spinner = (props: SpinnerProps) => {
       <div
         className={clsx(
           "border-t-primary-700 border-background-50 z-10 animate-spin rounded-full",
-          size
+          size,
         )}
       />
     </div>

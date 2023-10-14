@@ -173,7 +173,7 @@ export const OnCreateTask = (props: OnCreateTaskProps) => {
             createdTask,
             ...(updaterDayTasks ?? []).slice(props.atIndex),
           ],
-          "tasks"
+          "tasks",
         );
       },
     });

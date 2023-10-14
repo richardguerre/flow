@@ -4,7 +4,7 @@ import { CheckboxWithLabel } from "./Checkbox";
 
 export type FormCheckboxProps<
   TFieldValues extends FieldValues = FieldValues,
-  TName extends FieldPath<TFieldValues> = FieldPath<TFieldValues>
+  TName extends FieldPath<TFieldValues> = FieldPath<TFieldValues>,
 > = Omit<ControllerProps<TFieldValues, TName>, "render"> & {
   checkboxProps?: ComponentPropsWithoutRef<typeof CheckboxWithLabel>;
   disabled?: boolean;
@@ -13,9 +13,9 @@ export type FormCheckboxProps<
 };
 export const FormCheckbox = <
   TFieldValues extends FieldValues = FieldValues,
-  TName extends FieldPath<TFieldValues> = FieldPath<TFieldValues>
+  TName extends FieldPath<TFieldValues> = FieldPath<TFieldValues>,
 >(
-  props: FormCheckboxProps<TFieldValues, TName>
+  props: FormCheckboxProps<TFieldValues, TName>,
 ) => {
   const errorMessage = typeof props.error === "object" ? props.error.message : props.error;
   return (

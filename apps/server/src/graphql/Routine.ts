@@ -101,7 +101,7 @@ const RoutineStepInput = builder.inputType(
       stepSlug: t.string({ required: true }),
       shouldSkip: t.boolean({ required: true }),
     }),
-  }
+  },
 );
 
 // --------------- Routine query types ---------------
@@ -111,7 +111,7 @@ builder.queryField("routines", (t) =>
     type: ["Routine"],
     description: "Get all routines.",
     resolve: prisma.routine.findMany,
-  })
+  }),
 );
 
 // --------------- Routine mutation types ---------------
@@ -137,12 +137,12 @@ builder.mutationField("createRoutine", (t) =>
           firstDay: new Date(), // FIXME: refactor this to have the correct date according to the user's timezone
           isActive: true,
           steps: args.input.steps.map(
-            (step) => `${step.pluginSlug}_${step.stepSlug}_${step.shouldSkip}`
+            (step) => `${step.pluginSlug}_${step.stepSlug}_${step.shouldSkip}`,
           ),
         },
       });
     },
-  })
+  }),
 );
 
 builder.mutationField("updateRoutine", (t) =>
@@ -193,12 +193,12 @@ builder.mutationField("updateRoutine", (t) =>
           repeats: u(args.input.repeats),
           steps:
             args.input.steps?.map(
-              (step) => `${step.pluginSlug}_${step.stepSlug}_${step.shouldSkip}`
+              (step) => `${step.pluginSlug}_${step.stepSlug}_${step.shouldSkip}`,
             ) ?? undefined,
         },
       });
     },
-  })
+  }),
 );
 
 builder.mutationField("completeRoutine", (t) =>
@@ -226,5 +226,5 @@ builder.mutationField("completeRoutine", (t) =>
       }
       return true;
     },
-  })
+  }),
 );

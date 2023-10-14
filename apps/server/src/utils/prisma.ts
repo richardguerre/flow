@@ -20,7 +20,7 @@ const $prisma = new PrismaClient({
 // TODO: better types for the deletegate
 const withPubsub = (
   delegate: any,
-  pub: <T>(action: "Created" | "Updated" | "Deleted", rows: T) => void
+  pub: <T>(action: "Created" | "Updated" | "Deleted", rows: T) => void,
 ) => ({
   ...delegate,
   // @ts-ignore as the types are too complex but runtime works
@@ -83,10 +83,10 @@ const withPubsub = (
 export const prisma: typeof $prisma = {
   ...$prisma,
   task: withPubsub($prisma.task, (action, rows) =>
-    pubsub.publish(`tasks${action}`, rows as Task[])
+    pubsub.publish(`tasks${action}`, rows as Task[]),
   ),
   item: withPubsub($prisma.item, (action, rows) =>
-    pubsub.publish(`items${action}`, rows as Item[])
+    pubsub.publish(`items${action}`, rows as Item[]),
   ),
   // @ts-ignore as this works in runtime
   async $transaction<R>(
@@ -95,7 +95,7 @@ export const prisma: typeof $prisma = {
       maxWait?: number;
       timeout?: number;
       isolationLevel?: Prisma.TransactionIsolationLevel;
-    }
+    },
   ): Promise<R> {
     const tasksCreated: Task[] = [];
     const tasksUpdated: Task[] = [];

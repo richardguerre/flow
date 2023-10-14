@@ -80,7 +80,7 @@ const NoteEditorContent = (props: NoteEditorProps) => {
         }
       }
     `,
-    { slug: props.slug }
+    { slug: props.slug },
   );
 
   const [upsertNote] = useMutationPromise<NoteEditorUpsertNoteMutation>(graphql`

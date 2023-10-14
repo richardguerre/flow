@@ -29,7 +29,7 @@ export default defineConfig({
  * See plugins/gitstart/vite.server.dev.ts for example.
  */
 export const checksum = "1694871724389";
-`
+`,
         );
       },
     },

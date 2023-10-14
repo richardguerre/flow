@@ -26,7 +26,7 @@ export const ItemCard = (props: ItemCardProps) => {
         ...OnCreateTaskItemRecordToCreateTaskFrom_item # used to create tasks from items
       }
     `,
-    props.item
+    props.item,
   );
 
   return (
@@ -55,7 +55,7 @@ const ItemCardActions = (props: ItemCardActionsProps) => {
         ...RenderItemCardActions_item
       }
     `,
-    props.item
+    props.item,
   );
 
   const [updateItem] = useMutation<ItemCardUpdateItemMutation>(graphql`

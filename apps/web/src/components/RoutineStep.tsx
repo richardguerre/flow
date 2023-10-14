@@ -55,10 +55,10 @@ export const RoutineStep = (props: RoutineStepProps) => {
         stepSlug
       }
     `,
-    props.step
+    props.step,
   );
   const [StepComponent, setStepComponent] = useState<React.ComponentType<PluginRoutineStepProps>>(
-    () => LoadingStep
+    () => LoadingStep,
   );
 
   useEffect(() => {

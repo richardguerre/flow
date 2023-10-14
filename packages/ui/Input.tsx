@@ -16,7 +16,7 @@ export const Input = React.forwardRef<HTMLInputElement, InputProps>((props, ref)
         className={tw(
           "text-foreground-700 relative flex items-center",
           props.fullWidth && "w-full",
-          props.hasError && "text-negative-600"
+          props.hasError && "text-negative-600",
         )}
       >
         {props.leftIcon && <div className="absolute pl-3">{props.leftIcon}</div>}
@@ -29,7 +29,7 @@ export const Input = React.forwardRef<HTMLInputElement, InputProps>((props, ref)
             props.rightIcon && "pr-10",
             props.hasError &&
               "ring-negative-600 hover:ring-negative-600 focus:ring-negative-600 placeholder:text-negative-600",
-            props.className
+            props.className,
           )}
         />
         {props.rightIcon && <div className="absolute right-0 pr-3">{props.rightIcon}</div>}

@@ -131,7 +131,7 @@ Please input a Date in the format: YYYY-MM-DD`,
         },
       };
     },
-  })
+  }),
 );
 
 /**

@@ -18,7 +18,7 @@ export default async (request: Request) => {
   } else if (!apiEndpoint) {
     return new Response(
       "Missing state (i.e the API endpoint to store the tokens) in search params",
-      { status: 400 }
+      { status: 400 },
     );
   }
 

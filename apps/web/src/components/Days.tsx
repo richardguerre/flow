@@ -31,7 +31,7 @@ export const Days = (props: DaysProps) => {
         }
       }
     `,
-    props.data
+    props.data,
   );
 
   const [loadPreviousAndStayAt, setLoadPreviousAndStayAt] = useState<number | null>(null);

@@ -32,7 +32,7 @@ export default () => {
   const params = useParams<"pluginSlug">();
   const context = useOutletContext<SettingsViewQuery$data>();
   const pluginInstallation = context.installedPlugins.find(
-    (plugin) => plugin.slug === params.pluginSlug
+    (plugin) => plugin.slug === params.pluginSlug,
   );
 
   if (!pluginInstallation) throw new Error(`No plugin found with slug: ${params.pluginSlug}`);
@@ -53,7 +53,7 @@ const PluginSettingsViewContent = (props: Props) => {
         ...UpdatePluginButton_pluginInstallation
       }
     `,
-    props.pluginInstallation
+    props.pluginInstallation,
   );
   const [uninstallPlugin, isUninstallingPlugin] =
     useMutation<PluginSettingsViewUninstallPluginMutation>(graphql`
@@ -65,7 +65,7 @@ const PluginSettingsViewContent = (props: Props) => {
     `);
   const [plugin, loading] = useAsyncLoader(
     async () => getPlugin({ pluginSlug: pluginInstallation.slug }),
-    [pluginInstallation.slug]
+    [pluginInstallation.slug],
   );
 
   // TODO: show proper loading indicator
@@ -111,11 +111,11 @@ const PluginSettingFields = (props: {
         }
       }
     `,
-    { where: { pluginSlug: props.pluginSlug, keys: Object.keys(props.settings) } }
+    { where: { pluginSlug: props.pluginSlug, keys: Object.keys(props.settings) } },
   );
 
-  const [updateSetting] =
-    useMutationPromise<PluginSettingsViewUpdatePluginSettingsMutation>(graphql`
+  const [updateSetting] = useMutationPromise<PluginSettingsViewUpdatePluginSettingsMutation>(
+    graphql`
       mutation PluginSettingsViewUpdatePluginSettingsMutation(
         $input: MutationUpsertStoreItemInput!
       ) {
@@ -123,7 +123,8 @@ const PluginSettingFields = (props: {
           ...PluginSettingsViewStoreItem_item
         }
       }
-    `);
+    `,
+  );
 
   const settingsInStore = Object.fromEntries(data.storeItems.map((value) => [value.key, value]));
 
@@ -156,7 +157,7 @@ const PluginSettingFields = (props: {
                   loading: "Saving...",
                   success: "Saved!",
                   error: "Failed to save.",
-                }
+                },
               );
             },
           }}
@@ -248,7 +249,7 @@ const TextFieldSetting = (props: PluginTextfieldSettingProps & SettingProps) => 
     ({ value, isDirty, isValid }) => {
       if (!isValid || !isDirty) return;
       props.settingProps.onUpdate(value);
-    }
+    },
   );
 
   const onSubmit = (values: Record<string, JsonValue>) => {
@@ -306,7 +307,7 @@ const TextareaSetting = (props: PluginTextareaSettingProps & SettingProps) => {
     ({ value, isDirty, isValid }) => {
       if (!isValid || !isDirty) return;
       props.settingProps.onUpdate(value);
-    }
+    },
   );
 
   const onSubmit = (values: Record<string, string>) => {
@@ -372,7 +373,7 @@ const CheckboxSetting = (props: PluginCheckboxSettingProps & SettingProps) => {
     ({ value, isValid, isDirty }) => {
       if (!isValid || !isDirty) return;
       props.settingProps.onUpdate(value);
-    }
+    },
   );
 
   const onSubmit = (values: Record<string, JsonValue>) => {
@@ -435,7 +436,7 @@ const SelectSetting = (props: PluginSelectSettingProps & SettingProps) => {
     ({ value, isDirty, isValid }) => {
       if (!isValid || !isDirty) return;
       props.settingProps.onUpdate(value);
-    }
+    },
   );
 
   const onSubmit = (values: Record<string, JsonValue>) => {

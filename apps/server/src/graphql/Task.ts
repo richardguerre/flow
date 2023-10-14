@@ -152,10 +152,10 @@ builder.mutationField("createTask", (t) =>
       for (const pluginSlug in plugins) {
         const plugin = plugins[pluginSlug]!;
         const actionData = args.input.actionDatas?.find(
-          (actionData) => actionData.pluginSlug === pluginSlug
+          (actionData) => actionData.pluginSlug === pluginSlug,
         )?.data;
         const webPluginData = args.input.pluginDatas?.find(
-          (pluginData) => pluginData.pluginSlug === pluginSlug
+          (pluginData) => pluginData.pluginSlug === pluginSlug,
         );
         const result = await plugin
           .onCreateTask?.({
@@ -211,7 +211,7 @@ builder.mutationField("createTask", (t) =>
         return task;
       });
     },
-  })
+  }),
 );
 
 const TaskPluginDataInput = builder.inputType("TaskPluginDataInput", {
@@ -252,7 +252,7 @@ builder.mutationField("updateTask", (t) =>
         },
       });
     },
-  })
+  }),
 );
 
 builder.mutationField("deleteTask", (t) =>
@@ -265,7 +265,7 @@ builder.mutationField("deleteTask", (t) =>
     resolve: (query, _, args) => {
       return prisma.task.delete({ ...query, where: { id: parseInt(args.id.id) } });
     },
-  })
+  }),
 );
 
 export type PluginOnUpdateTaskStatus = (input: {
@@ -402,7 +402,7 @@ Any other scenario is not possible by nature of the app, where tasks:
             days.push(task.date);
             const tasksOrdered = updatedTask.day.tasks.sort(
               (a, b) =>
-                updatedTask.day.tasksOrder.indexOf(a.id) - updatedTask.day.tasksOrder.indexOf(b.id)
+                updatedTask.day.tasksOrder.indexOf(a.id) - updatedTask.day.tasksOrder.indexOf(b.id),
             );
             const lastTodoIndex = tasksOrdered.findIndex((t) => t.status === "TODO");
             const newTasksOrder = updatedTask.day.tasksOrder.splice(lastTodoIndex + 1, 0, task.id);
@@ -430,7 +430,7 @@ Any other scenario is not possible by nature of the app, where tasks:
         orderBy: { date: "asc" },
       });
     },
-  })
+  }),
 );
 
 builder.mutationField("updateTaskDate", (t) =>
@@ -557,5 +557,5 @@ When the task is:
         });
       });
     },
-  })
+  }),
 );

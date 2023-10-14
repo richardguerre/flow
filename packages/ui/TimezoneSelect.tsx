@@ -30,7 +30,7 @@ export function TimezoneSelect(props: Props) {
               "bg-primary-100 flex !cursor-pointer justify-between py-2.5 px-3 rounded-none text-foreground-900",
               state.isFocused && "!bg-primary-100",
               state.isSelected && "!bg-primary-500",
-              props.classNames?.option && props.classNames.option(state)
+              props.classNames?.option && props.classNames.option(state),
             ),
           placeholder: (state) => tw("text-foreground-700", state.isFocused && "hidden"),
           dropdownIndicator: () => "text-foreground-900",
@@ -39,23 +39,23 @@ export function TimezoneSelect(props: Props) {
           singleValue: (state) =>
             tw(
               "text-foreground-900 placeholder:text-foreground-700",
-              props.classNames?.singleValue && props.classNames.singleValue(state)
+              props.classNames?.singleValue && props.classNames.singleValue(state),
             ),
           valueContainer: (state) =>
             tw(
               "text-foreground-700 placeholder:text-foreground-700 flex gap-1",
-              props.classNames?.valueContainer && props.classNames.valueContainer(state)
+              props.classNames?.valueContainer && props.classNames.valueContainer(state),
             ),
           multiValue: (state) =>
             tw(
               "bg-foreground-700 text-foreground-900 rounded-md py-1.5 px-2 flex items-center text-sm leading-none",
-              props.classNames?.multiValue && props.classNames.multiValue(state)
+              props.classNames?.multiValue && props.classNames.multiValue(state),
             ),
           menu: (state) =>
             tw(
               "rounded-md bg-default text-sm leading-4 text-foreground-900 mt-1 border border-subtle",
               state.selectProps.menuIsOpen && "shadow-md", // Add box-shadow when menu is open
-              props.classNames?.menu && props.classNames.menu(state)
+              props.classNames?.menu && props.classNames.menu(state),
             ),
           groupHeading: () => "leading-none text-xs uppercase text-foreground-900 pl-2.5 pt-4 pb-2",
           menuList: (state) =>
@@ -67,7 +67,7 @@ export function TimezoneSelect(props: Props) {
                   ? "[&>*:last-child]:rotate-180 [&>*:last-child]:transition-transform"
                   : "rotate-180 transition-transform"
                 : "text-foreground-900", // Woo it adds another SVG here on multi for some reason
-              props.classNames?.indicatorsContainer && props.classNames.indicatorsContainer(state)
+              props.classNames?.indicatorsContainer && props.classNames.indicatorsContainer(state),
             ),
           multiValueRemove: () => "text-foreground-900 py-auto ml-2",
           noOptionsMessage: () => "h-12 py-2 flex items-center justify-center",

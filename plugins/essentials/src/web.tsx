@@ -73,9 +73,9 @@ export default definePlugin((options) => {
                     (task) =>
                       `<li>${
                         task.status === "DONE" ? "✅" : task.status === "CANCELED" ? "❌" : "⏳"
-                      } ${task.title}</li>`
+                      } ${task.title}</li>`,
                   )
-                  .join("")}</ul>`
+                  .join("")}</ul>`,
               );
             })();
           }, []);
@@ -204,9 +204,9 @@ export default definePlugin((options) => {
                     (task) =>
                       `<li>${
                         task.status === "DONE" ? "✅ " : task.status === "CANCELED" ? "❌ " : ""
-                      }${task.title}</li>`
+                      }${task.title}</li>`,
                   )
-                  .join("")}</ul>`
+                  .join("")}</ul>`,
               );
             })();
           }, []);
@@ -297,9 +297,9 @@ export default definePlugin((options) => {
                     (task) =>
                       `<li>${
                         task.status === "DONE" ? "✅ " : task.status === "CANCELED" ? "❌ " : ""
-                      }${task.title}</li>`
+                      }${task.title}</li>`,
                   )
-                  .join("")}</ul>`
+                  .join("")}</ul>`,
               );
             })();
           }, []);

@@ -32,28 +32,28 @@ builder.subscriptionField("notifications", (t) =>
         undefined, // to make sure the subscription is initialized it will return empty arrays
         pipe(
           pubsub.subscribe("itemsCreated"),
-          map((items) => ({ itemsCreated: items }))
+          map((items) => ({ itemsCreated: items })),
         ),
         pipe(
           pubsub.subscribe("itemsUpdated"),
-          map((items) => ({ itemsUpdated: items }))
+          map((items) => ({ itemsUpdated: items })),
         ),
         pipe(
           pubsub.subscribe("itemsDeleted"),
-          map((items) => ({ itemsDeleted: items }))
+          map((items) => ({ itemsDeleted: items })),
         ),
 
         pipe(
           pubsub.subscribe("tasksCreated"),
-          map((tasks) => ({ tasksCreated: tasks }))
+          map((tasks) => ({ tasksCreated: tasks })),
         ),
         pipe(
           pubsub.subscribe("tasksUpdated"),
-          map((tasks) => ({ tasksUpdated: tasks }))
+          map((tasks) => ({ tasksUpdated: tasks })),
         ),
         pipe(
           pubsub.subscribe("tasksDeleted"),
-          map((tasks) => ({ tasksDeleted: tasks }))
+          map((tasks) => ({ tasksDeleted: tasks })),
         ),
       ]);
     },
@@ -68,5 +68,5 @@ builder.subscriptionField("notifications", (t) =>
         tasksDeleted: getArrayInObj(payload, "tasksDeleted"),
       };
     },
-  })
+  }),
 );

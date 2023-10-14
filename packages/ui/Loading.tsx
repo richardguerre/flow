@@ -30,7 +30,7 @@ export const Loading = (props: LoadingProps) => {
           viewBox="0 0 246 113"
           fill="none"
           xmlns="http://www.w3.org/2000/svg"
-          className="absolute right-0"
+          className="absolute right-0 transform translate-y-24"
           animate={{
             transition: {
               duration: duration,
@@ -73,7 +73,7 @@ export const Loading = (props: LoadingProps) => {
           viewBox="0 0 246 113"
           fill="none"
           xmlns="http://www.w3.org/2000/svg"
-          className="absolute left-0"
+          className="absolute left-0 transform translate-y-24"
           animate={{
             transition: {
               duration: duration,

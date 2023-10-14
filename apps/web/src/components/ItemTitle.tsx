@@ -17,7 +17,7 @@ export const ItemTitle = (props: ItemTitleProps) => {
         title
       }
     `,
-    props.item
+    props.item,
   );
 
   const [updateItem] = useMutation<ItemTitleUpdateItemTitleMutation>(graphql`

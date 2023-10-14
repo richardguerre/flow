@@ -5,7 +5,7 @@ import { tw } from "./tw";
 
 export type FormSelectProps<
   TFieldValues extends FieldValues = FieldValues,
-  TName extends FieldPath<TFieldValues> = FieldPath<TFieldValues>
+  TName extends FieldPath<TFieldValues> = FieldPath<TFieldValues>,
 > = Omit<ControllerProps<TFieldValues, TName>, "render"> & {
   children: ReactNode;
   disabled?: boolean;
@@ -18,9 +18,9 @@ export type FormSelectProps<
 };
 export const FormSelect = <
   TFieldValues extends FieldValues = FieldValues,
-  TName extends FieldPath<TFieldValues> = FieldPath<TFieldValues>
+  TName extends FieldPath<TFieldValues> = FieldPath<TFieldValues>,
 >(
-  props: FormSelectProps<TFieldValues, TName>
+  props: FormSelectProps<TFieldValues, TName>,
 ) => {
   const errorMessage = typeof props.error === "object" ? props.error.message : props.error;
   return (

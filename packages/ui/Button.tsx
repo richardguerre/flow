@@ -41,7 +41,7 @@ export const Button = forwardRef<HTMLButtonElement, ButtonProps>((props, ref) =>
           : "bg-primary-500 text-primary-50 hover:bg-primary-600 active:bg-primary-700 bg-opacity-100",
         props.sm ? "px-2 py-1" : props.lg ? "px-4 py-3" : "px-3 py-2",
         props.loading ? "relative" : "",
-        props.className
+        props.className,
       )}
     >
       {props.children}

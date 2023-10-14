@@ -127,7 +127,7 @@ builder.scalarType("Time", {
     const dayjsObj = dayjs(`1970-01-01 ${value as string}`, "YYYY-MM-DD HH:mm", true).utc(true);
     if (!dayjsObj.isValid()) {
       throw new GraphQLError(
-        `Invalid time "${value}". Should be in the format \`HH:mm\`. For example, \`16:20\`.`
+        `Invalid time "${value}". Should be in the format \`HH:mm\`. For example, \`16:20\`.`,
       );
     }
     return dayjsObj.toDate();

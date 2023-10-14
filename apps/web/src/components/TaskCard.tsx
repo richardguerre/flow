@@ -55,7 +55,7 @@ export const TaskCard = (props: TaskCardProps) => {
         ...TaskTitle_task
       }
     `,
-    props.task
+    props.task,
   );
 
   const [$deleteTask] = useMutation<TaskCardDeleteTaskMutation>(graphql`
@@ -82,7 +82,7 @@ export const TaskCard = (props: TaskCardProps) => {
         <div
           className={tw(
             "bg-background-50 group flex cursor-pointer flex-col gap-1 rounded-lg p-3 shadow-sm hover:shadow-md",
-            task.status !== "TODO" && "opacity-50 hover:opacity-100"
+            task.status !== "TODO" && "opacity-50 hover:opacity-100",
           )}
         >
           <TaskTitle task={task} />
@@ -115,7 +115,7 @@ const TaskCardActions = (props: TaskCardActionsProps) => {
         ...RenderTaskCardActions_task
       }
     `,
-    props.task
+    props.task,
   );
 
   const [$updateTaskStatus] = useMutationPromise<TaskCardUpdateTaskStatusMutation>(graphql`
@@ -262,7 +262,7 @@ const TaskDurationButton = (props: TaskDurationButtonProps) => {
         durationInMinutes
       }
     `,
-    props.task
+    props.task,
   );
 
   const [updateTaskDuration] = useMutation<TaskCardUpdateTaskDurationMutation>(graphql`
@@ -313,13 +313,13 @@ const TaskDurationButton = (props: TaskDurationButtonProps) => {
 
 const deleteTaskUpdater: SelectorStoreUpdater<TaskCardDeleteTaskMutation["response"]> = (
   store,
-  data
+  data,
 ) => {
   const day = store.get(`Day_${data.deleteTask.date}`);
   const dayTasks = day?.getLinkedRecords("tasks");
   day?.setLinkedRecords(
     (dayTasks ?? []).filter((dayTask) => dayTask.getValue("id") !== data.deleteTask.id),
-    "tasks"
+    "tasks",
   );
 };
 
@@ -330,7 +330,7 @@ export const CardActionButton = (props: CardActionButtonProps) => {
       {...props}
       className={tw(
         "bg-background-200/50 text-foreground-700 hover:bg-background-300/70 active:bg-background-300/100 flex h-6 w-6 items-center justify-center rounded-full text-sm",
-        props.className
+        props.className,
       )}
     >
       {props.children}

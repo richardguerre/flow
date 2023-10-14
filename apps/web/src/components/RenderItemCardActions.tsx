@@ -24,7 +24,7 @@ export const RenderItemCardActions = (props: Props) => {
         }
       }
     `,
-    props.item
+    props.item,
   );
 
   return (

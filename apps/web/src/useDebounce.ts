@@ -3,7 +3,7 @@ import { useState, useEffect, useRef } from "react";
 export const useDebounce = <T>(
   value: T,
   delay: number,
-  onUpdate?: (value: T) => void | Promise<void>
+  onUpdate?: (value: T) => void | Promise<void>,
 ) => {
   const timerRef = useRef<NodeJS.Timeout>();
   const [debouncedValue, setDebouncedValue] = useState<T>(value);

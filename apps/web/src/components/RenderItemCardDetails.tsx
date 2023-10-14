@@ -31,7 +31,7 @@ export const RenderItemCardDetails = (props: Props) => {
         }
       }
     `,
-    props.item
+    props.item,
   );
 
   const flowDetails = (

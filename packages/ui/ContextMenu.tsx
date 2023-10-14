@@ -36,7 +36,7 @@ export const ContextMenuSubTrigger = forwardRef<
     className={tw(
       "focus:bg-primary-100/70 focus:text-primary-500 data-[state=open]:bg-primary-100/70 data-[state=open]:text-primary-500 flex cursor-default select-none items-center rounded-sm px-2 py-1.5 text-sm outline-none",
       inset && "pl-8",
-      className
+      className,
     )}
     {...props}
   >
@@ -53,7 +53,7 @@ export const ContextMenuSubContent = forwardRef<
     ref={ref}
     className={tw(
       "bg-background-50 ring-0.5 ring-primary-100 text-foreground-900 data-[state=open]:animate-fade-in animate-duration-100 data-[state=closed]:animate-fade-out z-50 overflow-hidden rounded-md border p-1 shadow-md",
-      className
+      className,
     )}
     {...props}
   />
@@ -68,7 +68,7 @@ export const ContextMenuContent = forwardRef<
       ref={ref}
       className={tw(
         "bg-background-50 ring-0.5 ring-primary-100 text-foreground-900 animate-fade-in data-[state=open]:animate-duration-100 data-[state=open]:animate-fade-in data-[state=closed]:animate-fade-out data-[state=closed]:animate-duration-100 z-50 overflow-hidden rounded-md border p-1 shadow-md",
-        className
+        className,
       )}
       {...props}
     />
@@ -86,7 +86,7 @@ export const ContextMenuItem = forwardRef<
     className={tw(
       "focus:bg-primary-100/70 focus:text-primary-500 relative flex cursor-default select-none items-center rounded-sm px-2 py-1.5 text-sm outline-none data-[disabled]:pointer-events-none data-[disabled]:opacity-50",
       inset && "pl-8",
-      className
+      className,
     )}
     {...props}
   />
@@ -100,7 +100,7 @@ export const ContextMenuCheckboxItem = forwardRef<
     ref={ref}
     className={tw(
       "focus:bg-primary-100/70 focus:text-primary-500 relative flex cursor-default select-none items-center rounded-sm py-1.5 pl-8 pr-2 text-sm outline-none data-[disabled]:pointer-events-none data-[disabled]:opacity-50",
-      className
+      className,
     )}
     checked={checked}
     {...props}
@@ -123,7 +123,7 @@ export const ContextMenuRadioItem = forwardRef<
     ref={ref}
     className={tw(
       "focus:bg-primary-100/70 focus:text-primary-500 relative flex cursor-default select-none items-center rounded-sm py-1.5 pl-8 pr-2 text-sm outline-none data-[disabled]:pointer-events-none data-[disabled]:opacity-50",
-      className
+      className,
     )}
     {...props}
   >

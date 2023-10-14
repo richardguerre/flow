@@ -23,19 +23,22 @@ export default () => {
   });
 
   useEffect(() => {
-    const interval = setInterval(() => {
-      const threshold = today.current.startOf("day").add(1, "day");
-      if (threshold.isAfter(dayjs())) return;
-      today.current = dayjs().startOf("day");
-      loadQuery(
-        {
-          daysAfter: today.current.subtract(7, "day").format("YYYY-MM-DD"),
-          firstDays: 17, // 7 days before and 10 days after today
-          dayIdInFocus: `Day_${today.current.format("YYYY-MM-DD")}`,
-        },
-        { fetchPolicy: "store-and-network" }
-      );
-    }, 1000 * 60 * 60); // every hour
+    const interval = setInterval(
+      () => {
+        const threshold = today.current.startOf("day").add(1, "day");
+        if (threshold.isAfter(dayjs())) return;
+        today.current = dayjs().startOf("day");
+        loadQuery(
+          {
+            daysAfter: today.current.subtract(7, "day").format("YYYY-MM-DD"),
+            firstDays: 17, // 7 days before and 10 days after today
+            dayIdInFocus: `Day_${today.current.format("YYYY-MM-DD")}`,
+          },
+          { fetchPolicy: "store-and-network" },
+        );
+      },
+      1000 * 60 * 60,
+    ); // every hour
     return () => clearInterval(interval);
   }, []);
 

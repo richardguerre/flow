@@ -74,7 +74,7 @@ const getInstalledPlugins = async () => {
       }
     `,
     {},
-    { fetchPolicy: "store-or-network" }
+    { fetchPolicy: "store-or-network" },
   ).toPromise();
 
   const plugins = pluginsQuery?.installedPlugins ?? [];
@@ -98,7 +98,7 @@ export const usePlugins = () => {
       }
     `,
     {},
-    { fetchPolicy: "store-or-network" }
+    { fetchPolicy: "store-or-network" },
   );
 
   useAsyncEffect(async () => {

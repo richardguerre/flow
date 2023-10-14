@@ -3,7 +3,7 @@
   "version": "0.1.0",
   "description": "Wrapper around react-relay for easier development in Flow",
   "private": true,
-  "main": "index.ts",
+  "main": "index.tsx",
   "dependencies": {
     "react-relay": "^14.1.0"
   },

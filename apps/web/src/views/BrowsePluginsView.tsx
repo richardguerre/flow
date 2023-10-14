@@ -163,14 +163,15 @@ type FormValues = {
 
 const InstallPluginFromUrlForm = (props: { onClose: () => void }) => {
   const { register, formState, handleSubmit, setError } = useForm<FormValues>();
-  const [installPlugin, installingPlugin] =
-    useMutation<BrowsePluginsViewInstallFromUrlMutation>(graphql`
+  const [installPlugin, installingPlugin] = useMutation<BrowsePluginsViewInstallFromUrlMutation>(
+    graphql`
       mutation BrowsePluginsViewInstallFromUrlMutation($url: String!) {
         installPlugin(input: { url: $url, override: true }) {
           ...SettingsView_pluginInstallation
         }
       }
-    `);
+    `,
+  );
 
   const onSubmit = (values: FormValues) => {
     installPlugin({

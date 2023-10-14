@@ -32,7 +32,7 @@ export const SetupView = (props: Props) => {
         timezoneSet
       }
     `,
-    props.data
+    props.data,
   );
 
   return (
@@ -41,33 +41,35 @@ export const SetupView = (props: Props) => {
 
       {/* Increasing size circle transition */}
       <motion.div
-        className="bg-gradient-from-primary-200 bg-gradient-to-primary-400 absolute h-[max(100vw,100vh)] w-screen bg-gradient-to-b"
+        className="bg-gradient-from-primary-200 bg-gradient-to-primary-400 absolute h-[max(100vw,100vh)] w-screen bg-gradient-to-b hidden"
         animate={{
           transition: {
             duration: SCREEN_FILL_DURATION,
             delay: LOADING_DURATION,
             times: [0, 0.5, 1],
           },
+          display: ["none", "block", "block"],
           scale: [0, 1, 1],
           borderRadius: ["50%", "50%", "0%"],
         }}
       />
       {/* Darkening gradient transition */}
       <motion.div
-        className="bg-gradient-from-primary-600 bg-gradient-to-primary-950 absolute h-[max(100vw,100vh)] w-screen bg-gradient-to-b"
+        className="bg-gradient-from-primary-600 bg-gradient-to-primary-950 absolute h-[max(100vw,100vh)] w-screen bg-gradient-to-b hidden"
         animate={{
           transition: {
             duration: SCREEN_DARKEN_DURATION,
             delay: LOADING_DURATION + SCREEN_FILL_DURATION,
             times: [0, 1],
           },
+          display: ["none", "block"],
           opacity: [0, 1],
         }}
       />
 
       {/* Logo transition */}
       <motion.div
-        className="absolute"
+        className="absolute hidden"
         animate={{
           transition: {
             duration: SCREEN_LOGO_DURATION,
@@ -75,6 +77,7 @@ export const SetupView = (props: Props) => {
             times: [0, 0.4, 0.6, 1],
             ease: ["easeOut", "easeIn"],
           },
+          display: ["none", "block", "block", "block"],
           y: [300, 0, 0, -300],
           opacity: [0, 1, 1, 0],
           filter: ["blur(50px)", "blur(0px)", "blur(0px)", "blur(10px)"],
@@ -111,7 +114,7 @@ export const SetupView = (props: Props) => {
 
       {/* Welcome text transition */}
       <motion.div
-        className="text-primary-50 absolute w-full text-center text-7xl font-black"
+        className="text-primary-50 absolute w-full text-center text-7xl font-black hidden"
         animate={{
           transition: {
             duration: SCREEN_WELCOME_DURATION,
@@ -119,12 +122,13 @@ export const SetupView = (props: Props) => {
             times: [0, 0.4, 0.6, 1],
             ease: ["easeOut", "easeIn"],
           },
+          display: ["none", "block", "block", "block"],
           y: [300, 0, 0, -300],
           opacity: [0, 1, 1, 0],
           filter: ["blur(50px)", "blur(0px)", "blur(0px)", "blur(10px)"],
         }}
       >
-        Welcome to your Flow
+        Welcome {data.isPasswordSet ? "back" : ""} to your Flow
       </motion.div>
 
       {/* Setup form transition */}
@@ -132,7 +136,7 @@ export const SetupView = (props: Props) => {
         {!data.isPasswordSet ? (
           <motion.div
             key="test1"
-            className="absolute flex flex-col items-center p-4"
+            className="absolute flex-col items-center p-4 hidden"
             animate={{
               transition: {
                 duration: 1,
@@ -145,6 +149,7 @@ export const SetupView = (props: Props) => {
                 times: [0, 1],
                 ease: "easeOut",
               },
+              display: ["none", "flex"],
               y: [300, 0],
               opacity: [0, 1],
               filter: ["blur(50px)", "blur(0px)"],
@@ -163,7 +168,7 @@ export const SetupView = (props: Props) => {
         ) : !data.timezoneSet ? (
           <motion.div
             key="test1"
-            className="absolute flex flex-col items-center p-4"
+            className="absolute flex-col items-center p-4 hidden"
             animate={{
               transition: {
                 duration: 1,
@@ -176,6 +181,7 @@ export const SetupView = (props: Props) => {
                 times: [0, 1],
                 ease: "easeOut",
               },
+              display: ["none", "flex"],
               y: [300, 0],
               opacity: [0, 1],
               filter: ["blur(50px)", "blur(0px)"],
@@ -193,7 +199,7 @@ export const SetupView = (props: Props) => {
           </motion.div>
         ) : (
           <motion.div
-            className="text-primary-50 absolute w-full text-center text-7xl font-black"
+            className="text-primary-50 absolute w-full text-center text-7xl font-black hidden"
             animate={{
               transition: {
                 duration: 2,
@@ -201,6 +207,7 @@ export const SetupView = (props: Props) => {
                 times: [0, 0.3, 1],
                 ease: "easeOut",
               },
+              display: ["none", "block", "block"],
               y: [300, 0, 0],
               opacity: [0, 1, 1],
               filter: ["blur(50px)", "blur(0px)", "blur(0px)"],

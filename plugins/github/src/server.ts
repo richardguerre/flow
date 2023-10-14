@@ -143,7 +143,7 @@ export default definePlugin((opts) => {
     ],
     onCreateTask: async ({ task }) => {
       const itemPluginData = task.item?.pluginDatas?.find(
-        (pd) => pd.pluginSlug === opts.pluginSlug
+        (pd) => pd.pluginSlug === opts.pluginSlug,
       );
       if (!itemPluginData?.originalId) return;
       return {

@@ -71,7 +71,7 @@ Pass the \`where\` argument to override these defaults.`,
         orderBy: args.orderBy ?? undefined,
       });
     },
-  })
+  }),
 );
 
 // --------------- Item mutation types ---------------
@@ -123,7 +123,7 @@ builder.mutationField("createItem", (t) =>
         },
       });
     },
-  })
+  }),
 );
 
 builder.mutationField("updateItem", (t) =>
@@ -175,7 +175,7 @@ builder.mutationField("updateItem", (t) =>
         },
       });
     },
-  })
+  }),
 );
 
 export type PluginOnUpdateItemStatus = (input: {
@@ -216,7 +216,7 @@ builder.mutationField("updateItemStatus", (t) =>
         data: { isRelevant: !args.input.done },
       });
     },
-  })
+  }),
 );
 
 builder.mutationField("deleteItem", (t) =>
@@ -229,7 +229,7 @@ builder.mutationField("deleteItem", (t) =>
     resolve: (query, _, args) => {
       return prisma.item.delete({ ...query, where: { id: parseInt(args.id.id) } });
     },
-  })
+  }),
 );
 
 builder.mutationField("dismissItemFromInbox", (t) =>
@@ -246,5 +246,5 @@ builder.mutationField("dismissItemFromInbox", (t) =>
         data: { inboxPoints: null },
       });
     },
-  })
+  }),
 );

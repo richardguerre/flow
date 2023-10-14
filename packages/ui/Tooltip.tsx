@@ -18,7 +18,7 @@ export const TooltipContent = forwardRef<
     sideOffset={props.sideOffset ?? 4}
     className={tw(
       "bg-background-50 animate-fade-in animate-duration-100 text-foreground-900 ring-0.5 ring-primary-100 z-50 rounded p-1 text-sm shadow-md",
-      props.className
+      props.className,
     )}
     un-cloak
   />

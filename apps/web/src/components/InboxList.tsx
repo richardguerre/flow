@@ -44,7 +44,7 @@ export const InboxList = (props: InboxListProps) => {
         ...ItemCard_item
       }
     `,
-    data?.items.edges.map((edge) => edge.node) ?? []
+    data?.items.edges.map((edge) => edge.node) ?? [],
   );
 
   const items = structuredClone(
@@ -54,7 +54,7 @@ export const InboxList = (props: InboxListProps) => {
       const passesBaseFilter = !!node.isRelevant && (node.inboxPoints ?? 0) > 0;
       const hasTodoTasks = node.tasks.some((task) => task.status === "TODO");
       return passesBaseFilter && !hasTodoTasks;
-    }) ?? []
+    }) ?? [],
   );
 
   if (!data) return null; // TODO: loading state

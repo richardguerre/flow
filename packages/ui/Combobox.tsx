@@ -67,7 +67,7 @@ export const Combobox = (
           /** A function that is called when the value changes. */
           onValueChange?: (value: string) => void;
         }
-    )
+    ),
 ) => {
   const [open, setOpen] = useState(props.open ?? false);
   const [values, setValues] = useState<string[]>(
@@ -75,7 +75,7 @@ export const Combobox = (
       ? props.defaultValues ?? []
       : !props.multiselect && props.defaultValue
       ? [props.defaultValue]
-      : []
+      : [],
   );
   const handleOnOpenChange: ComboboxContextType["onOpenChange"] = (newOpen) => {
     setOpen(newOpen);
@@ -200,7 +200,7 @@ export const ComboboxItem = forwardRef<
               return oldValues.filter((value) => value !== selectedValue);
             }
             const newValuesSet = new Set(
-              multiselect ? [...oldValues, selectedValue] : [selectedValue]
+              multiselect ? [...oldValues, selectedValue] : [selectedValue],
             );
             return Array.from(newValuesSet);
           });
@@ -226,7 +226,7 @@ export const ComboboxSelected = (
      * ```
      */
     selectedClassName?: string;
-  }
+  },
 ) => {
   const { selected } = useContext(ComboboxItemContext);
   return <div {...props} className={tw(props.className, selected && props.selectedClassName)} />;

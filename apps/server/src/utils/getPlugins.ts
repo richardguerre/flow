@@ -60,7 +60,7 @@ export const getPluginJson = async (opts: { url: string }) => {
   const res = await fetch(`${opts.url}/plugin.json`).catch((err) => {
     if (err.message === "fetch failed") {
       throw new GraphQLError(
-        `Got no response. Make sure the URL is correct: "${opts.url}/plugin.json"`
+        `Got no response. Make sure the URL is correct: "${opts.url}/plugin.json"`,
       );
     }
     throw new GraphQLError(err.message);
@@ -90,7 +90,7 @@ export async function installServerPlugin(opts: Options) {
   const res = await fetch(`${opts.url}/server.js`).catch((err) => {
     if (err.message === "fetch failed") {
       throw new GraphQLError(
-        `Got no response. Make sure the URL is correct: "${opts.url}/server.js"`
+        `Got no response. Make sure the URL is correct: "${opts.url}/server.js"`,
       );
     }
     throw new GraphQLError(err.message);
@@ -118,11 +118,11 @@ export async function installServerPlugin(opts: Options) {
   // check if server.js contains unsafe code (require(), eval(), etc.)
   if (
     /Bun|require|eval|setTimeout|setInterval|setImmidiate|process|__dirname|__filename|spawn|spawnSync|write|import.meta|ffi|transpile|transform/.test(
-      text
+      text,
     )
   ) {
     throw new GraphQLError(
-      `The plugin is unsafe to install as it can gain access to sensitive data. Contact the plugin author or install a different plugin.`
+      `The plugin is unsafe to install as it can gain access to sensitive data. Contact the plugin author or install a different plugin.`,
     );
   }
 
@@ -134,7 +134,7 @@ export async function installServerPlugin(opts: Options) {
   } catch (e) {
     console.log(e);
     throw new GraphQLError(
-      `Couldn't install the server part of the plugin. Contact the plugin author to fix this.`
+      `Couldn't install the server part of the plugin. Contact the plugin author to fix this.`,
     );
   }
   if (typeof exported !== "object") {
@@ -146,13 +146,13 @@ export async function installServerPlugin(opts: Options) {
   }
   if (typeof exported.plugin !== "function") {
     throw new GraphQLError(
-      `The exports of "${opts.url}/server.js" must have a \`plugin\` property which is a function. Please use \`definePlugin\` from \`@flowdev/plugin/server\`.`
+      `The exports of "${opts.url}/server.js" must have a \`plugin\` property which is a function. Please use \`definePlugin\` from \`@flowdev/plugin/server\`.`,
     );
   }
 
   if (!opts.override && cache.has(opts.slug)) {
     throw new GraphQLError(
-      `PLUGIN_WITH_SAME_SLUG: A plugin with the slug "${opts.slug}" is already installed. Use the \`override\` option to override the existing plugin.`
+      `PLUGIN_WITH_SAME_SLUG: A plugin with the slug "${opts.slug}" is already installed. Use the \`override\` option to override the existing plugin.`,
     );
   }
   await fs.rename(pathToTemp, path.join(pathToPlugins, `${opts.slug}.js`));

@@ -43,7 +43,7 @@ builder.queryField("taskTags", (t) =>
         take: Math.min(args.first ?? args.last ?? 100, 100),
       });
     },
-  })
+  }),
 );
 
 export const TaskTagWhereInput = builder.inputType("TaskTagWhereInput", {

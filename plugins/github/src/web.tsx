@@ -27,7 +27,7 @@ export default definePlugin((opts) => {
       if (!itemPluginData) return null;
       const min = itemPluginData.min as NotificationItemPluginDataMin;
       const [, owner, repo, number] = min.url.match(
-        /https:\/\/(?:api\.)?github\.com\/(?:repos\/)?([^/]+)\/([^/]+)\/pull(?:s)?\/([^/]+)/
+        /https:\/\/(?:api\.)?github\.com\/(?:repos\/)?([^/]+)\/([^/]+)\/pull(?:s)?\/([^/]+)/,
       )!;
       if (!owner || !repo) return null;
       return [
@@ -56,7 +56,7 @@ export default definePlugin((opts) => {
       if (!itemPluginData) return null;
       const min = itemPluginData.min as NotificationItemPluginDataMin;
       const [, owner, repo, number] = min.url.match(
-        /https:\/\/(?:api\.)?github\.com\/(?:repos\/)?([^/]+)\/([^/]+)\/pull(?:s)?\/([^/]+)/
+        /https:\/\/(?:api\.)?github\.com\/(?:repos\/)?([^/]+)\/([^/]+)\/pull(?:s)?\/([^/]+)/,
       )!;
       return [
         {

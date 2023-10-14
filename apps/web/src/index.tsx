@@ -1,4 +1,4 @@
-import React from "react";
+import React, { Suspense } from "react";
 import ReactDOM from "react-dom/client";
 import { createBrowserRouter, Outlet, redirect, RouterProvider } from "react-router-dom";
 import { LOCAL_STORAGE_USER_TOKEN_KEY } from "@flowdev/web/relay/environment";
@@ -14,8 +14,6 @@ initUnocssRuntime({
   autoPrefix: true,
   defaults: unocssConfig,
 });
-// disable unocss runtime observer as we already extract styles in jsx factory (see @flowdev/react package)
-window.__unocss_runtime?.toggleObserver(false);
 
 const IndexView = React.lazy(() => import("./views/IndexView"));
 const SettingsView = React.lazy(() => import("./views/SettingsView"));
@@ -30,61 +28,80 @@ const TestView = React.lazy(() => import("./views/TestView"));
 const NotFoundView = React.lazy(() => import("./views/NotFoundView"));
 
 const router = createBrowserRouter([
-  { path: "/plan", element: <div>Plan</div> }, // TODO: implement public route later
   {
     /**
-     * This is the parent route for all routes requiring authentication.
-     * If the user is not authenticated, they will be redirected to the login page.
+     * This is the parent route for all routes that require SuspenseLoadingView.
      */
     path: "/",
-    loader: () => {
-      const token = window.localStorage.getItem(LOCAL_STORAGE_USER_TOKEN_KEY);
-      if (!token) {
-        return redirect("/login");
-      }
-      console.info(`Authenticated with token: ${token}`);
-      return null;
-    },
     element: (
-      <ViewErrorBoundary>
-        <div className="flex">
-          <Navbar />
-          <ViewErrorBoundary>
-            <SuspenseLoadingView>
-              <Outlet />
-            </SuspenseLoadingView>
-          </ViewErrorBoundary>
-        </div>
-      </ViewErrorBoundary>
+      <SuspenseLoadingView>
+        <Outlet />
+      </SuspenseLoadingView>
     ),
     children: [
-      { path: "/", element: <IndexView /> },
-      { path: "browse-plugins", element: <BrowsePluginsView /> },
       {
-        path: "/settings",
-        element: <SettingsView />,
-        children: [
-          { path: "", element: <GeneralSettingsView /> }, // show general settings as default
-          { path: "general", element: <GeneralSettingsView /> },
-          { path: "tasks", element: <TaskSettingsView /> },
-          { path: "routines", element: <RoutineSettingsView /> },
-          { path: "browse-plugins", element: <BrowsePluginsView /> },
-          { path: "plugin/:pluginSlug", element: <PluginSettingsView /> },
-          { path: "*", element: <NotFoundView /> },
-        ],
-      },
-      { path: "/routine/:routineId/:routineStep", element: <RoutineView /> },
-      {
-        path: "/routine",
-        loader: async () => {
-          const closestRoutine = await getClosestRoutineRoutePathAndName();
-          if (!closestRoutine) return redirect("/routine/1/1"); // should never happen, but just in case
-          return redirect(closestRoutine.path);
+        /**
+         * This is the parent route for all routes requiring authentication.
+         * If the user is not authenticated, they will be redirected to the login page.
+         */
+        path: "",
+        loader: () => {
+          const token = window.localStorage.getItem(LOCAL_STORAGE_USER_TOKEN_KEY);
+          if (!token) {
+            return redirect("/login");
+          }
+          console.info(`Authenticated with token: ${token}`);
+          return null;
         },
+        element: (
+          <ViewErrorBoundary>
+            <div className="flex">
+              <Navbar />
+              <ViewErrorBoundary>
+                <SuspenseLoadingView>
+                  <Outlet />
+                </SuspenseLoadingView>
+              </ViewErrorBoundary>
+            </div>
+          </ViewErrorBoundary>
+        ),
+        children: [
+          { path: "", element: <IndexView /> },
+          { path: "browse-plugins", element: <BrowsePluginsView /> },
+          {
+            path: "settings",
+            element: <SettingsView />,
+            children: [
+              { path: "", element: <GeneralSettingsView /> }, // show general settings as default
+              { path: "general", element: <GeneralSettingsView /> },
+              { path: "tasks", element: <TaskSettingsView /> },
+              { path: "routines", element: <RoutineSettingsView /> },
+              { path: "browse-plugins", element: <BrowsePluginsView /> },
+              { path: "plugin/:pluginSlug", element: <PluginSettingsView /> },
+              { path: "*", element: <NotFoundView /> },
+            ],
+          },
+          { path: "routine/:routineId/:routineStep", element: <RoutineView /> },
+          {
+            path: "routine",
+            loader: async () => {
+              const closestRoutine = await getClosestRoutineRoutePathAndName();
+              if (!closestRoutine) return redirect("/routine/1/1"); // should never happen, but just in case
+              return redirect(closestRoutine.path);
+            },
+          },
+        ],
       },
     ],
   },
-  { path: "/login", element: <LoginView /> },
+  {
+    path: "/login",
+    element: (
+      <Suspense fallback={<></>}>
+        <LoginView />
+      </Suspense>
+    ),
+  },
   { path: "/test", element: <TestView /> },
   { path: "*", element: <NotFoundView /> },
 ]);
@@ -92,9 +109,7 @@ const router = createBrowserRouter([
 ReactDOM.createRoot(document.getElementById("root") as HTMLElement).render(
   <React.StrictMode>
     <Providers>
-      <SuspenseLoadingView>
-        <RouterProvider router={router} />
-      </SuspenseLoadingView>
+      <RouterProvider router={router} />
     </Providers>
-  </React.StrictMode>
+  </React.StrictMode>,
 );

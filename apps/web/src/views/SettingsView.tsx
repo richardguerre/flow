@@ -27,7 +27,7 @@ export default () => {
   const { queryRef } = useQueryLoader<SettingsViewQuery>(
     settingsViewQuery,
     {},
-    { fetchPolicy: "store-and-network" }
+    { fetchPolicy: "store-and-network" },
   );
   if (!queryRef) return null;
   return <SettingsViewContent queryRef={queryRef} />;
@@ -79,7 +79,7 @@ const SettingTab = (props: SettingTabProps) => {
       to={props.to}
       className={tw(
         "text-foreground-700 hover:bg-background-200 rounded-md bg-transparent p-2",
-        active && "bg-primary-100 text-primary-600 hover:bg-primary-100"
+        active && "bg-primary-100 text-primary-600 hover:bg-primary-100",
       )}
     >
       {props.children}

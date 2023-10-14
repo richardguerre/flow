@@ -21,7 +21,7 @@ export const getStoreUtils = (defaultSlug: string) => {
           keys,
           pluginSlug: pluginSlug === undefined ? defaultSlug : pluginSlug,
         },
-      }
+      },
     ).toPromise();
     return Object.fromEntries(data?.storeItems.map((item) => [item.key, item.value]) ?? []);
   };

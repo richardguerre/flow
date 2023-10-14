@@ -48,10 +48,10 @@ export default () => {
         }
       }
     `,
-    {}
+    {},
   );
   const [selectedRoutine, setSelectedRoutine] = useState<string | null>(
-    data.routines[0]?.id ?? null
+    data.routines[0]?.id ?? null,
   );
 
   const [createRoutine] = useMutationPromise<RoutineSettingsViewCreateRoutineMutation>(graphql`
@@ -92,7 +92,7 @@ export default () => {
         loading: "Creating new routine...",
         success: "Routine created!",
         error: "Failed to create routine. Please try again.",
-      }
+      },
     );
 
     setSelectedRoutine(result.createRoutine.id);
@@ -117,7 +117,7 @@ export default () => {
                 <Badge className="bg-gray-200 text-gray-600">{routine.time}</Badge>
                 <BsArrowRightShort
                   className={tw(
-                    selectedRoutine === routine.id ? "text-foreground-900" : "text-foreground-700"
+                    selectedRoutine === routine.id ? "text-foreground-900" : "text-foreground-700",
                   )}
                 />
               </div>
@@ -146,7 +146,7 @@ const ActiveCheckbox = (props: { routine: RoutineSettingsViewActiveCheckbox_rout
         isActive
       }
     `,
-    props.routine
+    props.routine,
   );
 
   const [updateRoutine] = useMutationPromise<RoutineSettingsViewUpdateActiveMutation>(graphql`
@@ -168,7 +168,7 @@ const ActiveCheckbox = (props: { routine: RoutineSettingsViewActiveCheckbox_rout
         loading: "Updating routine...",
         success: "Routine updated!",
         error: "Failed to update routine. Please try again.",
-      }
+      },
     );
   };
 
@@ -197,7 +197,7 @@ const Repeats = (props: { routine: RoutineSettingsViewRepeats_routine$key }) => 
         repeats
       }
     `,
-    props.routine
+    props.routine,
   );
 
   const [updateRoutine] = useMutationPromise<RoutineSettingsViewUpdateRepeatsMutation>(graphql`
@@ -222,7 +222,7 @@ const Repeats = (props: { routine: RoutineSettingsViewRepeats_routine$key }) => 
         loading: "Updating routine...",
         success: "Routine updated!",
         error: "Failed to update routine. Please try again.",
-      }
+      },
     );
   };
 
@@ -238,7 +238,7 @@ const Repeats = (props: { routine: RoutineSettingsViewRepeats_routine$key }) => 
                 "flex h-7 w-7 appearance-none items-center justify-center rounded-full text-xs",
                 routine.repeats.includes(day)
                   ? "bg-primary-100 text-primary-600"
-                  : "bg-gray-200 text-gray-600"
+                  : "bg-gray-200 text-gray-600",
               )}
             >
               {day[0]}
@@ -279,7 +279,7 @@ const RoutineDetailedSettings = (props: RoutineDetailedSettingsProps) => {
         ...RoutineSettingsViewRepeats_routine
       }
     `,
-    props.routine
+    props.routine,
   );
 
   const [updateRoutine] = useMutationPromise<RoutineSettingsViewUpdateRoutineMutation>(graphql`
@@ -300,7 +300,7 @@ const RoutineDetailedSettings = (props: RoutineDetailedSettingsProps) => {
     ({ values, isDirty, isValid }) => {
       if (!isDirty || !isValid) return;
       onSubmit(values);
-    }
+    },
   );
 
   const onSubmit = (values: FormValues) => {
@@ -325,7 +325,7 @@ const RoutineDetailedSettings = (props: RoutineDetailedSettingsProps) => {
         loading: "Updating routine...",
         success: "Routine updated!",
         error: "Failed to update routine. Please try again.",
-      }
+      },
     );
   };
 
@@ -336,7 +336,7 @@ const RoutineDetailedSettings = (props: RoutineDetailedSettingsProps) => {
         pluginSlug,
         stepSlug,
         shouldSkip: false,
-      }))
+      })),
     );
   }, [props.plugins]);
 
@@ -463,7 +463,7 @@ const RoutineStep = (props: {
               "flex h-6 w-6 items-center justify-center rounded-full",
               props.step.shouldSkip
                 ? "bg-primary-100 text-primary-600"
-                : "bg-gray-200 text-gray-600"
+                : "bg-gray-200 text-gray-600",
             )}
             onClick={() => props.onSkipChange?.(props.step.id, !props.step.shouldSkip)}
           >

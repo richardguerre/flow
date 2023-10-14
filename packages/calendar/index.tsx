@@ -74,7 +74,7 @@ export const DayTimeGrid = (props: DayTimeGridProps) => {
           };
         }
         const overlappingEvents: CalendarEventTransformed[] = Array.from(
-          result.eventsMap.values()
+          result.eventsMap.values(),
         ).filter((otherEvent) => {
           if (otherEvent === event) return false;
           if (otherEvent.scheduledAt <= event.scheduledAt && otherEvent.end > event.scheduledAt)
@@ -101,7 +101,7 @@ export const DayTimeGrid = (props: DayTimeGridProps) => {
       {
         eventsMap: new Map<string, CalendarEventTransformed>(),
         allDayEvents: new Array<CalendarEventBase & AllDay>(),
-      }
+      },
     );
     const yOffset: number = 30 * result.allDayEvents.length + 4; // 28px = 20px line height of allDay event text-sm + 8px padding + 2px border | 4px = margin
     return {

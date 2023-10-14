@@ -12,9 +12,8 @@ export default definePlugin((opts) => {
   const EVENTS_WEBHOOK_CHANNEL_ID = `flow-${opts.pluginSlug}-events-webhook`;
 
   const getTokensFromStore = async () => {
-    const accountsTokensItem = await opts.store.getPluginItem<AccountsTokens>(
-      ACCOUNT_TOKENS_STORE_KEY
-    );
+    const accountsTokensItem =
+      await opts.store.getPluginItem<AccountsTokens>(ACCOUNT_TOKENS_STORE_KEY);
     if (!accountsTokensItem) {
       throw new opts.GraphQLError("User not authenticated.", {
         extensions: {
@@ -51,7 +50,7 @@ export default definePlugin((opts) => {
       // access token has expired, refresh it
       const res = await fetch(
         "https://google-calendar-api-flow-dev.vercel.app/api/auth/refresh?refresh_token=" +
-          tokens.refresh_token
+          tokens.refresh_token,
       );
       if (!res.ok) {
         throw new Error("COULD_NOT_REFRESH_TOKEN: Could not refresh token.");
@@ -78,13 +77,12 @@ export default definePlugin((opts) => {
     onRequest: async (req) => {
       if (req.path === "/auth") {
         return Response.redirect(
-          `https://google-calendar-api-flow-dev.vercel.app/api/auth?api_endpoint=${opts.serverOrigin}/api/plugin/${opts.pluginSlug}/auth/callback`
+          `https://google-calendar-api-flow-dev.vercel.app/api/auth?api_endpoint=${opts.serverOrigin}/api/plugin/${opts.pluginSlug}/auth/callback`,
         );
       } else if (req.path === "/auth/callback" && req.request.method === "POST") {
         // not using getTokensFromStore here because it throws an error if the item doesn't exist, but we want to create it if it doesn't exist
-        const accountsTokensItem = await opts.store.getPluginItem<AccountsTokens>(
-          ACCOUNT_TOKENS_STORE_KEY
-        );
+        const accountsTokensItem =
+          await opts.store.getPluginItem<AccountsTokens>(ACCOUNT_TOKENS_STORE_KEY);
         const body = req.body as Tokens;
         // store the access token in the user's Flow instance and return 200
         const tokenData = {
@@ -129,7 +127,7 @@ export default definePlugin((opts) => {
           const tokens = await getRefreshedTokens({ account, accountsTokens });
           const calendars = await fetch(
             "https://www.googleapis.com/calendar/v3/users/me/calendarList",
-            { headers: { Authorization: `Bearer ${tokens.access_token}` } }
+            { headers: { Authorization: `Bearer ${tokens.access_token}` } },
           )
             .then((res) => res.json() as calendar_v3.Schema$CalendarList)
             .then((res) => res.items);
@@ -164,7 +162,7 @@ export default definePlugin((opts) => {
           const tokens = await getRefreshedTokens({ account, accountsTokens });
           const allCalendarsInAccount = await fetch(
             "https://www.googleapis.com/calendar/v3/users/me/calendarList",
-            { headers: { Authorization: `Bearer ${tokens.access_token}` } }
+            { headers: { Authorization: `Bearer ${tokens.access_token}` } },
           )
             .then((res) => res.json() as calendar_v3.Schema$CalendarList)
             .then((res) => res.items);
@@ -196,7 +194,7 @@ export default definePlugin((opts) => {
                   type: "web_hook",
                   address: `${opts.serverOrigin}/api/plugin/${opts.pluginSlug}/events/webhook`,
                 }),
-              }
+              },
             ).then((res) => res.json() as calendar_v3.Schema$Channel);
             console.log("✔ Set up webhook for calendar", calendarId);
 
@@ -248,7 +246,7 @@ export default definePlugin((opts) => {
 
         await opts.store.setItem<ConnectedCalendar[]>(
           CONNECTED_CALENDARS_KEY,
-          Array.from(connectedCalendarsMap.values())
+          Array.from(connectedCalendarsMap.values()),
         );
         // schedule a job to sync calendars every 3 days at 3am (least busy time and not midnight so less likely to be peak time for Google).
         // If the schedule already exists, it will be updated.
@@ -443,27 +441,27 @@ export default definePlugin((opts) => {
           const tokens = await getRefreshedTokens({ account, accountsTokens });
           const calendar = await fetch(
             `https://www.googleapis.com/calendar/v3/calendars/${jobData.calendarId}`,
-            { headers: { Authorization: `Bearer ${tokens.access_token}` } }
+            { headers: { Authorization: `Bearer ${tokens.access_token}` } },
           ).then((res) => res.json() as calendar_v3.Schema$CalendarListEntry);
 
           const events = await fetch(
             `https://www.googleapis.com/calendar/v3/calendars/${
               jobData.calendarId
             }/events?timeMin=${encodeURIComponent(
-              opts.dayjs().startOf("day").toISOString()
+              opts.dayjs().startOf("day").toISOString(),
             )}&timeMax=${encodeURIComponent(
               opts
                 .dayjs()
                 .add(jobData.days ?? 7, "day")
-                .toISOString()
+                .toISOString(),
             )}&singleEvents=true&orderBy=startTime`,
-            { headers: { Authorization: `Bearer ${tokens.access_token}` } }
+            { headers: { Authorization: `Bearer ${tokens.access_token}` } },
           ).then((res) => res.json() as calendar_v3.Schema$Events);
           console.log(
             events.items?.length ?? 0,
             events.items?.length === 1 ? "event" : "events",
             "to process from initial sync of calendar",
-            jobData.calendarId
+            jobData.calendarId,
           );
           for (const event of events.items ?? []) {
             await opts.pgBoss.send(UPSERT_EVENT_JOB_NAME, {
@@ -479,7 +477,7 @@ export default definePlugin((opts) => {
           .getPluginItem<ConnectedCalendar[]>(CONNECTED_CALENDARS_KEY)
           .then((res) => res?.value ?? []);
         const calendarToProcces = connectedCalendars.find(
-          (c) => c.calendarId === jobData.calendarId
+          (c) => c.calendarId === jobData.calendarId,
         );
         if (!calendarToProcces) {
           console.log("❌ Could not find calendar to process", jobData.calendarId);
@@ -488,22 +486,22 @@ export default definePlugin((opts) => {
         const tokens = await getRefreshedTokens({ account: calendarToProcces.account });
         const calendar = await fetch(
           `https://www.googleapis.com/calendar/v3/calendars/${jobData.calendarId}`,
-          { headers: { Authorization: `Bearer ${tokens.access_token}` } }
+          { headers: { Authorization: `Bearer ${tokens.access_token}` } },
         ).then((res) => res.json() as calendar_v3.Schema$CalendarListEntry);
 
         const events = await fetch(
           `https://www.googleapis.com/calendar/v3/calendars/${
             jobData.calendarId
           }/events?updatedMin=${encodeURIComponent(
-            opts.dayjs(calendarToProcces.lastSyncedAt).toISOString()
+            opts.dayjs(calendarToProcces.lastSyncedAt).toISOString(),
           )}&singleEvents=true&orderBy=updated`,
-          { headers: { Authorization: `Bearer ${tokens.access_token}` } }
+          { headers: { Authorization: `Bearer ${tokens.access_token}` } },
         ).then((res) => res.json() as calendar_v3.Schema$Events);
         console.log(
           events.items?.length ?? 0,
           events.items?.length === 1 ? "event" : "events",
           "to process from webhook of calendar",
-          jobData.calendarId
+          jobData.calendarId,
         );
         for (const event of events.items ?? []) {
           await opts.pgBoss.send(UPSERT_EVENT_JOB_NAME, {

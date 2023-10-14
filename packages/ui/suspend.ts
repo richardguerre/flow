@@ -19,7 +19,7 @@ const globalCache: Cache<Tuple<unknown>>[] = [];
 function shallowEqualArrays(
   arrA: any[],
   arrB: any[],
-  equal: (a: any, b: any) => boolean = (a: any, b: any) => a === b
+  equal: (a: any, b: any) => boolean = (a: any, b: any) => a === b,
 ) {
   if (arrA === arrB) return true;
   if (!arrA || !arrB) return false;
@@ -33,7 +33,7 @@ function query<Keys extends Tuple<unknown>, Fn extends (...keys: Keys) => Promis
   fn: Fn | Promise<unknown>,
   keys: Keys = null as unknown as Keys,
   preload = false,
-  config: Partial<Config> = {}
+  config: Partial<Config> = {},
 ) {
   // If no keys were given, the function is the key
   if (keys === null) keys = [fn] as unknown as Keys;
@@ -89,20 +89,20 @@ function query<Keys extends Tuple<unknown>, Fn extends (...keys: Keys) => Promis
 
 export const suspend = <
   Keys extends Tuple<unknown>,
-  Fn extends (...keys: Keys) => Promise<unknown>
+  Fn extends (...keys: Keys) => Promise<unknown>,
 >(
   fn: Fn | Promise<unknown>,
   keys?: Keys,
-  config?: Config
+  config?: Config,
 ) => query(fn, keys, false, config);
 
 export const preload = <
   Keys extends Tuple<unknown>,
-  Fn extends (...keys: Keys) => Promise<unknown>
+  Fn extends (...keys: Keys) => Promise<unknown>,
 >(
   fn: Fn | Promise<unknown>,
   keys?: Keys,
-  config?: Config
+  config?: Config,
 ) => void query(fn, keys, true, config);
 
 export const peek = <Keys extends Tuple<unknown>>(keys: Keys) =>

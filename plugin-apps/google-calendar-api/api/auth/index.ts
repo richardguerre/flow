@@ -11,7 +11,7 @@ export default (request: Request) => {
   if (!state) {
     return new Response(
       "Missing api_endpoint in search params to know which API to hit once the access token is retrieved.",
-      { status: 400 }
+      { status: 400 },
     );
   }
   const searchParams = new URLSearchParams({
@@ -29,6 +29,6 @@ export default (request: Request) => {
   });
 
   return Response.redirect(
-    `https://accounts.google.com/o/oauth2/v2/auth?${searchParams.toString()}`
+    `https://accounts.google.com/o/oauth2/v2/auth?${searchParams.toString()}`,
   );
 };

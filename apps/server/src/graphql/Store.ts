@@ -8,8 +8,6 @@ import {
 } from "../utils/getPlugins";
 import { prisma } from "../utils/prisma";
 import { builder } from "./builder";
-import { genSalt, hash, compare } from "bcryptjs";
-import crypto from "crypto";
 import { dayjs } from "../utils/dayjs";
 import { scheduleRolloverTasks } from "../utils";
 
@@ -95,7 +93,7 @@ Pass the \`pluginSlug\` if you want to get items created by a specific plugin. N
         },
       });
     },
-  })
+  }),
 );
 
 builder.queryField("isPasswordSet", (t) =>
@@ -114,7 +112,7 @@ builder.queryField("isPasswordSet", (t) =>
         .catch(() => null);
       return !!passwordSetting;
     },
-  })
+  }),
 );
 
 builder.queryField("timezoneSet", (t) =>
@@ -132,7 +130,7 @@ builder.queryField("timezoneSet", (t) =>
         .catch(() => null);
       return (timezoneSetting?.value ?? null) as string | null;
     },
-  })
+  }),
 );
 
 builder.queryField("isFullySetup", (t) =>
@@ -151,7 +149,7 @@ builder.queryField("isFullySetup", (t) =>
       });
       return storeItems.length === 2;
     },
-  })
+  }),
 );
 
 builder.queryField("isSessionValid", (t) =>
@@ -161,7 +159,7 @@ builder.queryField("isSessionValid", (t) =>
     authScopes: { public: true },
     skipTypeScopes: true,
     resolve: (_, __, context) => context.isSessionValid(),
-  })
+  }),
 );
 
 builder.queryField("installedPlugins", (t) =>
@@ -169,7 +167,7 @@ builder.queryField("installedPlugins", (t) =>
     type: [PluginInstallationType],
     description: "Get all installed plugins.",
     resolve: getPluginsInStore,
-  })
+  }),
 );
 
 const PluginInstallationType = builder.objectType(
@@ -181,7 +179,7 @@ const PluginInstallationType = builder.objectType(
       hasWebRuntime: t.exposeBoolean("web"),
       hasServerRuntime: t.exposeBoolean("server"),
     }),
-  }
+  },
 );
 
 // --------------- Setting mutation types ---------------
@@ -213,7 +211,7 @@ If \`isServerOnly\` is set to true, the store item will not be returned in the \
               userFriendlyMessage:
                 "The item couldn't be saved. Please ask the plugin author for more information.",
             },
-          }
+          },
         );
       }
       const res = await prisma.store.upsert({
@@ -235,11 +233,11 @@ If \`isServerOnly\` is set to true, the store item will not be returned in the \
       await plugin
         ?.onStoreItemUpsert?.(args.input.key)
         .catch((e) =>
-          console.log(`Error plugin.onStoreItemUpsert for ${args.input.pluginSlug}`, e)
+          console.log(`Error plugin.onStoreItemUpsert for ${args.input.pluginSlug}`, e),
         ); // TODO: maybe execute in message queue instead of synchronously
       return res;
     },
-  })
+  }),
 );
 
 builder.mutationField("installPlugin", (t) =>
@@ -266,7 +264,7 @@ builder.mutationField("installPlugin", (t) =>
               userFriendlyMessage:
                 "There is a problem with the plugin you are trying to install (Error: PLUGIN_WITH_SAME_SLUG). Please contact the plugin author for more information.",
             },
-          }
+          },
         );
       }
 
@@ -279,7 +277,7 @@ builder.mutationField("installPlugin", (t) =>
               userFriendlyMessage:
                 "There is a problem with the plugin you are trying to install (Err: PLUGIN_SLUG_INVALID). Please contact the plugin author for more information.",
             },
-          }
+          },
         );
       }
 
@@ -317,7 +315,7 @@ builder.mutationField("installPlugin", (t) =>
       });
       return newSetting.value as PluginInstallation[];
     },
-  })
+  }),
 );
 
 builder.mutationField("uninstallPlugin", (t) =>
@@ -351,16 +349,15 @@ builder.mutationField("uninstallPlugin", (t) =>
       });
       return newSetting.value as PluginInstallation[];
     },
-  })
+  }),
 );
 
 const generatePasswordHash = async (password: string) => {
-  const salt = await genSalt(10);
-  return hash(password, salt);
+  return Bun.password.hash(password, "bcrypt");
 };
 
 const generateSessionToken = () => {
-  return crypto.randomBytes(16).toString("base64url");
+  return new Bun.CryptoHasher("sha256").digest("base64");
 };
 
 builder.mutationField("setPassword", (t) =>
@@ -391,7 +388,7 @@ builder.mutationField("setPassword", (t) =>
       if (passwordSetting) {
         throw new GraphQLError(
           "The password can only be set once. Use the `changePassword` mutation to change the password.",
-          { extensions: { code: "PASSWORD_ALREADY_SET" } }
+          { extensions: { code: "PASSWORD_ALREADY_SET" } },
         );
       }
 
@@ -407,7 +404,7 @@ builder.mutationField("setPassword", (t) =>
             isServerOnly: true,
           },
         })
-        .catch((e) => {
+        .catch((e: any) => {
           console.error(e);
           throw new GraphQLError(e.message ?? "Something went wrong while setting the password.", {
             extensions: {
@@ -443,7 +440,7 @@ builder.mutationField("setPassword", (t) =>
 
       return sessionToken;
     },
-  })
+  }),
 );
 
 builder.mutationField("changePassword", (t) =>
@@ -479,14 +476,13 @@ builder.mutationField("changePassword", (t) =>
               userFriendlyMessage:
                 "No password was set for your Flow yet. Please refresh the page to set the password.",
             },
-          }
+          },
         );
       }
 
-      const newPasswordHash = await generatePasswordHash(args.input.newPassword);
-      const isOldPasswordCorrect = await compare(
+      const isOldPasswordCorrect = await Bun.password.verify(
         args.input.oldPassword,
-        passwordSetting.value as string
+        passwordSetting.value as string,
       );
 
       if (!isOldPasswordCorrect) {
@@ -495,6 +491,7 @@ builder.mutationField("changePassword", (t) =>
         });
       }
 
+      const newPasswordHash = await generatePasswordHash(args.input.newPassword);
       await prisma.store
         .update({
           where: {
@@ -502,7 +499,7 @@ builder.mutationField("changePassword", (t) =>
           },
           data: { value: newPasswordHash },
         })
-        .catch((e) => {
+        .catch((e: any) => {
           console.error(e);
           throw new GraphQLError(e.message ?? "Something went wrong while changing the password.", {
             extensions: {
@@ -543,7 +540,7 @@ builder.mutationField("changePassword", (t) =>
 
       return sessionToken;
     },
-  })
+  }),
 );
 
 builder.mutationField("login", (t) =>
@@ -573,11 +570,14 @@ builder.mutationField("login", (t) =>
               userFriendlyMessage:
                 "No password was set for your Flow yet. Please refresh the page to set the password.",
             },
-          }
+          },
         );
       }
 
-      const isPasswordCorrect = await compare(args.input.password, passwordSetting.value as string);
+      const isPasswordCorrect = await Bun.password.verify(
+        args.input.password,
+        passwordSetting.value as string,
+      );
 
       if (!isPasswordCorrect) {
         throw new GraphQLError("The password is incorrect.", {
@@ -611,7 +611,7 @@ builder.mutationField("login", (t) =>
 
       return sessionToken;
     },
-  })
+  }),
 );
 
 builder.mutationField("logout", (t) =>
@@ -631,7 +631,7 @@ builder.mutationField("logout", (t) =>
       });
       return true;
     },
-  })
+  }),
 );
 
 builder.mutationField("setTimezone", (t) =>
@@ -652,7 +652,7 @@ builder.mutationField("setTimezone", (t) =>
       } catch {
         throw new GraphQLError(
           'The timezone is invalid. Please use a correct timezone identifier (e.g. "America/New_York") from this list: https://en.wikipedia.org/wiki/List_of_tz_database_time_zones.',
-          { extensions: { code: "TIMEZONE_INVALID" } }
+          { extensions: { code: "TIMEZONE_INVALID" } },
         );
       }
       await prisma.store.upsert({
@@ -671,5 +671,5 @@ builder.mutationField("setTimezone", (t) =>
       await scheduleRolloverTasks(args.input.timezone); // reschedule the rollover tasks to the new timezone
       return args.input.timezone;
     },
-  })
+  }),
 );

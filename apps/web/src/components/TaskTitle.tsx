@@ -24,7 +24,7 @@ export const TaskTitle = (props: TaskTitleProps) => {
         title
       }
     `,
-    props.task
+    props.task,
   );
 
   const [updateTask] = useMutation<TaskTitleUpdateTaskTitleMutation>(graphql`

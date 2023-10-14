@@ -54,11 +54,11 @@ export function useQueryLoader<TQuery extends OperationType>(
   preloadableRequest: GraphQLTaggedNode | PreloadableConcreteRequest<TQuery>,
   variables?: TQuery["variables"],
   loadQueryOptions?: UseQueryLoaderLoadQueryOptions,
-  initialQueryReference?: PreloadedQuery<TQuery> | null
+  initialQueryReference?: PreloadedQuery<TQuery> | null,
 ) {
   const [queryRef, loadQuery, disposeQuery] = useRelayQueryLoader(
     preloadableRequest,
-    initialQueryReference
+    initialQueryReference,
   );
 
   useEffect(() => {
@@ -77,7 +77,7 @@ export function useQueryLoader<TQuery extends OperationType>(
 
 const handleMutationError =
   <TMutation extends MutationParameters>(
-    mutationConfig: UseMutationConfig<TMutation> | MutationConfig<TMutation>
+    mutationConfig: UseMutationConfig<TMutation> | MutationConfig<TMutation>,
   ) =>
   (error: Error) => {
     console.log("mutation.onError error:", error);
@@ -105,7 +105,7 @@ export function useMutation<TMutation extends MutationParameters>(mutation: Grap
         if (errors) {
           console.log("useMutation.onCompleted errors:", errors);
           handleMutationError(mutationConfig)(
-            new Error(getMessageFromErrors(errors), { cause: errors })
+            new Error(getMessageFromErrors(errors), { cause: errors }),
           );
           return;
         }
@@ -118,7 +118,7 @@ export function useMutation<TMutation extends MutationParameters>(mutation: Grap
 }
 
 export function useMutationPromise<TMutation extends MutationParameters>(
-  mutation: GraphQLTaggedNode
+  mutation: GraphQLTaggedNode,
 ) {
   const [mutate, ...rest] = useMutation(mutation);
 
@@ -150,10 +150,10 @@ export const fetchQuery = relayFetchQuery;
 
 export const commitMutation = relayCommitMutation;
 export const commitMutationPromise = async <
-  TOperation extends MutationParameters = MutationParameters
+  TOperation extends MutationParameters = MutationParameters,
 >(
   environemnt: Environment,
-  config: MutationConfig<TOperation>
+  config: MutationConfig<TOperation>,
 ) => {
   return new Promise<TOperation["response"]>((resolve, reject) => {
     commitMutation(environemnt, {
@@ -182,7 +182,7 @@ export const commitMutationPromise = async <
 export const useSubscription = <TSubscription extends OperationType>(
   subscription: GraphQLTaggedNode,
   variables: TSubscription["variables"] = {},
-  $config?: Omit<GraphQLSubscriptionConfig<TSubscription>, "subscription" | "variables">
+  $config?: Omit<GraphQLSubscriptionConfig<TSubscription>, "subscription" | "variables">,
 ) => {
   const config = useMemo(() => {
     return {
@@ -202,7 +202,7 @@ export const useSubscription = <TSubscription extends OperationType>(
 export const useSmartSubscription = <TSubscription extends OperationType>(
   subscription: GraphQLTaggedNode,
   variables: TSubscription["variables"] = {},
-  $config?: Omit<GraphQLSubscriptionConfig<TSubscription>, "subscription" | "variables">
+  $config?: Omit<GraphQLSubscriptionConfig<TSubscription>, "subscription" | "variables">,
 ) => {
   const [data, setData] = useState<TSubscription["response"] | null>(null);
   const config = useMemo(() => {

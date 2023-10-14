@@ -29,7 +29,7 @@ export const CalendarList = (props: CalendarListProps) => {
         }
       }
     `,
-    props.data
+    props.data,
   );
 
   const [eventsData] = useSmartSubscription<CalendarListSubscription>(
@@ -54,7 +54,7 @@ export const CalendarList = (props: CalendarListProps) => {
         gte: today.current.toISOString(),
         lt: today.current.add(1, "day").toISOString(),
       },
-    }
+    },
   );
 
   const events = useMemo(() => {

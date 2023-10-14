@@ -10,7 +10,7 @@ export const Badge = (props: Props) => {
     <div
       className={tw(
         "bg-primary-100 text-primary-600 inline-flex h-min rounded px-1 py-px text-sm",
-        props.className
+        props.className,
       )}
     >
       {props.children}

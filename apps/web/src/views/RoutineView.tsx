@@ -81,12 +81,12 @@ const RoutineViewContent = (props: RoutineViewProps) => {
     }
     const routineStepIndex = data.routine.steps.findIndex(
       (step) =>
-        params.routineStep && `${step.pluginSlug}_${step.stepSlug}`.includes(params.routineStep)
+        params.routineStep && `${step.pluginSlug}_${step.stepSlug}`.includes(params.routineStep),
     );
 
     // check if current day's previous routine has been done
     const routineIndexInCurrentDay = data.currentDay?.routines?.findIndex(
-      (routine) => routine.id === data.routine!.id
+      (routine) => routine.id === data.routine!.id,
     );
     const wasPreviousRoutineInCurrentDayDone =
       data.currentDay?.routines?.[routineIndexInCurrentDay! - 1]?.done;
@@ -169,7 +169,7 @@ export const getClosestRoutineRoutePathAndName = async () => {
       }
     `,
     { todayDayId: `Day_${dayjs().format("YYYY-MM-DD")}` },
-    { fetchPolicy: "store-or-network" }
+    { fetchPolicy: "store-or-network" },
   ).toPromise();
   const routineTimes = data?.today?.routines?.map((routine) => routine?.time) ?? [];
   // time is format "HH:mm"

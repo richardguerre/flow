@@ -18,7 +18,7 @@ export default defineConfig({
       transform: async (code) =>
         code.replace(
           /eval|setTimeout|setInterval|setImmidiate|process|__dirname|__filename/g,
-          "undefined"
+          "undefined",
         ),
     },
   ],

@@ -22,7 +22,7 @@ export const getPluginOperationUtils = (pluginSlug: string) => ({
    * If you need to mutate data, use `mutation` instead.
    */
   query: async <T extends JsonValue>(
-    params: PluginOperationParams
+    params: PluginOperationParams,
   ): Promise<PluginOperationsReturn<T>> => {
     try {
       const query = await fetchQuery<pluginOperationQuery>(environment, queryDoc, {
@@ -69,7 +69,7 @@ export const getPluginOperationUtils = (pluginSlug: string) => ({
    * If you need to fetch data, use `query` instead.
    */
   mutation: async <T extends JsonValue>(
-    params: PluginOperationParams
+    params: PluginOperationParams,
   ): Promise<PluginOperationsReturn<T>> => {
     try {
       const mutation = await commitMutationPromise<pluginOperationMutation>(environment, {

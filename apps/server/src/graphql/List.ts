@@ -42,7 +42,7 @@ builder.queryField("lists", (t) =>
         orderBy: { createdAt: "asc" }, // this ensures that the lists are always returned in the same order
       });
     },
-  })
+  }),
 );
 
 builder.queryField("list", (t) =>
@@ -66,5 +66,5 @@ builder.queryField("list", (t) =>
         where: { id: uParseInt(args.id?.id), slug: args.slug ?? undefined },
       });
     },
-  })
+  }),
 );

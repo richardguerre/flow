@@ -42,7 +42,7 @@ export const DropdownMenuSubTrigger = React.forwardRef<
     className={tw(
       "focus:bg-primary-100/70 focus:text-primary-500 flex cursor-default select-none items-center rounded-sm px-2 py-1.5 text-sm outline-none data-[state=open]:bg-black",
       inset && "pl-8",
-      className
+      className,
     )}
     {...props}
   >
@@ -59,7 +59,7 @@ export const DropdownMenuSubContent = React.forwardRef<
     ref={ref}
     className={tw(
       "bg-background-50 ring-0.5 ring-primary-100 text-foreground-900 data-[state=open]:animate-fade-in data-[state=closed]:animate-fade-out z-50 min-w-[8rem] overflow-hidden rounded-md border p-1 shadow-lg",
-      className
+      className,
     )}
     {...props}
   />
@@ -75,7 +75,7 @@ export const DropdownMenuContent = React.forwardRef<
       sideOffset={sideOffset}
       className={tw(
         "bg-background-50 ring-0.5 ring-primary-100 animate-fade-in animate-duration-100 z-50 rounded-md p-1 shadow-md outline-none",
-        className
+        className,
       )}
       {...props}
     />
@@ -93,7 +93,7 @@ export const DropdownMenuItem = React.forwardRef<
     className={tw(
       "focus:bg-primary-100/70 focus:text-primary-500 relative flex cursor-default select-none items-center rounded-sm px-2 py-1.5 text-sm outline-none transition-colors data-[disabled]:pointer-events-none data-[disabled]:opacity-50",
       inset && "pl-8",
-      className
+      className,
     )}
     {...props}
   />
@@ -107,7 +107,7 @@ export const DropdownMenuCheckboxItem = React.forwardRef<
     ref={ref}
     className={tw(
       "focus:bg-primary-100/70 focus:text-primary-500 relative flex cursor-default select-none items-center rounded-sm py-1.5 pl-8 pr-2 text-sm outline-none transition-colors data-[disabled]:pointer-events-none data-[disabled]:opacity-50",
-      className
+      className,
     )}
     checked={checked}
     {...props}
@@ -129,7 +129,7 @@ export const DropdownMenuRadioItem = React.forwardRef<
     ref={ref}
     className={tw(
       "focus:bg-primary-100/70 focus:text-primary-500 relative flex cursor-default select-none items-center rounded-sm py-1.5 pl-8 pr-2 text-sm outline-none transition-colors data-[disabled]:pointer-events-none data-[disabled]:opacity-50",
-      className
+      className,
     )}
     {...props}
   >

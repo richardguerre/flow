@@ -14,7 +14,7 @@ export default definePlugin((options) => {
       calendarsQuery?.data
         ?.flatMap((googleAccount) => googleAccount.calendars)
         .filter((cal) => cal.connected && !!cal.id)
-        .map((cal) => cal.id!) ?? []
+        .map((cal) => cal.id!) ?? [],
     );
     const [connected, setConnected] = React.useState(initiallyConnectedCalendars);
     const [debouncedConnected, debouncing] = options.hooks.useDebounce(connected, 1000);

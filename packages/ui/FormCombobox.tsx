@@ -5,7 +5,7 @@ import { tw } from "./tw";
 
 type FormComboboxProps<
   TFieldValues extends FieldValues = FieldValues,
-  TName extends FieldPath<TFieldValues> = FieldPath<TFieldValues>
+  TName extends FieldPath<TFieldValues> = FieldPath<TFieldValues>,
 > = Omit<ControllerProps<TFieldValues, TName>, "render"> & {
   children: ReactNode;
   multiselect?: boolean;
@@ -21,9 +21,9 @@ type FormComboboxProps<
  */
 export const FormCombobox = <
   TFieldValues extends FieldValues = FieldValues,
-  TName extends FieldPath<TFieldValues> = FieldPath<TFieldValues>
+  TName extends FieldPath<TFieldValues> = FieldPath<TFieldValues>,
 >(
-  props: FormComboboxProps<TFieldValues, TName>
+  props: FormComboboxProps<TFieldValues, TName>,
 ) => {
   const errorMessage = typeof props.error === "object" ? props.error.message : props.error;
   return (

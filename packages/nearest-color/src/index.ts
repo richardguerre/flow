@@ -29,7 +29,7 @@ export const nearestColor = (colorPallette: Record<string, string>, color: RGB |
     return Math.sqrt(
       Math.pow(value.r - rgbColor.r, 2) +
         Math.pow(value.g - rgbColor.g, 2) +
-        Math.pow(value.b - rgbColor.b, 2)
+        Math.pow(value.b - rgbColor.b, 2),
     );
   });
   const minDistance = Math.min(...colorDistances);

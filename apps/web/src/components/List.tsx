@@ -19,7 +19,7 @@ export const List = (props: ListProps) => {
         }
       }
     `,
-    { listId: props.listId }
+    { listId: props.listId },
   );
 
   if (!data) {
@@ -59,11 +59,11 @@ const ListItems = (props: ListItemsProps) => {
         }
       }
     `,
-    props.list
+    props.list,
   );
   const itemNodes = useMemo(
     () => structuredClone(data.items.edges.map((edge) => edge.node)),
-    [data.items.edges]
+    [data.items.edges],
   );
 
   return (

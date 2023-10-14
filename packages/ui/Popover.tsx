@@ -15,7 +15,7 @@ export const PopoverContent = forwardRef<
         ref={ref}
         className={tw(
           "bg-background-50 ring-0.5 ring-primary-100 animate-fade-in animate-duration-100 z-50 rounded-md p-2 shadow-md outline-none",
-          props.className
+          props.className,
         )}
       />
     </Portal>

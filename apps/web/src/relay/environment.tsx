@@ -42,7 +42,7 @@ function executeSubscription(operation: RequestParameters, variables: Variables)
           }
           sink.next(res);
         },
-      }
+      },
     );
   });
 }

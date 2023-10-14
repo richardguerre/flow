@@ -62,14 +62,14 @@ What's the difference between \`pluginOperation\` field in the Query type and th
 - \`pluginOperation\` field in the Query type is used for GET-like requests and will get cached by Relay in the web app.
 - \`pluginOperation\` field in the Mutation type is used for POST-like requests and will invalidate any cached data from the \`pluginOperation\` field in the Query type and Relay will automatically update it's store.
 `,
-  }
+  },
 );
 
 const loadOneWithInput = async (id: string, input: Prisma.InputJsonValue) => {
   const [pluginSlug, operationName] = id.split("_");
   if (!pluginSlug || !operationName) {
     throw new GraphQLError(
-      `Invalid plugin operation id: PluginOperation_${id}. It should be in the format of PluginOperation_pluginSlug_operationName.`
+      `Invalid plugin operation id: PluginOperation_${id}. It should be in the format of PluginOperation_pluginSlug_operationName.`,
     );
   }
   const plugins = await getPlugins();
@@ -107,7 +107,7 @@ builder.queryField("pluginOperation", (t) =>
     resolve: async (_, args) => {
       return await loadOneWithInput(args.id.id, args.input ?? {});
     },
-  })
+  }),
 );
 
 builder.mutationField("pluginOperation", (t) =>
@@ -121,5 +121,5 @@ builder.mutationField("pluginOperation", (t) =>
     resolve: async (_, args) => {
       return await loadOneWithInput(args.id.id, args.input ?? {});
     },
-  })
+  }),
 );

@@ -21,5 +21,5 @@ export const ItemPluginDataInput = builder.inputType(
       min: t.field({ type: "JSON", required: true }),
       full: t.field({ type: "JSON", required: true }),
     }),
-  }
+  },
 );

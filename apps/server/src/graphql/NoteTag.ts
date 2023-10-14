@@ -43,7 +43,7 @@ builder.queryField("noteTags", (t) =>
         take: Math.min(args.first ?? args.last ?? 100, 100),
       });
     },
-  })
+  }),
 );
 
 export const NoteTagWhereInput = builder.inputType("NoteTagWhereInput", {

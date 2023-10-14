@@ -26,13 +26,13 @@ export const UpdatePluginButton = (props: UpdatePluginButtonProps) => {
         url
       }
     `,
-    props.pluginInstallation
+    props.pluginInstallation,
   );
   const [versions, loading] = useAsyncLoader(async () => {
     if (pluginInstallation.url.startsWith("https://cdn.jsdelivr.net/gh/")) {
       // Get plugin metadata from GitHub
       const [, owner, repo, version] = pluginInstallation.url.match(
-        /https:\/\/cdn\.jsdelivr\.net\/gh\/([^/]+)\/([^/@]+)@([^/]+)/
+        /https:\/\/cdn\.jsdelivr\.net\/gh\/([^/]+)\/([^/@]+)@([^/]+)/,
       )!;
       const res = await fetch(`https://data.jsdelivr.com/v1/packages/gh/${owner}/${repo}/resolved`);
       const metadata = (await res.json()) as Metadata;
@@ -43,7 +43,7 @@ export const UpdatePluginButton = (props: UpdatePluginButtonProps) => {
     } else if (pluginInstallation.url.startsWith("https://cdn.jsdelivr.net/npm/")) {
       // Get plugin metadata from npm
       const [, name, version] = pluginInstallation.url.match(
-        /https:\/\/cdn\.jsdelivr\.net\/npm\/([^/@]+)@([^/]+)/
+        /https:\/\/cdn\.jsdelivr\.net\/npm\/([^/@]+)@([^/]+)/,
       )!;
       const res = await fetch(`https://data.jsdelivr.com/v1/packages/npm/${name}/resolved`);
       const metadata = (await res.json()) as Metadata;
@@ -55,14 +55,15 @@ export const UpdatePluginButton = (props: UpdatePluginButtonProps) => {
     return { currentVersion: null, latestVersion: null };
   });
 
-  const [updatePlugin, isUpdatingPlugin] =
-    useMutation<UpdatePluginButtonUpdatePluginMutation>(graphql`
+  const [updatePlugin, isUpdatingPlugin] = useMutation<UpdatePluginButtonUpdatePluginMutation>(
+    graphql`
       mutation UpdatePluginButtonUpdatePluginMutation($input: MutationInstallPluginInput!) {
         installPlugin(input: $input) {
           url
         }
       }
-    `);
+    `,
+  );
 
   const handleUpdate = (newUrl = pluginInstallation.url) => {
     if (!versions?.latestVersion || !versions.currentVersion) return; // not possible since we don't show the button if versions.latestVersion is falsey, just making the types happy

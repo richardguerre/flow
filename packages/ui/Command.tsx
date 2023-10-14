@@ -13,7 +13,7 @@ export const Command = forwardRef<
     ref={ref}
     className={tw(
       "bg-background-50 text-foreground-900 flex h-full w-full flex-col overflow-hidden rounded-md",
-      className
+      className,
     )}
     {...props}
   />
@@ -43,7 +43,7 @@ export const CommandInput = forwardRef<
       ref={ref}
       className={tw(
         "placeholder:text-foreground-700 flex h-10 w-full rounded-md bg-transparent py-3 text-sm outline-none disabled:cursor-not-allowed disabled:opacity-50",
-        className
+        className,
       )}
       {...props}
     />
@@ -76,7 +76,7 @@ export const CommandGroup = forwardRef<
     ref={ref}
     className={tw(
       "text-foreground-900 [&_[cmdk-group-heading]]:text-muted-foreground overflow-hidden p-1 [&_[cmdk-group-heading]]:px-2 [&_[cmdk-group-heading]]:py-1.5 [&_[cmdk-group-heading]]:text-xs [&_[cmdk-group-heading]]:font-medium",
-      className
+      className,
     )}
     {...props}
   />
@@ -105,7 +105,7 @@ export const CommandItem = forwardRef<
     ref={ref}
     className={tw(
       "aria-selected:bg-primary-100 aria-selected:text-primary-600 relative flex cursor-default select-none items-center rounded-sm px-2 py-1.5 text-sm outline-none data-[disabled]:pointer-events-none data-[disabled]:opacity-50",
-      className
+      className,
     )}
     {...props}
   />

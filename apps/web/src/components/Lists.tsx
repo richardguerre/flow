@@ -25,7 +25,7 @@ export const Lists = (props: ListsProps) => {
         }
       }
     `,
-    props.data
+    props.data,
   );
 
   const [selectedList, setSelectedList] = useState<ListType>("inbox");
@@ -91,7 +91,7 @@ const ListButton = (props: ListButtonProps) => {
             "flex h-11 w-11 items-center justify-center rounded-full",
             props.isSelected
               ? "bg-primary-100 text-primary-600"
-              : "hover:bg-background-200 text-foreground-700 bg-transparent"
+              : "hover:bg-background-200 text-foreground-700 bg-transparent",
           )}
           onClick={props.onClick}
         >

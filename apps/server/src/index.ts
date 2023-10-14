@@ -67,13 +67,13 @@ export const app = new Elysia()
     if (!plugin) {
       return new Response(
         `Plugin ${pluginSlug} not found. It may be in the process of being installed. Please try again later.`,
-        { status: 404 }
+        { status: 404 },
       );
     }
     if (!plugin.onRequest) {
       return new Response(
         `Plugin ${pluginSlug} has no \`onRequest\` function to handle the request.`,
-        { status: 404 }
+        { status: 404 },
       );
     }
 
@@ -112,7 +112,7 @@ app.all("*", async (req) => {
     } catch {
       return new Response(
         "Not sure how you got here. Contact Richard Guerre (through Slack or @richardguerre_ on Twitter) with a screenshot of this screen with the URL.",
-        { status: 404 }
+        { status: 404 },
       );
     }
   }

@@ -16,14 +16,14 @@ export const Checkbox = forwardRef<React.ElementRef<typeof Root>, CheckboxProps>
         "border-foreground-700 focus-visible:border-primary-600 data-[state=checked]:bg-primary-600 data-[state=checked]:text-primary-50 peer h-4 w-4 shrink-0 rounded-sm border shadow focus-visible:outline-none disabled:cursor-not-allowed disabled:opacity-50",
         props.hasError &&
           "border-negative-600 hover:border-negative-600 focus-visible:border-negative-600",
-        className
+        className,
       )}
     >
       <Indicator className="flex items-center justify-center text-current">
         <BsCheck size={16} />
       </Indicator>
     </Root>
-  )
+  ),
 );
 
 export type CheckboxWithLabelProps = CheckboxProps & {

@@ -147,7 +147,7 @@ export const getDays = async (opts: GetDaysOptions): GetDaysResult => {
   const includeItem: boolean = Boolean(
     renderItemCard ||
       // @ts-ignore check types in GetDaysOptions instead as that's what is expected from the plugin
-      opts.include?.tasks?.item
+      opts.include?.tasks?.item,
   );
   const renderTaskCard: boolean = Boolean(opts.toRender?.TaskCard);
   const includeTasks: boolean = Boolean(renderItemCard || renderTaskCard || opts.include?.tasks);
@@ -200,7 +200,7 @@ export const getDays = async (opts: GetDaysOptions): GetDaysResult => {
       includeItemPluginDatas: Boolean(opts.include?.tasks?.item?.pluginDatas),
       // @ts-ignore check types in GetDaysOptions instead as that's what is expected from the plugin
       includeItemPluginDatasFull: Boolean(opts.include?.tasks?.item?.pluginDatas?.full),
-    }
+    },
   ).toPromise();
 
   return (
@@ -214,7 +214,7 @@ export const getDays = async (opts: GetDaysOptions): GetDaysResult => {
             ? {
                 ...task.item,
                 pluginDatas: Object.fromEntries(
-                  task.item.pluginDatas?.map((pd) => [pd.pluginSlug, pd]) ?? []
+                  task.item.pluginDatas?.map((pd) => [pd.pluginSlug, pd]) ?? [],
                 ),
               }
             : undefined,
@@ -257,7 +257,7 @@ export const getDaysMax10 = async (opts: GetDaysMax10Options) => {
   const includeItem: boolean = Boolean(
     renderItemCard ||
       // @ts-ignore check types in GetDaysMax10Options instead as that's what is expected from the plugin
-      opts.include?.tasks?.item
+      opts.include?.tasks?.item,
   );
   const renderTaskCard: boolean = Boolean(opts.toRender?.TaskCard);
   const includeTasks: boolean = Boolean(renderItemCard || renderTaskCard || opts.include?.tasks);
@@ -366,7 +366,7 @@ export const getDaysMax10 = async (opts: GetDaysMax10Options) => {
       includeItemPluginDatas: Boolean(opts.include?.tasks?.item?.pluginDatas),
       // @ts-ignore check types in GetDaysMax10Options instead as that's what is expected from the plugin
       includeItemPluginDatasFull: Boolean(opts.include?.tasks?.item?.pluginDatas?.full),
-    }
+    },
   ).toPromise();
 
   return [

@@ -29,7 +29,7 @@ builder.queryField("note", (t) =>
     resolve: (query, _, { slug }) => {
       return prisma.note.findUnique({ ...query, where: { slug } });
     },
-  })
+  }),
 );
 
 // -------------- Note mutation types --------------
@@ -97,5 +97,5 @@ builder.mutationField("createOrUpdateNote", (t) =>
         },
       });
     },
-  })
+  }),
 );

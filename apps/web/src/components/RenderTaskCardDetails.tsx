@@ -29,7 +29,7 @@ export const RenderTaskCardDetails = (props: Props) => {
         }
       }
     `,
-    props.task
+    props.task,
   );
 
   const flowDetails = (

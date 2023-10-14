@@ -47,7 +47,7 @@ export const NewItemCard = (props: NewItemCardProps) => {
           store,
           itemsConnection,
           createdItem,
-          "QueryItemsConnectionEdge"
+          "QueryItemsConnectionEdge",
         );
         ConnectionHandler.insertEdgeBefore(itemsConnection, edge);
       },

@@ -63,7 +63,7 @@ export const NavItem = (props: NavItemProps) => {
             "flex h-11 w-11 items-center justify-center rounded-full",
             active
               ? "bg-primary-100 text-primary-600"
-              : "text-foreground-700 hover:bg-background-200 bg-transparent"
+              : "text-foreground-700 hover:bg-background-200 bg-transparent",
           )}
         >
           {props.children}

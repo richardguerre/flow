@@ -58,7 +58,7 @@ export default definePlugin((opts) => {
         ${GitStartPullRequestFragment}
         ${GitStartTaskFragment}
       `,
-      { input: params.input }
+      { input: params.input },
     );
   };
 
@@ -87,7 +87,7 @@ export default definePlugin((opts) => {
               id
             }
           }
-        `
+        `,
       );
       return true;
     } catch (err) {
@@ -162,7 +162,7 @@ export default definePlugin((opts) => {
               status: "TODO", // the task is always created as TODO, then we update it to the desired status
               assigneeInternalId: userId,
             },
-          }
+          },
         );
         const taskId = decodeNodeId(data.createTask.task.id).id;
         if (actionData.status === "IN_PROGRESS" || actionData.status === "FINISHED") {
@@ -240,7 +240,7 @@ export default definePlugin((opts) => {
           });
           if (res.updateTaskStatus.task.status !== "IN_PROGRESS") {
             throw new opts.GraphQLError(
-              `GitStart task (id: ${taskPluginDataFull.id}) did not change status to In progress. Contact GitStart support for help.`
+              `GitStart task (id: ${taskPluginDataFull.id}) did not change status to In progress. Contact GitStart support for help.`,
             );
           }
         }
@@ -255,7 +255,7 @@ export default definePlugin((opts) => {
         });
       } else if (newStatus === "TODO") {
         throw new opts.GraphQLError(
-          'GitStart tasks cannot be set back to "To do" from "In progress". If needed, you can cancel the task and create a new one.'
+          'GitStart tasks cannot be set back to "To do" from "In progress". If needed, you can cancel the task and create a new one.',
         );
       }
 
@@ -330,7 +330,7 @@ export default definePlugin((opts) => {
             ${GitStartPullRequestFragment}
             ${GitStartTicketFragment}
             ${GitStartTaskFragment}
-          `
+          `,
         );
 
         await opts.store.setSecretItem<UserInfo>(USER_INFO_STORE_KEY, { id: data1.viewer.id });

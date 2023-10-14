@@ -28,7 +28,7 @@ export const Day = (props: DayProps) => {
         ...DayAddTaskActionsBar_day
       }
     `,
-    props.day
+    props.day,
   );
 
   const dayRef = useRef<HTMLDivElement>(null);
@@ -85,7 +85,7 @@ export const DayContent = (props: DayContentProps) => {
         }
       }
     `,
-    props.day
+    props.day,
   );
 
   const [udpateTaskDate] = useMutation<DayUpdateTaskDateMutation>(graphql`
@@ -158,7 +158,7 @@ export const DayContent = (props: DayContentProps) => {
   useEffect(() => {
     if (updateTaskDateInfo) {
       const newTasksOrder = Array.from(updateTaskDateInfo.htmlParent.children).map(
-        (task) => task.id
+        (task) => task.id,
       );
 
       udpateTaskDate({
@@ -225,7 +225,7 @@ const DayAddTaskActionsBar = (props: DayAddTaskActionsBarProps) => {
         date
       }
     `,
-    props.day
+    props.day,
   );
   const [showNewTaskCard, setShowNewTaskCard] = useState(false);
 
