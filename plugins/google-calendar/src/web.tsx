@@ -21,6 +21,7 @@ export default definePlugin((options) => {
     const [saving, setSaving] = React.useState(false);
 
     const handleCheckboxChange = (calendarId: string) => {
+      console.log("handleCheckboxChange", calendarId);
       if (connected.has(calendarId)) {
         connected.delete(calendarId);
       } else {
@@ -30,12 +31,18 @@ export default definePlugin((options) => {
     };
 
     options.hooks.useAsyncEffect(async () => {
+      if (
+        debouncedConnected.size === initiallyConnectedCalendars.size &&
+        Array.from(debouncedConnected).every((calId) => initiallyConnectedCalendars.has(calId))
+      ) {
+        return;
+      }
       setSaving(true);
       // this mutation will return with the same ID as the query, so it will update the cache directly
       await options.operations.mutation({
         pluginSlug: options.pluginSlug,
         operationName: "connectCalendars",
-        input: { calendars: Array.from(debouncedConnected) },
+        input: { calendarIds: Array.from(debouncedConnected) },
       });
       setSaving(false);
     }, [debouncedConnected]);
@@ -50,25 +57,22 @@ export default definePlugin((options) => {
     }
 
     return (
-      <div>
-        <div>{feedback}</div>
+      <div className="flex flex-col gap-2">
         {calendarsQuery?.data?.map((googleAccount) => (
-          <div>
-            <div>{googleAccount.account}</div>
-            <div>
+          <div className="flex flex-col gap-2 rounded w-full bg-background-50 shadow px-4 py-2">
+            <div className="font-semibold">{googleAccount.account}</div>
+            <div className="flex flex-col gap-2">
               {googleAccount.calendars.map((calendar) => (
-                <label>
-                  <input
-                    type="checkbox"
-                    checked={connected.has(calendar.id!)}
-                    onChange={() => handleCheckboxChange(calendar.id!)}
-                  />
-                  {calendar.summary}
-                </label>
+                <Flow.CheckboxWithLabel
+                  label={calendar.summary ?? "Unknown calendar"}
+                  checked={connected.has(calendar.id!)}
+                  onCheckedChange={() => handleCheckboxChange(calendar.id!)}
+                />
               ))}
             </div>
           </div>
         ))}
+        <div className="italic text-sm text-foreground-700">{feedback}</div>
       </div>
     );
   };
@@ -80,13 +84,22 @@ export default definePlugin((options) => {
         type: "custom",
         render: () => {
           return (
-            <div>
-              <a href="/api/plugin/google-calendar/auth">
+            <div className="flex flex-col gap-2">
+              <a href="http://localhost:4000/api/plugin/google-calendar/auth">
                 <Flow.Button>Connect an account</Flow.Button>
               </a>
-              <React.Suspense>
-                <Calendars />
-              </React.Suspense>
+              <Flow.ErrorBoundary
+                fallbackRender={({ error }) => {
+                  if (error.cause?.[0]?.extensions?.code === "NOT_AUTHENTICATED") {
+                    return <></>;
+                  }
+                  return <p className="text-sm text-negative-600">{error.message}</p>;
+                }}
+              >
+                <React.Suspense fallback="Loading connected accounts...">
+                  <Calendars />
+                </React.Suspense>
+              </Flow.ErrorBoundary>
             </div>
           );
         },

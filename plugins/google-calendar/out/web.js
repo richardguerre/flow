@@ -1,101 +1,110 @@
-const E = (t) => ({ plugin: t });
+const h = (t) => ({ plugin: t });
 var n = "/Users/richardguerre/Projects/flow/plugins/google-calendar/src/web.tsx";
-const p = E((t) => {
-  const e = t.React, N = t.components, f = () => {
-    var _, d;
-    const r = t.operations.useLazyQuery({
+const p = h((t) => {
+  const e = t.React, u = t.components, v = () => {
+    var N, b;
+    const a = t.operations.useLazyQuery({
       pluginSlug: t.pluginSlug,
       operationName: "calendars"
-    }), b = new Set(((_ = r == null ? void 0 : r.data) == null ? void 0 : _.flatMap((l) => l.calendars).filter((l) => l.connected && !!l.id).map((l) => l.id)) ?? []), [a, v] = e.useState(b), [c, m] = t.hooks.useDebounce(a, 1e3), [i, s] = e.useState(!1), g = (l) => {
-      a.has(l) ? a.delete(l) : a.add(l), v(new Set(a));
+    }), c = new Set(((N = a == null ? void 0 : a.data) == null ? void 0 : N.flatMap((l) => l.calendars).filter((l) => l.connected && !!l.id).map((l) => l.id)) ?? []), [o, r] = e.useState(c), [s, _] = t.hooks.useDebounce(o, 1e3), [d, f] = e.useState(!1), g = (l) => {
+      console.log("handleCheckboxChange", l), o.has(l) ? o.delete(l) : o.add(l), r(new Set(o));
     };
     t.hooks.useAsyncEffect(async () => {
-      s(!0), await t.operations.mutation({
+      s.size === c.size && Array.from(s).every((l) => c.has(l)) || (f(!0), await t.operations.mutation({
         pluginSlug: t.pluginSlug,
         operationName: "connectCalendars",
         input: {
-          calendars: Array.from(c)
+          calendarIds: Array.from(s)
         }
-      }), s(!1);
-    }, [c]);
-    let u = "Saved";
-    return m && !i ? u = "Not saved yet..." : !m && i ? u = "Saving..." : u = "Saved", /* @__PURE__ */ e.createElement("div", { __self: void 0, __source: {
-      fileName: n,
-      lineNumber: 53,
-      columnNumber: 7
-    } }, /* @__PURE__ */ e.createElement("div", { __self: void 0, __source: {
-      fileName: n,
-      lineNumber: 54,
-      columnNumber: 9
-    } }, u), (d = r == null ? void 0 : r.data) == null ? void 0 : d.map((l) => /* @__PURE__ */ e.createElement("div", { __self: void 0, __source: {
-      fileName: n,
-      lineNumber: 56,
-      columnNumber: 11
-    } }, /* @__PURE__ */ e.createElement("div", { __self: void 0, __source: {
-      fileName: n,
-      lineNumber: 57,
-      columnNumber: 13
-    } }, l.account), /* @__PURE__ */ e.createElement("div", { __self: void 0, __source: {
-      fileName: n,
-      lineNumber: 58,
-      columnNumber: 13
-    } }, l.calendars.map((o) => /* @__PURE__ */ e.createElement("label", { __self: void 0, __source: {
+      }), f(!1));
+    }, [s]);
+    let m = "Saved";
+    return _ && !d ? m = "Not saved yet..." : !_ && d ? m = "Saving..." : m = "Saved", /* @__PURE__ */ e.createElement("div", { className: "flex flex-col gap-2", __self: void 0, __source: {
       fileName: n,
       lineNumber: 60,
-      columnNumber: 17
-    } }, /* @__PURE__ */ e.createElement("input", { type: "checkbox", checked: a.has(o.id), onChange: () => g(o.id), __self: void 0, __source: {
+      columnNumber: 7
+    } }, (b = a == null ? void 0 : a.data) == null ? void 0 : b.map((l) => /* @__PURE__ */ e.createElement("div", { className: "flex flex-col gap-2 rounded w-full bg-background-50 shadow px-4 py-2", __self: void 0, __source: {
       fileName: n,
-      lineNumber: 61,
-      columnNumber: 19
-    } }), o.summary))))));
+      lineNumber: 62,
+      columnNumber: 11
+    } }, /* @__PURE__ */ e.createElement("div", { className: "font-semibold", __self: void 0, __source: {
+      fileName: n,
+      lineNumber: 63,
+      columnNumber: 13
+    } }, l.account), /* @__PURE__ */ e.createElement("div", { className: "flex flex-col gap-2", __self: void 0, __source: {
+      fileName: n,
+      lineNumber: 64,
+      columnNumber: 13
+    } }, l.calendars.map((i) => /* @__PURE__ */ e.createElement(u.CheckboxWithLabel, { label: i.summary ?? "Unknown calendar", checked: o.has(i.id), onCheckedChange: () => g(i.id), __self: void 0, __source: {
+      fileName: n,
+      lineNumber: 66,
+      columnNumber: 17
+    } }))))), /* @__PURE__ */ e.createElement("div", { className: "italic text-sm text-foreground-700", __self: void 0, __source: {
+      fileName: n,
+      lineNumber: 75,
+      columnNumber: 9
+    } }, m));
   };
   return {
     name: "Google Calendar",
     settings: {
       "connect-account": {
         type: "custom",
-        render: () => /* @__PURE__ */ e.createElement("div", { __self: void 0, __source: {
-          fileName: n,
-          lineNumber: 83,
-          columnNumber: 13
-        } }, /* @__PURE__ */ e.createElement("a", { href: "/api/plugin/google-calendar/auth", __self: void 0, __source: {
-          fileName: n,
-          lineNumber: 84,
-          columnNumber: 15
-        } }, /* @__PURE__ */ e.createElement(N.Button, { __self: void 0, __source: {
-          fileName: n,
-          lineNumber: 85,
-          columnNumber: 17
-        } }, "Connect an account")), /* @__PURE__ */ e.createElement(e.Suspense, { __self: void 0, __source: {
+        render: () => /* @__PURE__ */ e.createElement("div", { className: "flex flex-col gap-2", __self: void 0, __source: {
           fileName: n,
           lineNumber: 87,
-          columnNumber: 15
-        } }, /* @__PURE__ */ e.createElement(f, { __self: void 0, __source: {
+          columnNumber: 13
+        } }, /* @__PURE__ */ e.createElement("a", { href: "http://localhost:4000/api/plugin/google-calendar/auth", __self: void 0, __source: {
           fileName: n,
           lineNumber: 88,
+          columnNumber: 15
+        } }, /* @__PURE__ */ e.createElement(u.Button, { __self: void 0, __source: {
+          fileName: n,
+          lineNumber: 89,
           columnNumber: 17
-        } })))
+        } }, "Connect an account")), /* @__PURE__ */ e.createElement(u.ErrorBoundary, { fallbackRender: ({
+          error: a
+        }) => {
+          var c, o, r;
+          return ((r = (o = (c = a.cause) == null ? void 0 : c[0]) == null ? void 0 : o.extensions) == null ? void 0 : r.code) === "NOT_AUTHENTICATED" ? /* @__PURE__ */ e.createElement(e.Fragment, null) : /* @__PURE__ */ e.createElement("p", { className: "text-sm text-negative-600", __self: void 0, __source: {
+            fileName: n,
+            lineNumber: 96,
+            columnNumber: 26
+          } }, a.message);
+        }, __self: void 0, __source: {
+          fileName: n,
+          lineNumber: 91,
+          columnNumber: 15
+        } }, /* @__PURE__ */ e.createElement(e.Suspense, { fallback: "Loading connected accounts...", __self: void 0, __source: {
+          fileName: n,
+          lineNumber: 99,
+          columnNumber: 17
+        } }, /* @__PURE__ */ e.createElement(v, { __self: void 0, __source: {
+          fileName: n,
+          lineNumber: 100,
+          columnNumber: 19
+        } }))))
       }
     },
     routineSteps: {
       "create-tasks-from-events": {
         name: "Create tasks from events",
         description: "Create tasks from events in your connected Google Calendars.",
-        component: (r) => /* @__PURE__ */ e.createElement("div", { __self: void 0, __source: {
+        component: (a) => /* @__PURE__ */ e.createElement("div", { __self: void 0, __source: {
           fileName: n,
-          lineNumber: 101,
+          lineNumber: 114,
           columnNumber: 13
         } }, /* @__PURE__ */ e.createElement("div", { __self: void 0, __source: {
           fileName: n,
-          lineNumber: 102,
+          lineNumber: 115,
           columnNumber: 15
-        } }, /* @__PURE__ */ e.createElement(r.BackButton, { __self: void 0, __source: {
+        } }, /* @__PURE__ */ e.createElement(a.BackButton, { __self: void 0, __source: {
           fileName: n,
-          lineNumber: 103,
+          lineNumber: 116,
           columnNumber: 17
-        } }), /* @__PURE__ */ e.createElement(r.NextButton, { __self: void 0, __source: {
+        } }), /* @__PURE__ */ e.createElement(a.NextButton, { __self: void 0, __source: {
           fileName: n,
-          lineNumber: 104,
+          lineNumber: 117,
           columnNumber: 17
         } })))
       }

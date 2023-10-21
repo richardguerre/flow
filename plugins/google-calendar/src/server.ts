@@ -28,8 +28,8 @@ export default definePlugin((opts) => {
 
   /**
    * Refreshes the tokens if they expired.
-   * @throws {Error} If the user is not authenticated.
-   * @throws {Error} If the access token could not be refreshed.
+   * @throws If the user is not authenticated.
+   * @throws If the access token could not be refreshed.
    * @example
    * const tokens = await getTokens(params);
    */
@@ -53,7 +53,13 @@ export default definePlugin((opts) => {
           tokens.refresh_token,
       );
       if (!res.ok) {
-        throw new Error("COULD_NOT_REFRESH_TOKEN: Could not refresh token.");
+        throw new opts.GraphQLError("Could not refresh token.", {
+          extensions: {
+            code: "COULD_NOT_REFRESH_TOKEN",
+            userFriendlyMessage:
+              "Could not connect to Google Calendar. Please try connecting your account(s) again.",
+          },
+        });
       }
       const newTokenData = await res.json();
       const newTokens = {
@@ -118,7 +124,7 @@ export default definePlugin((opts) => {
     operations: {
       /**
        * Get the calendars the user has access to in their Google account and whether they are connected to Flow.
-       * @throws {Error} If the user is not authenticated.
+       * @throws If the user is not authenticated.
        */
       calendars: async () => {
         const accountsTokens = await getTokensFromStore();
@@ -149,7 +155,7 @@ export default definePlugin((opts) => {
       },
       /**
        * Connect the specified calendars to Flow and disconnect any that is not specified.
-       * @throws {Error} If the user is not authenticated.
+       * @throws If the user is not authenticated.
        */
       connectCalendars: async (input: { calendarIds: string[] }) => {
         const accountsTokens = await getTokensFromStore();
@@ -262,7 +268,7 @@ export default definePlugin((opts) => {
       },
       /**
        * Refreshes the events of the specified calendars for the number of days specified (defaults to 7).
-       * @throws {Error} If the user is not authenticated.
+       * @throws If the user is not authenticated.
        */
       refreshEvents: async (input: { days: number }) => {
         const connectedCalendarIds = await opts.store
@@ -327,7 +333,7 @@ export default definePlugin((opts) => {
             ? opts.dayjs(event.end.dateTime)
             : scheduledStart.add(1, "millisecond");
           const isOver = scheduledEnd.isBefore(opts.dayjs());
-          const scheduledAtDate = scheduledStart.tz(usersTimezone).utc(true).format("YYYY-MM-DD");
+          const scheduledAtDate = scheduledStart.tz(usersTimezone).utc(true).toISOString();
 
           const itemCommonBetweenUpdateAndCreate = {
             title: event.summary ?? "No title",
@@ -336,8 +342,9 @@ export default definePlugin((opts) => {
             scheduledAt: scheduledStart.toISOString(),
             durationInMinutes: isAllDay
               ? null
-              : opts.dayjs(scheduledStart).diff(scheduledEnd, "minute"),
+              : Math.abs(opts.dayjs(scheduledStart).diff(scheduledEnd, "minute")),
             isRelevant: event.status !== "cancelled",
+            inboxPoints: event.status === "tentative" ? 10 : null,
           } satisfies Prisma.ItemUpdateInput;
 
           const min = {
@@ -356,7 +363,7 @@ export default definePlugin((opts) => {
           const taskCommonBetweenUpdateAndCreate = {
             title: itemCommonBetweenUpdateAndCreate["title"],
             completedAt: isOver ? scheduledEnd.toISOString() : null,
-            status: event.status !== "cancelled" ? "CANCELED" : isOver ? "DONE" : "TODO",
+            status: event.status === "cancelled" ? "CANCELED" : isOver ? "DONE" : "TODO",
             day: {
               connectOrCreate: {
                 where: { date: scheduledAtDate },
