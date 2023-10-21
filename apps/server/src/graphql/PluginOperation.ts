@@ -89,6 +89,7 @@ const loadOneWithInput = async (id: string, input: Prisma.InputJsonValue) => {
       data: result.data ?? null,
     };
   } catch (e: any) {
+    if (e instanceof GraphQLError) throw e;
     if (e instanceof Error) {
       throw new GraphQLError(e.message);
     }

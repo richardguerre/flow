@@ -77,6 +77,7 @@ export const app = new Elysia()
       );
     }
 
+    req.path = req.path.replace(`/api/plugin/${pluginSlug}`, "");
     const maybePromise = plugin.onRequest(req as any);
     if (maybePromise instanceof Response) return maybePromise;
     const res = await maybePromise?.catch(() => null);

@@ -60,6 +60,9 @@ import {
   ComboboxValue,
 } from "@flowdev/ui/Combobox";
 import { FormCombobox } from "@flowdev/ui/FormCombobox";
+import { FormCheckbox } from "@flowdev/ui/FormCheckbox";
+import { Checkbox, CheckboxWithLabel } from "@flowdev/ui/Checkbox";
+import { ErrorBoundary } from "@flowdev/error-boundary";
 
 export const getPluginOptions = (slug: string) => ({
   /** The plugin's slug. There is no difference with the one passed into `definePlugin`. It can be used to not repeat it throughout the plugin's code. */
@@ -97,6 +100,9 @@ export const getPluginOptions = (slug: string) => ({
     FormInput,
     FormSelect,
     FormCombobox,
+    FormCheckbox,
+    Checkbox,
+    CheckboxWithLabel,
     Select,
     SelectGroup,
     SelectValue,
@@ -130,6 +136,7 @@ export const getPluginOptions = (slug: string) => ({
     ComboboxSelected,
     ComboboxTrigger,
     ComboboxValue,
+    ErrorBoundary,
   },
   hooks: {
     /**

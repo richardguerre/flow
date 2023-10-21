@@ -37,7 +37,9 @@ function executeSubscription(operation: RequestParameters, variables: Variables)
         ...sink,
         next: (res) => {
           if (res.errors) {
-            const errorsSet = new Set(res.errors.map((e: any) => e.message));
+            const errorsSet = new Set(
+              res.errors.map((e: any) => e.extensions?.userFriendlyMessage ?? e.message),
+            );
             sink.error(new Error(Array.from(errorsSet).join("\n"), { cause: res.errors }));
           }
           sink.next(res);
@@ -58,7 +60,9 @@ const executeQueryOrMutation = async (operation: RequestParameters, variables: V
     body: JSON.stringify({ operationName: operation.name, query: operation.text, variables }),
   }).then((res) => res.json());
   if (res.errors) {
-    const errorsSet = new Set(res.errors.map((e: any) => e.message));
+    const errorsSet = new Set(
+      res.errors.map((e: any) => e.extensions?.userFriendlyMessage ?? e.message),
+    );
     throw new Error(Array.from(errorsSet).join("\n"), { cause: res.errors });
   }
   return res;

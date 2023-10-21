@@ -13,6 +13,14 @@ export const useDebounce = <T>(
     clearTimeout(timerRef.current);
   };
 
+  const serializedValue = JSON.stringify(
+    value instanceof Set
+      ? Array.from(value)
+      : value instanceof Map
+      ? Object.fromEntries(value.entries())
+      : value,
+  );
+
   useEffect(() => {
     setDebouncing(true);
     timerRef.current = setTimeout(() => {
@@ -24,7 +32,7 @@ export const useDebounce = <T>(
     return () => {
       cancelDebounce();
     };
-  }, [JSON.stringify(value), delay]);
+  }, [serializedValue, delay]);
 
   return [debouncedValue, debouncing, cancelDebounce] as const;
 };
