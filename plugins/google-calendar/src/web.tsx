@@ -21,7 +21,6 @@ export default definePlugin((options) => {
     const [saving, setSaving] = React.useState(false);
 
     const handleCheckboxChange = (calendarId: string) => {
-      console.log("handleCheckboxChange", calendarId);
       if (connected.has(calendarId)) {
         connected.delete(calendarId);
       } else {
