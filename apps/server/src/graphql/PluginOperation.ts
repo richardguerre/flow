@@ -98,29 +98,31 @@ const loadOneWithInput = async (id: string, input: Prisma.InputJsonValue) => {
 };
 
 builder.queryField("pluginOperation", (t) =>
-  t.field({
+  t.fieldWithInput({
     type: PluginOperationType,
     nullable: true,
-    args: {
-      id: t.arg.globalID({ required: true }),
-      input: t.arg({ type: "JSON", required: false }),
+    input: {
+      pluginSlug: t.input.string({ required: true }),
+      operationName: t.input.string({ required: true }),
+      data: t.input.field({ type: "JSON", required: false }),
     },
     resolve: async (_, args) => {
-      return await loadOneWithInput(args.id.id, args.input ?? {});
+      return await loadOneWithInput(`PluginOperation_${args.input.pluginSlug}_${args.input.operationName}`, args.input.data ?? {});
     },
   }),
 );
 
 builder.mutationField("pluginOperation", (t) =>
-  t.field({
+  t.fieldWithInput({
     type: PluginOperationType,
     nullable: true,
-    args: {
-      id: t.arg.globalID({ required: true }),
-      input: t.arg({ type: "JSON", required: false }),
+    input: {
+      pluginSlug: t.input.string({ required: true }),
+      operationName: t.input.string({ required: true }),
+      data: t.input.field({ type: "JSON", required: false }),
     },
     resolve: async (_, args) => {
-      return await loadOneWithInput(args.id.id, args.input ?? {});
+      return await loadOneWithInput(`PluginOperation_${args.input.pluginSlug}_${args.input.operationName}`, args.input.data ?? {});
     },
   }),
 );
