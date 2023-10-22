@@ -68,5 +68,5 @@ export default async (request: Request) => {
 
   const flowInstanceOrigin = new URL(apiEndpoint).origin;
 
-  return Response.redirect(`${flowInstanceOrigin}/settings`);
+  return Response.redirect(`${flowInstanceOrigin}/settings/plugin/google-calendar`);
 };
