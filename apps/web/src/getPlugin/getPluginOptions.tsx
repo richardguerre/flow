@@ -65,6 +65,12 @@ import { Checkbox, CheckboxWithLabel } from "@flowdev/ui/Checkbox";
 import { ErrorBoundary } from "@flowdev/error-boundary";
 
 export const getPluginOptions = (slug: string) => ({
+  /**
+   * The server's origin when working locally. In production, this is an empty string as the server is on the same origin as the web app.
+   * @example "http://localhost:4000"
+   * @example ""
+   */
+  serverOrigin: import.meta.env.VITE_SERVER_ORIGIN ?? "",
   /** The plugin's slug. There is no difference with the one passed into `definePlugin`. It can be used to not repeat it throughout the plugin's code. */
   pluginSlug: slug,
   /**

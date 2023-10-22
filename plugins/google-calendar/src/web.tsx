@@ -84,7 +84,7 @@ export default definePlugin((options) => {
         render: () => {
           return (
             <div className="flex flex-col gap-2">
-              <a href="http://localhost:4000/api/plugin/google-calendar/auth">
+              <a href={`${options.serverOrigin}/api/plugin/google-calendar/auth`}>
                 <Flow.Button>Connect an account</Flow.Button>
               </a>
               <Flow.ErrorBoundary
