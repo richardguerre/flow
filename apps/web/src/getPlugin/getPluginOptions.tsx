@@ -70,7 +70,7 @@ export const getPluginOptions = (slug: string) => ({
    * @example "http://localhost:4000"
    * @example ""
    */
-  serverOrigin: import.meta.env.VITE_SERVER_ORIGIN ?? "",
+  serverOrigin: import.meta.env.PROD ? "" :  "http://localhost:4000",
   /** The plugin's slug. There is no difference with the one passed into `definePlugin`. It can be used to not repeat it throughout the plugin's code. */
   pluginSlug: slug,
   /**
