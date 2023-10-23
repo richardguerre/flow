@@ -1,25 +1,25 @@
-const p = (t) => ({ plugin: t });
+const E = (t) => ({ plugin: t });
 var n = "/Users/richardguerre/Projects/flow/plugins/google-calendar/src/web.tsx";
-const E = p((t) => {
+const p = E((t) => {
   const e = t.React, u = t.components, v = () => {
     var N, b;
     const a = t.operations.useLazyQuery({
       pluginSlug: t.pluginSlug,
       operationName: "calendars"
-    }), c = new Set(((N = a == null ? void 0 : a.data) == null ? void 0 : N.flatMap((l) => l.calendars).filter((l) => l.connected && !!l.id).map((l) => l.id)) ?? []), [r, o] = e.useState(c), [s, d] = t.hooks.useDebounce(r, 1e3), [_, f] = e.useState(!1), g = (l) => {
+    }), c = new Set(((N = a == null ? void 0 : a.data) == null ? void 0 : N.flatMap((l) => l.calendars).filter((l) => l.connected && !!l.id).map((l) => l.id)) ?? []), [r, o] = e.useState(c), [m, d] = t.hooks.useDebounce(r, 1e3), [_, f] = e.useState(!1), g = (l) => {
       r.has(l) ? r.delete(l) : r.add(l), o(new Set(r));
     };
     t.hooks.useAsyncEffect(async () => {
-      s.size === c.size && Array.from(s).every((l) => c.has(l)) || (f(!0), await t.operations.mutation({
+      m.size === c.size && Array.from(m).every((l) => c.has(l)) || (f(!0), await t.operations.mutation({
         pluginSlug: t.pluginSlug,
         operationName: "connectCalendars",
         input: {
-          calendarIds: Array.from(s)
+          calendarIds: Array.from(m)
         }
       }), f(!1));
-    }, [s]);
-    let m = "Saved";
-    return d && !_ ? m = "Not saved yet..." : !d && _ ? m = "Saving..." : m = "Saved", /* @__PURE__ */ e.createElement("div", { className: "flex flex-col gap-2", __self: void 0, __source: {
+    }, [m]);
+    let s = "Saved";
+    return d && !_ ? s = "Not saved yet..." : !d && _ ? s = "Saving..." : s = "Saved", /* @__PURE__ */ e.createElement("div", { className: "flex flex-col gap-2", __self: void 0, __source: {
       fileName: n,
       lineNumber: 59,
       columnNumber: 7
@@ -43,7 +43,7 @@ const E = p((t) => {
       fileName: n,
       lineNumber: 74,
       columnNumber: 9
-    } }, m));
+    } }, s));
   };
   return {
     name: "Google Calendar",
@@ -54,7 +54,7 @@ const E = p((t) => {
           fileName: n,
           lineNumber: 86,
           columnNumber: 13
-        } }, /* @__PURE__ */ e.createElement("a", { href: "http://localhost:4000/api/plugin/google-calendar/auth", __self: void 0, __source: {
+        } }, /* @__PURE__ */ e.createElement("a", { href: `${t.serverOrigin}/api/plugin/google-calendar/auth`, __self: void 0, __source: {
           fileName: n,
           lineNumber: 87,
           columnNumber: 15
@@ -112,5 +112,5 @@ const E = p((t) => {
   };
 });
 export {
-  E as default
+  p as default
 };
