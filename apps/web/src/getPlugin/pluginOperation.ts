@@ -27,9 +27,9 @@ export const getPluginOperationUtils = (pluginSlug: string) => ({
     try {
       const query = await fetchQuery<pluginOperationQuery>(environment, queryDoc, {
         input: {
-          pluginSlug: params.pluginSlug,
+          pluginSlug,
           operationName: params.operationName,
-          data: params.input ?? {}
+          data: params.input ?? {},
         },
       }).toPromise();
 
@@ -56,9 +56,9 @@ export const getPluginOperationUtils = (pluginSlug: string) => ({
   useLazyQuery: <T extends JsonValue>(params: PluginOperationParams): PluginOperationsReturn<T> => {
     const res = useLazyLoadQuery<pluginOperationQuery>(queryDoc, {
       input: {
-        pluginSlug: params.pluginSlug,
+        pluginSlug,
         operationName: params.operationName,
-        data: params.input ?? {}
+        data: params.input ?? {},
       },
     });
     if (!res.pluginOperation) return null;
@@ -89,9 +89,9 @@ export const getPluginOperationUtils = (pluginSlug: string) => ({
         `,
         variables: {
           input: {
-            pluginSlug: params.pluginSlug,
+            pluginSlug,
             operationName: params.operationName,
-            data: params.input ?? {}
+            data: params.input ?? {},
           },
         },
         onError: (err) => {
@@ -112,7 +112,6 @@ export const getPluginOperationUtils = (pluginSlug: string) => ({
 });
 
 type PluginOperationParams = {
-  pluginSlug: string;
   operationName: string;
   input?: JsonValue;
 };

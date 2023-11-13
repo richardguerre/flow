@@ -27,7 +27,7 @@ export const PluginOperationType = builder.node(
           `Invalid plugin operation id: PluginOperation_${id}. It should be in the format of PluginOperation_pluginSlug_operationName.`,
         );
       }
-      return await loadOneWithInput(pluginSlug, operationName, {}) // fetching through the node field will not pass any input, see the description below
+      return await loadOneWithInput(pluginSlug, operationName, {}); // fetching through the node field will not pass any input, see the description below
     },
     fields: (t) => ({
       data: t.field({ type: "JSON", resolve: (op) => op.data, nullable: true }),
@@ -85,7 +85,11 @@ What's the difference between \`pluginOperation\` field in the Query type and th
   },
 );
 
-const loadOneWithInput = async (pluginSlug: string, operationName: string, input: Prisma.InputJsonValue) => {
+const loadOneWithInput = async (
+  pluginSlug: string,
+  operationName: string,
+  input: Prisma.InputJsonValue,
+) => {
   const plugins = await getPlugins();
   const plugin = plugins[pluginSlug];
   if (!plugin) {
@@ -121,7 +125,11 @@ builder.queryField("pluginOperation", (t) =>
       data: t.input.field({ type: "JSON", required: false }),
     },
     resolve: async (_, args) => {
-      return await loadOneWithInput(args.input.pluginSlug, args.input.operationName, args.input.data ?? {});
+      return await loadOneWithInput(
+        args.input.pluginSlug,
+        args.input.operationName,
+        args.input.data ?? {},
+      );
     },
   }),
 );
@@ -136,7 +144,11 @@ builder.mutationField("pluginOperation", (t) =>
       data: t.input.field({ type: "JSON", required: false }),
     },
     resolve: async (_, args) => {
-      return await loadOneWithInput(args.input.pluginSlug, args.input.operationName, args.input.data ?? {});
+      return await loadOneWithInput(
+        args.input.pluginSlug,
+        args.input.operationName,
+        args.input.data ?? {},
+      );
     },
   }),
 );
