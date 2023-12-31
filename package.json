@@ -34,8 +34,6 @@
   },
   "devDependencies": {
     "bun-types": "1.0.4",
-    "dotenv": "^16.0.2",
-    "dotenv-expand": "^9.0.0",
     "patch-package": "^6.0.2",
     "prettier": "3.0.3",
     "prettier-plugin-tailwindcss": "^0.2.8",
