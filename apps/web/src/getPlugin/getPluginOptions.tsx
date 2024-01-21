@@ -6,7 +6,7 @@ import { dayjs } from "@flowdev/web/dayjs";
 import { getDays, getDaysMax10 } from "./getDays";
 import { NoteEditor } from "../components/NoteEditor";
 import { Day, DayContent } from "../components/Day";
-import { CardActionButton, TaskCard } from "../components/TaskCard";
+import { CardActionButton, TaskCard, TaskDurationButtonDropdown } from "../components/TaskCard";
 import { ItemCard } from "../components/ItemCard";
 import { Lists } from "../components/Lists";
 import { useAsyncLoader } from "../useAsyncLoader";
@@ -35,7 +35,15 @@ import {
   DropdownMenuSubContent,
   DropdownMenuTrigger,
 } from "@flowdev/ui/DropdownMenu";
-import { useForm, Controller } from "react-hook-form";
+import {
+  useForm,
+  Controller,
+  useFormContext,
+  useController,
+  useFieldArray,
+  useFormState,
+  useWatch,
+} from "react-hook-form";
 import { tw } from "@flowdev/ui/tw";
 import { Badge } from "@flowdev/ui/Badge";
 import {
@@ -63,6 +71,11 @@ import { FormCombobox } from "@flowdev/ui/FormCombobox";
 import { FormCheckbox } from "@flowdev/ui/FormCheckbox";
 import { Checkbox, CheckboxWithLabel } from "@flowdev/ui/Checkbox";
 import { ErrorBoundary } from "@flowdev/error-boundary";
+import { toast } from "@flowdev/ui/Toast";
+import { Textarea } from "@flowdev/ui/Textarea";
+import { FormTextarea } from "@flowdev/ui/FormTextarea";
+import { TaskTitleInput } from "../components/TaskTitle";
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@flowdev/ui/Tooltip";
 
 export const getPluginOptions = (slug: string) => ({
   /**
@@ -77,8 +90,12 @@ export const getPluginOptions = (slug: string) => ({
    * React version that Flow uses.
    */
   React,
-  /** The tailwind merge function that Flow uses. It's the same as clsx. */
+  /** The tailwind merge function that Flow uses. It's the same as clsx and cn. */
   tw,
+  /** The tailwind merge function that Flow uses. It's the same as tw and cn. */
+  clsx: tw,
+  /** The tailwind merge function that Flow uses. It's the same as tw and clsx. */
+  cn: tw,
   /**
    * Components that Flow uses you can re-use in your plugin views to feel more integrated.
    *
@@ -102,8 +119,14 @@ export const getPluginOptions = (slug: string) => ({
     TaskCard,
     ItemCard,
     Lists,
+    TaskTitleInput,
+    TaskDurationButtonDropdown,
+
+    // UI components
     Input,
     FormInput,
+    Textarea,
+    FormTextarea,
     FormSelect,
     FormCombobox,
     FormCheckbox,
@@ -143,6 +166,10 @@ export const getPluginOptions = (slug: string) => ({
     ComboboxTrigger,
     ComboboxValue,
     ErrorBoundary,
+    TooltipProvider,
+    Tooltip,
+    TooltipTrigger,
+    TooltipContent,
   },
   hooks: {
     /**
@@ -202,8 +229,19 @@ export const getPluginOptions = (slug: string) => ({
   /** The react-hook-form package. This prevents double bundling it in both the web app and in individual plugins. */
   reactHookForm: {
     useForm,
+    useFormContext,
+    useFieldArray,
+    useFormState,
+    useWatch,
+    useController,
     Controller,
   },
+  /**
+   * The toast export of the react-hot-toast package.
+   * This prevents double bundling it in both the web app and in individual plugins.
+   * @link https://react-hot-toast.com/
+   */
+  toast,
 });
 
 export type WebPluginOptions = ReturnType<typeof getPluginOptions>;

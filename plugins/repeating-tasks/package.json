@@ -9,6 +9,7 @@
     "build": "bun run build:web && bun run build:server"
   },
   "dependencies": {
+    "@flowdev/icons": "workspace:*",
     "@flowdev/plugin": "workspace:*",
     "cron-parser": "^4.9.0"
   },

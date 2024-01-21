@@ -54,8 +54,8 @@ export const TaskTitle = (props: TaskTitleProps) => {
 
 type TaskTitleInputProps = {
   initialValue?: string;
-  /** Whether the input is used to create a task or not */
-  toCreate?: boolean;
+  /** Whether the input should be automatically focused when rendered. */
+  autoFocus?: boolean;
   /**
    * Triggered when the user:
    * - clicks outside the input
@@ -63,11 +63,13 @@ type TaskTitleInputProps = {
    */
   onSave?: (value: string) => void;
   onCancel?: () => void;
+  /** The className to apply to the input. This will **override** the default className. */
+  className?: string;
 };
 
 export const TaskTitleInput = (props: TaskTitleInputProps) => {
   const editorRef = useRef<Editor | null>(null);
-  const [editable, setEditable] = useState(props.toCreate ?? false);
+  const [editable, setEditable] = useState(props.autoFocus ?? false);
 
   const handleSave = useCallback(() => {
     setEditable(false);
@@ -131,7 +133,7 @@ export const TaskTitleInput = (props: TaskTitleInputProps) => {
   }, [editorRef.current, props.initialValue]);
   return (
     <EditorContent
-      className="CardEditorInput w-full cursor-text p-0"
+      className={props.className ?? "TaskTitleInput w-full cursor-text p-0"}
       editor={editorRef.current}
       onClick={handleClick}
     />

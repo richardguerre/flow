@@ -72,7 +72,7 @@ export const NewTaskCard = (props: Props) => {
 
   return (
     <div className="bg-background-50 group flex cursor-pointer flex-col gap-1 rounded-md p-3 shadow-sm hover:shadow-md">
-      <TaskTitleInput toCreate onSave={handleSave} onCancel={props.onCancel} />
+      <TaskTitleInput autoFocus onSave={handleSave} onCancel={props.onCancel} />
       {/* These buttons are just for aesthetics */}
       <div className="flex gap-2">
         <button className="bg-background-200 text-foreground-700 hover:bg-background-300 active:bg-background-300 flex h-6 w-6 items-center justify-center rounded-full bg-opacity-50 text-sm hover:bg-opacity-70 active:bg-opacity-100 ">

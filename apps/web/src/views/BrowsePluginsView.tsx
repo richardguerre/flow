@@ -8,7 +8,7 @@ import { graphql, useMutation } from "@flowdev/relay";
 import { Button } from "@flowdev/ui/Button";
 import { BrowsePluginsViewInstallMutation } from "../relay/__generated__/BrowsePluginsViewInstallMutation.graphql";
 import { BrowsePluginsViewInstallFromUrlMutation } from "@flowdev/web/relay/__generated__/BrowsePluginsViewInstallFromUrlMutation.graphql";
-import { useMemo, useState } from "react";
+import { useState } from "react";
 import { toast } from "@flowdev/ui/Toast";
 import { usePlugins } from "../getPlugin";
 

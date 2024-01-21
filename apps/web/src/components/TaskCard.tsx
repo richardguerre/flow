@@ -286,9 +286,25 @@ const TaskDurationButton = (props: TaskDurationButtonProps) => {
   };
 
   return (
-    <DropdownMenu open={isOpen} onOpenChange={setIsOpen}>
+    <TaskDurationButtonDropdown
+      open={isOpen}
+      setOpen={setIsOpen}
+      value={task.durationInMinutes}
+      onChange={handleDurationChange}
+    />
+  );
+};
+
+export const TaskDurationButtonDropdown = (props: {
+  open?: boolean;
+  setOpen?: (open: boolean) => void;
+  value: number | null | undefined;
+  onChange: (durationInMinutes: number | null) => void;
+}) => {
+  return (
+    <DropdownMenu open={props.open} onOpenChange={props.setOpen}>
       <DropdownMenuTrigger>
-        <CardActionButton className={tw("hidden group-hover:flex", isOpen && "flex")}>
+        <CardActionButton className={tw("hidden group-hover:flex", props.open && "flex")}>
           <BsClock size={16} stroke="2px" />
         </CardActionButton>
       </DropdownMenuTrigger>
@@ -299,8 +315,8 @@ const TaskDurationButton = (props: TaskDurationButtonProps) => {
           {durationOptions.map((option) => (
             <DropdownMenuCheckboxItem
               key={option.value}
-              onClick={() => handleDurationChange(option.value)}
-              checked={task.durationInMinutes === option.value}
+              onClick={() => props.onChange(option.value)}
+              checked={props.value === option.value}
             >
               {option.label}
             </DropdownMenuCheckboxItem>
