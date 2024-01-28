@@ -25,8 +25,6 @@ export default () => {
   useEffect(() => {
     const interval = setInterval(
       () => {
-        const threshold = today.current.startOf("day").add(1, "day");
-        if (threshold.isAfter(dayjs())) return;
         today.current = dayjs().startOf("day");
         loadQuery(
           {

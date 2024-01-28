@@ -316,6 +316,12 @@ export default definePlugin((opts) => {
           if (!item && event.status === "cancelled") {
             // no need to create item if the event was cancelled
             continue;
+          } else if (
+            !item &&
+            ["outOfOffice", "workingLocation"].includes(event.eventType ?? "default")
+          ) {
+            // no need to create item if the event is a OOO or workingLocation.
+            continue;
           }
 
           const usersTimezone = (await opts.getUsersTimezone()) ?? "Etc/GMT-0"; // this should not be null, but just in case
@@ -348,6 +354,7 @@ export default definePlugin((opts) => {
           } satisfies Prisma.ItemUpdateInput;
 
           const min = {
+            eventType: event.eventType as PluginDataFull["eventType"],
             status: event.status as PluginDataMin["status"],
             htmlLink: event.htmlLink!,
             numOfAttendees: event.attendees?.length ?? 0,
@@ -357,7 +364,6 @@ export default definePlugin((opts) => {
           const full = {
             ...event,
             ...min,
-            eventType: event.eventType as PluginDataFull["eventType"],
           } satisfies PluginDataFull as any; // the any is required to make typescript happy with Prisma's type system (theoretically there are no issues since we are getting all events from Google's REST API, which returns serialized JSON)
 
           const taskCommonBetweenUpdateAndCreate = {
@@ -438,6 +444,12 @@ export default definePlugin((opts) => {
               },
             });
           }
+          await opts.pgBoss.sendAfter(
+            UPSERT_EVENT_JOB_NAME,
+            { ...event },
+            {},
+            scheduledEnd.toDate(),
+          );
           console.log("✔ Upserted item from event", event.summary, scheduledStart?.toISOString());
         }
       }),
@@ -537,6 +549,7 @@ export default definePlugin((opts) => {
 });
 
 export type PluginDataMin = {
+  eventType: "default" | "outOfOffice" | "focusTime" | "workingLocation";
   status: "confirmed" | "tentative" | "cancelled";
   htmlLink: NonNullable<calendar_v3.Schema$Event["htmlLink"]>;
   numOfAttendees: number;
