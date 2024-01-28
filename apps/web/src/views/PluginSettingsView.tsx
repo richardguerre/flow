@@ -269,7 +269,7 @@ const TextFieldSetting = (props: PluginTextfieldSettingProps & SettingProps) => 
     <form onSubmit={handleSubmit(onSubmit)}>
       <FormInput
         {...props}
-        type={props.inputType ?? props.isSecret ? "password" : "text"}
+        type={props.inputType ?? (props.isSecret ? "password" : "text")}
         description={props.description && <Markdown>{props.description}</Markdown>}
         {...register(props.settingProps.name, props.registerOptions)}
         error={formState.errors[props.settingProps.name] as FieldError}

@@ -5,12 +5,15 @@ export default defineConfig({
     outDir: "out",
     emptyOutDir: false,
     lib: {
-      name: "flow-google-calendar",
+      name: "flow-repeating-tasks",
       entry: "src/server.ts",
       formats: ["cjs"],
       fileName: () => "server.js",
     },
     rollupOptions: {
+      output: {
+        exports: "named",
+      },
       external: [
         "fs",
         "url",

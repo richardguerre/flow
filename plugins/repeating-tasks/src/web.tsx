@@ -14,12 +14,12 @@ export default definePlugin((opts) => {
   type RepeatingTaskFormValues = Omit<RepeatingTask, "id">;
   type OnChangeValues = RepeatingTaskFormValues & Partial<Pick<RepeatingTask, "id">>;
   const RepeatingTasks = () => {
-    const [showNewTaskForm, setShowNewTaskForm] = React.useState(false);
     const tasksQuery = opts.operations.useLazyQuery<RepeatingTask[]>({
       pluginSlug: opts.pluginSlug,
       operationName: "repeatingTasks",
     });
     const repeatingTasks = tasksQuery?.data ?? [];
+    const [showNewTaskForm, setShowNewTaskForm] = React.useState(false);
 
     const updateRepeatingTasks = async (tasks: RepeatingTask[]) => {
       await opts.toast.promise(
@@ -28,7 +28,7 @@ export default definePlugin((opts) => {
           operationName: "setRepeatingTasks",
           input: {
             repeatingTasks: tasks,
-            currentDate: new Date().toDateString(),
+            currentDate: new Date().toISOString(),
           } satisfies SetRepeatingTasksInput,
         }),
         {
@@ -41,26 +41,28 @@ export default definePlugin((opts) => {
 
     const handleUpdate = async (task: OnChangeValues, isNew?: boolean) => {
       if (isNew) {
-        setShowNewTaskForm(false);
+        console.log("adding new task");
         await updateRepeatingTasks([...repeatingTasks, { ...task, id: generateId() }]);
+        setShowNewTaskForm(false);
       } else {
-        await updateRepeatingTasks(
-          repeatingTasks.map((t) => {
-            if (t.id !== task.id) {
-              return t;
-            }
-            return task as RepeatingTask;
-          }),
-        );
+        console.log("updating task");
+        const updatedTasks = repeatingTasks.map((t) => {
+          if (t.id !== task.id) {
+            return t;
+          }
+          return task as RepeatingTask;
+        });
+        await updateRepeatingTasks(updatedTasks);
       }
     };
 
     const handleDelete = (taskId: string) => {
+      console.log("deleting task");
       updateRepeatingTasks(repeatingTasks.filter((task) => task.id !== taskId));
     };
 
     return (
-      <div className="flex gap-2 flex-wrap">
+      <div className="flex gap-4 flex-wrap items-start">
         {repeatingTasks.map((task) => (
           <RepeatingTaskForm
             key={task.id}
@@ -70,19 +72,19 @@ export default definePlugin((opts) => {
           />
         ))}
         {showNewTaskForm ? (
-          <RepeatingTaskForm onChange={(task) => handleUpdate(task, true)} />
+          <RepeatingTaskForm onChange={(task) => handleUpdate(task, true)} autoFocus />
         ) : (
           <Flow.Tooltip>
             <Flow.TooltipTrigger>
               <button
                 onClick={() => setShowNewTaskForm(true)}
-                className="flex items-center justify-center text-sm bg-background-200 text-foreground-700 hover:bg-primary-100 hover:text-primary-600 active:bg-primary-200 min-w-sm min-h-[200px] gap-2"
+                className="flex items-center justify-center text-sm bg-background-200 text-foreground-700 hover:bg-primary-100 hover:text-primary-600 active:bg-primary-200 min-w-xs min-h-18 gap-2 rounded-md p-3 shadow-md"
               >
                 <BsPlus />
                 New repeating task
               </button>
             </Flow.TooltipTrigger>
-            <TooltipContent>Create new repeating task</TooltipContent>
+            <TooltipContent side="bottom">Create new repeating task</TooltipContent>
           </Flow.Tooltip>
         )}
       </div>
@@ -93,7 +95,9 @@ export default definePlugin((opts) => {
     task?: RepeatingTask;
     onChange: (task: OnChangeValues) => void;
     onDelete?: () => void;
+    autoFocus?: boolean;
   }) => {
+    const [deleting, setDeleting] = React.useState(false);
     const timeoutRef = React.useRef<NodeJS.Timeout>();
     const { register, control, handleSubmit, watch } =
       opts.reactHookForm.useForm<RepeatingTaskFormValues>({
@@ -102,14 +106,15 @@ export default definePlugin((opts) => {
           durationInMinutes: props.task?.durationInMinutes,
           // cron for every day at midnight
           cron: props.task?.cron ?? "0 0 * * *",
-          enabled: props.task?.enabled,
+          enabled: props.task?.enabled ?? true,
         },
       });
 
     const onSubmit = (data: RepeatingTaskFormValues) => {
+      if (deleting) return;
       timeoutRef.current && clearTimeout(timeoutRef.current);
       timeoutRef.current = setTimeout(() => {
-        props.onChange(data);
+        props.onChange({ id: props.task?.id, ...data });
       }, 1000);
     };
 
@@ -117,37 +122,44 @@ export default definePlugin((opts) => {
       timeoutRef.current && clearTimeout(timeoutRef.current);
 
       if (errors.cron) {
-        opts.toast.error(errors.cron.message ?? "Invalid cron expression");
+        timeoutRef.current = setTimeout(() => {
+          opts.toast.error(errors.cron?.message ?? "Invalid cron expression");
+        }, 1000);
       }
     };
 
     React.useEffect(() => {
       const subscription = watch(() => handleSubmit(onSubmit, onInvalid)());
       return () => subscription.unsubscribe();
-    }, [handleSubmit, watch]);
+    }, [handleSubmit, watch, deleting]);
 
     return (
       <form
-        className="bg-background-50 group flex cursor-pointer flex-col gap-1 rounded-md p-3 shadow-sm min-w-sm"
+        className="bg-background-50 group flex cursor-pointer flex-col gap-1 rounded-md p-3 shadow-lg max-w-xs w-full"
         onSubmit={handleSubmit(onSubmit, onInvalid)}
       >
         <opts.reactHookForm.Controller
           name="title"
           control={control}
           render={({ field }) => (
-            <Flow.TaskTitleInput onSave={field.onChange} onCancel={field.onBlur} />
+            <Flow.TaskTitleInput
+              initialValue={props.task?.title}
+              onSave={field.onChange}
+              onCancel={field.onBlur}
+              autoFocus={props.autoFocus}
+            />
           )}
           rules={{ required: true }}
         />
         <div className="flex gap-2">
           <input
             type="text"
-            className="bg-transparent border-none text-foreground-700 focus:ring-0 active:ring-0 w-full"
+            className="bg-transparent border-none text-foreground-700 focus:ring-0 active:ring-0 focus:outline-none w-full"
             {...register("cron", {
               required: true,
               validate: {
                 parse: (value) =>
-                  !!cronParser.parseExpression(value).next().toString() ||
+                  Object.keys(cronParser.parseString(value).errors).length === 0 ||
                   "Invalid cron expression",
               },
             })}
@@ -156,7 +168,11 @@ export default definePlugin((opts) => {
             name="durationInMinutes"
             control={control}
             render={({ field }) => (
-              <Flow.TaskDurationButtonDropdown value={field.value} onChange={field.onChange} />
+              <Flow.TaskDurationButtonDropdown
+                value={field.value}
+                onChange={field.onChange}
+                showByDefault
+              />
             )}
           />
           <opts.reactHookForm.Controller
@@ -177,7 +193,7 @@ export default definePlugin((opts) => {
                     <BsCheck />
                   </button>
                 </Flow.TooltipTrigger>
-                <TooltipContent>
+                <TooltipContent side="bottom">
                   Whether this repating task is enabled? If disabled all future tasks after today
                   will be deleted.
                 </TooltipContent>
@@ -187,13 +203,16 @@ export default definePlugin((opts) => {
           <Flow.Tooltip>
             <Flow.TooltipTrigger>
               <button
-                onClick={props.onDelete}
+                onClick={() => {
+                  setDeleting(true);
+                  props.onDelete?.();
+                }}
                 className="flex h-6 w-6 items-center justify-center rounded-full bg-opacity-50 text-sm bg-background-200 text-foreground-700 hover:bg-negative-100 hover:text-negative-600 active:bg-negative-200"
               >
-                <BsTrash3 />
+                <BsTrash3 size={16} />
               </button>
             </Flow.TooltipTrigger>
-            <TooltipContent>Delete</TooltipContent>
+            <TooltipContent side="bottom">Delete</TooltipContent>
           </Flow.Tooltip>
         </div>
       </form>
@@ -210,6 +229,7 @@ export default definePlugin((opts) => {
         required: true,
         inputType: "number",
         defaultValue: 10,
+        registerOptions: { valueAsNumber: true },
       },
       "repeating-tasks": {
         type: "custom",

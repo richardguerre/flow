@@ -300,11 +300,14 @@ export const TaskDurationButtonDropdown = (props: {
   setOpen?: (open: boolean) => void;
   value: number | null | undefined;
   onChange: (durationInMinutes: number | null) => void;
+  showByDefault?: boolean;
 }) => {
   return (
     <DropdownMenu open={props.open} onOpenChange={props.setOpen}>
       <DropdownMenuTrigger>
-        <CardActionButton className={tw("hidden group-hover:flex", props.open && "flex")}>
+        <CardActionButton
+          className={tw(!props.showByDefault && "hidden group-hover:flex", props.open && "flex")}
+        >
           <BsClock size={16} stroke="2px" />
         </CardActionButton>
       </DropdownMenuTrigger>
