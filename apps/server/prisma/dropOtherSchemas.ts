@@ -18,11 +18,9 @@ import { prisma } from "@flowdev/server/src/utils/prisma";
 
 const schemas = ["pgboss"];
 
-(async () => {
-  console.log(`🚀 Dropping schemas: ${schemas.join(", ")}`);
-  console.log(`Once dropped, they will be re-created when applying migrations.`);
-  for (const schema of schemas) {
-    await prisma.$executeRawUnsafe(`DROP SCHEMA IF EXISTS "${schema}" CASCADE`);
-    console.log(`✅ Dropped schema ${schema}`);
-  }
-})();
+console.log(`🚀 Dropping schemas: ${schemas.join(", ")}`);
+console.log(`Once dropped, they will be re-created when applying migrations.`);
+for (const schema of schemas) {
+  await prisma.$executeRawUnsafe(`DROP SCHEMA IF EXISTS "${schema}" CASCADE`);
+  console.log(`✅ Dropped schema ${schema}`);
+}
