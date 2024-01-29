@@ -20,7 +20,15 @@ export const PluginOperationType = builder.node(
   builder.objectRef<PluginOperation>("PluginOperation"),
   {
     id: { resolve: (op) => op.id },
-    loadOne: async (id) => await loadOneWithInput(id, {}), // fetching through the node field will not pass any input, see below description
+    loadOne: async (id) => {
+      const [pluginSlug, operationName] = id.split("_");
+      if (!pluginSlug || !operationName) {
+        throw new GraphQLError(
+          `Invalid plugin operation id: PluginOperation_${id}. It should be in the format of PluginOperation_pluginSlug_operationName.`,
+        );
+      }
+      return await loadOneWithInput(pluginSlug, operationName, {}); // fetching through the node field will not pass any input, see the description below
+    },
     fields: (t) => ({
       data: t.field({ type: "JSON", resolve: (op) => op.data, nullable: true }),
     }),
@@ -42,7 +50,13 @@ query {
 Or you can do it through \`pluginOperation\` field if there are parameters to pass. For example:
 \`\`\`graphql
 query {
-  pluginOperation(pluginSlug: "pluginSlug", operationName: "operationName", input: { param1: "value1" }) {
+  pluginOperation(
+    input: {
+      pluginSlug: "pluginSlug",
+      operationName: "operationName",
+      data: { param1: "value1"}
+    }
+  ) {
     id
     data
   }
@@ -52,7 +66,13 @@ query {
 If you want to do a POST-like request, you can do it through \`pluginOperation\` field in the Mutation type. For example:
 \`\`\`graphql
 mutation {
-  pluginOperation(pluginSlug: "pluginSlug", operationName: "operationName", input: { param1: "value1" }) {
+  pluginOperation(
+    input: {
+      pluginSlug: "pluginSlug",
+      operationName: "operationName",
+      data: { param1: "value1"}
+    }
+  ) {
     id
     data
   }
@@ -65,13 +85,11 @@ What's the difference between \`pluginOperation\` field in the Query type and th
   },
 );
 
-const loadOneWithInput = async (id: string, input: Prisma.InputJsonValue) => {
-  const [pluginSlug, operationName] = id.split("_");
-  if (!pluginSlug || !operationName) {
-    throw new GraphQLError(
-      `Invalid plugin operation id: PluginOperation_${id}. It should be in the format of PluginOperation_pluginSlug_operationName.`,
-    );
-  }
+const loadOneWithInput = async (
+  pluginSlug: string,
+  operationName: string,
+  input: Prisma.InputJsonValue,
+) => {
   const plugins = await getPlugins();
   const plugin = plugins[pluginSlug];
   if (!plugin) {
@@ -98,29 +116,39 @@ const loadOneWithInput = async (id: string, input: Prisma.InputJsonValue) => {
 };
 
 builder.queryField("pluginOperation", (t) =>
-  t.field({
+  t.fieldWithInput({
     type: PluginOperationType,
     nullable: true,
-    args: {
-      id: t.arg.globalID({ required: true }),
-      input: t.arg({ type: "JSON", required: false }),
+    input: {
+      pluginSlug: t.input.string({ required: true }),
+      operationName: t.input.string({ required: true }),
+      data: t.input.field({ type: "JSON", required: false }),
     },
     resolve: async (_, args) => {
-      return await loadOneWithInput(args.id.id, args.input ?? {});
+      return await loadOneWithInput(
+        args.input.pluginSlug,
+        args.input.operationName,
+        args.input.data ?? {},
+      );
     },
   }),
 );
 
 builder.mutationField("pluginOperation", (t) =>
-  t.field({
+  t.fieldWithInput({
     type: PluginOperationType,
     nullable: true,
-    args: {
-      id: t.arg.globalID({ required: true }),
-      input: t.arg({ type: "JSON", required: false }),
+    input: {
+      pluginSlug: t.input.string({ required: true }),
+      operationName: t.input.string({ required: true }),
+      data: t.input.field({ type: "JSON", required: false }),
     },
     resolve: async (_, args) => {
-      return await loadOneWithInput(args.id.id, args.input ?? {});
+      return await loadOneWithInput(
+        args.input.pluginSlug,
+        args.input.operationName,
+        args.input.data ?? {},
+      );
     },
   }),
 );

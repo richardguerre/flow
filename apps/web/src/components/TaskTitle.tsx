@@ -98,7 +98,7 @@ export const TaskTitleInput = (props: TaskTitleInputProps) => {
     extensions: [
       MinimumKit,
       CatchNewLines(() => {
-        handleSave();
+        editorRef.current!.commands.blur();
       }),
       Mention.configure({
         suggestion: {

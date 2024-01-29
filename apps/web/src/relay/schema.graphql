@@ -228,7 +228,7 @@ type Mutation {
   Logout from the Flow instance using the session token set in the Authorization header.
   """
   logout: Boolean!
-  pluginOperation(id: ID!, input: JSON): PluginOperation
+  pluginOperation(input: MutationPluginOperationInput!): PluginOperation
 
   """
   Set password for the Flow instance and get a session token to make authenticated requests.
@@ -397,6 +397,12 @@ input MutationInstallPluginInput {
 input MutationLoginInput {
   """The password (unhashed)."""
   password: String!
+}
+
+input MutationPluginOperationInput {
+  data: JSON
+  operationName: String!
+  pluginSlug: String!
 }
 
 input MutationSetPasswordInput {
@@ -607,7 +613,7 @@ type PluginInstallation {
   url: String!
 }
 
-"A plugin operation similar to making a request to /api/plugin/:pluginSlug/:operation, but it can be cached by Relay.\n\nThis is the recommended way to interact with the plugin's from the web app.\n\nIf you want to do a GET-like request, you can do it through `node` field if there are no parameters to pass. For example:\n```graphql\nquery {\n  node(id: \"PluginOperation_pluginSlug_operationName\") {\n    ... on PluginOperation {\n      id\n      data\n    }\n  }\n}\n```\nOr you can do it through `pluginOperation` field if there are parameters to pass. For example:\n```graphql\nquery {\n  pluginOperation(pluginSlug: \"pluginSlug\", operationName: \"operationName\", input: { param1: \"value1\" }) {\n    id\n    data\n  }\n}\n```\n\nIf you want to do a POST-like request, you can do it through `pluginOperation` field in the Mutation type. For example:\n```graphql\nmutation {\n  pluginOperation(pluginSlug: \"pluginSlug\", operationName: \"operationName\", input: { param1: \"value1\" }) {\n    id\n    data\n  }\n}\n\nWhat's the difference between `pluginOperation` field in the Query type and the Mutation type?\n- `pluginOperation` field in the Query type is used for GET-like requests and will get cached by Relay in the web app.\n- `pluginOperation` field in the Mutation type is used for POST-like requests and will invalidate any cached data from the `pluginOperation` field in the Query type and Relay will automatically update it's store.\n"
+"A plugin operation similar to making a request to /api/plugin/:pluginSlug/:operation, but it can be cached by Relay.\n\nThis is the recommended way to interact with the plugin's from the web app.\n\nIf you want to do a GET-like request, you can do it through `node` field if there are no parameters to pass. For example:\n```graphql\nquery {\n  node(id: \"PluginOperation_pluginSlug_operationName\") {\n    ... on PluginOperation {\n      id\n      data\n    }\n  }\n}\n```\nOr you can do it through `pluginOperation` field if there are parameters to pass. For example:\n```graphql\nquery {\n  pluginOperation(\n    input: {\n      pluginSlug: \"pluginSlug\",\n      operationName: \"operationName\",\n      data: { param1: \"value1\"}\n    }\n  ) {\n    id\n    data\n  }\n}\n```\n\nIf you want to do a POST-like request, you can do it through `pluginOperation` field in the Mutation type. For example:\n```graphql\nmutation {\n  pluginOperation(\n    input: {\n      pluginSlug: \"pluginSlug\",\n      operationName: \"operationName\",\n      data: { param1: \"value1\"}\n    }\n  ) {\n    id\n    data\n  }\n}\n\nWhat's the difference between `pluginOperation` field in the Query type and the Mutation type?\n- `pluginOperation` field in the Query type is used for GET-like requests and will get cached by Relay in the web app.\n- `pluginOperation` field in the Mutation type is used for POST-like requests and will invalidate any cached data from the `pluginOperation` field in the Query type and Relay will automatically update it's store.\n"
 type PluginOperation implements Node {
   data: JSON
   id: ID!
@@ -721,7 +727,7 @@ type Query {
     """Filters to use when querying note tags."""
     where: NoteTagWhereInput
   ): QueryNoteTagsConnection!
-  pluginOperation(id: ID!, input: JSON): PluginOperation
+  pluginOperation(input: QueryPluginOperationInput!): PluginOperation
 
   """Get all routines."""
   routines: [Routine!]!
@@ -778,6 +784,12 @@ type QueryNoteTagsConnection {
 type QueryNoteTagsConnectionEdge {
   cursor: ID!
   node: NoteTag!
+}
+
+input QueryPluginOperationInput {
+  data: JSON
+  operationName: String!
+  pluginSlug: String!
 }
 
 input QueryStoreItemsInput {

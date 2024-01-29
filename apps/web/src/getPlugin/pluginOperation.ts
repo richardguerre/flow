@@ -4,8 +4,8 @@ import { pluginOperationQuery } from "@flowdev/web/relay/__generated__/pluginOpe
 import { pluginOperationMutation } from "@flowdev/web/relay/__generated__/pluginOperationMutation.graphql";
 
 const queryDoc = graphql`
-  query pluginOperationQuery($id: ID!, $input: JSON!) {
-    pluginOperation(id: $id, input: $input) {
+  query pluginOperationQuery($input: QueryPluginOperationInput!) {
+    pluginOperation(input: $input) {
       id
       data
     }
@@ -26,8 +26,11 @@ export const getPluginOperationUtils = (pluginSlug: string) => ({
   ): Promise<PluginOperationsReturn<T>> => {
     try {
       const query = await fetchQuery<pluginOperationQuery>(environment, queryDoc, {
-        id: `PluginOperation_${params.pluginSlug}_${params.operationName}`,
-        input: params.input ?? {},
+        input: {
+          pluginSlug,
+          operationName: params.operationName,
+          data: params.input ?? {},
+        },
       }).toPromise();
 
       if (!query?.pluginOperation) return null;
@@ -52,8 +55,11 @@ export const getPluginOperationUtils = (pluginSlug: string) => ({
    */
   useLazyQuery: <T extends JsonValue>(params: PluginOperationParams): PluginOperationsReturn<T> => {
     const res = useLazyLoadQuery<pluginOperationQuery>(queryDoc, {
-      id: `PluginOperation_${params.pluginSlug}_${params.operationName}`,
-      input: params.input ?? {},
+      input: {
+        pluginSlug,
+        operationName: params.operationName,
+        data: params.input ?? {},
+      },
     });
     if (!res.pluginOperation) return null;
     return {
@@ -74,16 +80,19 @@ export const getPluginOperationUtils = (pluginSlug: string) => ({
     try {
       const mutation = await commitMutationPromise<pluginOperationMutation>(environment, {
         mutation: graphql`
-          mutation pluginOperationMutation($id: ID!, $input: JSON!) {
-            pluginOperation(id: $id, input: $input) {
+          mutation pluginOperationMutation($input: MutationPluginOperationInput!) {
+            pluginOperation(input: $input) {
               id
               data
             }
           }
         `,
         variables: {
-          id: `PluginOperation_${params.pluginSlug}_${params.operationName}`,
-          input: params.input ?? {},
+          input: {
+            pluginSlug,
+            operationName: params.operationName,
+            data: params.input ?? {},
+          },
         },
         onError: (err) => {
           throw err;
@@ -103,7 +112,6 @@ export const getPluginOperationUtils = (pluginSlug: string) => ({
 });
 
 type PluginOperationParams = {
-  pluginSlug: string;
   operationName: string;
   input?: JsonValue;
 };
