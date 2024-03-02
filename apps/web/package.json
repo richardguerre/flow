@@ -42,7 +42,7 @@
     "@swc/plugin-relay": "^1.5.36",
     "@types/react": "^18.0.26",
     "@types/react-dom": "^18.0.9",
-    "@vitejs/plugin-react": "^3.0.1",
+    "@vitejs/plugin-react": "3.0.1",
     "autoprefixer": "^10.4.14",
     "postcss": "^8.4.23",
     "relay-compiler": "^14.1.0",
