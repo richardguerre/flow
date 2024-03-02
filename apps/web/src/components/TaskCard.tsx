@@ -142,7 +142,7 @@ const TaskCardActions = (props: TaskCardActionsProps) => {
       },
     });
     toast.promise(updatePromise, {
-      loading: "Updating task?...",
+      loading: "Updating task...",
       success: "Task updated",
       error: (err) => err.message,
     });

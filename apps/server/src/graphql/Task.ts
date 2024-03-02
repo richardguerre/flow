@@ -138,7 +138,6 @@ builder.mutationField("createTask", (t) =>
       }),
     },
     resolve: async (query, _, args) => {
-      await new Promise((resolve) => setTimeout(resolve, 1000));
       const date = args.input.date ?? startOfDay(new Date());
       const index = args.input.atIndex ?? 0;
       const plugins = await getPlugins();
