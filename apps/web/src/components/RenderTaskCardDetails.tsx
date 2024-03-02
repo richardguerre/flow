@@ -34,8 +34,8 @@ export const RenderTaskCardDetails = (props: Props) => {
 
   const flowDetails = (
     <>
-      {task.durationInMinutes && <DurationBadge durationInMinutes={task.durationInMinutes} />}
-      {task.item?.scheduledAt && <TimeBadge time={task.item.scheduledAt} />}
+      {task?.durationInMinutes && <DurationBadge durationInMinutes={task?.durationInMinutes} />}
+      {task?.item?.scheduledAt && <TimeBadge time={task?.item.scheduledAt} />}
     </>
   );
 
@@ -44,7 +44,7 @@ export const RenderTaskCardDetails = (props: Props) => {
       fallback={
         <div className="flex flex-wrap gap-2">
           {flowDetails}
-          {!!task.item && skeletonBadges}
+          {!!task?.item && skeletonBadges}
         </div>
       }
     >

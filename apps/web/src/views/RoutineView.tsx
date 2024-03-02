@@ -186,8 +186,7 @@ export const getClosestRoutineRoutePathAndName = async () => {
   return {
     path: `/routine/${decodeGlobalId(closestRoutine.id)?.id}/${firstStep.pluginSlug}_${
       firstStep.stepSlug
-    }
-  }`,
+    }`,
     name: closestRoutine.name,
   };
 };

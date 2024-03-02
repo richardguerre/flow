@@ -107,9 +107,10 @@ export const DayContent = (props: DayContentProps) => {
   };
 
   const setList = async (newList: typeof tasks) => {
-    setTasks(newList.filter((task) => task.__typename === "Task")); // ignore item(s) that were dropped
+    const newTasksList = newList.filter((task) => task.__typename === "Task"); // ignore item(s) that were dropped
+    setTasks(newTasksList);
 
-    const item = newList.find((task) => task.__typename !== "Task") as { id: string } | undefined; // there shouldn't be more than one item, so we just find the first one
+    const item = newList.find((task) => task.__typename !== "Task") as { id: string } | undefined; // there shouldn't be more than one item dropped at a time, so we just find the first one
     if (!item) return;
     const store = environment.getStore().getSource();
     const itemRecord = store.get(item.id) as unknown as

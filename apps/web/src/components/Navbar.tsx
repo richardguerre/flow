@@ -28,6 +28,7 @@ export const Navbar = () => {
           tooltip={`Do your ${routine?.name ?? "latest"}${
             routine?.name.includes("routine") ? "" : " routine"
           }`}
+          level={routine ? 3 : 1}
         >
           <BsJournalCheck />
         </NavItem>
@@ -49,10 +50,14 @@ type NavItemProps = {
   children: React.ReactNode;
   to: string;
   tooltip: string;
+  level?: number;
 };
 
 export const NavItem = (props: NavItemProps) => {
-  const active = useActiveLink(props.to);
+  const active = useActiveLink({
+    to: props.to,
+    level: props.level ?? 1,
+  });
 
   return (
     <Tooltip>
