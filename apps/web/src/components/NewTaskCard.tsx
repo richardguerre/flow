@@ -37,29 +37,28 @@ export const NewTaskCard = (props: Props) => {
           status: "TODO",
         },
       },
-      // optimisticResponse: {
-      //   createTask: {
-      //     __typename: "Task",
-      //     id: `Task_${Math.random()}`,
-      //     title,
-      //     createdAt: new Date().toISOString(),
-      //     status: "TODO",
-      //     completedAt: null,
-      //     date: props.date,
-      //     item: null,
-      //     durationInMinutes: null,
-      //     tags: [],
-      //     pluginDatas: [],
-      //   },
-      // },
-      // TODO: figure out how to do optimistic updates such that setLinkedRecords is reverted (when the acutal data comes) without causing an error
-      // optimisticUpdater: (store) => {
-      //   const day = store.get(`Day_${props.date}`);
-      //   const dayTasks = day?.getLinkedRecords("tasks");
-      //   const createdTask = store.getRootField("createTask");
-      //   // This adds the new task to the top of the list
-      //   day?.setLinkedRecords([createdTask, ...(dayTasks ?? [])], "tasks");
-      // },
+      optimisticResponse: {
+        createTask: {
+          __typename: "Task",
+          id: `Task_${Math.random()}`,
+          title,
+          createdAt: new Date().toISOString(),
+          status: "TODO",
+          completedAt: null,
+          date: props.date,
+          item: null,
+          durationInMinutes: null,
+          tags: [],
+          pluginDatas: [],
+        },
+      },
+      optimisticUpdater: (store) => {
+        const day = store.get(`Day_${props.date}`);
+        const dayTasks = day?.getLinkedRecords("tasks");
+        const createdTask = store.getRootField("createTask"); // this is from the above optimisticResponse
+        // This adds the new task to the top of the list
+        day?.setLinkedRecords([createdTask, ...(dayTasks ?? [])], "tasks");
+      },
       updater: (store) => {
         const day = store.get(`Day_${props.date}`);
         const dayTasks = day?.getLinkedRecords("tasks");

@@ -16606,11 +16606,9 @@ var Q = "/Users/richardguerre/Projects/flow/plugins/repeating-tasks/src/web.tsx"
 const Tx = Up((e) => {
   const t = e.React, n = e.components, r = () => Date.now().toString(), i = () => {
     const s = e.operations.useLazyQuery({
-      pluginSlug: e.pluginSlug,
       operationName: "repeatingTasks"
     }), l = (s == null ? void 0 : s.data) ?? [], [a, u] = t.useState(!1), c = async (h) => {
       await e.toast.promise(e.operations.mutation({
-        pluginSlug: e.pluginSlug,
         operationName: "setRepeatingTasks",
         input: {
           repeatingTasks: h,
@@ -16637,37 +16635,37 @@ const Tx = Up((e) => {
     };
     return /* @__PURE__ */ t.createElement("div", { className: "flex gap-4 flex-wrap items-start", __self: void 0, __source: {
       fileName: Q,
-      lineNumber: 65,
+      lineNumber: 63,
       columnNumber: 7
     } }, l.map((h) => /* @__PURE__ */ t.createElement(o, { key: h.id, task: h, onChange: (y) => f(y), onDelete: () => p(h.id), __self: void 0, __source: {
       fileName: Q,
-      lineNumber: 67,
+      lineNumber: 65,
       columnNumber: 11
     } })), a ? /* @__PURE__ */ t.createElement(o, { onChange: (h) => f(h, !0), autoFocus: !0, __self: void 0, __source: {
       fileName: Q,
-      lineNumber: 75,
+      lineNumber: 73,
       columnNumber: 11
     } }) : /* @__PURE__ */ t.createElement(n.Tooltip, { __self: void 0, __source: {
       fileName: Q,
-      lineNumber: 77,
+      lineNumber: 75,
       columnNumber: 11
     } }, /* @__PURE__ */ t.createElement(n.TooltipTrigger, { __self: void 0, __source: {
       fileName: Q,
-      lineNumber: 78,
+      lineNumber: 76,
       columnNumber: 13
-    } }, /* @__PURE__ */ t.createElement("button", { onClick: () => u(!0), className: "flex items-center justify-center text-sm bg-background-200 text-foreground-700 hover:bg-primary-100 hover:text-primary-600 active:bg-primary-200 min-w-xs min-h-18 gap-2 rounded-md p-3 shadow-md", __self: void 0, __source: {
+    } }, /* @__PURE__ */ t.createElement("button", { onClick: () => u(!0), className: "flex items-center justify-center text-sm bg-background-200 text-foreground-700 hover:bg-primary-100 hover:text-primary-600 active:bg-primary-200 w-64 min-h-18 gap-2 rounded-md p-3 shadow-md", __self: void 0, __source: {
       fileName: Q,
-      lineNumber: 79,
+      lineNumber: 77,
       columnNumber: 15
     } }, /* @__PURE__ */ t.createElement(dy, { __self: void 0, __source: {
       fileName: Q,
-      lineNumber: 83,
+      lineNumber: 81,
       columnNumber: 17
     } }), "New repeating task")), /* @__PURE__ */ t.createElement(xl, { side: "bottom", __self: void 0, __source: {
       fileName: Q,
-      lineNumber: 87,
+      lineNumber: 85,
       columnNumber: 13
-    } }, "Create new repeating task")));
+    } }, "Create a new repeating task")));
   }, o = (s) => {
     var S, m, d, g;
     const [l, a] = t.useState(!1), u = t.useRef(), {
@@ -16700,9 +16698,9 @@ const Tx = Up((e) => {
     return t.useEffect(() => {
       const w = h(() => p(y, v)());
       return () => w.unsubscribe();
-    }, [p, h, l]), /* @__PURE__ */ t.createElement("form", { className: "bg-background-50 group flex cursor-pointer flex-col gap-1 rounded-md p-3 shadow-lg max-w-xs w-full", onSubmit: p(y, v), __self: void 0, __source: {
+    }, [p, h, l]), /* @__PURE__ */ t.createElement("form", { className: "bg-background-50 group flex cursor-pointer flex-col gap-1 rounded-md p-3 shadow-lg w-64", onSubmit: p(y, v), __self: void 0, __source: {
       fileName: Q,
-      lineNumber: 137,
+      lineNumber: 135,
       columnNumber: 7
     } }, /* @__PURE__ */ t.createElement(e.reactHookForm.Controller, { name: "title", control: f, render: ({
       field: w
@@ -16710,86 +16708,86 @@ const Tx = Up((e) => {
       var x;
       return /* @__PURE__ */ t.createElement(n.TaskTitleInput, { initialValue: (x = s.task) == null ? void 0 : x.title, onSave: w.onChange, onCancel: w.onBlur, autoFocus: s.autoFocus, __self: void 0, __source: {
         fileName: Q,
-        lineNumber: 145,
+        lineNumber: 143,
         columnNumber: 13
       } });
     }, rules: {
       required: !0
     }, __self: void 0, __source: {
       fileName: Q,
-      lineNumber: 141,
+      lineNumber: 139,
       columnNumber: 9
     } }), /* @__PURE__ */ t.createElement("div", { className: "flex gap-2", __self: void 0, __source: {
       fileName: Q,
-      lineNumber: 154,
+      lineNumber: 152,
       columnNumber: 9
-    } }, /* @__PURE__ */ t.createElement("input", { type: "text", className: "bg-transparent border-none text-foreground-700 focus:ring-0 active:ring-0 focus:outline-none w-full", ...c("cron", {
+    } }, /* @__PURE__ */ t.createElement("input", { type: "text", className: "bg-transparent border-none text-foreground-700 focus:ring-0 active:ring-0 focus:outline-none w-full font-mono", ...c("cron", {
       required: !0,
       validate: {
         parse: (w) => Object.keys(Gg.parseString(w).errors).length === 0 || "Invalid cron expression"
       }
     }), __self: void 0, __source: {
       fileName: Q,
-      lineNumber: 155,
+      lineNumber: 153,
       columnNumber: 11
     } }), /* @__PURE__ */ t.createElement(e.reactHookForm.Controller, { name: "durationInMinutes", control: f, render: ({
       field: w
     }) => /* @__PURE__ */ t.createElement(n.TaskDurationButtonDropdown, { value: w.value, onChange: w.onChange, showByDefault: !0, __self: void 0, __source: {
       fileName: Q,
-      lineNumber: 171,
+      lineNumber: 169,
       columnNumber: 15
     } }), __self: void 0, __source: {
       fileName: Q,
-      lineNumber: 167,
+      lineNumber: 165,
       columnNumber: 11
     } }), /* @__PURE__ */ t.createElement(e.reactHookForm.Controller, { control: f, name: "enabled", render: ({
       field: w
     }) => /* @__PURE__ */ t.createElement(n.Tooltip, { __self: void 0, __source: {
       fileName: Q,
-      lineNumber: 182,
+      lineNumber: 180,
       columnNumber: 15
     } }, /* @__PURE__ */ t.createElement(n.TooltipTrigger, { __self: void 0, __source: {
       fileName: Q,
-      lineNumber: 183,
+      lineNumber: 181,
       columnNumber: 17
     } }, /* @__PURE__ */ t.createElement("button", { onClick: () => w.onChange(!w.value), className: e.tw("flex h-6 w-6 items-center justify-center rounded-full bg-opacity-50 text-sm", w.value ? "bg-primary-100 text-primary-600 hover:bg-primary-300 active:bg-primary-200" : "bg-background-200 text-foreground-700 hover:bg-background-200 active:bg-primary-200"), __self: void 0, __source: {
       fileName: Q,
-      lineNumber: 184,
+      lineNumber: 182,
       columnNumber: 19
     } }, /* @__PURE__ */ t.createElement(fy, { __self: void 0, __source: {
       fileName: Q,
-      lineNumber: 193,
+      lineNumber: 191,
       columnNumber: 21
     } }))), /* @__PURE__ */ t.createElement(xl, { side: "bottom", __self: void 0, __source: {
       fileName: Q,
-      lineNumber: 196,
+      lineNumber: 194,
       columnNumber: 17
     } }, "Whether this repating task is enabled? If disabled all future tasks after today will be deleted.")), __self: void 0, __source: {
       fileName: Q,
-      lineNumber: 178,
+      lineNumber: 176,
       columnNumber: 11
     } }), /* @__PURE__ */ t.createElement(n.Tooltip, { __self: void 0, __source: {
       fileName: Q,
-      lineNumber: 203,
+      lineNumber: 201,
       columnNumber: 11
     } }, /* @__PURE__ */ t.createElement(n.TooltipTrigger, { __self: void 0, __source: {
       fileName: Q,
-      lineNumber: 204,
+      lineNumber: 202,
       columnNumber: 13
     } }, /* @__PURE__ */ t.createElement("button", { onClick: () => {
       var w;
       a(!0), (w = s.onDelete) == null || w.call(s);
     }, className: "flex h-6 w-6 items-center justify-center rounded-full bg-opacity-50 text-sm bg-background-200 text-foreground-700 hover:bg-negative-100 hover:text-negative-600 active:bg-negative-200", __self: void 0, __source: {
       fileName: Q,
-      lineNumber: 205,
+      lineNumber: 203,
       columnNumber: 15
     } }, /* @__PURE__ */ t.createElement(hy, { size: 16, __self: void 0, __source: {
       fileName: Q,
-      lineNumber: 212,
+      lineNumber: 210,
       columnNumber: 17
     } }))), /* @__PURE__ */ t.createElement(xl, { side: "bottom", __self: void 0, __source: {
       fileName: Q,
-      lineNumber: 215,
+      lineNumber: 213,
       columnNumber: 13
     } }, "Delete"))));
   };
@@ -16811,7 +16809,7 @@ const Tx = Up((e) => {
         type: "custom",
         render: () => /* @__PURE__ */ t.createElement(i, { __self: void 0, __source: {
           fileName: Q,
-          lineNumber: 236,
+          lineNumber: 234,
           columnNumber: 23
         } })
       }

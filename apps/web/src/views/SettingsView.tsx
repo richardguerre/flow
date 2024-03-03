@@ -69,10 +69,14 @@ const SettingsViewContent = (props: SettingsViewProps) => {
 type SettingTabProps = {
   children: string;
   to: string;
+  level?: number;
 };
 
 const SettingTab = (props: SettingTabProps) => {
-  const active = useActiveLink(props.to);
+  const active = useActiveLink({
+    to: props.to,
+    level: props.level ?? 2,
+  });
 
   return (
     <Link
@@ -93,14 +97,23 @@ type SettingsViewPluginTabProps = {
 
 const SettingsViewPluginTab = (props: SettingsViewPluginTabProps) => {
   const [plugin, loading] = useAsyncLoader(async () => getPlugin({ pluginSlug: props.slug }));
-  const to = `plugin/${props.slug}`;
+  const to = `/settings/plugin/${props.slug}`;
 
-  if (loading) return <SettingTab to={to}>{props.slug}</SettingTab>;
+  if (loading)
+    return (
+      <SettingTab to={to} level={3}>
+        {props.slug}
+      </SettingTab>
+    );
   if (!plugin) return null;
   if ("_error" in plugin) {
     console.log("SettingViewPluginTab error", plugin); // to see the error
     return null;
   }
 
-  return <SettingTab to={to}>{plugin.name}</SettingTab>;
+  return (
+    <SettingTab to={to} level={3}>
+      {plugin.name}
+    </SettingTab>
+  );
 };

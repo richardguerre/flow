@@ -37,19 +37,19 @@ export const TaskTitle = (props: TaskTitleProps) => {
   `);
 
   const handleSave = (value: string) => {
-    console.log("saving", task.id);
+    console.log("saving", task?.id);
     updateTask({
-      variables: { input: { id: task.id, title: value } },
+      variables: { input: { id: task?.id, title: value } },
       optimisticResponse: {
         updateTask: {
-          id: task.id,
+          id: task?.id,
           title: value,
         },
       },
     });
   };
 
-  return <TaskTitleInput initialValue={task.title} onSave={handleSave} />;
+  return <TaskTitleInput initialValue={task?.title} onSave={handleSave} />;
 };
 
 type TaskTitleInputProps = {

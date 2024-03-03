@@ -15,7 +15,6 @@ export default definePlugin((opts) => {
   type OnChangeValues = RepeatingTaskFormValues & Partial<Pick<RepeatingTask, "id">>;
   const RepeatingTasks = () => {
     const tasksQuery = opts.operations.useLazyQuery<RepeatingTask[]>({
-      pluginSlug: opts.pluginSlug,
       operationName: "repeatingTasks",
     });
     const repeatingTasks = tasksQuery?.data ?? [];
@@ -24,7 +23,6 @@ export default definePlugin((opts) => {
     const updateRepeatingTasks = async (tasks: RepeatingTask[]) => {
       await opts.toast.promise(
         opts.operations.mutation({
-          pluginSlug: opts.pluginSlug,
           operationName: "setRepeatingTasks",
           input: {
             repeatingTasks: tasks,
@@ -78,13 +76,13 @@ export default definePlugin((opts) => {
             <Flow.TooltipTrigger>
               <button
                 onClick={() => setShowNewTaskForm(true)}
-                className="flex items-center justify-center text-sm bg-background-200 text-foreground-700 hover:bg-primary-100 hover:text-primary-600 active:bg-primary-200 min-w-xs min-h-18 gap-2 rounded-md p-3 shadow-md"
+                className="flex items-center justify-center text-sm bg-background-200 text-foreground-700 hover:bg-primary-100 hover:text-primary-600 active:bg-primary-200 w-64 min-h-18 gap-2 rounded-md p-3 shadow-md"
               >
                 <BsPlus />
                 New repeating task
               </button>
             </Flow.TooltipTrigger>
-            <TooltipContent side="bottom">Create new repeating task</TooltipContent>
+            <TooltipContent side="bottom">Create a new repeating task</TooltipContent>
           </Flow.Tooltip>
         )}
       </div>
@@ -135,7 +133,7 @@ export default definePlugin((opts) => {
 
     return (
       <form
-        className="bg-background-50 group flex cursor-pointer flex-col gap-1 rounded-md p-3 shadow-lg max-w-xs w-full"
+        className="bg-background-50 group flex cursor-pointer flex-col gap-1 rounded-md p-3 shadow-lg w-64"
         onSubmit={handleSubmit(onSubmit, onInvalid)}
       >
         <opts.reactHookForm.Controller
@@ -154,7 +152,7 @@ export default definePlugin((opts) => {
         <div className="flex gap-2">
           <input
             type="text"
-            className="bg-transparent border-none text-foreground-700 focus:ring-0 active:ring-0 focus:outline-none w-full"
+            className="bg-transparent border-none text-foreground-700 focus:ring-0 active:ring-0 focus:outline-none w-full font-mono"
             {...register("cron", {
               required: true,
               validate: {

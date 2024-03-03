@@ -69,8 +69,8 @@ export const TaskCard = (props: TaskCardProps) => {
 
   const deleteTask = () => {
     $deleteTask({
-      variables: { id: task.id },
-      optimisticResponse: { deleteTask: { id: task.id, date: task.date } },
+      variables: { id: task?.id },
+      optimisticResponse: { deleteTask: { id: task?.id, date: task?.date } },
       optimisticUpdater: deleteTaskUpdater,
       updater: deleteTaskUpdater,
     });
@@ -82,7 +82,7 @@ export const TaskCard = (props: TaskCardProps) => {
         <div
           className={tw(
             "bg-background-50 group flex cursor-pointer flex-col gap-1 rounded-lg p-3 shadow-sm hover:shadow-md",
-            task.status !== "TODO" && "opacity-50 hover:opacity-100",
+            task?.status !== "TODO" && "opacity-50 hover:opacity-100",
           )}
         >
           <TaskTitle task={task} />
@@ -138,7 +138,7 @@ const TaskCardActions = (props: TaskCardActionsProps) => {
   const updateStatus = async (status: TaskStatus) => {
     const updatePromise = $updateTaskStatus({
       variables: {
-        input: { id: task.id, status },
+        input: { id: task?.id, status },
       },
     });
     toast.promise(updatePromise, {
@@ -150,8 +150,8 @@ const TaskCardActions = (props: TaskCardActionsProps) => {
 
   const markAsSuperdone = async (done: boolean) => {
     await updateStatus(done ? "DONE" : "TODO");
-    if (!task.item) return;
-    await updateItemStatus({ variables: { input: { id: task.item.id, done } } });
+    if (!task?.item) return;
+    await updateItemStatus({ variables: { input: { id: task?.item.id, done } } });
   };
 
   const doneButton = (
@@ -211,18 +211,18 @@ const TaskCardActions = (props: TaskCardActionsProps) => {
   );
 
   const taskStatusActions: Array<ReactNode> = useMemo(() => {
-    if (task.status === "TODO") {
-      return [doneButton, ...(task.item ? [superdoneButton] : []), cancelButton];
-    } else if (task.status === "DONE") {
+    if (task?.status === "TODO") {
+      return [doneButton, ...(task?.item ? [superdoneButton] : []), cancelButton];
+    } else if (task?.status === "DONE") {
       // when the item is relevant, it's considered not done.
-      return task.item && !task.item.isRelevant
+      return task?.item && !task?.item.isRelevant
         ? [undoDoneButton, undoSuperdoneButton]
         : [undoDoneButton];
-    } else if (task.status === "CANCELED") {
+    } else if (task?.status === "CANCELED") {
       return [undoCancelButton];
     }
     return [];
-  }, [task.status]);
+  }, [task?.status]);
 
   return (
     <div className="flex gap-2">
@@ -275,10 +275,10 @@ const TaskDurationButton = (props: TaskDurationButtonProps) => {
 
   const handleDurationChange = (durationInMinutes: number | null) => {
     updateTaskDuration({
-      variables: { input: { id: task.id, durationInMinutes } },
+      variables: { input: { id: task?.id, durationInMinutes } },
       optimisticResponse: {
         updateTask: {
-          id: task.id,
+          id: task?.id,
           durationInMinutes,
         },
       },
@@ -289,7 +289,7 @@ const TaskDurationButton = (props: TaskDurationButtonProps) => {
     <TaskDurationButtonDropdown
       open={isOpen}
       setOpen={setIsOpen}
-      value={task.durationInMinutes}
+      value={task?.durationInMinutes}
       onChange={handleDurationChange}
     />
   );

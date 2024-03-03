@@ -127,10 +127,17 @@ const PluginSettingFields = (props: {
   );
 
   const settingsInStore = Object.fromEntries(data.storeItems.map((value) => [value.key, value]));
+  const settings = Object.entries(props.settings);
 
   return (
     <div className="flex flex-col gap-8">
-      {Object.entries(props.settings).map(([key, setting]) => (
+      {settings.length === 0 && (
+        <div>
+          This plugin doesn't have any settings to configure. If you would like to configure
+          something about how the plugin behaves, you can contact the plugin author.
+        </div>
+      )}
+      {settings.map(([key, setting]) => (
         <PluginSettingField
           {...setting}
           key={key}
