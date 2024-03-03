@@ -165,7 +165,7 @@ model TaskPluginData {
   originalId String?
 
   /// The task linked to the plugin data
-  task   Task @relation(fields: [taskId], references: [id])
+  task   Task @relation(fields: [taskId], references: [id], onDelete: Cascade)
   taskId Int
 }
 
@@ -187,7 +187,7 @@ model ItemPluginData {
   originalId String?
 
   /// The item linked to the plugin data
-  item   Item @relation(fields: [itemId], references: [id])
+  item   Item @relation(fields: [itemId], references: [id], onDelete: Cascade)
   itemId Int
 }
 

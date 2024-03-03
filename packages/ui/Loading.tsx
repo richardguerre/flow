@@ -62,8 +62,8 @@ export const Loading = (props: LoadingProps) => {
               y2="50"
               gradientUnits="userSpaceOnUse"
             >
-              <stop stop-color="currentColor" className="text-primary-300" />
-              <stop offset="1" stop-color="currentColor" className="text-primary-400" />
+              <stop stopColor="currentColor" className="text-primary-300" />
+              <stop offset="1" stopColor="currentColor" className="text-primary-400" />
             </linearGradient>
           </defs>
         </motion.svg>
@@ -104,8 +104,8 @@ export const Loading = (props: LoadingProps) => {
               y2="113"
               gradientUnits="userSpaceOnUse"
             >
-              <stop stop-color="currentColor" className="text-primary-200" />
-              <stop offset="1" stop-color="currentColor" className="text-primary-400" />
+              <stop stopColor="currentColor" className="text-primary-200" />
+              <stop offset="1" stopColor="currentColor" className="text-primary-400" />
             </linearGradient>
           </defs>
         </motion.svg>

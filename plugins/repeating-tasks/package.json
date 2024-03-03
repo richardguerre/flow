@@ -1,0 +1,20 @@
+{
+  "name": "@flowdev/plugin-repeating-tasks",
+  "description": "Plugin to create repeating tasks in Flow.",
+  "version": "0.1.0",
+  "private": false,
+  "scripts": {
+    "build:web": "bunx --bun vite build -c vite.web.ts",
+    "build:server": "bunx --bun vite build -c vite.server.ts",
+    "build": "bun run build:web && bun run build:server"
+  },
+  "dependencies": {
+    "@flowdev/icons": "workspace:*",
+    "@flowdev/plugin": "workspace:*",
+    "cron-parser": "^4.9.0"
+  },
+  "devDependencies": {
+    "@vitejs/plugin-react": "4.1.0",
+    "vite": "4.4.11"
+  }
+}

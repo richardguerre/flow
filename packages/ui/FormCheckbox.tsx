@@ -10,6 +10,7 @@ export type FormCheckboxProps<
   disabled?: boolean;
   required?: boolean;
   error?: string | FieldError;
+  label?: string;
 };
 export const FormCheckbox = <
   TFieldValues extends FieldValues = FieldValues,
@@ -27,6 +28,7 @@ export const FormCheckbox = <
             {...field}
             {...props.checkboxProps}
             name={field.name}
+            label={props.label || props.checkboxProps?.label}
             value={field.value}
             required={props.required || props.checkboxProps?.required}
             disabled={props.disabled || props.checkboxProps?.disabled}

@@ -12,7 +12,7 @@
     "gen": "bunx prisma generate && echo '✅ Prisma client successfully generated!'",
     "db:dev": "bunx prisma migrate dev",
     "db:migrate": "bunx prisma migrate dev --create-only",
-    "db:reset": "bun run prisma/dropOtherSchemas && prisma migrate reset --force",
+    "db:reset": "bun run prisma/dropOtherSchemas.ts && prisma migrate reset --force",
     "db:seed": "bun run prisma/seed.ts",
     "setup:db": "psql -c \"CREATE DATABASE flow;\" || echo \"🔵 Ignore the above error. Everything is good to go!\"",
     "setup:db:test": "psql -c \"CREATE DATABASE flow_test;\" || echo \"🔵 Ignore the above error. Everything is good to go!\"",
