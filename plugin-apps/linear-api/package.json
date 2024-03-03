@@ -1,0 +1,5 @@
+{
+  "name": "@flowdev/plugin-linear-api",
+  "description": "API for the Google Calendar plugin for Flow. See plugins/linear for more information.",
+  "private": true
+}

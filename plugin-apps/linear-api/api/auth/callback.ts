@@ -1,5 +1,5 @@
 /**
- * This endpoint handles the callback from Google's OAuth consent screen and exchanges the code for an access token.
+ * This endpoint handles the callback from Linear's OAuth consent screen and exchanges the code for an access token.
  *
  * Once the access token is retrieved, it is stored in the user's Flow instance using the API endpoint provided in the state parameter,
  * and the user is redirected to the Flow instance (the origin part of the API endpoint)
@@ -24,13 +24,13 @@ export default async (request: Request) => {
 
   const body = new URLSearchParams({
     code,
+    redirect_uri: `${requestUrl.origin}/api/auth/callback`,
     client_id: process.env.CLIENT_ID!,
     client_secret: process.env.CLIENT_SECRET!,
-    redirect_uri: `${requestUrl.origin}/api/auth/callback`,
     grant_type: "authorization_code",
   });
 
-  const tokenResponse = await fetch("https://oauth2.googleapis.com/token", {
+  const tokenResponse = await fetch("https://api.linear.app/oauth/token", {
     method: "POST",
     body,
     headers: {
@@ -46,20 +46,10 @@ export default async (request: Request) => {
     });
   }
 
-  // get user's email address
-  const userInfo = await fetch("https://www.googleapis.com/oauth2/v3/userinfo", {
-    headers: { Authorization: `Bearer ${tokenData.access_token}` },
-  }).then((res) => res.json());
-
   const storeTokenResponse = await fetch(apiEndpoint, {
     method: "POST",
-    body: JSON.stringify({
-      email: userInfo.email, // email used as the key of the `account-tokens` store item (see plugins/google-calendar/src/server.ts)
-      ...tokenData,
-    }),
-    headers: {
-      "Content-Type": "application/json",
-    },
+    body: JSON.stringify(tokenData),
+    headers: { "Content-Type": "application/json" },
   });
 
   if (!storeTokenResponse.ok) {
