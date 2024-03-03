@@ -152,7 +152,7 @@ export default definePlugin((opts) => {
         <div className="flex gap-2">
           <input
             type="text"
-            className="bg-transparent border-none text-foreground-700 focus:ring-0 active:ring-0 focus:outline-none w-full"
+            className="bg-transparent border-none text-foreground-700 focus:ring-0 active:ring-0 focus:outline-none w-full font-mono"
             {...register("cron", {
               required: true,
               validate: {
