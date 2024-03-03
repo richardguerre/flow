@@ -83,7 +83,7 @@ export const ItemTitleInput = (props: ItemTitleInputProps) => {
     extensions: [
       MinimumKit,
       CatchNewLines(() => {
-        handleSave();
+        editorRef.current?.commands.blur();
       }),
       Mention.configure({
         suggestion: {

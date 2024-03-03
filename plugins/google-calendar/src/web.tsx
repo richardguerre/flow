@@ -7,7 +7,6 @@ export default definePlugin((options) => {
 
   const Calendars = () => {
     const calendarsQuery = options.operations.useLazyQuery<CalendarsData>({
-      pluginSlug: options.pluginSlug,
       operationName: "calendars",
     });
     const initiallyConnectedCalendars = new Set(
@@ -39,7 +38,6 @@ export default definePlugin((options) => {
       setSaving(true);
       // this mutation will return with the same ID as the query, so it will update the cache directly
       await options.operations.mutation({
-        pluginSlug: options.pluginSlug,
         operationName: "connectCalendars",
         input: { calendarIds: Array.from(debouncedConnected) },
       });

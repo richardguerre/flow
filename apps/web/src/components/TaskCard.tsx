@@ -70,7 +70,7 @@ export const TaskCard = (props: TaskCardProps) => {
   const deleteTask = () => {
     $deleteTask({
       variables: { id: task.id },
-      optimisticResponse: { id: task.id, date: task.date },
+      optimisticResponse: { deleteTask: { id: task.id, date: task.date } },
       optimisticUpdater: deleteTaskUpdater,
       updater: deleteTaskUpdater,
     });
