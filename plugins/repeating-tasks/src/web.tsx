@@ -133,7 +133,7 @@ export default definePlugin((opts) => {
 
     return (
       <form
-        className="bg-background-50 group flex cursor-pointer flex-col gap-1 rounded-md p-3 shadow-lg w-64 w-full"
+        className="bg-background-50 group flex cursor-pointer flex-col gap-1 rounded-md p-3 shadow-lg w-64"
         onSubmit={handleSubmit(onSubmit, onInvalid)}
       >
         <opts.reactHookForm.Controller
