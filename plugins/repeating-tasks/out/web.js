@@ -16698,7 +16698,7 @@ const Tx = Up((e) => {
     return t.useEffect(() => {
       const w = h(() => p(y, v)());
       return () => w.unsubscribe();
-    }, [p, h, l]), /* @__PURE__ */ t.createElement("form", { className: "bg-background-50 group flex cursor-pointer flex-col gap-1 rounded-md p-3 shadow-lg w-64 w-full", onSubmit: p(y, v), __self: void 0, __source: {
+    }, [p, h, l]), /* @__PURE__ */ t.createElement("form", { className: "bg-background-50 group flex cursor-pointer flex-col gap-1 rounded-md p-3 shadow-lg w-64", onSubmit: p(y, v), __self: void 0, __source: {
       fileName: Q,
       lineNumber: 135,
       columnNumber: 7
@@ -16721,7 +16721,7 @@ const Tx = Up((e) => {
       fileName: Q,
       lineNumber: 152,
       columnNumber: 9
-    } }, /* @__PURE__ */ t.createElement("input", { type: "text", className: "bg-transparent border-none text-foreground-700 focus:ring-0 active:ring-0 focus:outline-none w-full", ...c("cron", {
+    } }, /* @__PURE__ */ t.createElement("input", { type: "text", className: "bg-transparent border-none text-foreground-700 focus:ring-0 active:ring-0 focus:outline-none w-full font-mono", ...c("cron", {
       required: !0,
       validate: {
         parse: (w) => Object.keys(Gg.parseString(w).errors).length === 0 || "Invalid cron expression"

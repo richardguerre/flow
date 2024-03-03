@@ -5,8 +5,9 @@ export default defineConfig({
   build: {
     outDir: "out",
     emptyOutDir: false,
+    minify: true,
     lib: {
-      name: "flow-google-calendar",
+      name: "flow-repeating-tasks",
       entry: "src/web.tsx",
       formats: ["es"],
       fileName: () => "web.js",
