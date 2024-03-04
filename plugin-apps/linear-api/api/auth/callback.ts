@@ -38,13 +38,21 @@ export default async (request: Request) => {
     },
   });
 
-  const tokenData = await tokenResponse.json();
+  const data = await tokenResponse.json();
 
-  if (tokenData.error) {
-    return new Response(`Err: ${tokenData.error} - ${tokenData.error_description}`, {
+  if (data.error) {
+    return new Response(`Err: ${data.error} - ${data.error_description}`, {
       status: 400,
     });
   }
+  if (!data.access_token) {
+    return new Response("Failed to get access token", { status: 500 });
+  }
+
+  const tokenData = {
+    ...data,
+    email: "TODO", // TODO: get the user's email from the Linear API
+  };
 
   const storeTokenResponse = await fetch(apiEndpoint, {
     method: "POST",

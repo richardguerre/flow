@@ -1,0 +1,19 @@
+{
+  "name": "@flowdev/plugin-linear",
+  "description": "Official Linear plugin for Flow.",
+  "version": "0.1.0",
+  "private": false,
+  "scripts": {
+    "build:web": "bun --bun run vite build -c vite.web.ts",
+    "build:server": "bun --bun run vite build -c vite.server.ts",
+    "build": "bun run build:web && bun run build:server",
+    "dev:web": "bun --bun run vite build -c vite.web.ts --watch"
+  },
+  "dependencies": {
+    "@flowdev/plugin": "workspace:*"
+  },
+  "devDependencies": {
+    "@vitejs/plugin-react": "4.1.0",
+    "vite": "4.4.11"
+  }
+}
