@@ -31,7 +31,7 @@ export default definePlugin((opts) => {
    * @throws If the user is not authenticated.
    * @throws If the access token could not be refreshed.
    * @example
-   * const tokens = await getTokens(params);
+   * const tokens = await getRefreshedTokens(params);
    */
   const getRefreshedTokens = async (params: GetTokenParams): Promise<Tokens> => {
     const accountsTokens = params.accountsTokens ?? (await getTokensFromStore());
