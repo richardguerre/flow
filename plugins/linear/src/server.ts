@@ -1,10 +1,59 @@
 import { Prisma, definePlugin } from "@flowdev/plugin/server";
 
-const ACCOUNT_TOKEN_STORE_KEY = "account-token";
+const ACCOUNT_TOKENS_STORE_KEY = "account-tokens";
 
 export default definePlugin((opts) => {
   const UPSERT_ISSUE_JOB = `${opts.pluginSlug}-upsert-item-from-issue`;
   const PROCESS_WEBHOOK_EVENT_JOB_NAME = `${opts.pluginSlug}-process-webhook`;
+  const GET_ISSUES_JOB_NAME = `${opts.pluginSlug}-get-issues`;
+
+  const getTokensFromStore = async () => {
+    const accountsTokensItem =
+      await opts.store.getPluginItem<AccountsTokens>(ACCOUNT_TOKENS_STORE_KEY);
+    if (!accountsTokensItem) {
+      throw new opts.GraphQLError("User not authenticated.", {
+        extensions: {
+          code: "NOT_AUTHENTICATED",
+          userFriendlyMessage:
+            "You are not authenticated and will need to connect your Google account first.",
+        },
+      });
+    }
+    return accountsTokensItem.value;
+  };
+
+  /**
+   * Gets the tokens from the store.
+   * @throws If the user is not authenticated.
+   * @throws If the access token requires to be refreshed. Linear currently doesn't allow refreshing a token.
+   * @example
+   * const token = await getToken(params);
+   */
+  const getToken = async (params: GetTokenParams): Promise<Tokens> => {
+    const accountsTokens = params.accountsTokens ?? (await getTokensFromStore());
+    const tokens = accountsTokens[params.account];
+    if (!tokens) {
+      throw new opts.GraphQLError("User not authenticated.", {
+        extensions: {
+          code: "NOT_AUTHENTICATED",
+          userFriendlyMessage:
+            "You are not authenticated and will need to connect your Google account first.",
+        },
+      });
+    }
+
+    if (opts.dayjs().isAfter(tokens.expires_at)) {
+      // access token has expired, refresh it
+      throw new opts.GraphQLError("Could not refresh token.", {
+        extensions: {
+          code: "COULD_NOT_REFRESH_TOKEN",
+          userFriendlyMessage: "Could not connect to Linear. Try connecting the account again.",
+        },
+      });
+    }
+    return tokens;
+  };
+
   return {
     onRequest: async (req) => {
       if (req.path === "/auth") {
@@ -12,17 +61,22 @@ export default definePlugin((opts) => {
           `https://linear-api-flow-dev.vercel.app/api/auth?api_endpoint=${opts.serverOrigin}/api/plugin/${opts.pluginSlug}/auth/callback`,
         );
       } else if (req.path === "/auth/callback") {
-        const body = req.body as AccountToken;
+        const accountsTokensItem =
+          await opts.store.getPluginItem<AccountsTokens>(ACCOUNT_TOKENS_STORE_KEY);
+        const body = req.body as Tokens;
         const tokensData = {
           ...body,
           expires_at: opts
             .dayjs()
             .add((body.expires_in ?? 10) - 10, "seconds") // -10 is a 10 second buffer to account for latency in network requests
             .toISOString(),
-        } as AccountToken;
+        } as Tokens;
         if ("expires_in" in tokensData) delete tokensData.expires_in; // delete expires_in because it's not needed
 
-        await opts.store.setSecretItem<AccountToken>(ACCOUNT_TOKEN_STORE_KEY, tokensData);
+        await opts.store.setSecretItem<AccountsTokens>(ACCOUNT_TOKENS_STORE_KEY, {
+          ...(accountsTokensItem?.value ?? {}),
+          [tokensData.email]: tokensData,
+        });
         return new Response(); // return 200
       } else if (req.path === "/events/webhook" && req.request.method === "POST") {
         const linearIssue = req.body as WebhookLinearIssue;
@@ -38,17 +92,17 @@ export default definePlugin((opts) => {
     },
     operations: {
       /** Get the connected Linear account, if any. */
-      account: async () => {
-        const tokenItem = await opts.store.getPluginItem<AccountToken>(ACCOUNT_TOKEN_STORE_KEY);
+      accounts: async () => {
+        const tokenItem = await opts.store.getPluginItem<AccountsTokens>(ACCOUNT_TOKENS_STORE_KEY);
         if (!tokenItem)
           return {
-            data: null,
+            data: [],
           };
         return {
-          data: {
-            email: tokenItem.value.email,
-            expiresAt: tokenItem.value.expires_at,
-          },
+          data: Object.entries(tokenItem.value).map(([email, tokens]) => ({
+            email,
+            expiresAt: tokens.expires_at,
+          })),
         };
       },
     },
@@ -120,15 +174,30 @@ export default definePlugin((opts) => {
           console.log("✔ Upserted item from Linear issue", issue.id);
         }
       }),
+      work(GET_ISSUES_JOB_NAME, async (job) => {
+        const jobData = job.data as { viewId: string };
+        const accountTokens = await getTokensFromStore();
+        // TODO: figure out how the user will configure the issues they want to fetch.
+      }),
     ],
   };
 });
 
-type AccountToken = {
+type GetTokenParams = {
+  account: string;
+  /** The tokens to use to make the request. If not provided, the tokens will be fetched from the store. */
+  accountsTokens?: AccountsTokens; // if the tokens are already known, they can be passed in to avoid fetching them again
+};
+
+type AccountsTokens = {
+  [account: string]: Tokens;
+};
+
+type Tokens = {
   access_token: string;
   token_type: string;
-  expires_in?: never; // this is deleted before storing in the database, hence it's optional and will never be present
   expires_at: string;
+  expires_in?: never; // this is deleted before storing in the database, hence it's optional and will never be present
   scope: string;
   email: string;
 };
