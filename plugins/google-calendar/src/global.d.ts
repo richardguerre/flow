@@ -4,10 +4,9 @@ import type { calendar_v3 } from "@googleapis/calendar";
 declare global {
   type React = typeof React;
 
-  type CalendarsData = {
+  type CalendarsData = ({
     account: string;
-    calendars: Calendar[];
-  }[];
+  } & ({ authError: string } | { calendars: Calendar[] }))[];
 
   type Calendar = calendar_v3.Schema$CalendarListEntry & {
     connected: boolean;

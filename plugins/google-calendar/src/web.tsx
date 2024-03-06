@@ -11,7 +11,7 @@ export default definePlugin((options) => {
     });
     const initiallyConnectedCalendars = new Set(
       calendarsQuery?.data
-        ?.flatMap((googleAccount) => googleAccount.calendars)
+        ?.flatMap((googleAccount) => ("authError" in googleAccount ? [] : googleAccount.calendars))
         .filter((cal) => cal.connected && !!cal.id)
         .map((cal) => cal.id!) ?? [],
     );
@@ -59,13 +59,19 @@ export default definePlugin((options) => {
           <div className="flex flex-col gap-2 rounded w-full bg-background-50 shadow px-4 py-2">
             <div className="font-semibold">{googleAccount.account}</div>
             <div className="flex flex-col gap-2">
-              {googleAccount.calendars.map((calendar) => (
-                <Flow.CheckboxWithLabel
-                  label={calendar.summary ?? "Unknown calendar"}
-                  checked={connected.has(calendar.id!)}
-                  onCheckedChange={() => handleCheckboxChange(calendar.id!)}
-                />
-              ))}
+              {"authError" in googleAccount ? (
+                <div className="text-foreground-900 text-negative-500">
+                  Account incorrectly connected. ({googleAccount.authError})
+                </div>
+              ) : (
+                googleAccount.calendars.map((calendar) => (
+                  <Flow.CheckboxWithLabel
+                    label={calendar.summary ?? "Unknown calendar"}
+                    checked={connected.has(calendar.id!)}
+                    onCheckedChange={() => handleCheckboxChange(calendar.id!)}
+                  />
+                ))
+              )}
             </div>
           </div>
         ))}
