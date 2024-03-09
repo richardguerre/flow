@@ -72,6 +72,40 @@ export default definePlugin((opts) => {
     return tokens;
   };
 
+  const oeprationLists = async (listIsInStore?: ListsInStore) => {
+    const listsItem = await opts.store.getPluginItem<ListsInStore>(LISTS_STORE_KEY);
+    if (!listsItem) {
+      return { data: [] };
+    }
+    const tokenItem = await getTokensFromStore();
+    if (!tokenItem) {
+      return {
+        data: [],
+      };
+    }
+    const lists = await opts.prisma.list.findMany({
+      where: { id: { in: Object.keys(listsItem.value).map(parseInt) } },
+    });
+
+    return {
+      data: Object.entries(listsItem.value).map(([listId, listInfo]) => {
+        const list = lists.find((list) => list.id === parseInt(listId));
+        return {
+          name: list?.name ?? "Unknown or deleted list",
+          description: list?.description ?? "This list may have been deleted or was left unamed",
+          slug: list?.slug ?? null,
+          linkedView: {
+            id: listInfo.view.id,
+            name: listInfo.view.name,
+            color: listInfo.view.color,
+            icon: listInfo.view.icon,
+            account: listInfo.account,
+          },
+        };
+      }) satisfies ListsOperationData,
+    };
+  };
+
   return {
     onRequest: async (req) => {
       if (req.path === "/auth") {
@@ -111,11 +145,12 @@ export default definePlugin((opts) => {
     operations: {
       /** Get the connected Linear account, if any. */
       accounts: async () => {
-        const tokenItem = await opts.store.getPluginItem<AccountsTokens>(ACCOUNT_TOKENS_STORE_KEY);
-        if (!tokenItem)
+        const tokenItem = await getTokensFromStore();
+        if (!tokenItem) {
           return {
             data: [],
           };
+        }
         return {
           data: Object.entries(tokenItem.value).map(([email, tokens]) => ({
             email,
@@ -123,15 +158,180 @@ export default definePlugin((opts) => {
           })),
         };
       },
+      lists: oeprationLists,
+      views: async () => {
+        const tokenItem = await getTokensFromStore();
+        if (!tokenItem) {
+          return {
+            data: [],
+          };
+        }
+        const views: ListsOperationData[0]["linkedView"][] = [];
+        for (const [account, tokens] of Object.entries(tokenItem)) {
+          const query = await gqlRequest<{
+            customViews: {
+              edges: {
+                node: {
+                  id: string;
+                  name: string;
+                  icon: string | null;
+                  color: string | null;
+                };
+              }[];
+            };
+          }>(
+            /* GraphQL */ `
+              query ViewsQuery {
+                customViews {
+                  edges {
+                    node {
+                      id
+                      name
+                      icon
+                      color
+                    }
+                  }
+                }
+              }
+            `,
+            { token: tokens.access_token },
+          ).catch(() => null);
+          views.push(
+            ...(query?.customViews.edges.map(
+              (viewEdge) =>
+                ({
+                  id: viewEdge.node.id,
+                  name: viewEdge.node.name,
+                  icon: viewEdge.node.icon,
+                  color: viewEdge.node.color,
+                  account,
+                }) satisfies ListsOperationData[0]["linkedView"],
+            ) ?? []),
+          );
+        }
+        return { data: views };
+      },
+      createList: async (input) => {
+        /**
+         * Input:
+         * - account
+         * - viewId
+         * - list name
+         */
+        if (!input.account || !input.viewId || !input.listName) {
+          throw new opts.GraphQLError("Missing an input", {
+            extensions: {
+              code: "CREATE_LIST_MISSING_INPUT",
+              userFriendlyMessage: "Missing an input. Either `account`, `viewId` or `listName`",
+            },
+          });
+        }
+        const tokenItem = await getTokensFromStore();
+        const listsItem = await opts.store.getPluginItem<ListsInStore>(LISTS_STORE_KEY);
+        if (
+          !Object.values(listsItem?.value ?? {}).find(
+            (listInfo) => listInfo.view.id === input.viewId,
+          )
+        ) {
+          throw new opts.GraphQLError("List with this view already exists.", {
+            extensions: {
+              code: "CREATE_LIST_ALREADY_EXISTS",
+              userFriendlyMessage: "A list with this view already exists.",
+            },
+          });
+        }
+        const viewQuery = await gqlRequest<{
+          customView: {
+            id: string;
+            name: string;
+            color: string;
+            icon: string;
+          } | null;
+        }>(
+          /* GraphQL */ `
+            query ViewQuery($viewId: String!) {
+              customView(id: $viewId) {
+                id
+                name
+                color
+                icon
+              }
+            }
+          `,
+          {
+            token: tokenItem[input.account].access_token,
+            variables: { viewId: input.viewId },
+          },
+        );
+        if (!viewQuery.customView) {
+          throw new opts.GraphQLError("No view exists with that id.", {
+            extensions: {
+              code: "CREATE_LIST_NO_VIEW_EXISTS",
+              userFriendlyMessage:
+                "The selected view doesn't seem to exist in Linear. Make sure the view exists in your Linear and refresh the page.",
+            },
+          });
+        }
+        const createdList = await opts.prisma.list.create({
+          data: {
+            name: input.listName,
+            slug: input.listName
+              .toLowerCase()
+              .replace(/\s/g, "-")
+              .replace(/['#?]/g, " ")
+              .slice(0, 50),
+            description: "List created from Linear plugin.",
+          },
+        });
+        const updatedListsInStore = await opts.store.setItem<ListsInStore>(LISTS_STORE_KEY, {
+          ...(listsItem?.value ?? {}),
+          [createdList.id]: {
+            account: input.account,
+            view: {
+              id: input.viewId,
+              color: viewQuery.customView.color,
+              icon: viewQuery.customView.icon,
+              name: viewQuery.customView.name,
+            },
+          },
+        });
+        return { operationName: "lists", data: await oeprationLists(updatedListsInStore) };
+      },
+      deleteList: async (input) => {
+        if (!input.listId) {
+          throw new opts.GraphQLError("Missing an input", {
+            extensions: {
+              code: "DELETE_LIST_MISSING_INPUT",
+              userFriendlyMessage: "Missing an input. `listId` is required.",
+            },
+          });
+        }
+        const listsItem = await opts.store.getPluginItem<ListsInStore>(LISTS_STORE_KEY);
+        if (!listsItem?.value[input.listId]) {
+          throw new opts.GraphQLError("List with this id doesn't exist.", {
+            extensions: {
+              code: "DELETE_LIST_DOESNT_EXIST",
+              userFriendlyMessage: "A list with this id doesn't exist.",
+            },
+          });
+        }
+        await opts.prisma.list.delete({ where: { id: input.listId } });
+        const { [input.listId]: _, ...newListsInStore } = listsItem.value;
+        const updatedListsInStore = await opts.store.setItem<ListsInStore>(
+          LISTS_STORE_KEY,
+          newListsInStore,
+        );
+        return { operationName: "lists", data: await oeprationLists(updatedListsInStore) };
+      },
     },
     handlePgBossWork: (work) => [
       work(SYNC_ALL_VIEWS_JOB_NAME, async (job) => {
         const listsItem = await opts.store.getPluginItem<ListsInStore>(LISTS_STORE_KEY);
         if (!listsItem) return;
-        for (const [listId, { viewId }] of Object.entries(listsItem.value)) {
+        for (const [listId, { view }] of Object.entries(listsItem.value)) {
           await opts.pgBoss.send(SYNC_VIEW_JOB_NAME, {
             listId: parseInt(listId),
-            viewId,
+            viewId: view.id,
             token: "TODO",
           } as JobSyncView);
         }
@@ -264,7 +464,25 @@ type JobUpsertIssue = { issue: LinearIssue; listId: number };
 
 type WebhookLinearIssue = LinearIssue; // TODO: change type to actual webhook payload type.
 
-type ListsInStore = Record<number, { viewId: string }>;
+type ListsInStore = Record<
+  number,
+  {
+    view: { id: string; name: string; icon: string | null; color: string | null };
+    account: string;
+  }
+>;
+type ListsOperationData = {
+  name: string;
+  slug: string | null;
+  description: string;
+  linkedView: {
+    id: string;
+    name: string;
+    icon: string | null;
+    color: string | null;
+    account: string;
+  };
+}[];
 
 const linearCommentFragment = /* GraphQL */ `
   fragment LinearComment on Comment {
