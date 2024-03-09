@@ -323,6 +323,37 @@ export default definePlugin((opts) => {
         );
         return { operationName: "lists", data: await oeprationLists(updatedListsInStore) };
       },
+      syncView: async (input) => {
+        if (!input.listId || !input.viewId || !input.account) {
+          throw new opts.GraphQLError("Missing an input", {
+            extensions: {
+              code: "SYNC_VIEW_MISSING_INPUT",
+              userFriendlyMessage:
+                "Missing an input. `listId`, `viewId` and `account` are required.",
+            },
+          });
+        }
+        const tokenItem = await getTokensFromStore();
+        if (!tokenItem) {
+          throw new opts.GraphQLError("User not authenticated.", {
+            extensions: {
+              code: "NOT_AUTHENTICATED",
+              userFriendlyMessage:
+                "You are not authenticated and will need to connect your Google account first.",
+            },
+          });
+        }
+        await opts.pgBoss.send(SYNC_VIEW_JOB_NAME, {
+          listId: input.listId,
+          viewId: input.viewId,
+          token: tokenItem[input.account].access_token,
+        } as JobSyncView);
+        return { operationName: "syncView", data: true };
+      },
+      syncAllViews: async () => {
+        await opts.pgBoss.send(SYNC_ALL_VIEWS_JOB_NAME, {});
+        return { data: true };
+      },
     },
     handlePgBossWork: (work) => [
       work(SYNC_ALL_VIEWS_JOB_NAME, async () => {
