@@ -325,14 +325,16 @@ export default definePlugin((opts) => {
       },
     },
     handlePgBossWork: (work) => [
-      work(SYNC_ALL_VIEWS_JOB_NAME, async (job) => {
+      work(SYNC_ALL_VIEWS_JOB_NAME, async () => {
         const listsItem = await opts.store.getPluginItem<ListsInStore>(LISTS_STORE_KEY);
         if (!listsItem) return;
-        for (const [listId, { view }] of Object.entries(listsItem.value)) {
+        const tokenItem = await getTokensFromStore();
+        if (!tokenItem) return;
+        for (const [listId, { view, account }] of Object.entries(listsItem.value)) {
           await opts.pgBoss.send(SYNC_VIEW_JOB_NAME, {
             listId: parseInt(listId),
             viewId: view.id,
-            token: "TODO",
+            token: tokenItem[account].access_token,
           } as JobSyncView);
         }
       }),
