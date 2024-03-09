@@ -1,11 +1,29 @@
 import { Prisma, definePlugin } from "@flowdev/plugin/server";
 
 const ACCOUNT_TOKENS_STORE_KEY = "account-tokens";
+const LISTS_STORE_KEY = "lists";
 
 export default definePlugin((opts) => {
-  const UPSERT_ISSUE_JOB = `${opts.pluginSlug}-upsert-item-from-issue`;
   const PROCESS_WEBHOOK_EVENT_JOB_NAME = `${opts.pluginSlug}-process-webhook`;
-  const GET_ISSUES_JOB_NAME = `${opts.pluginSlug}-get-issues`;
+  const SYNC_ALL_VIEWS_JOB_NAME = `${opts.pluginSlug}-sync-all-views`;
+  const SYNC_VIEW_JOB_NAME = `${opts.pluginSlug}-sync-view`;
+  const UPSERT_ISSUE_JOB = `${opts.pluginSlug}-upsert-item-from-issue`;
+
+  const gqlRequest = async <T>(query: string, params: { token: string; variables?: object }) => {
+    const res = await fetch("https://gateway.gitstart.dev/graphql", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        Authorization: `Bearer ${params.token}`,
+      },
+      body: JSON.stringify({ query, variables: params.variables }),
+    });
+    const json = await res.json();
+    if (json.errors) {
+      throw new opts.GraphQLError(`GitStart API error: ${json.errors[0].message}`);
+    }
+    return json.data as T;
+  };
 
   const getTokensFromStore = async () => {
     const accountsTokensItem =
@@ -107,10 +125,53 @@ export default definePlugin((opts) => {
       },
     },
     handlePgBossWork: (work) => [
+      work(SYNC_ALL_VIEWS_JOB_NAME, async (job) => {
+        const listsItem = await opts.store.getPluginItem<ListsInStore>(LISTS_STORE_KEY);
+        if (!listsItem) return;
+        for (const [listId, { viewId }] of Object.entries(listsItem.value)) {
+          await opts.pgBoss.send(SYNC_VIEW_JOB_NAME, {
+            listId: parseInt(listId),
+            viewId,
+            token: "TODO",
+          } as JobSyncView);
+        }
+      }),
+      work(SYNC_VIEW_JOB_NAME, async (job) => {
+        const { viewId, listId, token } = job.data as JobSyncView;
+        const query = await gqlRequest<{
+          customView: {
+            issues: {
+              edges: {
+                node: LinearIssue;
+              }[];
+            };
+          };
+        }>(
+          /* GraphQL */ `
+            query GetView($viewId: String!) {
+              customView(id: $viewId) {
+                issues {
+                  edges {
+                    node {
+                      ...LinearIssue
+                    }
+                  }
+                }
+              }
+            }
+            ${linearIssueFragment}
+          `,
+          { token, variables: { viewId } },
+        );
+
+        for (const { node: issue } of query.customView.issues.edges) {
+          await opts.pgBoss.send(UPSERT_ISSUE_JOB, { issue, listId } as JobUpsertIssue);
+        }
+      }),
       work(UPSERT_ISSUE_JOB, { batchSize: 5 }, async (jobs) => {
         // process 5 events at a time to go a little faster (processing 100 at a time might consume too much memory as webhook events and fetched issues can be large, especially if it includes conference data).
         for (const job of jobs) {
-          const issue = job.data as LinearIssue;
+          const { issue, listId } = job.data as JobUpsertIssue;
           const item = await opts.prisma.item.findFirst({
             where: {
               pluginDatas: { some: { originalId: issue.id, pluginSlug: opts.pluginSlug } },
@@ -130,12 +191,13 @@ export default definePlugin((opts) => {
             title: issue.title,
             isRelevant,
             inboxPoints: 10, // TODO: make it configurable by the user.
+            list: { connect: { id: listId } },
           } satisfies Prisma.ItemUpdateInput;
 
           const min = {
             id: issue.id,
             title: issue.title,
-            status: issue.status,
+            state: issue.state,
           } satisfies LinearIssueItemMin;
           const full = {
             ...issue,
@@ -174,11 +236,6 @@ export default definePlugin((opts) => {
           console.log("✔ Upserted item from Linear issue", issue.id);
         }
       }),
-      work(GET_ISSUES_JOB_NAME, async (job) => {
-        const jobData = job.data as { viewId: string };
-        const accountTokens = await getTokensFromStore();
-        // TODO: figure out how the user will configure the issues they want to fetch.
-      }),
     ],
   };
 });
@@ -202,10 +259,59 @@ type Tokens = {
   email: string;
 };
 
-type LinearIssue = {
-  id: string;
-  title: string;
-  status: string;
-};
+type JobSyncView = { viewId: string; listId: number; token: string };
+type JobUpsertIssue = { issue: LinearIssue; listId: number };
 
 type WebhookLinearIssue = LinearIssue; // TODO: change type to actual webhook payload type.
+
+type ListsInStore = Record<number, { viewId: string }>;
+
+const linearCommentFragment = /* GraphQL */ `
+  fragment LinearComment on Comment {
+    id
+    body
+    url
+    updatedAt
+    user {
+      id
+      isMe
+      name
+      displayName
+      avatarUrl
+    }
+    botActor {
+      id
+      name
+      avatarUrl
+    }
+  }
+`;
+
+const linearIssueFragment = /* GraphQL */ `
+  fragment LinearIssue on Issue {
+    id
+    title
+    state {
+      id
+      name
+      type
+      color
+    }
+    description
+    comments {
+      edges {
+        node {
+          ...LinearComment
+          children {
+            edges {
+              node {
+                ...LinearComment
+              }
+            }
+          }
+        }
+      }
+    }
+  }
+  ${linearCommentFragment}
+`;
