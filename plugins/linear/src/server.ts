@@ -72,7 +72,7 @@ export default definePlugin((opts) => {
     return tokens;
   };
 
-  const oeprationLists = async (listIsInStore?: ListsInStore) => {
+  const operatonLists = async (listIsInStore?: ListsInStore) => {
     const listsItem = await opts.store.getPluginItem<ListsInStore>(LISTS_STORE_KEY);
     if (!listsItem) {
       return { data: [] };
@@ -91,6 +91,7 @@ export default definePlugin((opts) => {
       data: Object.entries(listsItem.value).map(([listId, listInfo]) => {
         const list = lists.find((list) => list.id === parseInt(listId));
         return {
+          id: list?.id ?? parseInt(listId),
           name: list?.name ?? "Unknown or deleted list",
           description: list?.description ?? "This list may have been deleted or was left unamed",
           slug: list?.slug ?? null,
@@ -155,10 +156,10 @@ export default definePlugin((opts) => {
           data: Object.entries(tokenItem.value).map(([email, tokens]) => ({
             email,
             expiresAt: tokens.expires_at,
-          })),
+          })) satisfies AccountsOperationData,
         };
       },
-      lists: oeprationLists,
+      lists: operatonLists,
       views: async () => {
         const tokenItem = await getTokensFromStore();
         if (!tokenItem) {
@@ -166,7 +167,7 @@ export default definePlugin((opts) => {
             data: [],
           };
         }
-        const views: ListsOperationData[0]["linkedView"][] = [];
+        const views: ViewsOperationData = [];
         for (const [account, tokens] of Object.entries(tokenItem)) {
           const query = await gqlRequest<{
             customViews: {
@@ -205,13 +206,13 @@ export default definePlugin((opts) => {
                   icon: viewEdge.node.icon,
                   color: viewEdge.node.color,
                   account,
-                }) satisfies ListsOperationData[0]["linkedView"],
+                }) satisfies ViewsOperationData[number],
             ) ?? []),
           );
         }
         return { data: views };
       },
-      createList: async (input) => {
+      createList: async (input: CreateListOperationInput) => {
         /**
          * Input:
          * - account
@@ -295,9 +296,9 @@ export default definePlugin((opts) => {
             },
           },
         });
-        return { operationName: "lists", data: await oeprationLists(updatedListsInStore) };
+        return { operationName: "lists", data: await operatonLists(updatedListsInStore) };
       },
-      deleteList: async (input) => {
+      deleteList: async (input: DeleteListOperationInput) => {
         if (!input.listId) {
           throw new opts.GraphQLError("Missing an input", {
             extensions: {
@@ -321,7 +322,7 @@ export default definePlugin((opts) => {
           LISTS_STORE_KEY,
           newListsInStore,
         );
-        return { operationName: "lists", data: await oeprationLists(updatedListsInStore) };
+        return { operationName: "lists", data: await operatonLists(updatedListsInStore) };
       },
       syncView: async (input) => {
         if (!input.listId || !input.viewId || !input.account) {
@@ -504,18 +505,6 @@ type ListsInStore = Record<
     account: string;
   }
 >;
-type ListsOperationData = {
-  name: string;
-  slug: string | null;
-  description: string;
-  linkedView: {
-    id: string;
-    name: string;
-    icon: string | null;
-    color: string | null;
-    account: string;
-  };
-}[];
 
 const linearCommentFragment = /* GraphQL */ `
   fragment LinearComment on Comment {

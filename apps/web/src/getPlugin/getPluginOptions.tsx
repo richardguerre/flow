@@ -76,6 +76,18 @@ import { Textarea } from "@flowdev/ui/Textarea";
 import { FormTextarea } from "@flowdev/ui/FormTextarea";
 import { TaskTitleInput } from "../components/TaskTitle";
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@flowdev/ui/Tooltip";
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogLoading,
+  DialogOverlay,
+  DialogPortal,
+  DialogTitle,
+  DialogTrigger,
+} from "@flowdev/ui/Dialog";
 
 export const getPluginOptions = (slug: string) => ({
   /**
@@ -154,6 +166,16 @@ export const getPluginOptions = (slug: string) => ({
     DropdownMenuLabel,
     DropdownMenuSeparator,
     DropdownMenuShortcut,
+    Dialog,
+    DialogContent,
+    DialogDescription,
+    DialogFooter,
+    DialogHeader,
+    DialogLoading,
+    DialogOverlay,
+    DialogPortal,
+    DialogTitle,
+    DialogTrigger,
     Badge,
     CardActionButton,
     Combobox,
