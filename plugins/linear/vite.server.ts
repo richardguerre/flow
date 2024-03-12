@@ -5,7 +5,7 @@ export default defineConfig({
     outDir: "out",
     emptyOutDir: false,
     lib: {
-      name: "flow-google-calendar",
+      name: "flow-linear",
       entry: "src/server.ts",
       formats: ["cjs"],
       fileName: () => "server.js",
