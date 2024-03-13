@@ -265,6 +265,47 @@ export default definePlugin((opts) => {
             },
           },
         });
+        if (Object.keys(updatedListsInStore.value).length === 1) {
+          // setup webhook
+          const webhook = await gqlRequest<{
+            webhookCreate: {
+              success: boolean;
+              webhook: {
+                id: string;
+                enabled: boolean;
+              };
+            };
+          }>(
+            /* GraphQL */ `
+              mutation CreateWebhook($url: String!) {
+                webhookCreate(
+                  input: { url: $url, allPublicTeams: true, resourceTypes: ["Comment", "Issue"] }
+                ) {
+                  success
+                  webhook {
+                    id
+                    enabled
+                  }
+                }
+              }
+            `,
+            {
+              token: tokenItem[input.account].access_token,
+              variables: {
+                url: `${opts.serverOrigin}/api/plugin/${opts.pluginSlug}/events/webhook`,
+              },
+            },
+          );
+          if (!webhook.webhookCreate.success) {
+            throw new opts.GraphQLError("Failed to create a webhook.", {
+              extensions: {
+                code: "CREATE_LIST_FAILED_WEBHOOK",
+                userFriendlyMessage:
+                  "Failed to connect to Linear. Please try again or contact the Flow team for help.",
+              },
+            });
+          }
+        }
         return { operationName: "lists", data: await operatonLists(updatedListsInStore) };
       },
       deleteList: async (input: DeleteListOperationInput) => {
@@ -438,6 +479,11 @@ export default definePlugin((opts) => {
 
           console.log("✔ Upserted item from Linear issue", issue.id);
         }
+      }),
+      work(PROCESS_WEBHOOK_EVENT_JOB_NAME, async (job) => {
+        const linearIssue = job.data as WebhookLinearIssue;
+        console.log(linearIssue);
+        // TODO: handle the webhook event
       }),
     ],
   };
