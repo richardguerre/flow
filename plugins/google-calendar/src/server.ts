@@ -130,7 +130,16 @@ export default definePlugin((opts) => {
         const accountsTokens = await getTokensFromStore();
         const data: CalendarsData = [];
         for (const account of Object.keys(accountsTokens)) {
-          const tokens = await getRefreshedTokens({ account, accountsTokens });
+          const tokens = await getRefreshedTokens({ account, accountsTokens }).catch((e) => ({
+            error: e,
+          }));
+          if ("error" in tokens) {
+            data.push({
+              account,
+              authError: tokens.error.extensions.userFriendlyMessage ?? tokens.error.message,
+            });
+            continue;
+          }
           const calendars = await fetch(
             "https://www.googleapis.com/calendar/v3/users/me/calendarList",
             { headers: { Authorization: `Bearer ${tokens.access_token}` } },
