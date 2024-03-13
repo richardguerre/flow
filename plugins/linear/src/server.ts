@@ -10,7 +10,7 @@ export default definePlugin((opts) => {
   const UPSERT_ISSUE_JOB = `${opts.pluginSlug}-upsert-item-from-issue`;
 
   const gqlRequest = async <T>(query: string, params: { token: string; variables?: object }) => {
-    const res = await fetch("https://gateway.gitstart.dev/graphql", {
+    const res = await fetch("https://api.linear.app/graphql", {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
@@ -33,7 +33,7 @@ export default definePlugin((opts) => {
         extensions: {
           code: "NOT_AUTHENTICATED",
           userFriendlyMessage:
-            "You are not authenticated and will need to connect your Google account first.",
+            "You are not authenticated and will need to connect your Linear account(s) first.",
         },
       });
     }
@@ -79,7 +79,8 @@ export default definePlugin((opts) => {
     onRequest: async (req) => {
       if (req.path === "/auth") {
         return Response.redirect(
-          `https://linear-api-flow-dev.vercel.app/api/auth?api_endpoint=${opts.serverOrigin}/api/plugin/${opts.pluginSlug}/auth/callback`,
+          // `https://linear-api-flow-dev.vercel.app/api/auth?api_endpoint=${opts.serverOrigin}/api/plugin/${opts.pluginSlug}/auth/callback`,
+          `http://localhost:4321/api/auth?api_endpoint=${opts.serverOrigin}/api/plugin/${opts.pluginSlug}/auth/callback`,
         );
       } else if (req.path === "/auth/callback") {
         const accountsTokensItem =
@@ -121,7 +122,7 @@ export default definePlugin((opts) => {
           };
         }
         return {
-          data: Object.entries(tokenItem.value).map(([email, tokens]) => ({
+          data: Object.entries(tokenItem).map(([email, tokens]) => ({
             email,
             expiresAt: tokens.expires_at,
           })) satisfies AccountsOperationData,
@@ -308,7 +309,7 @@ export default definePlugin((opts) => {
             extensions: {
               code: "NOT_AUTHENTICATED",
               userFriendlyMessage:
-                "You are not authenticated and will need to connect your Google account first.",
+                "You are not authenticated and will need to connect your Linear account(s) first.",
             },
           });
         }

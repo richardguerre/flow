@@ -24,7 +24,7 @@ export default async (request: Request) => {
 
   const body = new URLSearchParams({
     code,
-    redirect_uri: `${requestUrl.origin}/api/auth/callback`,
+    redirect_uri: `${process.env.REDIRECT_URL_ORIGIN ?? requestUrl.origin}/api/auth/callback`,
     client_id: process.env.CLIENT_ID!,
     client_secret: process.env.CLIENT_SECRET!,
     grant_type: "authorization_code",
@@ -49,9 +49,20 @@ export default async (request: Request) => {
     return new Response("Failed to get access token", { status: 500 });
   }
 
+  const viewerQuery = await gqlRequest<{ viewer: { email: string } }>(
+    /* GraphQL */ `
+      query {
+        viewer {
+          email
+        }
+      }
+    `,
+    { token: data.access_token },
+  );
+
   const tokenData = {
     ...data,
-    email: "TODO", // TODO: get the user's email from the Linear API
+    email: viewerQuery.viewer.email,
   };
 
   const storeTokenResponse = await fetch(apiEndpoint, {
@@ -66,5 +77,21 @@ export default async (request: Request) => {
 
   const flowInstanceOrigin = new URL(apiEndpoint).origin;
 
-  return Response.redirect(`${flowInstanceOrigin}/settings/plugin/google-calendar`);
+  return Response.redirect(`${flowInstanceOrigin}/settings/plugin/linear`);
+};
+
+const gqlRequest = async <T>(query: string, params: { token: string; variables?: object }) => {
+  const res = await fetch("https://api.linear.app/graphql", {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+      Authorization: `Bearer ${params.token}`,
+    },
+    body: JSON.stringify({ query, variables: params.variables }),
+  });
+  const json = await res.json();
+  if (json.errors) {
+    throw new Error(`GitStart API error: ${json.errors[0].message}`);
+  }
+  return json.data as T;
 };

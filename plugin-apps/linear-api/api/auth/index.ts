@@ -16,7 +16,7 @@ export default (request: Request) => {
   }
   const searchParams = new URLSearchParams({
     client_id: process.env.CLIENT_ID!,
-    redirect_uri: `${requestUrl.origin}/api/auth/callback`,
+    redirect_uri: `${process.env.REDIRECT_URL_ORIGIN ?? requestUrl.origin}/api/auth/callback`,
     response_type: "code",
     scope: "read,write",
     state,

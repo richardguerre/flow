@@ -122,45 +122,6 @@ export default definePlugin((opts) => {
   return {
     name: "Linear",
     settings: {
-      syncAllViews: {
-        type: "custom",
-        render: () => {
-          const [loading, setLoading] = React.useState(false);
-          return (
-            <div>
-              <Flow.Button
-                onClick={async () => {
-                  setLoading(true);
-                  await opts.operations.mutation({
-                    operationName: "syncAllViews",
-                  });
-                  setLoading(false);
-                }}
-                loading={loading}
-              >
-                Refresh All Lists
-              </Flow.Button>
-              <div>This will refresh all lists and their issues. This may take a while.</div>
-            </div>
-          );
-        },
-      },
-      lists: {
-        type: "custom",
-        render: () => {
-          return (
-            <Flow.ErrorBoundary
-              fallbackRender={({ error }) => {
-                return <p className="text-sm text-negative-600">{error.message}</p>;
-              }}
-            >
-              <React.Suspense fallback="Loading lists...">
-                <Lists />
-              </React.Suspense>
-            </Flow.ErrorBoundary>
-          );
-        },
-      },
       "connect-account": {
         type: "custom",
         render: () => {
@@ -181,6 +142,45 @@ export default definePlugin((opts) => {
                   <Accounts />
                 </React.Suspense>
               </Flow.ErrorBoundary>
+            </div>
+          );
+        },
+      },
+      lists: {
+        type: "custom",
+        render: () => {
+          return (
+            <Flow.ErrorBoundary
+              fallbackRender={({ error }) => {
+                return <p className="text-sm text-negative-600">{error.message}</p>;
+              }}
+            >
+              <React.Suspense fallback="Loading lists...">
+                <Lists />
+              </React.Suspense>
+            </Flow.ErrorBoundary>
+          );
+        },
+      },
+      syncAllViews: {
+        type: "custom",
+        render: () => {
+          const [loading, setLoading] = React.useState(false);
+          return (
+            <div>
+              <Flow.Button
+                onClick={async () => {
+                  setLoading(true);
+                  await opts.operations.mutation({
+                    operationName: "syncAllViews",
+                  });
+                  setLoading(false);
+                }}
+                loading={loading}
+              >
+                Refresh All Lists
+              </Flow.Button>
+              <div>This will refresh all lists and their issues. This may take a while.</div>
             </div>
           );
         },
