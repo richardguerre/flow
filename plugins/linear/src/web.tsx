@@ -122,26 +122,25 @@ export default definePlugin((opts) => {
   return {
     name: "Linear",
     settings: {
-      "connect-account": {
+      syncAllViews: {
         type: "custom",
         render: () => {
+          const [loading, setLoading] = React.useState(false);
           return (
-            <div className="flex flex-col gap-2">
-              <a href={`${opts.serverOrigin}/api/plugin/linear/auth`}>
-                <Flow.Button>Connect Linear</Flow.Button>
-              </a>
-              <Flow.ErrorBoundary
-                fallbackRender={({ error }) => {
-                  if (error.cause?.[0]?.extensions?.code === "NOT_AUTHENTICATED") {
-                    return <></>;
-                  }
-                  return <p className="text-sm text-negative-600">{error.message}</p>;
+            <div>
+              <Flow.Button
+                onClick={async () => {
+                  setLoading(true);
+                  await opts.operations.mutation({
+                    operationName: "syncAllViews",
+                  });
+                  setLoading(false);
                 }}
+                loading={loading}
               >
-                <React.Suspense fallback="Loading connected accounts...">
-                  <Accounts />
-                </React.Suspense>
-              </Flow.ErrorBoundary>
+                Refresh All Lists
+              </Flow.Button>
+              <div>This will refresh all lists and their issues. This may take a while.</div>
             </div>
           );
         },
@@ -162,25 +161,26 @@ export default definePlugin((opts) => {
           );
         },
       },
-      syncAllViews: {
+      "connect-account": {
         type: "custom",
         render: () => {
-          const [loading, setLoading] = React.useState(false);
           return (
-            <div>
-              <Flow.Button
-                onClick={async () => {
-                  setLoading(true);
-                  await opts.operations.mutation({
-                    operationName: "syncAllViews",
-                  });
-                  setLoading(false);
+            <div className="flex flex-col gap-2">
+              <a href={`${opts.serverOrigin}/api/plugin/linear/auth`}>
+                <Flow.Button>Connect Linear</Flow.Button>
+              </a>
+              <Flow.ErrorBoundary
+                fallbackRender={({ error }) => {
+                  if (error.cause?.[0]?.extensions?.code === "NOT_AUTHENTICATED") {
+                    return <></>;
+                  }
+                  return <p className="text-sm text-negative-600">{error.message}</p>;
                 }}
-                loading={loading}
               >
-                Refresh All Lists
-              </Flow.Button>
-              <div>This will refresh all lists and their issues. This may take a while.</div>
+                <React.Suspense fallback="Loading connected accounts...">
+                  <Accounts />
+                </React.Suspense>
+              </Flow.ErrorBoundary>
             </div>
           );
         },

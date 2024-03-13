@@ -40,38 +40,6 @@ export default definePlugin((opts) => {
     return accountsTokensItem.value;
   };
 
-  /**
-   * Gets the tokens from the store.
-   * @throws If the user is not authenticated.
-   * @throws If the access token requires to be refreshed. Linear currently doesn't allow refreshing a token.
-   * @example
-   * const token = await getToken(params);
-   */
-  const getToken = async (params: GetTokenParams): Promise<Tokens> => {
-    const accountsTokens = params.accountsTokens ?? (await getTokensFromStore());
-    const tokens = accountsTokens[params.account];
-    if (!tokens) {
-      throw new opts.GraphQLError("User not authenticated.", {
-        extensions: {
-          code: "NOT_AUTHENTICATED",
-          userFriendlyMessage:
-            "You are not authenticated and will need to connect your Google account first.",
-        },
-      });
-    }
-
-    if (opts.dayjs().isAfter(tokens.expires_at)) {
-      // access token has expired, refresh it
-      throw new opts.GraphQLError("Could not refresh token.", {
-        extensions: {
-          code: "COULD_NOT_REFRESH_TOKEN",
-          userFriendlyMessage: "Could not connect to Linear. Try connecting the account again.",
-        },
-      });
-    }
-    return tokens;
-  };
-
   const operatonLists = async (listIsInStore?: ListsInStore) => {
     const listsItem = await opts.store.getPluginItem<ListsInStore>(LISTS_STORE_KEY);
     if (!listsItem) {
@@ -349,7 +317,7 @@ export default definePlugin((opts) => {
           viewId: input.viewId,
           token: tokenItem[input.account].access_token,
         } as JobSyncView);
-        return { operationName: "syncView", data: true };
+        return { data: true };
       },
       syncAllViews: async () => {
         await opts.pgBoss.send(SYNC_ALL_VIEWS_JOB_NAME, {});
@@ -473,12 +441,6 @@ export default definePlugin((opts) => {
     ],
   };
 });
-
-type GetTokenParams = {
-  account: string;
-  /** The tokens to use to make the request. If not provided, the tokens will be fetched from the store. */
-  accountsTokens?: AccountsTokens; // if the tokens are already known, they can be passed in to avoid fetching them again
-};
 
 type AccountsTokens = {
   [account: string]: Tokens;
