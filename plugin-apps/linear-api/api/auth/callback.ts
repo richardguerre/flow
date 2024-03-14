@@ -49,25 +49,9 @@ export default async (request: Request) => {
     return new Response("Failed to get access token", { status: 500 });
   }
 
-  const viewerQuery = await gqlRequest<{ viewer: { email: string } }>(
-    /* GraphQL */ `
-      query {
-        viewer {
-          email
-        }
-      }
-    `,
-    { token: data.access_token },
-  );
-
-  const tokenData = {
-    ...data,
-    email: viewerQuery.viewer.email,
-  };
-
   const storeTokenResponse = await fetch(apiEndpoint, {
     method: "POST",
-    body: JSON.stringify(tokenData),
+    body: JSON.stringify(data),
     headers: { "Content-Type": "application/json" },
   });
 
@@ -78,20 +62,4 @@ export default async (request: Request) => {
   const flowInstanceOrigin = new URL(apiEndpoint).origin;
 
   return Response.redirect(`${flowInstanceOrigin}/settings/plugin/linear`);
-};
-
-const gqlRequest = async <T>(query: string, params: { token: string; variables?: object }) => {
-  const res = await fetch("https://api.linear.app/graphql", {
-    method: "POST",
-    headers: {
-      "Content-Type": "application/json",
-      Authorization: `Bearer ${params.token}`,
-    },
-    body: JSON.stringify({ query, variables: params.variables }),
-  });
-  const json = await res.json();
-  if (json.errors) {
-    throw new Error(`GitStart API error: ${json.errors[0].message}`);
-  }
-  return json.data as T;
 };

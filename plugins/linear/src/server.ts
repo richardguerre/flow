@@ -75,6 +75,16 @@ export default definePlugin((opts) => {
     };
   };
 
+  const isRelevantWebhookEvent = (event: WebhookEvent) => {
+    if (event.type === "Issue" && event.action === "update") {
+      return true;
+    } else if (event.type === "Comment") {
+      return true;
+    } else {
+      return false;
+    }
+  };
+
   return {
     onRequest: async (req) => {
       if (req.path === "/auth") {
@@ -85,13 +95,33 @@ export default definePlugin((opts) => {
       } else if (req.path === "/auth/callback") {
         const accountsTokensItem =
           await opts.store.getPluginItem<AccountsTokens>(ACCOUNT_TOKENS_STORE_KEY);
-        const body = req.body as Tokens;
+        const body = req.body as AuthCallbackData;
+        const viewerQuery = await gqlRequest<{
+          viewer: { email: string; organization: { id: string; name: string } };
+        }>(
+          /* GraphQL */ `
+            query {
+              viewer {
+                email
+                organization {
+                  id
+                  name
+                }
+              }
+            }
+          `,
+          { token: body.access_token },
+        );
+
         const tokensData = {
           ...body,
           expires_at: opts
             .dayjs()
             .add((body.expires_in ?? 10) - 10, "seconds") // -10 is a 10 second buffer to account for latency in network requests
             .toISOString(),
+          email: viewerQuery.viewer.email,
+          organizationId: viewerQuery.viewer.organization.id,
+          organizationName: viewerQuery.viewer.organization.name,
         } as Tokens;
         if ("expires_in" in tokensData) delete tokensData.expires_in; // delete expires_in because it's not needed
 
@@ -101,12 +131,14 @@ export default definePlugin((opts) => {
         });
         return new Response(); // return 200
       } else if (req.path === "/events/webhook" && req.request.method === "POST") {
-        const linearIssue = req.body as WebhookLinearIssue;
-        if (!linearIssue.id) {
+        const event = req.body as WebhookEvent;
+        if (!isRelevantWebhookEvent(event)) {
           console.log("❌ Could not find Linear issue ID in req.body");
           return new Response(); // return 200 as the webhook event doesn't concern the plugin and we don't want Linear to retry sending it.
         }
-        await opts.pgBoss.send(PROCESS_WEBHOOK_EVENT_JOB_NAME, { linearIssue });
+        await opts.pgBoss.send(PROCESS_WEBHOOK_EVENT_JOB_NAME, {
+          event,
+        } satisfies JobProcessWebhookEvent);
         return new Response();
       }
 
@@ -428,6 +460,11 @@ export default definePlugin((opts) => {
             },
           });
 
+          if (!item && !listId) {
+            console.log("❌ Could not upsert issue as it's unknown which list it belongs to");
+            return;
+          }
+
           // TODO: have and use setting to configure terminal status(es).
           const isRelevant = true;
 
@@ -481,9 +518,46 @@ export default definePlugin((opts) => {
         }
       }),
       work(PROCESS_WEBHOOK_EVENT_JOB_NAME, async (job) => {
-        const linearIssue = job.data as WebhookLinearIssue;
-        console.log(linearIssue);
-        // TODO: handle the webhook event
+        const { event } = job.data as JobProcessWebhookEvent;
+        console.log("Processing webhook event", event.type, event.action, event.data.id);
+        let issueId: string | null = null;
+        if (event.type === "Issue") {
+          issueId = event.data.id;
+        } else if (event.type === "Comment") {
+          issueId = event.data.issue.id;
+        }
+        if (!issueId) {
+          console.log("❌ Could not find Linear issue ID in req.body");
+          return;
+        }
+        const tokens = await getTokensFromStore();
+        if (!tokens) {
+          console.log("❌ Could not process webhook event as no tokens are found");
+          return;
+        }
+        const token = Object.values(tokens).find(
+          (token) => token.organizationId === event.organizationId,
+        );
+        if (!token) {
+          console.log(
+            "❌ Could not process webhook event as no token is found for the organization of the event",
+          );
+          return;
+        }
+        const issueQuery = await gqlRequest<{
+          issue: LinearIssue;
+        }>(
+          /* GraphQL */ `
+            query GetIssue($issueId: String!) {
+              issue(id: $issueId) {
+                ...LinearIssue
+              }
+            }
+            ${linearIssueFragment}
+          `,
+          { token: token.access_token, variables: { issueId } },
+        );
+        await opts.pgBoss.send(UPSERT_ISSUE_JOB, { issue: issueQuery.issue } as JobUpsertIssue);
       }),
     ],
   };
@@ -493,19 +567,104 @@ type AccountsTokens = {
   [account: string]: Tokens;
 };
 
+type AuthCallbackData = {
+  access_token: string;
+  token_type: string;
+  expires_in: number;
+  scope: string;
+};
+
 type Tokens = {
   access_token: string;
   token_type: string;
   expires_at: string;
-  expires_in?: never; // this is deleted before storing in the database, hence it's optional and will never be present
   scope: string;
   email: string;
+  organizationId: string;
+  organizationName: string;
 };
 
 type JobSyncView = { viewId: string; listId: number; token: string };
-type JobUpsertIssue = { issue: LinearIssue; listId: number };
+type JobUpsertIssue = { issue: LinearIssue; listId?: number };
+type JobProcessWebhookEvent = { event: WebhookEvent };
 
-type WebhookLinearIssue = LinearIssue; // TODO: change type to actual webhook payload type.
+type WebhookEvent = WebhookEventIssueUpdate | WebhookEventCommentCreate;
+type WebhookEventCommentCreate = {
+  type: "Comment";
+  action: "create";
+  createdAt: string;
+  data: {
+    id: string;
+    createdAt: string;
+    updatedAt: string;
+    body: string;
+    issueId: string;
+    parentId?: string;
+    userId: string;
+    reactionData: any[];
+    issue: {
+      id: string;
+      title: string;
+    };
+    user: {
+      id: string;
+      name: string;
+    };
+  };
+  url: string;
+  organizationId: string;
+  webhookTimestamp: number;
+  webhookId: string;
+};
+
+type WebhookEventIssueAttributes = {
+  updatedAt: string;
+  number: number;
+  title: string;
+  priority: number;
+  boardOrder: number;
+  sortOrder: number;
+  teamId: string;
+  previousIdentifiers: string[];
+  creatorId: string;
+  stateId: string;
+  priorityLabel: string;
+  url: string;
+  subscriberIds: string[];
+  labelIds: string[];
+  state: {
+    id: string;
+    color: string;
+    name: string;
+    type: string;
+  };
+  team: {
+    id: string;
+    key: string;
+    name: string;
+  };
+  labels: {
+    id: string;
+    color: string;
+    name: string;
+  }[];
+  description: string;
+  descriptionData: string;
+};
+type WebhookEventIssueUpdate = {
+  type: "Issue";
+  action: "update";
+  createdAt: string;
+  data: WebhookEventIssueAttributes & {
+    id: string;
+    createdAt: string;
+  };
+  updatedFrom: Partial<WebhookEventIssueAttributes>;
+  url: string;
+  organizationId: string;
+  webhookTimestamp: number;
+  webhookId: string;
+};
 
 type ListsInStore = Record<
   number,
