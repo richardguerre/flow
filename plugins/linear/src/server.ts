@@ -465,8 +465,13 @@ export default definePlugin((opts) => {
             return;
           }
 
-          // TODO: have and use setting to configure terminal status(es).
-          const isRelevant = true;
+          // TODO: have and use user setting to configure terminal status(es).
+          const isRelevant = issue.state.type !== "canceled" && issue.state.type !== "completed";
+
+          if (!item && !isRelevant) {
+            console.log("❌ Issue not upserted as it's not relevant and it's not in the database.");
+            return;
+          }
 
           const itemCommonBetweenUpdateAndCreate = {
             title: issue.title,
