@@ -45,9 +45,9 @@ export const builder = new SchemaBuilder<{
 }>({
   // the order of plugins matters. see https://pothos-graphql.dev/docs/plugins/scope-auth#important
   plugins: [
+    PrismaPlugin,
     RelayPlugin,
     ScopeAuthPlugin,
-    PrismaPlugin,
     PrismaUtils,
     WithInputPlugin,
     SmartSubscriptionsPlugin,

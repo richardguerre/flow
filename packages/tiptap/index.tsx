@@ -181,7 +181,6 @@ export interface StarterKitOptions {
 
 export const StarterKit = Extension.create<StarterKitOptions>({
   name: "starterKit",
-
   addExtensions() {
     const extensions = [];
 
