@@ -3,6 +3,7 @@
   "description": "This is the server of Flow",
   "private": true,
   "scripts": {
+    "postinstall": "bun run gen",
     "print-schema": "bun run gen && NODE_ENV=development bun run src/graphql/index.ts",
     "dev": "NODE_ENV=development bun --watch run src/index.ts",
     "type-check": "bun run gen && tsc --noEmit && echo '✅ Type checking passed!'",
