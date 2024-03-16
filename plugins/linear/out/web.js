@@ -137,64 +137,19 @@ const E = v((m) => {
   return {
     name: "Linear",
     settings: {
-      syncAllViews: {
-        type: "custom",
-        render: () => {
-          const [n, t] = e.useState(!1);
-          return /* @__PURE__ */ e.createElement("div", { __self: void 0, __source: {
-            fileName: l,
-            lineNumber: 130,
-            columnNumber: 13
-          } }, /* @__PURE__ */ e.createElement(r.Button, { onClick: async () => {
-            t(!0), await m.operations.mutation({
-              operationName: "syncAllViews"
-            }), t(!1);
-          }, loading: n, __self: void 0, __source: {
-            fileName: l,
-            lineNumber: 131,
-            columnNumber: 15
-          } }, "Refresh All Lists"), /* @__PURE__ */ e.createElement("div", { __self: void 0, __source: {
-            fileName: l,
-            lineNumber: 143,
-            columnNumber: 15
-          } }, "This will refresh all lists and their issues. This may take a while."));
-        }
-      },
-      lists: {
-        type: "custom",
-        render: () => /* @__PURE__ */ e.createElement(r.ErrorBoundary, { fallbackRender: ({
-          error: n
-        }) => /* @__PURE__ */ e.createElement("p", { className: "text-sm text-negative-600", __self: void 0, __source: {
-          fileName: l,
-          lineNumber: 154,
-          columnNumber: 24
-        } }, n.message), __self: void 0, __source: {
-          fileName: l,
-          lineNumber: 152,
-          columnNumber: 13
-        } }, /* @__PURE__ */ e.createElement(e.Suspense, { fallback: "Loading lists...", __self: void 0, __source: {
-          fileName: l,
-          lineNumber: 157,
-          columnNumber: 15
-        } }, /* @__PURE__ */ e.createElement(f, { __self: void 0, __source: {
-          fileName: l,
-          lineNumber: 158,
-          columnNumber: 17
-        } })))
-      },
       "connect-account": {
         type: "custom",
         render: () => /* @__PURE__ */ e.createElement("div", { className: "flex flex-col gap-2", __self: void 0, __source: {
           fileName: l,
-          lineNumber: 168,
+          lineNumber: 129,
           columnNumber: 13
         } }, /* @__PURE__ */ e.createElement("a", { href: `${m.serverOrigin}/api/plugin/linear/auth`, __self: void 0, __source: {
           fileName: l,
-          lineNumber: 169,
+          lineNumber: 130,
           columnNumber: 15
         } }, /* @__PURE__ */ e.createElement(r.Button, { __self: void 0, __source: {
           fileName: l,
-          lineNumber: 170,
+          lineNumber: 131,
           columnNumber: 17
         } }, "Connect Linear")), /* @__PURE__ */ e.createElement(r.ErrorBoundary, { fallbackRender: ({
           error: n
@@ -202,22 +157,67 @@ const E = v((m) => {
           var t, i, o;
           return ((o = (i = (t = n.cause) == null ? void 0 : t[0]) == null ? void 0 : i.extensions) == null ? void 0 : o.code) === "NOT_AUTHENTICATED" ? /* @__PURE__ */ e.createElement(e.Fragment, null) : /* @__PURE__ */ e.createElement("p", { className: "text-sm text-negative-600", __self: void 0, __source: {
             fileName: l,
-            lineNumber: 177,
+            lineNumber: 138,
             columnNumber: 26
           } }, n.message);
         }, __self: void 0, __source: {
           fileName: l,
-          lineNumber: 172,
+          lineNumber: 133,
           columnNumber: 15
         } }, /* @__PURE__ */ e.createElement(e.Suspense, { fallback: "Loading connected accounts...", __self: void 0, __source: {
           fileName: l,
-          lineNumber: 180,
+          lineNumber: 141,
           columnNumber: 17
         } }, /* @__PURE__ */ e.createElement(_, { __self: void 0, __source: {
           fileName: l,
-          lineNumber: 181,
+          lineNumber: 142,
           columnNumber: 19
         } }))))
+      },
+      lists: {
+        type: "custom",
+        render: () => /* @__PURE__ */ e.createElement(r.ErrorBoundary, { fallbackRender: ({
+          error: n
+        }) => /* @__PURE__ */ e.createElement("p", { className: "text-sm text-negative-600", __self: void 0, __source: {
+          fileName: l,
+          lineNumber: 155,
+          columnNumber: 24
+        } }, n.message), __self: void 0, __source: {
+          fileName: l,
+          lineNumber: 153,
+          columnNumber: 13
+        } }, /* @__PURE__ */ e.createElement(e.Suspense, { fallback: "Loading lists...", __self: void 0, __source: {
+          fileName: l,
+          lineNumber: 158,
+          columnNumber: 15
+        } }, /* @__PURE__ */ e.createElement(f, { __self: void 0, __source: {
+          fileName: l,
+          lineNumber: 159,
+          columnNumber: 17
+        } })))
+      },
+      syncAllViews: {
+        type: "custom",
+        render: () => {
+          const [n, t] = e.useState(!1);
+          return /* @__PURE__ */ e.createElement("div", { __self: void 0, __source: {
+            fileName: l,
+            lineNumber: 170,
+            columnNumber: 13
+          } }, /* @__PURE__ */ e.createElement(r.Button, { onClick: async () => {
+            t(!0), await m.operations.mutation({
+              operationName: "syncAllViews"
+            }), t(!1);
+          }, loading: n, __self: void 0, __source: {
+            fileName: l,
+            lineNumber: 171,
+            columnNumber: 15
+          } }, "Refresh All Lists"), /* @__PURE__ */ e.createElement("div", { __self: void 0, __source: {
+            fileName: l,
+            lineNumber: 183,
+            columnNumber: 15
+          } }, "This will refresh all lists and their issues. This may take a while."));
+        }
       }
     }
   };
