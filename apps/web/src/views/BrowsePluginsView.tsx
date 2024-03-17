@@ -39,6 +39,16 @@ const PLUGINS: Plugin[] = [
     authors: [{ name: "Flow", avatarUrl: "FlowIcon.svg" }],
   },
   {
+    iconUrl: "FlowIcon.svg",
+    name: "Repeating Tasks",
+    slug: "repeating-tasks",
+    description:
+      "Official Flow plugin that allows creating repeating tasks. It's like a cron job for your tasks.",
+    installUrl: "https://cdn.jsdelivr.net/gh/richardguerre/flow@c1dc94b/plugins/essentials/out",
+    version: "0.1.0",
+    authors: [{ name: "Flow", avatarUrl: "FlowIcon.svg" }],
+  },
+  {
     iconUrl: "https://ssl.gstatic.com/calendar/images/dynamiclogo_2020q4/calendar_19_2x.png",
     name: "Google Calendar",
     slug: "google-calendar",
@@ -66,6 +76,15 @@ const PLUGINS: Plugin[] = [
     version: "0.1.0",
     authors: [{ name: "Flow", avatarUrl: "FlowIcon.svg" }],
   },
+  {
+    iconUrl: "https://linear.app/favicon.ico",
+    name: "Linear",
+    slug: "linear",
+    description: "Official Linear plugin for Flow, allowing you to manage your Linear issues directly from Flow.",
+    installUrl: "https://cdn.jsdelivr.net/gh/richardguerre/flow@c1dc94b/plugins/linear/out",
+    version: "0.1.0",
+    authors: [{ name: "Flow", avatarUrl: "FlowIcon.svg" }],
+  }
 ];
 
 export default () => {
@@ -137,7 +156,7 @@ export default () => {
                 <div className="flex flex-col gap-1">
                   <div className="flex items-center justify-between">
                     <div className="flex items-center gap-2">
-                      <img src={plugin.iconUrl} className="h-5 w-5" />
+                      <img src={plugin.iconUrl} className="h-5 w-5 rounded-1" />
                       <div className="text-base font-medium">{plugin.name}</div>
                     </div>
                     <Button
