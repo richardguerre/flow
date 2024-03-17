@@ -255,7 +255,7 @@ builder.mutationField("installPlugin", (t) =>
       // this will throw GraphQLErrors if there are problems with the plugin.json file
       const newPluginJson = await getPluginJson({ url: args.input.url });
 
-      if (!args.input.override && installedPlugins.find((p) => p.slug === newPluginJson.slug)) {
+      if (!args.input.override && !!installedPlugins.find((p) => p.slug === newPluginJson.slug)) {
         throw new GraphQLError(
           `A plugin with the slug "${newPluginJson.slug}" is already installed. Use the \`override\` option to override the existing plugin.`,
           {

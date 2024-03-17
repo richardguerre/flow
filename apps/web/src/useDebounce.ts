@@ -17,8 +17,8 @@ export const useDebounce = <T>(
     value instanceof Set
       ? Array.from(value)
       : value instanceof Map
-      ? Object.fromEntries(value.entries())
-      : value,
+        ? Object.fromEntries(value.entries())
+        : value,
   );
 
   useEffect(() => {

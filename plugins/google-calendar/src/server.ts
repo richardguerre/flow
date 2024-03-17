@@ -340,13 +340,13 @@ export default definePlugin((opts) => {
           const scheduledStart = event.start?.date
             ? opts.dayjs(event.start.date).startOf("day")
             : event.start?.dateTime
-            ? opts.dayjs(event.start.dateTime)
-            : opts.dayjs(); // it should never default to today, but at least we make it a valid day instead of null
+              ? opts.dayjs(event.start.dateTime)
+              : opts.dayjs(); // it should never default to today, but at least we make it a valid day instead of null
           const scheduledEnd = event.end?.date
             ? opts.dayjs(event.end.date).endOf("day")
             : event.end?.dateTime
-            ? opts.dayjs(event.end.dateTime)
-            : scheduledStart.add(1, "millisecond");
+              ? opts.dayjs(event.end.dateTime)
+              : scheduledStart.add(1, "millisecond");
           const isOver = scheduledEnd.isBefore(opts.dayjs());
           const scheduledAtDate = scheduledStart.tz(usersTimezone).utc(true).toISOString();
 

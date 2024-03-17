@@ -179,11 +179,7 @@ export default definePlugin((opts) => {
           }
           const lastTaskLeft = currentTasksLeft[currentTasksLeft.length - 1];
           const interval = cronParser.parseExpression(template.cron, {
-            currentDate:
-              opts
-                .dayjs(lastTaskLeft?.date)
-                .add(1, "day")
-                .toDate() ?? new Date(),
+            currentDate: opts.dayjs(lastTaskLeft?.date).add(1, "day").toDate() ?? new Date(),
             tz: timezone ?? undefined,
             utc: true,
           });
