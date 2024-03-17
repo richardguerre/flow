@@ -1,7 +1,7 @@
 import { graphql, useFragment, useSmartSubscription } from "@flowdev/relay";
 import { ItemCard } from "./ItemCard";
 import { ReactSortable } from "react-sortablejs";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { Button } from "@flowdev/ui/Button";
 import { NewItemCard } from "./NewItemCard";
 import { InboxListSubscription } from "../relay/__generated__/InboxListSubscription.graphql";
@@ -10,7 +10,41 @@ import { InboxListItemToBeInList_item$key } from "../relay/__generated__/InboxLi
 type InboxListProps = {};
 
 export const InboxList = (props: InboxListProps) => {
-  const [showNewTaskCard, setShowNewTaskCard] = useState(false);
+  const [showNewItemCard, setShowNewItemCard] = useState(false);
+  const [itemsConnectionId, setItemsConnectionId] = useState<string | null>(null);
+
+  return (
+    <div className="bg-background-100 flex h-full flex-col gap-4 pt-3">
+      <div className="flex flex-col gap-2 px-4">
+        <div className="text-xl font-semibold">Inbox</div>
+        <div className="text-foreground-700">
+          Quickly add items to your inbox so you can triage them later.
+        </div>
+        <div className="flex flex-col gap-4">
+          <Button
+            secondary
+            sm
+            className="bg-background-300/50 text-foreground-900 hover:bg-background-300/70 active:bg-background-300/100 w-full"
+            disabled={!itemsConnectionId}
+            onClick={() => setShowNewItemCard(true)}
+          >
+            Add item
+          </Button>
+          {showNewItemCard && itemsConnectionId && (
+            <NewItemCard
+              itemsConnectionId={itemsConnectionId}
+              onSave={() => setShowNewItemCard(false)}
+              onCancel={() => setShowNewItemCard(false)}
+            />
+          )}
+        </div>
+      </div>
+      <InboxListItems onItemsConnectionIdChange={setItemsConnectionId} />
+    </div>
+  );
+};
+
+const InboxListItems = (props: { onItemsConnectionIdChange: (id: string) => void }) => {
   const [data] = useSmartSubscription<InboxListSubscription>(graphql`
     subscription InboxListSubscription {
       items(
@@ -57,45 +91,24 @@ export const InboxList = (props: InboxListProps) => {
     }) ?? [],
   );
 
-  if (!data) return null; // TODO: loading state
+  useEffect(() => {
+    if (data?.items.__id) {
+      props.onItemsConnectionIdChange(data.items.__id);
+    }
+  }, [data?.items.__id]);
 
   return (
-    <div className="bg-background-100 flex h-full flex-col gap-4 pt-3">
-      <div className="flex flex-col gap-2 px-4">
-        <div className="text-xl font-semibold">Inbox</div>
-        <div className="text-foreground-700">
-          Quickly add items to your inbox so you can triage them later.
+    <ReactSortable
+      list={items}
+      setList={() => {}}
+      group="shared"
+      className="no-scrollbar flex h-full flex-col overflow-y-scroll px-4"
+    >
+      {items.map((item) => (
+        <div id={item.id} key={item.id} className="pb-4">
+          <ItemCard key={item.id} item={item} inInbox />
         </div>
-        <div className="flex flex-col gap-4">
-          <Button
-            secondary
-            sm
-            className="bg-background-300/50 text-foreground-900 hover:bg-background-300/70 active:bg-background-300/100 w-full"
-            onClick={() => setShowNewTaskCard(true)}
-          >
-            Add item
-          </Button>
-          {showNewTaskCard && (
-            <NewItemCard
-              itemsConnectionId={data.items.__id}
-              onSave={() => setShowNewTaskCard(false)}
-              onCancel={() => setShowNewTaskCard(false)}
-            />
-          )}
-        </div>
-      </div>
-      <ReactSortable
-        list={items}
-        setList={() => {}}
-        group="shared"
-        className="no-scrollbar flex h-full flex-col overflow-y-scroll px-4"
-      >
-        {items.map((item) => (
-          <div id={item.id} key={item.id} className="pb-4">
-            <ItemCard key={item.id} item={item} inInbox />
-          </div>
-        ))}
-      </ReactSortable>
-    </div>
+      ))}
+    </ReactSortable>
   );
 };
