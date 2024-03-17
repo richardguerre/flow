@@ -44,7 +44,8 @@ const PLUGINS: Plugin[] = [
     slug: "repeating-tasks",
     description:
       "Official Flow plugin that allows creating repeating tasks. It's like a cron job for your tasks.",
-    installUrl: "https://cdn.jsdelivr.net/gh/richardguerre/flow@c1dc94b/plugins/repeating-tasks/out",
+    installUrl:
+      "https://cdn.jsdelivr.net/gh/richardguerre/flow@c1dc94b/plugins/repeating-tasks/out",
     version: "0.1.0",
     authors: [{ name: "Flow", avatarUrl: "FlowIcon.svg" }],
   },
