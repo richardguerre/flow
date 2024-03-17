@@ -34,7 +34,7 @@ const PLUGINS: Plugin[] = [
     slug: "essentials",
     description:
       "The official and default plugin for Flow containing essential features such as a morning routine and a shutdown routine.",
-    installUrl: "https://cdn.jsdelivr.net/npm/@flowdev/essentials@0.1.0/out",
+    installUrl: "https://cdn.jsdelivr.net/gh/richardguerre/flow@c1dc94b/plugins/essentials/out",
     version: "0.1.0",
     authors: [{ name: "Flow", avatarUrl: "FlowIcon.svg" }],
   },
@@ -43,7 +43,7 @@ const PLUGINS: Plugin[] = [
     name: "Google Calendar",
     slug: "google-calendar",
     description: "Official Google Calendar plugin for Flow.",
-    installUrl: "https://cdn.jsdelivr.net/npm/@flowdev/google-calendar@0.1.0/out",
+    installUrl: "https://cdn.jsdelivr.net/gh/richardguerre/flow@c1dc94b/plugins/google-calendar/out",
     version: "0.1.0",
     authors: [{ name: "Flow", avatarUrl: "FlowIcon.svg" }],
   },
@@ -53,7 +53,7 @@ const PLUGINS: Plugin[] = [
     slug: "github",
     description:
       "Official GitHub plugin for Flow. It currently only gets your requested reviews and adds them as items in your inbox. More features coming soon.",
-    installUrl: "https://cdn.jsdelivr.net/npm/@flowdev/github@0.1.0/out",
+    installUrl: "https://cdn.jsdelivr.net/gh/richardguerre/flow@c1dc94b/plugins/github/out",
     version: "0.1.0",
     authors: [{ name: "Flow", avatarUrl: "FlowIcon.svg" }],
   },
@@ -62,7 +62,7 @@ const PLUGINS: Plugin[] = [
     name: "GitStart",
     slug: "gitstart",
     description: "Official GitStart plugin for Flow.",
-    installUrl: "https://cdn.jsdelivr.net/npm/@flowdev/gitstart@0.1.0/out",
+    installUrl: "https://cdn.jsdelivr.net/gh/richardguerre/flow@c1dc94b/plugins/gitstart/out",
     version: "0.1.0",
     authors: [{ name: "Flow", avatarUrl: "FlowIcon.svg" }],
   },
@@ -71,14 +71,30 @@ const PLUGINS: Plugin[] = [
 export default () => {
   const { plugins } = usePlugins();
   const [openInstallPluginFromUrl, setOpenInstallPluginFromUrl] = useState(false);
+  const [installingPlugin, setInstallingPlugin] = useState<string | false>(false);
 
-  const [installPlugin, installingPlugin] = useMutation<BrowsePluginsViewInstallMutation>(graphql`
+  const [installPlugin] = useMutation<BrowsePluginsViewInstallMutation>(graphql`
     mutation BrowsePluginsViewInstallMutation($url: String!) {
       installPlugin(input: { url: $url }) {
         ...SettingsView_pluginInstallation
       }
     }
   `);
+
+  const handleInstallPlugin = (plugin: Plugin) => () => {
+    setInstallingPlugin(plugin.slug);
+    installPlugin({
+      variables: { url: plugin.installUrl },
+      onCompleted: () => {
+        toast.success("Plugin installed");
+        setInstallingPlugin(false);
+      },
+      onError: (error) => {
+        toast.error(error.message);
+        setInstallingPlugin(false);
+      },
+    });
+  }
 
   return (
     <div className="max-w-1488px mx-auto flex w-full flex-col gap-8 p-16">
@@ -126,9 +142,9 @@ export default () => {
                     </div>
                     <Button
                       secondary
-                      loading={installingPlugin}
+                      loading={installingPlugin === plugin.slug}
                       disabled={installed}
-                      onClick={() => installPlugin({ variables: { url: plugin.installUrl } })}
+                      onClick={handleInstallPlugin(plugin)}
                     >
                       {installed ? "Installed" : "Install"}
                     </Button>
