@@ -34,7 +34,18 @@ const PLUGINS: Plugin[] = [
     slug: "essentials",
     description:
       "The official and default plugin for Flow containing essential features such as a morning routine and a shutdown routine.",
-    installUrl: "https://cdn.jsdelivr.net/npm/@flowdev/essentials@0.1.0/out",
+    installUrl: "https://cdn.jsdelivr.net/gh/richardguerre/flow@c1dc94b/plugins/essentials/out",
+    version: "0.1.0",
+    authors: [{ name: "Flow", avatarUrl: "FlowIcon.svg" }],
+  },
+  {
+    iconUrl: "FlowIcon.svg",
+    name: "Repeating Tasks",
+    slug: "repeating-tasks",
+    description:
+      "Official Flow plugin that allows creating repeating tasks. It's like a cron job for your tasks.",
+    installUrl:
+      "https://cdn.jsdelivr.net/gh/richardguerre/flow@c1dc94b/plugins/repeating-tasks/out",
     version: "0.1.0",
     authors: [{ name: "Flow", avatarUrl: "FlowIcon.svg" }],
   },
@@ -43,7 +54,8 @@ const PLUGINS: Plugin[] = [
     name: "Google Calendar",
     slug: "google-calendar",
     description: "Official Google Calendar plugin for Flow.",
-    installUrl: "https://cdn.jsdelivr.net/npm/@flowdev/google-calendar@0.1.0/out",
+    installUrl:
+      "https://cdn.jsdelivr.net/gh/richardguerre/flow@c1dc94b/plugins/google-calendar/out",
     version: "0.1.0",
     authors: [{ name: "Flow", avatarUrl: "FlowIcon.svg" }],
   },
@@ -53,7 +65,7 @@ const PLUGINS: Plugin[] = [
     slug: "github",
     description:
       "Official GitHub plugin for Flow. It currently only gets your requested reviews and adds them as items in your inbox. More features coming soon.",
-    installUrl: "https://cdn.jsdelivr.net/npm/@flowdev/github@0.1.0/out",
+    installUrl: "https://cdn.jsdelivr.net/gh/richardguerre/flow@c1dc94b/plugins/github/out",
     version: "0.1.0",
     authors: [{ name: "Flow", avatarUrl: "FlowIcon.svg" }],
   },
@@ -62,23 +74,24 @@ const PLUGINS: Plugin[] = [
     name: "GitStart",
     slug: "gitstart",
     description: "Official GitStart plugin for Flow.",
-    installUrl: "https://cdn.jsdelivr.net/npm/@flowdev/gitstart@0.1.0/out",
+    installUrl: "https://cdn.jsdelivr.net/gh/richardguerre/flow@c1dc94b/plugins/gitstart/out",
+    version: "0.1.0",
+    authors: [{ name: "Flow", avatarUrl: "FlowIcon.svg" }],
+  },
+  {
+    iconUrl: "https://linear.app/favicon.ico",
+    name: "Linear",
+    slug: "linear",
+    description:
+      "Official Linear plugin for Flow, allowing you to manage your Linear issues directly from Flow.",
+    installUrl: "https://cdn.jsdelivr.net/gh/richardguerre/flow@c1dc94b/plugins/linear/out",
     version: "0.1.0",
     authors: [{ name: "Flow", avatarUrl: "FlowIcon.svg" }],
   },
 ];
 
 export default () => {
-  const { plugins } = usePlugins();
   const [openInstallPluginFromUrl, setOpenInstallPluginFromUrl] = useState(false);
-
-  const [installPlugin, installingPlugin] = useMutation<BrowsePluginsViewInstallMutation>(graphql`
-    mutation BrowsePluginsViewInstallMutation($url: String!) {
-      installPlugin(input: { url: $url }) {
-        ...SettingsView_pluginInstallation
-      }
-    }
-  `);
 
   return (
     <div className="max-w-1488px mx-auto flex w-full flex-col gap-8 p-16">
@@ -111,47 +124,71 @@ export default () => {
           </Popover>
         </div>
         <div className="grid grid-cols-3 gap-4">
-          {PLUGINS.map((plugin) => {
-            const installed = !!plugins[plugin.slug];
-            return (
-              <div
-                key={plugin.name}
-                className="bg-background-50 min-w-xs flex flex-col gap-2 rounded p-4 shadow-md"
-              >
-                <div className="flex flex-col gap-1">
-                  <div className="flex items-center justify-between">
-                    <div className="flex items-center gap-2">
-                      <img src={plugin.iconUrl} className="h-5 w-5" />
-                      <div className="text-base font-medium">{plugin.name}</div>
-                    </div>
-                    <Button
-                      secondary
-                      loading={installingPlugin}
-                      disabled={installed}
-                      onClick={() => installPlugin({ variables: { url: plugin.installUrl } })}
-                    >
-                      {installed ? "Installed" : "Install"}
-                    </Button>
-                  </div>
-                  <div className="text-foreground-700 text-sm">{plugin.description}</div>
-                </div>
-                <div className="text-foreground-700 flex items-center gap-4 text-sm">
-                  <div className="flex gap-2">v{plugin.version}</div>
-                </div>
-                <div className="text-foreground-900 flex items-center gap-2 text-sm">
-                  {plugin.authors[0].avatarUrl && (
-                    <img
-                      src={plugin.authors[0].avatarUrl}
-                      className="ring-primary-100 inline-block h-5 w-5 rounded-full ring"
-                    />
-                  )}
-                  {plugin.authors[0].name}
-                  {plugin.authors.length > 1 && ` & ${plugin.authors.length - 1} more`}
-                </div>
-              </div>
-            );
-          })}
+          {PLUGINS.map((plugin) => (
+            <PluginCard {...plugin} />
+          ))}
         </div>
+      </div>
+    </div>
+  );
+};
+
+const PluginCard = (props: Plugin) => {
+  const { plugins } = usePlugins();
+  const installed = !!plugins[props.slug];
+  const [installPlugin, installingPlugin] = useMutation<BrowsePluginsViewInstallMutation>(graphql`
+    mutation BrowsePluginsViewInstallMutation($url: String!) {
+      installPlugin(input: { url: $url }) {
+        ...SettingsView_pluginInstallation
+      }
+    }
+  `);
+
+  const handleInstallPlugin = () => {
+    installPlugin({
+      variables: { url: props.installUrl },
+      onCompleted: () => {
+        toast.success("Plugin installed");
+      },
+      onError: (error) => {
+        toast.error(error.message);
+      },
+    });
+  };
+  return (
+    <div
+      key={props.name}
+      className="bg-background-50 min-w-xs flex flex-col gap-2 rounded p-4 shadow-md"
+    >
+      <div className="flex flex-col gap-1">
+        <div className="flex items-center justify-between">
+          <div className="flex items-center gap-2">
+            <img src={props.iconUrl} className="h-5 w-5 rounded-1" />
+            <div className="text-base font-medium">{props.name}</div>
+          </div>
+          <Button
+            secondary
+            loading={installingPlugin}
+            disabled={installed}
+            onClick={handleInstallPlugin}
+          >
+            {installed ? "Installed" : "Install"}
+          </Button>
+        </div>
+        <div className="text-foreground-700 text-sm">{props.description}</div>
+      </div>
+      <div className="text-foreground-700 flex items-center gap-4 text-sm">
+        <div className="flex gap-2">v{props.version}</div>
+      </div>
+      <div className="text-foreground-900 flex items-center gap-2 text-sm">
+        {props.authors[0].avatarUrl && (
+          <img
+            src={props.authors[0].avatarUrl}
+            className="ring-primary-100 inline-block h-5 w-5 rounded-full ring"
+          />
+        )}
+        {props.authors[0].name}
+        {props.authors.length > 1 && ` & ${props.authors.length - 1} more`}
       </div>
     </div>
   );
