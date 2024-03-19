@@ -564,7 +564,7 @@ When the task is:
 
 // -------------------- Task subtasks mutations --------------------
 
-builder.mutationField("createSubtask", (t) => 
+builder.mutationField("createSubtask", (t) =>
   t.prismaFieldWithInput({
     type: "Task",
     description: `Create a new subtask.`,
@@ -573,13 +573,16 @@ builder.mutationField("createSubtask", (t) =>
       taskId: t.input.globalID({ required: true, description: "The Relay ID of the parent task." }),
     },
     resolve: async (query, _, args) => {
-      const parentTask = await prisma.task.findUnique({ where: { id: parseInt(args.input.taskId.id) } });
+      const parentTask = await prisma.task.findUnique({
+        where: { id: parseInt(args.input.taskId.id) },
+      });
       if (!parentTask) {
         throw new GraphQLError(`Parent task with ID ${args.input.taskId.id} not found.`, {
           extensions: {
             code: "PARENT_TASK_NOT_FOUND",
-            userFriendlyMessage: "The parent task was not found. Please try refreshing the page and try again."
-          }
+            userFriendlyMessage:
+              "The parent task was not found. Please try refreshing the page and try again.",
+          },
         });
       }
       return prisma.task.create({
@@ -588,9 +591,9 @@ builder.mutationField("createSubtask", (t) =>
           title: args.input.title,
           status: "TODO",
           parentTask: { connect: { id: parseInt(args.input.taskId.id) } },
-          day: {connect: {date: parentTask.date}},
+          day: { connect: { date: parentTask.date } },
         },
       });
     },
   }),
-)
+);
