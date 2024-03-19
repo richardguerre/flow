@@ -28,6 +28,7 @@ export const TaskType = builder.prismaNode("Task", {
     }),
     tags: t.relation("tags"),
     pluginDatas: t.relation("pluginDatas"),
+    subtasks: t.relation("subtasks"),
   }),
 });
 
