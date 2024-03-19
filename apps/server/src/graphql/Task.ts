@@ -597,3 +597,42 @@ builder.mutationField("createSubtask", (t) =>
     },
   }),
 );
+
+builder.mutationField("makeTaskSubtaskOf", (t) =>
+  t.prismaFieldWithInput({
+    type: "Task",
+    description: `Make a task a subtask of another task.`,
+    input: {
+      taskId: t.input.globalID({
+        required: true,
+        description: "The Relay ID of the task to update.",
+      }),
+      parentTaskId: t.input.globalID({
+        required: true,
+        description: "The Relay ID of the parent task.",
+      }),
+    },
+    resolve: async (query, _, args) => {
+      const parentTask = await prisma.task.findUnique({
+        where: { id: parseInt(args.input.parentTaskId.id) },
+      });
+      if (!parentTask) {
+        throw new GraphQLError(`Parent task with ID ${args.input.parentTaskId.id} not found.`, {
+          extensions: {
+            code: "PARENT_TASK_NOT_FOUND",
+            userFriendlyMessage:
+              "The parent task was not found. Please try refreshing the page and try again.",
+          },
+        });
+      }
+      return prisma.task.update({
+        ...query,
+        where: { id: parseInt(args.input.taskId.id) },
+        data: {
+          day: { connect: { date: parentTask.date } },
+          parentTask: { connect: { id: parseInt(args.input.parentTaskId.id) } },
+        },
+      });
+    },
+  }),
+);
