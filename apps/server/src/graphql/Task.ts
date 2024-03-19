@@ -6,6 +6,7 @@ import { DayType } from "./Day";
 import { dayjs } from "@flowdev/server/src/utils/dayjs";
 import { getPlugins } from "@flowdev/server/src/utils/getPlugins";
 import { DateFilter, DateTimeFilter } from "./PrismaFilters";
+import { GraphQLError } from "graphql";
 
 // -------------- Task types --------------
 
@@ -560,3 +561,36 @@ When the task is:
     },
   }),
 );
+
+// -------------------- Task subtasks mutations --------------------
+
+builder.mutationField("createSubtask", (t) => 
+  t.prismaFieldWithInput({
+    type: "Task",
+    description: `Create a new subtask.`,
+    input: {
+      title: t.input.string({ required: true, description: "The title of the subtask." }),
+      taskId: t.input.globalID({ required: true, description: "The Relay ID of the parent task." }),
+    },
+    resolve: async (query, _, args) => {
+      const parentTask = await prisma.task.findUnique({ where: { id: parseInt(args.input.taskId.id) } });
+      if (!parentTask) {
+        throw new GraphQLError(`Parent task with ID ${args.input.taskId.id} not found.`, {
+          extensions: {
+            code: "PARENT_TASK_NOT_FOUND",
+            userFriendlyMessage: "The parent task was not found. Please try refreshing the page and try again."
+          }
+        });
+      }
+      return prisma.task.create({
+        ...query,
+        data: {
+          title: args.input.title,
+          status: "TODO",
+          parentTask: { connect: { id: parseInt(args.input.taskId.id) } },
+          day: {connect: {date: parentTask.date}},
+        },
+      });
+    },
+  }),
+)
