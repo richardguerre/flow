@@ -99,6 +99,8 @@ model Task {
   date              DateTime   @db.Date
   /// The length of time the task is expected to take.
   durationInMinutes Int?
+  /// Order of the subtasks in the task
+  subtasksOrder     Int[]
 
   /// The item linked to the task
   item   Item? @relation(fields: [itemId], references: [id])
