@@ -36,6 +36,7 @@ import { TaskCardDeleteTaskMutation } from "../relay/__generated__/TaskCardDelet
 import { toast } from "@flowdev/ui/Toast";
 import { RenderTaskCardDetails } from "./RenderTaskCardDetails";
 import { RenderTaskCardActions } from "./RenderTaskCardActions";
+import { TaskCardSubtasks_task$key } from "../relay/__generated__/TaskCardSubtasks_task.graphql";
 
 type TaskCardProps = {
   task: TaskCard_task$key;
@@ -51,6 +52,7 @@ export const TaskCard = (props: TaskCardProps) => {
         status
         completedAt # updates the CalendarList component to add checkmark at the time of completion
         ...RenderTaskCardDetails_task
+        ...TaskCardSubtasks_task
         ...TaskCardActions_task
         ...TaskTitle_task
       }
@@ -86,6 +88,7 @@ export const TaskCard = (props: TaskCardProps) => {
           )}
         >
           <TaskTitle task={task} />
+          <TaskCardSubtasks task={task} />
           <RenderTaskCardDetails task={task} />
           <TaskCardActions task={task} />
         </div>
@@ -94,6 +97,99 @@ export const TaskCard = (props: TaskCardProps) => {
         <ContextMenuItem onClick={deleteTask}>Delete task</ContextMenuItem>
       </ContextMenuContent>
     </ContextMenu>
+  );
+};
+
+const taskCardUpdateTaskStatusMutation = graphql`
+  mutation TaskCardUpdateTaskStatusMutation($input: MutationUpdateTaskStatusInput!) {
+    updateTaskStatus(input: $input) {
+      ...Day_day
+    }
+  }
+`;
+
+type TaskCardSubtasksProps = {
+  task: TaskCardSubtasks_task$key;
+};
+
+const TaskCardSubtasks = (props: TaskCardSubtasksProps) => {
+  const task = useFragment(
+    graphql`
+      fragment TaskCardSubtasks_task on Task {
+        id
+        subtasks {
+          id
+          title
+          status
+        }
+      }
+    `,
+    props.task,
+  );
+
+  const [$updateTaskStatus] = useMutationPromise<TaskCardUpdateTaskStatusMutation>(
+    taskCardUpdateTaskStatusMutation,
+  );
+
+  const updateStatus = async (status: TaskStatus) => {
+    const updatePromise = $updateTaskStatus({
+      variables: { input: { id: task.id, status } },
+    });
+    toast.promise(updatePromise, {
+      loading: "Updating task...",
+      success: "Task updated",
+      error: (err) => err.message,
+    });
+  };
+
+  const doneButton = (
+    <CardActionButton key="done" onClick={() => updateStatus("DONE")}>
+      <BsCheck />
+    </CardActionButton>
+  );
+
+  const undoDoneButton = (
+    <CardActionButton
+      key="undoDone"
+      className="bg-positive-100 text-positive-600 hover:bg-positive-200 active:bg-positive-300"
+      onClick={() => updateStatus("TODO")}
+    >
+      <BsCheck />
+    </CardActionButton>
+  );
+
+  const cancelButton = (
+    <CardActionButton
+      key="cancel"
+      className="hidden group-hover:flex"
+      onClick={() => updateStatus("CANCELED")}
+    >
+      <BsX size={20} />
+    </CardActionButton>
+  );
+
+  const undoCancelButton = (
+    <CardActionButton
+      key="undoCancel"
+      className="bg-negative-100 text-negative-600 hover:bg-negative-200 active:bg-negative-300"
+      onClick={() => updateStatus("TODO")}
+    >
+      <BsX size={20} />
+    </CardActionButton>
+  );
+
+  return (
+    <div className="flex flex-col gap-2">
+      {task?.subtasks?.map((subtask) => (
+        <div className="flex gap-2">
+          <div className="flex gap-2">
+            {subtask.status === "DONE" ? undoDoneButton : doneButton}
+            {subtask.status === "CANCELED" ? undoCancelButton : cancelButton}
+          </div>
+          <div>{subtask.title}</div>
+        </div>
+      ))}
+    </div>
   );
 };
 
@@ -118,13 +214,9 @@ const TaskCardActions = (props: TaskCardActionsProps) => {
     props.task,
   );
 
-  const [$updateTaskStatus] = useMutationPromise<TaskCardUpdateTaskStatusMutation>(graphql`
-    mutation TaskCardUpdateTaskStatusMutation($input: MutationUpdateTaskStatusInput!) {
-      updateTaskStatus(input: $input) {
-        ...Day_day
-      }
-    }
-  `);
+  const [$updateTaskStatus] = useMutationPromise<TaskCardUpdateTaskStatusMutation>(
+    taskCardUpdateTaskStatusMutation,
+  );
 
   const [updateItemStatus] = useMutationPromise<TaskCardUpdateItemStatusMutation>(graphql`
     mutation TaskCardUpdateItemStatusMutation($input: MutationUpdateItemStatusInput!) {
@@ -334,10 +426,10 @@ const deleteTaskUpdater: SelectorStoreUpdater<TaskCardDeleteTaskMutation["respon
   store,
   data,
 ) => {
-  const day = store.get(`Day_${data.deleteTask.date}`);
+  const day = store.get(`Day_${data?.deleteTask.date}`);
   const dayTasks = day?.getLinkedRecords("tasks");
   day?.setLinkedRecords(
-    (dayTasks ?? []).filter((dayTask) => dayTask.getValue("id") !== data.deleteTask.id),
+    (dayTasks ?? []).filter((dayTask) => dayTask.getValue("id") !== data?.deleteTask.id),
     "tasks",
   );
 };
