@@ -29,7 +29,13 @@ export const TaskType = builder.prismaNode("Task", {
     }),
     tags: t.relation("tags"),
     pluginDatas: t.relation("pluginDatas"),
-    subtasks: t.relation("subtasks"),
+    subtasks: t.relation("subtasks", {
+      resolve: async (query, task) => {
+        const order = task.subtasksOrder ?? [];
+        const subtasks = await prisma.task.findMany({ ...query, where: { parentTaskId: task.id } });
+        return subtasks.sort((a, b) => order.indexOf(a.id) - order.indexOf(b.id));
+      },
+    }),
   }),
 });
 
@@ -570,14 +576,17 @@ builder.mutationField("createSubtask", (t) =>
     description: `Create a new subtask.`,
     input: {
       title: t.input.string({ required: true, description: "The title of the subtask." }),
-      taskId: t.input.globalID({ required: true, description: "The Relay ID of the parent task." }),
+      parentTaskId: t.input.globalID({
+        required: true,
+        description: "The Relay ID of the parent task.",
+      }),
     },
     resolve: async (query, _, args) => {
       const parentTask = await prisma.task.findUnique({
-        where: { id: parseInt(args.input.taskId.id) },
+        where: { id: parseInt(args.input.parentTaskId.id) },
       });
       if (!parentTask) {
-        throw new GraphQLError(`Parent task with ID ${args.input.taskId.id} not found.`, {
+        throw new GraphQLError(`Parent task with ID ${args.input.parentTaskId.id} not found.`, {
           extensions: {
             code: "PARENT_TASK_NOT_FOUND",
             userFriendlyMessage:
@@ -590,7 +599,7 @@ builder.mutationField("createSubtask", (t) =>
         data: {
           title: args.input.title,
           status: "TODO",
-          parentTask: { connect: { id: parseInt(args.input.taskId.id) } },
+          parentTask: { connect: { id: parseInt(args.input.parentTaskId.id) } },
           day: { connect: { date: parentTask.date } },
         },
       });

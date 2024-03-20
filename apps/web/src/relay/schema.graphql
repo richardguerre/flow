@@ -198,6 +198,9 @@ type Mutation {
   createOrUpdateNote(input: MutationCreateOrUpdateNoteInput!): Note!
   createRoutine(input: MutationCreateRoutineInput!): Routine!
 
+  """Create a new subtask."""
+  createSubtask(input: MutationCreateSubtaskInput!): Task!
+
   """Create a new task."""
   createTask(input: MutationCreateTaskInput!): Task!
 
@@ -229,6 +232,9 @@ type Mutation {
   Logout from the Flow instance using the session token set in the Authorization header.
   """
   logout: Boolean!
+
+  """Make a task a subtask of another task."""
+  makeTaskSubtaskOf(input: MutationMakeTaskSubtaskOfInput!): Task!
   pluginOperation(input: MutationPluginOperationInput!): PluginOperation
 
   """
@@ -358,6 +364,14 @@ input MutationCreateRoutineInput {
   time: Time!
 }
 
+input MutationCreateSubtaskInput {
+  """The Relay ID of the parent task."""
+  parentTaskId: ID!
+
+  """The title of the subtask."""
+  title: String!
+}
+
 input MutationCreateTaskInput {
   """The actions to be executed after the task is created."""
   actionDatas: [TaskActionDataInput!]
@@ -398,6 +412,14 @@ input MutationInstallPluginInput {
 input MutationLoginInput {
   """The password (unhashed)."""
   password: String!
+}
+
+input MutationMakeTaskSubtaskOfInput {
+  """The Relay ID of the parent task."""
+  parentTaskId: ID!
+
+  """The Relay ID of the task to update."""
+  taskId: ID!
 }
 
 input MutationPluginOperationInput {
@@ -940,6 +962,9 @@ type Task implements Node {
 
   """The status of the task"""
   status: TaskStatus!
+
+  """The subtasks of the task"""
+  subtasks: [Task!]!
 
   """The tags of the task """
   tags: [TaskTag!]!
