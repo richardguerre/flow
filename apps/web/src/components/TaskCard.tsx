@@ -134,7 +134,7 @@ const TaskCardSubtasks = (props: TaskCardSubtasksProps) => {
   );
 };
 
-const TaskCardSubtask = (props: {task: TaskCardSubtask_task$key}) => {
+const TaskCardSubtask = (props: { task: TaskCardSubtask_task$key }) => {
   const task = useFragment(
     graphql`
       fragment TaskCardSubtask_task on Task {
@@ -215,8 +215,8 @@ const TaskCardSubtask = (props: {task: TaskCardSubtask_task$key}) => {
       </div>
       <div>{task.title}</div>
     </div>
-  )
-}
+  );
+};
 
 type TaskCardActionsProps = {
   task: TaskCardActions_task$key;

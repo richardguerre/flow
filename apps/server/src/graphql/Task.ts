@@ -341,14 +341,20 @@ Any other scenario is not possible by nature of the app, where tasks:
           // and the position of the task in the day
           await tx.task.update({
             where: { id: task.id },
-            data: { status: newStatus, completedAt: newStatus === "DONE" ? new Date() : null,
-            subtasks: {
-              updateMany: {
-                where: { parentTaskId: task.id },
-                data: { status: newStatus, completedAt: newStatus === "DONE" ? new Date() : null },
+            data: {
+              status: newStatus,
+              completedAt: newStatus === "DONE" ? new Date() : null,
+              subtasks: {
+                updateMany: {
+                  where: { parentTaskId: task.id },
+                  data: {
+                    status: newStatus,
+                    completedAt: newStatus === "DONE" ? new Date() : null,
+                  },
+                },
               },
-            }
-          }});
+            },
+          });
           const newTasksOrder = originalDay.tasksOrder.filter((id) => id !== task.id);
           if (newStatus === "TODO") {
             newTasksOrder.splice(0, 0, task.id);
@@ -455,7 +461,8 @@ Any other scenario is not possible by nature of the app, where tasks:
                     where: { parentTaskId: task.id },
                     data: {
                       status: newStatus,
-                      completedAt: newStatus === "DONE" ? dayjs(task.date).endOf("day").toDate() : null,
+                      completedAt:
+                        newStatus === "DONE" ? dayjs(task.date).endOf("day").toDate() : null,
                     },
                   },
                 },
@@ -570,7 +577,8 @@ When the task is:
                       where: { parentTaskId: task.id },
                       data: {
                         status: newStatus,
-                        completedAt: newStatus === "DONE" ? dayjs(newDate).endOf("day").toDate() : null,
+                        completedAt:
+                          newStatus === "DONE" ? dayjs(newDate).endOf("day").toDate() : null,
                       },
                     },
                   },
