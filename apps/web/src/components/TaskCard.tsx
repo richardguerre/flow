@@ -37,6 +37,7 @@ import { toast } from "@flowdev/ui/Toast";
 import { RenderTaskCardDetails } from "./RenderTaskCardDetails";
 import { RenderTaskCardActions } from "./RenderTaskCardActions";
 import { TaskCardSubtasks_task$key } from "../relay/__generated__/TaskCardSubtasks_task.graphql";
+import { TaskCardSubtask_task$key } from "../relay/__generated__/TaskCardSubtask_task.graphql";
 
 type TaskCardProps = {
   task: TaskCard_task$key;
@@ -119,9 +120,27 @@ const TaskCardSubtasks = (props: TaskCardSubtasksProps) => {
         id
         subtasks {
           id
-          title
-          status
+          ...TaskCardSubtask_task
         }
+      }
+    `,
+    props.task,
+  );
+
+  return (
+    <div className="flex flex-col gap-2">
+      {task?.subtasks?.map((subtask) => <TaskCardSubtask key={subtask.id} task={subtask} />)}
+    </div>
+  );
+};
+
+const TaskCardSubtask = (props: {task: TaskCardSubtask_task$key}) => {
+  const task = useFragment(
+    graphql`
+      fragment TaskCardSubtask_task on Task {
+        id
+        title
+        status
       }
     `,
     props.task,
@@ -178,20 +197,26 @@ const TaskCardSubtasks = (props: TaskCardSubtasksProps) => {
     </CardActionButton>
   );
 
+  const longTitle = task.title.length > 24;
+
   return (
-    <div className="flex flex-col gap-2">
-      {task?.subtasks?.map((subtask) => (
-        <div className="flex gap-2">
-          <div className="flex gap-2">
-            {subtask.status === "DONE" ? undoDoneButton : doneButton}
-            {subtask.status === "CANCELED" ? undoCancelButton : cancelButton}
-          </div>
-          <div>{subtask.title}</div>
-        </div>
-      ))}
+    <div className={tw("flex gap-2", longTitle && "min-h-[3.25em]")}>
+      <div className={tw("flex gap-2 relative", longTitle && "flex-col gap-1")}>
+        {task.status === "TODO" ? (
+          <>
+            {doneButton}
+            {cancelButton}
+          </>
+        ) : task.status === "DONE" ? (
+          undoDoneButton
+        ) : (
+          undoCancelButton
+        )}
+      </div>
+      <div>{task.title}</div>
     </div>
-  );
-};
+  )
+}
 
 type TaskCardActionsProps = {
   task: TaskCardActions_task$key;

@@ -341,8 +341,14 @@ Any other scenario is not possible by nature of the app, where tasks:
           // and the position of the task in the day
           await tx.task.update({
             where: { id: task.id },
-            data: { status: newStatus, completedAt: newStatus === "DONE" ? new Date() : null },
-          });
+            data: { status: newStatus, completedAt: newStatus === "DONE" ? new Date() : null,
+            subtasks: {
+              updateMany: {
+                where: { parentTaskId: task.id },
+                data: { status: newStatus, completedAt: newStatus === "DONE" ? new Date() : null },
+              },
+            }
+          }});
           const newTasksOrder = originalDay.tasksOrder.filter((id) => id !== task.id);
           if (newStatus === "TODO") {
             newTasksOrder.splice(0, 0, task.id);
@@ -351,9 +357,7 @@ Any other scenario is not possible by nature of the app, where tasks:
           }
           await tx.day.update({
             where: { date: startOfToday },
-            data: {
-              tasksOrder: { set: newTasksOrder },
-            },
+            data: { tasksOrder: { set: newTasksOrder } },
           });
           days.push(task.date);
         } else if (task.date > endOfToday && (newStatus === "DONE" || newStatus === "CANCELED")) {
@@ -368,6 +372,16 @@ Any other scenario is not possible by nature of the app, where tasks:
                 connectOrCreate: {
                   where: { date: startOfToday },
                   create: { date: startOfToday },
+                },
+              },
+              subtasks: {
+                updateMany: {
+                  where: { parentTaskId: task.id },
+                  data: {
+                    status: newStatus,
+                    completedAt: newStatus === "DONE" ? new Date() : null,
+                    date: startOfToday,
+                  },
                 },
               },
             },
@@ -394,6 +408,16 @@ Any other scenario is not possible by nature of the app, where tasks:
                   connectOrCreate: {
                     where: { date: startOfToday },
                     create: { date: startOfToday },
+                  },
+                },
+                subtasks: {
+                  updateMany: {
+                    where: { parentTaskId: task.id },
+                    data: {
+                      status: newStatus,
+                      completedAt: null,
+                      date: startOfToday,
+                    },
                   },
                 },
               },
@@ -426,6 +450,15 @@ Any other scenario is not possible by nature of the app, where tasks:
               data: {
                 status: newStatus,
                 completedAt: newStatus === "DONE" ? dayjs(task.date).endOf("day").toDate() : null,
+                subtasks: {
+                  updateMany: {
+                    where: { parentTaskId: task.id },
+                    data: {
+                      status: newStatus,
+                      completedAt: newStatus === "DONE" ? dayjs(task.date).endOf("day").toDate() : null,
+                    },
+                  },
+                },
               },
             });
             days.push(task.date);
@@ -532,6 +565,15 @@ When the task is:
               ? {
                   status: newStatus,
                   completedAt: newStatus === "DONE" ? dayjs(newDate).endOf("day").toDate() : null,
+                  subtasks: {
+                    updateMany: {
+                      where: { parentTaskId: task.id },
+                      data: {
+                        status: newStatus,
+                        completedAt: newStatus === "DONE" ? dayjs(newDate).endOf("day").toDate() : null,
+                      },
+                    },
+                  },
                 }
               : {}),
           },
