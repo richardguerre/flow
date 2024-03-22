@@ -43,5 +43,8 @@
   },
   "prettier": {
     "printWidth": 100
+  },
+  "resolutions": {
+    "vite": "4.5.2"
   }
 }

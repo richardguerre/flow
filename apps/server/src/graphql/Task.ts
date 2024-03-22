@@ -6,6 +6,7 @@ import { DayType } from "./Day";
 import { dayjs } from "@flowdev/server/src/utils/dayjs";
 import { getPlugins } from "@flowdev/server/src/utils/getPlugins";
 import { DateFilter, DateTimeFilter } from "./PrismaFilters";
+import { GraphQLError } from "graphql";
 
 // -------------- Task types --------------
 
@@ -28,6 +29,13 @@ export const TaskType = builder.prismaNode("Task", {
     }),
     tags: t.relation("tags"),
     pluginDatas: t.relation("pluginDatas"),
+    subtasks: t.relation("subtasks", {
+      resolve: async (query, task) => {
+        const order = task.subtasksOrder ?? [];
+        const subtasks = await prisma.task.findMany({ ...query, where: { parentTaskId: task.id } });
+        return subtasks.sort((a, b) => order.indexOf(a.id) - order.indexOf(b.id));
+      },
+    }),
   }),
 });
 
@@ -333,7 +341,19 @@ Any other scenario is not possible by nature of the app, where tasks:
           // and the position of the task in the day
           await tx.task.update({
             where: { id: task.id },
-            data: { status: newStatus, completedAt: newStatus === "DONE" ? new Date() : null },
+            data: {
+              status: newStatus,
+              completedAt: newStatus === "DONE" ? new Date() : null,
+              subtasks: {
+                updateMany: {
+                  where: { parentTaskId: task.id },
+                  data: {
+                    status: newStatus,
+                    completedAt: newStatus === "DONE" ? new Date() : null,
+                  },
+                },
+              },
+            },
           });
           const newTasksOrder = originalDay.tasksOrder.filter((id) => id !== task.id);
           if (newStatus === "TODO") {
@@ -343,9 +363,7 @@ Any other scenario is not possible by nature of the app, where tasks:
           }
           await tx.day.update({
             where: { date: startOfToday },
-            data: {
-              tasksOrder: { set: newTasksOrder },
-            },
+            data: { tasksOrder: { set: newTasksOrder } },
           });
           days.push(task.date);
         } else if (task.date > endOfToday && (newStatus === "DONE" || newStatus === "CANCELED")) {
@@ -360,6 +378,16 @@ Any other scenario is not possible by nature of the app, where tasks:
                 connectOrCreate: {
                   where: { date: startOfToday },
                   create: { date: startOfToday },
+                },
+              },
+              subtasks: {
+                updateMany: {
+                  where: { parentTaskId: task.id },
+                  data: {
+                    status: newStatus,
+                    completedAt: newStatus === "DONE" ? new Date() : null,
+                    date: startOfToday,
+                  },
                 },
               },
             },
@@ -386,6 +414,16 @@ Any other scenario is not possible by nature of the app, where tasks:
                   connectOrCreate: {
                     where: { date: startOfToday },
                     create: { date: startOfToday },
+                  },
+                },
+                subtasks: {
+                  updateMany: {
+                    where: { parentTaskId: task.id },
+                    data: {
+                      status: newStatus,
+                      completedAt: null,
+                      date: startOfToday,
+                    },
                   },
                 },
               },
@@ -418,6 +456,16 @@ Any other scenario is not possible by nature of the app, where tasks:
               data: {
                 status: newStatus,
                 completedAt: newStatus === "DONE" ? dayjs(task.date).endOf("day").toDate() : null,
+                subtasks: {
+                  updateMany: {
+                    where: { parentTaskId: task.id },
+                    data: {
+                      status: newStatus,
+                      completedAt:
+                        newStatus === "DONE" ? dayjs(task.date).endOf("day").toDate() : null,
+                    },
+                  },
+                },
               },
             });
             days.push(task.date);
@@ -524,6 +572,16 @@ When the task is:
               ? {
                   status: newStatus,
                   completedAt: newStatus === "DONE" ? dayjs(newDate).endOf("day").toDate() : null,
+                  subtasks: {
+                    updateMany: {
+                      where: { parentTaskId: task.id },
+                      data: {
+                        status: newStatus,
+                        completedAt:
+                          newStatus === "DONE" ? dayjs(newDate).endOf("day").toDate() : null,
+                      },
+                    },
+                  },
                 }
               : {}),
           },
@@ -555,6 +613,84 @@ When the task is:
           where: { date: { in: days } },
           orderBy: { date: "asc" },
         });
+      });
+    },
+  }),
+);
+
+// -------------------- Task subtasks mutations --------------------
+
+builder.mutationField("createSubtask", (t) =>
+  t.prismaFieldWithInput({
+    type: "Task",
+    description: `Create a new subtask.`,
+    input: {
+      title: t.input.string({ required: true, description: "The title of the subtask." }),
+      parentTaskId: t.input.globalID({
+        required: true,
+        description: "The Relay ID of the parent task.",
+      }),
+    },
+    resolve: async (query, _, args) => {
+      const parentTask = await prisma.task.findUnique({
+        where: { id: parseInt(args.input.parentTaskId.id) },
+      });
+      if (!parentTask) {
+        throw new GraphQLError(`Parent task with ID ${args.input.parentTaskId.id} not found.`, {
+          extensions: {
+            code: "PARENT_TASK_NOT_FOUND",
+            userFriendlyMessage:
+              "The parent task was not found. Please try refreshing the page and try again.",
+          },
+        });
+      }
+      return prisma.task.create({
+        ...query,
+        data: {
+          title: args.input.title,
+          status: "TODO",
+          parentTask: { connect: { id: parseInt(args.input.parentTaskId.id) } },
+          day: { connect: { date: parentTask.date } },
+        },
+      });
+    },
+  }),
+);
+
+builder.mutationField("makeTaskSubtaskOf", (t) =>
+  t.prismaFieldWithInput({
+    type: "Task",
+    description: `Make a task a subtask of another task.`,
+    input: {
+      taskId: t.input.globalID({
+        required: true,
+        description: "The Relay ID of the task to update.",
+      }),
+      parentTaskId: t.input.globalID({
+        required: true,
+        description: "The Relay ID of the parent task.",
+      }),
+    },
+    resolve: async (query, _, args) => {
+      const parentTask = await prisma.task.findUnique({
+        where: { id: parseInt(args.input.parentTaskId.id) },
+      });
+      if (!parentTask) {
+        throw new GraphQLError(`Parent task with ID ${args.input.parentTaskId.id} not found.`, {
+          extensions: {
+            code: "PARENT_TASK_NOT_FOUND",
+            userFriendlyMessage:
+              "The parent task was not found. Please try refreshing the page and try again.",
+          },
+        });
+      }
+      return prisma.task.update({
+        ...query,
+        where: { id: parseInt(args.input.taskId.id) },
+        data: {
+          day: { connect: { date: parentTask.date } },
+          parentTask: { connect: { id: parseInt(args.input.parentTaskId.id) } },
+        },
       });
     },
   }),

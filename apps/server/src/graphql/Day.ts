@@ -28,7 +28,7 @@ export const DayType = builder.prismaNode("Day", {
         const order = dayInfo?.tasksOrder ?? day.tasksOrder; // day.tasksOrder might be outdated if the tasksOrder was updated in another request
         const tasks = await prisma.task.findMany({
           ...query,
-          where: { date: day.date },
+          where: { date: day.date, parentTaskId: null },
         });
         const tasksOrdered = tasks.sort((a, b) => {
           return order.indexOf(a.id) - order.indexOf(b.id);
