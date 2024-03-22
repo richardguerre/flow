@@ -63,14 +63,7 @@ export const TaskCard = (props: TaskCardProps) => {
     props.task,
   );
 
-  const [$deleteTask] = useMutation<TaskCardDeleteTaskMutation>(graphql`
-    mutation TaskCardDeleteTaskMutation($id: ID!) {
-      deleteTask(id: $id) {
-        id
-        date
-      }
-    }
-  `);
+  const [$deleteTask] = useMutation<TaskCardDeleteTaskMutation>(deleteTaskMutation);
 
   const deleteTask = () => {
     $deleteTask({
@@ -113,6 +106,15 @@ const taskCardUpdateTaskStatusMutation = graphql`
   }
 `;
 
+const deleteTaskMutation = graphql`
+  mutation TaskCardDeleteTaskMutation($id: ID!) {
+    deleteTask(id: $id) {
+      id
+      date
+    }
+  }
+`;
+
 const TaskCardSubtask = (props: { task: TaskCardSubtask_task$key }) => {
   const task = useFragment(
     graphql`
@@ -120,6 +122,7 @@ const TaskCardSubtask = (props: { task: TaskCardSubtask_task$key }) => {
         id
         title
         status
+        date
       }
     `,
     props.task,
@@ -128,6 +131,7 @@ const TaskCardSubtask = (props: { task: TaskCardSubtask_task$key }) => {
   const [$updateTaskStatus] = useMutationPromise<TaskCardUpdateTaskStatusMutation>(
     taskCardUpdateTaskStatusMutation,
   );
+  const [$deleteTask] = useMutation<TaskCardDeleteTaskMutation>(deleteTaskMutation);
 
   const updateStatus = async (status: TaskStatus) => {
     const updatePromise = $updateTaskStatus({
@@ -137,6 +141,15 @@ const TaskCardSubtask = (props: { task: TaskCardSubtask_task$key }) => {
       loading: "Updating task...",
       success: "Task updated",
       error: (err) => err.message,
+    });
+  };
+
+  const deleteTask = () => {
+    $deleteTask({
+      variables: { id: task?.id },
+      optimisticResponse: { deleteTask: { id: task?.id, date: task.date } },
+      optimisticUpdater: deleteTaskUpdater,
+      updater: deleteTaskUpdater,
     });
   };
 
@@ -156,16 +169,6 @@ const TaskCardSubtask = (props: { task: TaskCardSubtask_task$key }) => {
     </CardActionButton>
   );
 
-  const cancelButton = (
-    <CardActionButton
-      key="cancel"
-      className="hidden group-hover:flex"
-      onClick={() => updateStatus("CANCELED")}
-    >
-      <BsX size={20} />
-    </CardActionButton>
-  );
-
   const undoCancelButton = (
     <CardActionButton
       key="undoCancel"
@@ -181,18 +184,21 @@ const TaskCardSubtask = (props: { task: TaskCardSubtask_task$key }) => {
   return (
     <div className={tw("flex gap-2", longTitle && "min-h-[3.25em]")}>
       <div className={tw("flex gap-2 relative", longTitle && "flex-col gap-1")}>
-        {task.status === "TODO" ? (
-          <>
-            {doneButton}
-            {cancelButton}
-          </>
-        ) : task.status === "DONE" ? (
-          undoDoneButton
-        ) : (
-          undoCancelButton
-        )}
+        {task.status === "TODO"
+          ? doneButton
+          : task.status === "DONE"
+          ? undoDoneButton
+          : undoCancelButton}
       </div>
-      <div>{task.title}</div>
+      <ContextMenu>
+        <ContextMenuTrigger>
+          <div>{task.title}</div>
+        </ContextMenuTrigger>
+        <ContextMenuContent>
+          <ContextMenuItem onClick={() => updateStatus("CANCELED")}>Cancel subtask</ContextMenuItem>
+          <ContextMenuItem onClick={deleteTask}>Delete subtask</ContextMenuItem>
+        </ContextMenuContent>
+      </ContextMenu>
     </div>
   );
 };
