@@ -36,7 +36,6 @@ import { TaskCardDeleteTaskMutation } from "../relay/__generated__/TaskCardDelet
 import { toast } from "@flowdev/ui/Toast";
 import { RenderTaskCardDetails } from "./RenderTaskCardDetails";
 import { RenderTaskCardActions } from "./RenderTaskCardActions";
-import { TaskCardSubtasks_task$key } from "../relay/__generated__/TaskCardSubtasks_task.graphql";
 import { TaskCardSubtask_task$key } from "../relay/__generated__/TaskCardSubtask_task.graphql";
 
 type TaskCardProps = {
@@ -52,8 +51,11 @@ export const TaskCard = (props: TaskCardProps) => {
         title
         status
         completedAt # updates the CalendarList component to add checkmark at the time of completion
+        subtasks {
+          id
+          ...TaskCardSubtask_task
+        }
         ...RenderTaskCardDetails_task
-        ...TaskCardSubtasks_task
         ...TaskCardActions_task
         ...TaskTitle_task
       }
@@ -89,7 +91,9 @@ export const TaskCard = (props: TaskCardProps) => {
           )}
         >
           <TaskTitle task={task} />
-          <TaskCardSubtasks task={task} />
+          <div className="flex flex-col gap-2">
+            {task?.subtasks?.map((subtask) => <TaskCardSubtask key={subtask.id} task={subtask} />)}
+          </div>
           <RenderTaskCardDetails task={task} />
           <TaskCardActions task={task} />
         </div>
@@ -108,31 +112,6 @@ const taskCardUpdateTaskStatusMutation = graphql`
     }
   }
 `;
-
-type TaskCardSubtasksProps = {
-  task: TaskCardSubtasks_task$key;
-};
-
-const TaskCardSubtasks = (props: TaskCardSubtasksProps) => {
-  const task = useFragment(
-    graphql`
-      fragment TaskCardSubtasks_task on Task {
-        id
-        subtasks {
-          id
-          ...TaskCardSubtask_task
-        }
-      }
-    `,
-    props.task,
-  );
-
-  return (
-    <div className="flex flex-col gap-2">
-      {task?.subtasks?.map((subtask) => <TaskCardSubtask key={subtask.id} task={subtask} />)}
-    </div>
-  );
-};
 
 const TaskCardSubtask = (props: { task: TaskCardSubtask_task$key }) => {
   const task = useFragment(
