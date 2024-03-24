@@ -45,6 +45,7 @@
     "printWidth": 100
   },
   "resolutions": {
-    "vite": "4.5.2"
+    "vite": "4.5.2",
+    "prettier": "3.0.3"
   }
 }
