@@ -109,3 +109,169 @@ export default definePlugin((options) => {
   // your plugin code here
 });
 ```
+
+# How to create a "Hello World" plugin
+
+## Pre-requisites
+
+1. Have a GitHub account.
+2. Have [Bun](https://bun.sh/docs) installed. You can install it [this guide](https://bun.sh/docs/installation).
+
+## Steps
+
+To create a "Hello World" plugin, you can follow these steps:
+
+1. Fork the [repository](https://github.com/richardguerre/flow). It is currently the best and easiest to create a plugin for Flow.
+2. Clone the repository to your local machine. If you are not familiar with Git, you can use [GitHub Desktop](https://desktop.github.com/) to clone the repository.
+3. Create a new folder in the `plugins` folder. You can name it `hello-world` (or any other slug you like).
+4. In this folder, create a `package.json` file with the following content:
+
+```json
+{
+  "name": "hello-world",
+  "version": "1.0.0",
+  "scripts": {
+    "build:web": "bunx --bun vite build -c vite.web.ts",
+    "build:server": "bunx --bun vite build -c vite.server.ts",
+    "build": "bun run build:web && bun run build:server"
+  },
+  "dependencies": {
+    "@flowdev/plugin": "workspace:*"
+  },
+  "devDependencies": {
+    "@vitejs/plugin-react": "4.1.0",
+    "vite": "4.5.2"
+  }
+}
+```
+Notes:
+- The `@flowdev/plugin` dependency provides helper functions to create plugins. It is not published to NPM yet, so you need to use the `workspace:*` syntax to reference it and hence you need to fork and clone the Flow repository.
+- The `@vitejs/plugin-react` and `vite` dependencies are recommended to build the plugin. You can use other tools like Rollup if you prefer.
+- The `build:web` and `build:server` scripts build the web and server parts of the plugin respectively.
+- The `build` script builds both the web and server parts of the plugin.
+
+5. Run `bun install` in the `hello-world` folder to install the dependencies.
+6. Create a `vite.web.ts` file with the following content:
+
+```typescript
+import { defineConfig } from "vite";
+import react from "@vitejs/plugin-react";
+
+export default defineConfig({
+  build: {
+    outDir: "out",
+    emptyOutDir: false, // this prevents Vite from deleting the out directory each time it builds, so that the server part or plugin.json is not deleted
+    lib: {
+      name: "flow-hello-world", // this is the slug of the plugin with the prefix "flow-"
+      entry: "src/web.tsx",
+      formats: ["es"], // the web part of the plugin must be an ES module, it cannot be built as a CommonJS module
+      fileName: () => "web.js",
+    },
+  },
+  define: {
+    "process.env.NODE_ENV": '"production"', // this optimizes the build to only contain production React code (not the dev server with HMR).
+  },
+  plugins: [react({ jsxRuntime: "classic" })], // this enables React support in Vite with the classic runtime where React.createElement() is used instead of jsx().
+});
+```
+
+7. Create a `vite.server.ts` file with the following content:
+
+```typescript
+import { defineConfig } from "vite";
+
+export default defineConfig({
+  build: {
+    outDir: "out",
+    emptyOutDir: false,
+    rollupOptions: { output: { exports: "named" } },
+    lib: {
+      name: "flow-hello-world", // this is the slug of the plugin with the prefix "flow-"
+      entry: "src/server.ts",
+      formats: ["cjs"], // the server part of the plugin can be built as a CommonJS module or an ES module. CommonJS is recommended.
+      fileName: () => "server.js",
+    },
+  },
+});
+```
+
+8. Create a `src` folder in the `hello-world` folder.
+9. Create a `web.tsx` file in the `src` folder with the following content:
+
+```tsx
+import { definePlugin } from "@flowdev/plugin/web";
+
+export default definePlugin((options) => {
+  const React = options.React; // this is required to use React in the plugin
+  return {
+    name: "Hello World", // this will be the display name of the plugin in Flow, like in the settings screen
+    settings: {
+      "my-setting": {
+        type: "textfield",
+        label: "My Setting",
+        description: "This is a setting in the Hello World plugin.",
+        placeholder: "Enter something here",
+      },
+      "my-custom-setting": {
+        type: "custom",
+        render: () => {
+          return (
+            <div>This is a custom setting. It doesn't have to be an input</div>
+          );
+        },
+      },
+    }
+  }
+});
+```
+
+This will show a text field in the settings screen of the plugin, that the user can fill in, and will be saved using the `my-setting` key in Flow's store. There are other setting types available, including a `custom` type that will allow you to render a custom React component in the settings screen, like in the `my-custom-setting` setting, which renders a `div` element instead of an input.
+
+10. Create a `server.ts` file in the `src` folder with the following content:
+
+```typescript
+import { definePlugin } from "@flowdev/plugin/server";
+
+export default definePlugin((options) => {
+  return {
+    onStoreItemUpsert: async (itemKey) => {
+      const item = await opts.store.getPluginItem(itemKey);
+      console.log(itemKey, item?.value);
+    },
+    onCreateTask: async (task) => {
+      console.log("Task created:", task);
+      return task;
+    }
+  }
+});
+```
+
+Notes:
+- The `onStoreItemUpsert` function will be called whenever an item is upserted in the store. This can be used to react to changes in the store, for example when a setting is saved in the settings screen.
+- The `onCreateTask` function will be called whenever a task is created. This can be used to modify the task before it is created, for example to show a modal to the user to ask for additional information.
+
+11. Run `bun run build` in the `hello-world` folder to build the plugin in the `out` folder.
+12. Create a `plugin.json` file in the `out` folder with the following content:
+
+```json
+{
+  "slug": "hello-world",
+  "version": "1.0.0",
+  "web": true,
+  "server": true
+}
+```
+
+13. Commit the changes to your forked repository.
+14. Create a new release in your forked repository with the tag `v1.0.0`.
+15. Go to your Flow, and install the plugin using the "Install a plugin from a URL" option (link icon on the right) in the `/browse-plugins` page. Use the following URL to install the plugin:
+
+```
+https://cdn.jsdelivr.net/gh/<username>/flow/plugins/hello-world/out
+```
+
+Once installed, you will see the plugin popup in the settings where you will see the 2 settings you defined in the `web.tsx` file.
+
+# Examples
+
+For example plugins, you can check the `/plugins` directory of the [Flow repository](https://github.com/richardguerre/flow/tree/main/plugins), which contains official plugins for Flow.
