@@ -8,6 +8,6 @@ runs:
     - name: Setup bun
       uses: oven-sh/setup-bun@v1
       with:
-        bun-version: 1.0.13
+        bun-version: 1.0.35
     - run: bun install
       shell: bash
