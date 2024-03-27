@@ -1,3 +1,8 @@
+---
+title: Plugins
+description: Learn about plugins in Flow and how to create your own.
+---
+
 # Plugins
 
 A Flow plugin is made up 2 or 3 files:
