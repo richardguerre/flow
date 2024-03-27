@@ -10,7 +10,7 @@
     "dev": "bunx --bun vite --port 3000",
     "print-schema": "cd ../server && DATABASE_URL=this_makes_it_run_wo_server_envs ORIGIN=same_as_db_url bun run print-schema",
     "prebuild": "bun run print-schema && bun run setup:relay && bun run relay",
-    "build": "bunx vite -v && NODE_ENV=production bunx --bun vite build",
+    "build": "bunx vite -v && bunx rollup -v && NODE_ENV=production bunx --bun vite build",
     "preview": "vite preview",
     "env:example": "cp -n .env.example .env || true",
     "env:codespaces": "cp .env.codespaces .env"

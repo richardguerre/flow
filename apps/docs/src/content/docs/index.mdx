@@ -1,0 +1,35 @@
+---
+title: A daily planner tailored to your needs.
+description: A plugin-based daily planner that adapts to your needs.
+template: splash
+hero:
+  tagline: A daily planner tailored to your needs.
+  image:
+    file: ../../assets/demo.png
+  actions:
+    - text: Sign up
+      link: https://example.com # replace with link to sign up form
+      icon: right-arrow
+      variant: primary
+    - text: Learn more
+      link: /guides/what-is-flow
+---
+
+import { Card, CardGrid } from "@astrojs/starlight/components";
+
+## Next steps
+
+<CardGrid stagger>
+  <Card title="Update content" icon="pencil">
+    Edit `src/content/docs/index.mdx` to see this page change.
+  </Card>
+  <Card title="Add new content" icon="add-document">
+    Add Markdown or MDX files to `src/content/docs` to create new pages.
+  </Card>
+  <Card title="Configure your site" icon="setting">
+    Edit your `sidebar` and other config in `astro.config.mjs`.
+  </Card>
+  <Card title="Read the docs" icon="open-book">
+    Learn more in [the Starlight Docs](https://starlight.astro.build/).
+  </Card>
+</CardGrid>
