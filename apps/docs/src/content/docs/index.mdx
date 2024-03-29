@@ -20,16 +20,248 @@ import { Card, CardGrid } from "@astrojs/starlight/components";
 ## Next steps
 
 <CardGrid stagger>
-  <Card title="Update content" icon="pencil">
-    Edit `src/content/docs/index.mdx` to see this page change.
-  </Card>
-  <Card title="Add new content" icon="add-document">
-    Add Markdown or MDX files to `src/content/docs` to create new pages.
-  </Card>
-  <Card title="Configure your site" icon="setting">
-    Edit your `sidebar` and other config in `astro.config.mjs`.
-  </Card>
-  <Card title="Read the docs" icon="open-book">
-    Learn more in [the Starlight Docs](https://starlight.astro.build/).
-  </Card>
+  <div class="bg-background-50 group flex cursor-pointer flex-col gap-1 rounded-lg p-3 shadow-sm hover:shadow-md">
+    <div class="TaskTitleInput w-full cursor-text p-0">
+      <div contenteditable="false" translate="no" class="tiptap ProseMirror" tabindex="0">
+        <p>Setup Apple Business Manager on my computer</p>
+      </div>
+    </div>
+    <div class="flex w-full flex-col gap-2">
+      <div class="flex flex-wrap gap-2"></div>
+    </div>
+    <div class="flex gap-2">
+      <button class="bg-background-200/50 text-foreground-700 hover:bg-background-300/70 active:bg-background-300/100 flex h-6 w-6 items-center justify-center rounded-full text-sm">
+        <svg
+          stroke="currentColor"
+          fill="currentColor"
+          stroke-width="0"
+          viewBox="0 0 16 16"
+          height="20px"
+          width="20px"
+          xmlns="http://www.w3.org/2000/svg"
+        >
+          <path d="M10.97 4.97a.75.75 0 0 1 1.07 1.05l-3.99 4.99a.75.75 0 0 1-1.08.02L4.324 8.384a.75.75 0 1 1 1.06-1.06l2.094 2.093 3.473-4.425a.267.267 0 0 1 .02-.022z"></path>
+        </svg>
+      </button>
+      <button class="bg-background-200/50 text-foreground-700 hover:bg-background-300/70 active:bg-background-300/100 h-6 w-6 items-center justify-center rounded-full text-sm hidden group-hover:flex">
+        <svg
+          stroke="currentColor"
+          fill="currentColor"
+          stroke-width="0"
+          viewBox="0 0 16 16"
+          height="20"
+          width="20"
+          xmlns="http://www.w3.org/2000/svg"
+        >
+          <path d="M4.646 4.646a.5.5 0 0 1 .708 0L8 7.293l2.646-2.647a.5.5 0 0 1 .708.708L8.707 8l2.647 2.646a.5.5 0 0 1-.708.708L8 8.707l-2.646 2.647a.5.5 0 0 1-.708-.708L7.293 8 4.646 5.354a.5.5 0 0 1 0-.708z"></path>
+        </svg>
+      </button>
+      <button
+        type="button"
+        id="radix-:rjn:"
+        aria-haspopup="menu"
+        aria-expanded="false"
+        data-state="closed"
+        class="outline-none"
+      >
+        <button class="bg-background-200/50 text-foreground-700 hover:bg-background-300/70 active:bg-background-300/100 h-6 w-6 items-center justify-center rounded-full text-sm hidden group-hover:flex">
+          <svg
+            stroke="2px"
+            fill="currentColor"
+            stroke-width="0"
+            viewBox="0 0 16 16"
+            height="16"
+            width="16"
+            xmlns="http://www.w3.org/2000/svg"
+          >
+            <path d="M8 3.5a.5.5 0 0 0-1 0V9a.5.5 0 0 0 .252.434l3.5 2a.5.5 0 0 0 .496-.868L8 8.71V3.5z"></path>
+            <path d="M8 16A8 8 0 1 0 8 0a8 8 0 0 0 0 16zm7-8A7 7 0 1 1 1 8a7 7 0 0 1 14 0z"></path>
+          </svg>
+        </button>
+      </button>
+    </div>
+  </div>
+  <div class="bg-background-50 group flex cursor-pointer flex-col gap-1 rounded-lg p-3 shadow-sm hover:shadow-md">
+    <div class="TaskTitleInput w-full cursor-text p-0">
+      <div contenteditable="false" translate="no" class="tiptap ProseMirror" tabindex="0">
+        <p>Setup Apple Business Manager on my computer</p>
+      </div>
+    </div>
+    <div class="flex w-full flex-col gap-2">
+      <div class="flex flex-wrap gap-2"></div>
+    </div>
+    <div class="flex gap-2">
+      <button class="bg-background-200/50 text-foreground-700 hover:bg-background-300/70 active:bg-background-300/100 flex h-6 w-6 items-center justify-center rounded-full text-sm">
+        <svg
+          stroke="currentColor"
+          fill="currentColor"
+          stroke-width="0"
+          viewBox="0 0 16 16"
+          height="20px"
+          width="20px"
+          xmlns="http://www.w3.org/2000/svg"
+        >
+          <path d="M10.97 4.97a.75.75 0 0 1 1.07 1.05l-3.99 4.99a.75.75 0 0 1-1.08.02L4.324 8.384a.75.75 0 1 1 1.06-1.06l2.094 2.093 3.473-4.425a.267.267 0 0 1 .02-.022z"></path>
+        </svg>
+      </button>
+      <button class="bg-background-200/50 text-foreground-700 hover:bg-background-300/70 active:bg-background-300/100 h-6 w-6 items-center justify-center rounded-full text-sm hidden group-hover:flex">
+        <svg
+          stroke="currentColor"
+          fill="currentColor"
+          stroke-width="0"
+          viewBox="0 0 16 16"
+          height="20"
+          width="20"
+          xmlns="http://www.w3.org/2000/svg"
+        >
+          <path d="M4.646 4.646a.5.5 0 0 1 .708 0L8 7.293l2.646-2.647a.5.5 0 0 1 .708.708L8.707 8l2.647 2.646a.5.5 0 0 1-.708.708L8 8.707l-2.646 2.647a.5.5 0 0 1-.708-.708L7.293 8 4.646 5.354a.5.5 0 0 1 0-.708z"></path>
+        </svg>
+      </button>
+      <button
+        type="button"
+        id="radix-:rjn:"
+        aria-haspopup="menu"
+        aria-expanded="false"
+        data-state="closed"
+        class="outline-none"
+      >
+        <button class="bg-background-200/50 text-foreground-700 hover:bg-background-300/70 active:bg-background-300/100 h-6 w-6 items-center justify-center rounded-full text-sm hidden group-hover:flex">
+          <svg
+            stroke="2px"
+            fill="currentColor"
+            stroke-width="0"
+            viewBox="0 0 16 16"
+            height="16"
+            width="16"
+            xmlns="http://www.w3.org/2000/svg"
+          >
+            <path d="M8 3.5a.5.5 0 0 0-1 0V9a.5.5 0 0 0 .252.434l3.5 2a.5.5 0 0 0 .496-.868L8 8.71V3.5z"></path>
+            <path d="M8 16A8 8 0 1 0 8 0a8 8 0 0 0 0 16zm7-8A7 7 0 1 1 1 8a7 7 0 0 1 14 0z"></path>
+          </svg>
+        </button>
+      </button>
+    </div>
+  </div>
+  <div class="bg-background-50 group flex cursor-pointer flex-col gap-1 rounded-lg p-3 shadow-sm hover:shadow-md">
+    <div class="TaskTitleInput w-full cursor-text p-0">
+      <div contenteditable="false" translate="no" class="tiptap ProseMirror" tabindex="0">
+        <p>Setup Apple Business Manager on my computer</p>
+      </div>
+    </div>
+    <div class="flex w-full flex-col gap-2">
+      <div class="flex flex-wrap gap-2"></div>
+    </div>
+    <div class="flex gap-2">
+      <button class="bg-background-200/50 text-foreground-700 hover:bg-background-300/70 active:bg-background-300/100 flex h-6 w-6 items-center justify-center rounded-full text-sm">
+        <svg
+          stroke="currentColor"
+          fill="currentColor"
+          stroke-width="0"
+          viewBox="0 0 16 16"
+          height="20px"
+          width="20px"
+          xmlns="http://www.w3.org/2000/svg"
+        >
+          <path d="M10.97 4.97a.75.75 0 0 1 1.07 1.05l-3.99 4.99a.75.75 0 0 1-1.08.02L4.324 8.384a.75.75 0 1 1 1.06-1.06l2.094 2.093 3.473-4.425a.267.267 0 0 1 .02-.022z"></path>
+        </svg>
+      </button>
+      <button class="bg-background-200/50 text-foreground-700 hover:bg-background-300/70 active:bg-background-300/100 h-6 w-6 items-center justify-center rounded-full text-sm hidden group-hover:flex">
+        <svg
+          stroke="currentColor"
+          fill="currentColor"
+          stroke-width="0"
+          viewBox="0 0 16 16"
+          height="20"
+          width="20"
+          xmlns="http://www.w3.org/2000/svg"
+        >
+          <path d="M4.646 4.646a.5.5 0 0 1 .708 0L8 7.293l2.646-2.647a.5.5 0 0 1 .708.708L8.707 8l2.647 2.646a.5.5 0 0 1-.708.708L8 8.707l-2.646 2.647a.5.5 0 0 1-.708-.708L7.293 8 4.646 5.354a.5.5 0 0 1 0-.708z"></path>
+        </svg>
+      </button>
+      <button
+        type="button"
+        id="radix-:rjn:"
+        aria-haspopup="menu"
+        aria-expanded="false"
+        data-state="closed"
+        class="outline-none"
+      >
+        <button class="bg-background-200/50 text-foreground-700 hover:bg-background-300/70 active:bg-background-300/100 h-6 w-6 items-center justify-center rounded-full text-sm hidden group-hover:flex">
+          <svg
+            stroke="2px"
+            fill="currentColor"
+            stroke-width="0"
+            viewBox="0 0 16 16"
+            height="16"
+            width="16"
+            xmlns="http://www.w3.org/2000/svg"
+          >
+            <path d="M8 3.5a.5.5 0 0 0-1 0V9a.5.5 0 0 0 .252.434l3.5 2a.5.5 0 0 0 .496-.868L8 8.71V3.5z"></path>
+            <path d="M8 16A8 8 0 1 0 8 0a8 8 0 0 0 0 16zm7-8A7 7 0 1 1 1 8a7 7 0 0 1 14 0z"></path>
+          </svg>
+        </button>
+      </button>
+    </div>
+  </div>
+  <div class="bg-background-50 group flex cursor-pointer flex-col gap-1 rounded-lg p-3 shadow-sm hover:shadow-md">
+    <div class="TaskTitleInput w-full cursor-text p-0">
+      <div contenteditable="false" translate="no" class="tiptap ProseMirror" tabindex="0">
+        <p>Setup Apple Business Manager on my computer</p>
+      </div>
+    </div>
+    <div class="flex w-full flex-col gap-2">
+      <div class="flex flex-wrap gap-2"></div>
+    </div>
+    <div class="flex gap-2">
+      <button class="bg-background-200/50 text-foreground-700 hover:bg-background-300/70 active:bg-background-300/100 flex h-6 w-6 items-center justify-center rounded-full text-sm">
+        <svg
+          stroke="currentColor"
+          fill="currentColor"
+          stroke-width="0"
+          viewBox="0 0 16 16"
+          height="20px"
+          width="20px"
+          xmlns="http://www.w3.org/2000/svg"
+        >
+          <path d="M10.97 4.97a.75.75 0 0 1 1.07 1.05l-3.99 4.99a.75.75 0 0 1-1.08.02L4.324 8.384a.75.75 0 1 1 1.06-1.06l2.094 2.093 3.473-4.425a.267.267 0 0 1 .02-.022z"></path>
+        </svg>
+      </button>
+      <button class="bg-background-200/50 text-foreground-700 hover:bg-background-300/70 active:bg-background-300/100 h-6 w-6 items-center justify-center rounded-full text-sm hidden group-hover:flex">
+        <svg
+          stroke="currentColor"
+          fill="currentColor"
+          stroke-width="0"
+          viewBox="0 0 16 16"
+          height="20"
+          width="20"
+          xmlns="http://www.w3.org/2000/svg"
+        >
+          <path d="M4.646 4.646a.5.5 0 0 1 .708 0L8 7.293l2.646-2.647a.5.5 0 0 1 .708.708L8.707 8l2.647 2.646a.5.5 0 0 1-.708.708L8 8.707l-2.646 2.647a.5.5 0 0 1-.708-.708L7.293 8 4.646 5.354a.5.5 0 0 1 0-.708z"></path>
+        </svg>
+      </button>
+      <button
+        type="button"
+        id="radix-:rjn:"
+        aria-haspopup="menu"
+        aria-expanded="false"
+        data-state="closed"
+        class="outline-none"
+      >
+        <button class="bg-background-200/50 text-foreground-700 hover:bg-background-300/70 active:bg-background-300/100 h-6 w-6 items-center justify-center rounded-full text-sm hidden group-hover:flex">
+          <svg
+            stroke="2px"
+            fill="currentColor"
+            stroke-width="0"
+            viewBox="0 0 16 16"
+            height="16"
+            width="16"
+            xmlns="http://www.w3.org/2000/svg"
+          >
+            <path d="M8 3.5a.5.5 0 0 0-1 0V9a.5.5 0 0 0 .252.434l3.5 2a.5.5 0 0 0 .496-.868L8 8.71V3.5z"></path>
+            <path d="M8 16A8 8 0 1 0 8 0a8 8 0 0 0 0 16zm7-8A7 7 0 1 1 1 8a7 7 0 0 1 14 0z"></path>
+          </svg>
+        </button>
+      </button>
+    </div>
+  </div>
 </CardGrid>
