@@ -3,11 +3,9 @@ title: What is Flow?
 description: Learn what Flow is and how it help you plan your life.
 ---
 
-# What is Flow?
-
 Flow is a daily planner that helps you plan your days. Flow is designed to help you get things done and stay organized. It is plugin-based and highly customizable, so you can tailor it to your needs.
 
-![Flow](../../../assets/demo.png)
+![Flow](../../../../assets/demo.png)
 
 ## Features
 

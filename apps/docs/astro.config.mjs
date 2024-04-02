@@ -12,7 +12,7 @@ export default defineConfig({
     starlight({
       title: "Flow",
       social: {
-        github: "https://github.com/withastro/starlight",
+        github: "https://github.com/richardguerre/flow",
       },
       sidebar: [
         {
