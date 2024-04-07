@@ -1,4 +1,10 @@
 {
-  "recommendations": ["esbenp.prettier-vscode", "meta.relay", "prisma.prisma", "antfu.unocss"],
+  "recommendations": [
+    "esbenp.prettier-vscode",
+    "meta.relay",
+    "prisma.prisma",
+    "antfu.unocss",
+    "astro-build.astro-vscode"
+  ],
   "unwantedRecommendations": ["bradlc.vscode-tailwindcss"]
 }
