@@ -16,7 +16,7 @@ export default definePlugin((options) => {
     }, []);
     return (
       <div
-        className="flex h-screen w-screen items-center justify-center bg-gray-100"
+        className="flex h-screen w-full items-center justify-center bg-background-100"
         onClick={props.onNext}
       >
         <motion.div
@@ -71,9 +71,9 @@ export default definePlugin((options) => {
                 `<ul>${day.tasks
                   .map(
                     (task) =>
-                      `<li>${
+                      `<li><p>${
                         task.status === "DONE" ? "✅" : task.status === "CANCELED" ? "❌" : "⏳"
-                      } ${task.title}</li>`,
+                      } ${task.title}</p></li>`,
                   )
                   .join("")}</ul>`,
               );
@@ -81,15 +81,20 @@ export default definePlugin((options) => {
           }, []);
 
           return (
-            <div>
-              <Flow.NoteEditor
-                slug={`flow-essentials_retro-${yesterday.format("YYYY-MM-DD")}`}
-                title={`Retro of ${yesterday.format("MMMM D")}`}
-                loading={initialValue === null}
-                initialValue={initialValue ?? ""}
-              />
-              <props.BackButton />
-              <props.NextButton />
+            <div className="w-full flex flex-col items-center">
+              <div className="flex flex-col items-start mt-36 w-2xl">
+                <h1 className="font-semibold text-3xl">Reflect on what you did yesterday</h1>
+                <Flow.NoteEditor
+                  slug={`flow-essentials_retro-${yesterday.format("YYYY-MM-DD")}`}
+                  title={`Retro of ${yesterday.format("MMMM D")}`}
+                  loading={initialValue === null}
+                  initialValue={initialValue ?? ""}
+                />
+                <div className="flex gap-2">
+                  <props.BackButton />
+                  <props.NextButton />
+                </div>
+              </div>
             </div>
           );
         },

@@ -89,7 +89,7 @@ export const RoutineStep = (props: RoutineStepProps) => {
   };
 
   return (
-    <div className="max-h-screen overflow-auto">
+    <div className="max-h-screen overflow-auto w-[calc(100%-60px)]">
       <StepComponent
         onNext={props.onNext}
         onBack={props.onBack}
