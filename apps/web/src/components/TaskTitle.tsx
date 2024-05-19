@@ -11,6 +11,8 @@ import {
 import { TaskTitle_task$key } from "@flowdev/web/relay/__generated__/TaskTitle_task.graphql";
 import { TaskTitleUpdateTaskTitleMutation } from "../relay/__generated__/TaskTitleUpdateTaskTitleMutation.graphql";
 import "./TaskTitle.scss";
+import { TaskTitleCreateTaskMutation } from "../relay/__generated__/TaskTitleCreateTaskMutation.graphql";
+import { createVirtualTask, deleteVirtualTask } from "./Day";
 
 type TaskTitleProps = {
   task: TaskTitle_task$key;
@@ -22,11 +24,23 @@ export const TaskTitle = (props: TaskTitleProps) => {
       fragment TaskTitle_task on Task {
         id
         title
+        date # added to be spread in TaskTitleCreateTaskMutation
+        status # added to be spread in TaskTitleCreateTaskMutation
+        durationInMinutes # added to be spread in TaskTitleCreateTaskMutation
       }
     `,
     props.task,
   );
+  const isTemp = task.id.startsWith("Task_0.");
 
+  const [createTask] = useMutation<TaskTitleCreateTaskMutation>(graphql`
+    mutation TaskTitleCreateTaskMutation($input: MutationCreateTaskInput!) {
+      createTask(input: $input) {
+        ...TaskTitle_task @relay(mask: false)
+        ...TaskCard_task
+      }
+    }
+  `);
   const [updateTask] = useMutation<TaskTitleUpdateTaskTitleMutation>(graphql`
     mutation TaskTitleUpdateTaskTitleMutation($input: MutationUpdateTaskInput!) {
       updateTask(input: $input) {
@@ -36,20 +50,51 @@ export const TaskTitle = (props: TaskTitleProps) => {
     }
   `);
 
-  const handleSave = (value: string) => {
-    console.log("saving", task?.id);
-    updateTask({
-      variables: { input: { id: task?.id, title: value } },
-      optimisticResponse: {
-        updateTask: {
-          id: task?.id,
-          title: value,
+  const handleSave = (title: string) => {
+    if (isTemp) {
+      createTask({
+        variables: {
+          input: {
+            title,
+            date: task.date,
+            status: task.status,
+            durationInMinutes: task.durationInMinutes,
+          },
         },
-      },
-    });
+        updater: (store, data) => {
+          if (!data) return;
+          const createdTask = data.createTask;
+          store
+            .get(task.id)
+            ?.setValue(createdTask.id, "id")
+            .setValue(createdTask.id, "__id")
+            .setValue(createdTask.title, "title")
+            .setValue(createdTask.status, "status")
+            .setValue(createdTask.durationInMinutes, "durationInMinutes");
+        },
+      });
+      createVirtualTask({ date: task.date });
+    } else {
+      updateTask({
+        variables: { input: { id: task.id, title: title } },
+        optimisticResponse: { updateTask: { id: task.id, title } },
+      });
+    }
   };
 
-  return <TaskTitleInput initialValue={task?.title} onSave={handleSave} />;
+  const handleCancel = () => {
+    if (!isTemp) return;
+    deleteVirtualTask(task.id);
+  };
+
+  return (
+    <TaskTitleInput
+      autoFocus={isTemp}
+      initialValue={task.title}
+      onSave={handleSave}
+      onCancel={handleCancel}
+    />
+  );
 };
 
 type TaskTitleInputProps = {

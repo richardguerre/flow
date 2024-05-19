@@ -1,19 +1,21 @@
-import { useMemo, useRef } from "react";
-import { graphql, useRefetchableFragment, useSmartSubscription } from "@flowdev/relay";
+import { DragEventHandler, useEffect, useMemo, useRef, useState } from "react";
+import { graphql, useFragment, useRefetchableFragment, useSmartSubscription } from "@flowdev/relay";
 import { CalendarList_data$key } from "@flowdev/web/relay/__generated__/CalendarList_data.graphql";
 import { DayTimeGrid, CalendarEvent, CalendarArtifact } from "@flowdev/calendar";
 import { tailwindColors } from "@flowdev/unocss";
 import { CalendarListRefetchableQuery } from "../relay/__generated__/CalendarListRefetchableQuery.graphql";
 import { CalendarListSubscription } from "../relay/__generated__/CalendarListSubscription.graphql";
 import { dayjs } from "../dayjs";
+import { useDragContext } from "../useDragContext";
+
+const START_HOUR = 4;
 
 type CalendarListProps = {
   data: CalendarList_data$key;
 };
 
 export const CalendarList = (props: CalendarListProps) => {
-  // today 4am
-  const today = useRef(dayjs().startOf("day").add(4, "hours"));
+  const today = useRef(dayjs().startOf("day").add(START_HOUR, "hours"));
   const [tasksData] = useRefetchableFragment<CalendarListRefetchableQuery, CalendarList_data$key>(
     graphql`
       fragment CalendarList_data on Query
@@ -56,8 +58,46 @@ export const CalendarList = (props: CalendarListProps) => {
       },
     },
   );
+  const [dragY, setDragY] = useState<number | null>(null);
+  const { dragged } = useDragContext();
+  const draggedInTask = useFragment(
+    graphql`
+      fragment CalendarListTaskCardDraggedIn_task on Task {
+        id
+        title
+        durationInMinutes
+      }
+    `,
+    dragged,
+  );
+  console.log(draggedInTask);
 
-  const events = useMemo(() => {
+  const handleDragOver: DragEventHandler<HTMLDivElement> = (e) => {
+    e.preventDefault();
+    const rect = e.currentTarget.getBoundingClientRect();
+    const y = e.clientY - rect.top; // y position within the element.
+    const h = Math.round((y / rect.height) * 24 * 4) / 4;
+    setDragY(h);
+  };
+
+  const handleDragLeave: DragEventHandler<HTMLDivElement> = (e) => {
+    setDragY(null);
+  };
+
+  const handleParentDragOver: DragEventHandler<HTMLDivElement> = (e) => {
+    e.preventDefault();
+    // auto scroll when dragging near the edge
+    const rect = e.currentTarget.getBoundingClientRect();
+    const y = e.clientY - rect.top;
+    const speed = 2;
+    if (y < 50) {
+      e.currentTarget.scrollTop -= speed;
+    } else if (y > rect.height - 50) {
+      e.currentTarget.scrollTop += speed;
+    }
+  };
+
+  const itemEvents = useMemo(() => {
     return (
       eventsData?.events.edges.reduce((events, edge) => {
         if (!edge.node.scheduledAt) return events;
@@ -76,6 +116,14 @@ export const CalendarList = (props: CalendarListProps) => {
     );
   }, [eventsData?.events.edges]);
 
+  const events = useMemo(() => {
+    if (!dragged || dragY === null) return itemEvents;
+    // itemEvents?.push({
+    //   id: dragged.id,
+    // });
+    return itemEvents;
+  }, [itemEvents?.length, dragged, dragY]);
+
   const artifacts = useMemo(() => {
     return tasksData.day?.tasks?.reduce((artifacts, task) => {
       if (task.completedAt) {
@@ -91,11 +139,26 @@ export const CalendarList = (props: CalendarListProps) => {
     }, [] as CalendarArtifact[]);
   }, [tasksData.day?.tasks]);
 
+  useEffect(() => {
+    if (dragged) return;
+    const timeout = setTimeout(() => setDragY(null), 100);
+    return () => clearTimeout(timeout);
+  }, [dragged]);
+
   return (
     <div className="flex h-full flex-col">
       <div className="p-3 text-xl font-semibold">Calendar</div>
-      <div className="no-scrollbar h-full overflow-y-scroll pl-3 pt-0.5 pt-3">
-        <DayTimeGrid events={events} artifacts={artifacts} startHour={4} />
+      <div
+        className="no-scrollbar h-full overflow-y-scroll pl-3 pt-0.5 pt-3"
+        onDragOver={handleParentDragOver}
+      >
+        <DayTimeGrid
+          events={events}
+          artifacts={artifacts}
+          startHour={START_HOUR}
+          onDragOver={handleDragOver}
+          onDragLeave={handleDragLeave}
+        />
       </div>
     </div>
   );

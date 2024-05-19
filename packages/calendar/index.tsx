@@ -1,4 +1,4 @@
-import React, { useCallback, useEffect, useMemo, useRef, useState } from "react";
+import React, { DragEventHandler, useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { Hour } from "./types";
 import { tailwindColors } from "@flowdev/unocss";
 
@@ -43,6 +43,10 @@ export type DayTimeGridProps = {
   artifacts?: CalendarArtifact[];
   startHour?: Hour;
   heightOf1Hour?: number;
+  onDragLeave?: DragEventHandler<HTMLDivElement>;
+  onDragOver?: DragEventHandler<HTMLDivElement>;
+  onEventDragStart?: (event: CalendarEvent) => void;
+  onEventDragEnd?: (event: CalendarEvent) => void;
 };
 
 export const DayTimeGrid = (props: DayTimeGridProps) => {
@@ -55,7 +59,7 @@ export const DayTimeGrid = (props: DayTimeGridProps) => {
   useEffect(() => {
     const interval = setInterval(() => {
       setNow(new Date());
-    }, 1000 * 60);
+    }, 60_000);
     return () => clearInterval(interval);
   }, []);
 
@@ -77,10 +81,9 @@ export const DayTimeGrid = (props: DayTimeGridProps) => {
           result.eventsMap.values(),
         ).filter((otherEvent) => {
           if (otherEvent === event) return false;
-          if (otherEvent.scheduledAt <= event.scheduledAt && otherEvent.end > event.scheduledAt)
+          if (otherEvent.scheduledAt <= event.scheduledAt && otherEvent.end > event.scheduledAt) {
             return true;
-          if (otherEvent.scheduledAt < otherEvent.end && otherEvent.end >= otherEvent.end)
-            return true;
+          }
           return false;
         });
         const lastOverlappingEvent = overlappingEvents[overlappingEvents.length - 1];
@@ -133,7 +136,11 @@ export const DayTimeGrid = (props: DayTimeGridProps) => {
           </div>
         ))}
       </div>
-      <div className="relative w-full">
+      <div
+        className="relative w-full"
+        onDragLeave={props.onDragLeave}
+        onDragOver={props.onDragOver}
+      >
         <div className="mb-1">
           {allDayEvents.map((event) => (
             <div
@@ -180,7 +187,10 @@ export const DayTimeGrid = (props: DayTimeGridProps) => {
         {events.map((event) => (
           <div
             key={event.id}
-            className={`absolute overflow-hidden rounded-md border border-white p-2 ${
+            draggable
+            onDragStart={() => props.onEventDragStart?.(event)}
+            onDragEnd={() => props.onEventDragEnd?.(event)}
+            className={`absolute overflow-hidden rounded-md border border-background-50 p-2 ${
               event.height < minHeight ? "py-0" : ""
             }`}
             style={{

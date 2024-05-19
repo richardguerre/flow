@@ -14,9 +14,11 @@ export const ViewErrorBoundary = (props: Props) => {
         const unauthenticatedError = error.cause?.find(
           (e: any) => e.extensions?.code === "UNAUTHENTICATED",
         );
-        const errorMessages = error.message
-          .split("\n")
-          .map((m: string) => <p className="text-gray-500">{m}</p>);
+        const errorMessages = error.message.split("\n").map((m: string) => (
+          <p key={m} className="text-gray-500">
+            {m}
+          </p>
+        ));
 
         if (unauthenticatedError) {
           window.localStorage.removeItem(LOCAL_STORAGE_USER_TOKEN_KEY);

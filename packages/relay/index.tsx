@@ -4,6 +4,8 @@ import {
   type MutationParameters,
   type MutationConfig,
   type GraphQLSubscriptionConfig,
+  type SelectorStoreUpdater,
+  type StoreUpdater,
 } from "relay-runtime";
 import {
   GraphQLTaggedNode,
@@ -17,6 +19,7 @@ import {
   commitMutation as relayCommitMutation,
   Environment,
   useSubscription as useRelaySubscription,
+  useRelayEnvironment,
 } from "react-relay";
 
 // peer dependency imports
@@ -45,6 +48,7 @@ export {
   useRefetchableFragment,
   useLazyLoadQuery,
   ConnectionHandler,
+  useClientQuery,
 } from "react-relay";
 export { type RecordSourceSelectorProxy, type SelectorStoreUpdater } from "relay-runtime";
 
@@ -77,7 +81,10 @@ export function useQueryLoader<TQuery extends OperationType>(
 
 const handleMutationError =
   <TMutation extends MutationParameters>(
-    mutationConfig: UseMutationConfig<TMutation> | MutationConfig<TMutation>,
+    mutationConfig: UseMutationConfigParams<TMutation> | MutationConfigParams<TMutation>,
+    extra: {
+      environment: Environment;
+    },
   ) =>
   (error: Error) => {
     console.log("mutation.onError error:", error);
@@ -86,6 +93,9 @@ const handleMutationError =
     } else {
       toast.error(error.message);
     }
+    if (mutationConfig.optimistic?.onError) {
+      extra.environment.commitUpdate(mutationConfig.optimistic.onError);
+    }
   };
 
 const getMessageFromErrors = (errors: readonly any[]) => {
@@ -93,23 +103,47 @@ const getMessageFromErrors = (errors: readonly any[]) => {
   return Array.from(errorsSet).join("\n");
 };
 
+type ExtraMutationConfig<TMutation extends MutationParameters> = {
+  /** Internal optimistic updater logic that doesn't automatically roll back before applying `updater`.
+   *
+   * @summary when using `optimisticUpdater`, the store updates are automatically rolled back before applying the `updater` function. This is not always the desired behavior. For example, it made the NewTaskCard optimisticUpdater not work as expected as the task was deleted and re-added to the store which would cause the task to lose its id and cause render issues.
+   */
+  optimistic?: {
+    updater: StoreUpdater;
+    onSuccess?: SelectorStoreUpdater<TMutation["response"]>;
+    onError?: StoreUpdater;
+  };
+};
+type UseMutationConfigParams<TMutation extends MutationParameters> = UseMutationConfig<TMutation> &
+  ExtraMutationConfig<TMutation>;
+
 export function useMutation<TMutation extends MutationParameters>(mutation: GraphQLTaggedNode) {
   const [mutate, ...rest] = useRelayMutation(mutation);
+  const environment = useRelayEnvironment();
 
-  const newMutate = (mutationConfig: UseMutationConfig<TMutation>) => {
-    mutate({
+  const newMutate = (mutationConfig: UseMutationConfigParams<TMutation>) => {
+    if (mutationConfig.optimistic?.updater) {
+      environment.commitUpdate(mutationConfig.optimistic.updater);
+    }
+    return mutate({
       ...mutationConfig,
-      onError: handleMutationError(mutationConfig),
+      onError: handleMutationError(mutationConfig, { environment }),
       onCompleted: (data, errors) => {
         // theoretically, there should never be `errors` in onCompleted since payload errors are re-thrown and handled in onError, so this is just a safety check
         if (errors) {
           console.log("useMutation.onCompleted errors:", errors);
-          handleMutationError(mutationConfig)(
+          handleMutationError(mutationConfig, { environment })(
             new Error(getMessageFromErrors(errors), { cause: errors }),
           );
           return;
         }
         mutationConfig.onCompleted?.(data, null);
+      },
+      updater: (store, data) => {
+        if (mutationConfig.optimistic?.onSuccess) {
+          mutationConfig.optimistic.onSuccess(store, data);
+        }
+        return mutationConfig.updater?.(store, data);
       },
     });
   };
@@ -148,12 +182,15 @@ export function useMutationPromise<TMutation extends MutationParameters>(
 
 export const fetchQuery = relayFetchQuery;
 
+type MutationConfigParams<TMutation extends MutationParameters> = MutationConfig<TMutation> &
+  ExtraMutationConfig<TMutation>;
+
 export const commitMutation = relayCommitMutation;
 export const commitMutationPromise = async <
   TOperation extends MutationParameters = MutationParameters,
 >(
   environemnt: Environment,
-  config: MutationConfig<TOperation>,
+  config: MutationConfigParams<TOperation>,
 ) => {
   return new Promise<TOperation["response"]>((resolve, reject) => {
     commitMutation(environemnt, {
@@ -195,9 +232,11 @@ export const useSubscription = <TSubscription extends OperationType>(
 };
 
 /**
- * Wrapper around useSubscription to be used with "smart" subscriptions from the server. Smart subscriptions are ones that first return initial data from the resolver and then update the data as the subscription updates.
+ * Wrapper around `useSubscription` to be used with "smart" subscriptions from the server.
  *
- * Named after the @pothos/plugin-smart-subscription package in the server. (thanks @ishmam-mahmud for thinking of the name)
+ * Smart subscriptions are ones that first return initial data from the resolver and then update the data as the subscription updates. It's like doing a query and then subscribing to the query.
+ *
+ * Named after the @pothos/plugin-smart-subscription package in the server. (thanks @ishmam-mahmud for not overthinking the name 😄)
  */
 export const useSmartSubscription = <TSubscription extends OperationType>(
   subscription: GraphQLTaggedNode,

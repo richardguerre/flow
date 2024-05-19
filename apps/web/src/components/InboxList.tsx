@@ -1,17 +1,17 @@
-import { graphql, useFragment, useSmartSubscription } from "@flowdev/relay";
+import { ConnectionHandler, graphql, useFragment, useSmartSubscription } from "@flowdev/relay";
 import { ItemCard } from "./ItemCard";
 import { ReactSortable } from "react-sortablejs";
 import { useEffect, useState } from "react";
 import { Button } from "@flowdev/ui/Button";
-import { NewItemCard } from "./NewItemCard";
 import { InboxListSubscription } from "../relay/__generated__/InboxListSubscription.graphql";
-import { InboxListItemToBeInList_item$key } from "../relay/__generated__/InboxListItemToBeInList_item.graphql";
+import { environment } from "../relay/environment";
+import { InboxListItems_itemsConnection$key } from "../relay/__generated__/InboxListItems_itemsConnection.graphql";
 
 type InboxListProps = {};
 
 export const InboxList = (props: InboxListProps) => {
-  const [showNewItemCard, setShowNewItemCard] = useState(false);
   const [itemsConnectionId, setItemsConnectionId] = useState<string | null>(null);
+  const [count, setCount] = useState(0);
 
   return (
     <div className="bg-background-100 flex h-full flex-col gap-4 pt-3">
@@ -26,25 +26,24 @@ export const InboxList = (props: InboxListProps) => {
             sm
             className="bg-background-300/50 text-foreground-900 hover:bg-background-300/70 active:bg-background-300/100 w-full"
             disabled={!itemsConnectionId}
-            onClick={() => setShowNewItemCard(true)}
+            onClick={() => {
+              createVirtualItem({ itemsConnectionId: itemsConnectionId ?? "" });
+              setCount(count + 1);
+            }}
           >
             Add item
           </Button>
-          {showNewItemCard && itemsConnectionId && (
-            <NewItemCard
-              itemsConnectionId={itemsConnectionId}
-              onSave={() => setShowNewItemCard(false)}
-              onCancel={() => setShowNewItemCard(false)}
-            />
-          )}
         </div>
       </div>
-      <InboxListItems onItemsConnectionIdChange={setItemsConnectionId} />
+      <InboxListItems onItemsConnectionIdChange={setItemsConnectionId} count={count} />
     </div>
   );
 };
 
-const InboxListItems = (props: { onItemsConnectionIdChange: (id: string) => void }) => {
+const InboxListItems = (props: {
+  onItemsConnectionIdChange: (id: string) => void;
+  count: number;
+}) => {
   const [data] = useSmartSubscription<InboxListSubscription>(graphql`
     subscription InboxListSubscription {
       items(
@@ -55,47 +54,53 @@ const InboxListItems = (props: { onItemsConnectionIdChange: (id: string) => void
         }
         orderBy: { inboxPoints: Desc }
       ) {
-        __id
-        edges {
-          node {
-            ...InboxListItemToBeInList_item
-          }
-        }
+        ...InboxListItems_itemsConnection
       }
     }
   `);
 
-  // fragment on items so we can subscribe to changes on items (i.e. when a task is created in the item, then we can filter out the item from the inbox)
-  const $items = useFragment<InboxListItemToBeInList_item$key>(
+  /**
+   * This fragment subscribes to the Relay store for 2 reasons:
+   * 1. It automatically updates after creating a virtual item.
+   * 2. It automatically updates when a task is marked as done which changes the relevance of the item.
+   */
+  const itemsConnection = useFragment<InboxListItems_itemsConnection$key>(
     graphql`
-      fragment InboxListItemToBeInList_item on Item @relay(plural: true) {
-        id
-        isRelevant
-        inboxPoints
-        tasks {
-          status
+      fragment InboxListItems_itemsConnection on QueryItemsConnection {
+        __id
+        edges {
+          node {
+            id
+            isRelevant
+            inboxPoints
+            tasks {
+              status
+            }
+            ...ItemCard_item
+          }
         }
-        ...ItemCard_item
       }
     `,
-    data?.items.edges.map((edge) => edge.node) ?? [],
+    data?.items ?? null,
   );
 
   const items = structuredClone(
     // this filter matches the where clause in the subscription
     // it ensures that the correct items are shown after Relay store udpates
-    $items.filter((node) => {
-      const passesBaseFilter = !!node.isRelevant && (node.inboxPoints ?? 0) > 0;
-      const hasTodoTasks = node.tasks.some((task) => task.status === "TODO");
-      return passesBaseFilter && !hasTodoTasks;
-    }) ?? [],
+    itemsConnection?.edges
+      .filter((edge) => {
+        const passesBaseFilter = !!edge.node.isRelevant && (edge.node.inboxPoints ?? 0) > 0;
+        const hasTodoTasks = edge.node.tasks.some((task) => task.status === "TODO");
+        return passesBaseFilter && !hasTodoTasks;
+      })
+      .map((edge) => edge.node) ?? [],
   );
 
   useEffect(() => {
-    if (data?.items.__id) {
-      props.onItemsConnectionIdChange(data.items.__id);
+    if (itemsConnection?.__id) {
+      props.onItemsConnectionIdChange(itemsConnection.__id);
     }
-  }, [data?.items.__id]);
+  }, [itemsConnection?.__id]);
 
   return (
     <ReactSortable
@@ -106,9 +111,47 @@ const InboxListItems = (props: { onItemsConnectionIdChange: (id: string) => void
     >
       {items.map((item) => (
         <div id={item.id} key={item.id} className="pb-4">
-          <ItemCard key={item.id} item={item} inInbox />
+          <ItemCard key={item.id} item={item} inInbox itemsConnectionId={itemsConnection?.__id} />
         </div>
       ))}
     </ReactSortable>
   );
+};
+
+export const createVirtualItem = (props: { itemsConnectionId: string }) => {
+  const tempId = `Item_${Math.random()}`;
+  environment.commitUpdate((store) => {
+    const createdItem = store
+      .create(tempId, "Item")
+      .setValue(tempId, "id")
+      .setValue(new Date().toISOString(), "createdAt")
+      .setValue("", "title")
+      .setValue(null, "durationInMinutes")
+      .setValue(null, "scheduledAt")
+      .setValue(null, "isAllDay")
+      .setValue(1, "inboxPoints")
+      .setValue(true, "isRelevant")
+      .setValue(null, "list")
+      .setValue(null, "color")
+      .setLinkedRecords([], "tasks")
+      .setLinkedRecords([], "pluginDatas");
+
+    const itemsConnection = store.get(props.itemsConnectionId);
+    if (!itemsConnection) return;
+    const edge = ConnectionHandler.createEdge(
+      store,
+      itemsConnection,
+      createdItem,
+      "QueryItemsConnectionEdge",
+    );
+    ConnectionHandler.insertEdgeAfter(itemsConnection, edge);
+  });
+};
+
+export const deleteVirtualItem = (props: { itemId: string; itemsConnectionId: string }) => {
+  environment.commitUpdate((store) => {
+    const connection = store.get(props.itemsConnectionId);
+    if (!connection) return;
+    ConnectionHandler.deleteNode(connection, props.itemId);
+  });
 };

@@ -4,9 +4,13 @@ import { CatchNewLines } from "@flowdev/tiptap";
 import { graphql, useFragment, useMutation } from "@flowdev/relay";
 import { ItemTitle_item$key } from "../relay/__generated__/ItemTitle_item.graphql";
 import { ItemTitleUpdateItemTitleMutation } from "../relay/__generated__/ItemTitleUpdateItemTitleMutation.graphql";
+import { ItemTitleCreateItemMutation } from "../relay/__generated__/ItemTitleCreateItemMutation.graphql";
+import { createVirtualItem, deleteVirtualItem } from "./InboxList";
+import "./TaskTitle.scss";
 
 type ItemTitleProps = {
   item: ItemTitle_item$key;
+  itemsConnectionId?: string;
 };
 
 export const ItemTitle = (props: ItemTitleProps) => {
@@ -15,10 +19,21 @@ export const ItemTitle = (props: ItemTitleProps) => {
       fragment ItemTitle_item on Item {
         id
         title
+        inboxPoints # added to be spread in ItemTitleCreateItemMutation
       }
     `,
     props.item,
   );
+  const isTemp = item.id.startsWith("Item_0.");
+
+  const [createItem] = useMutation<ItemTitleCreateItemMutation>(graphql`
+    mutation ItemTitleCreateItemMutation($input: MutationCreateItemInput!) {
+      createItem(input: $input) {
+        ...ItemTitle_item @relay(mask: false)
+        ...ItemCard_item
+      }
+    }
+  `);
 
   const [updateItem] = useMutation<ItemTitleUpdateItemTitleMutation>(graphql`
     mutation ItemTitleUpdateItemTitleMutation($input: MutationUpdateItemInput!) {
@@ -29,25 +44,56 @@ export const ItemTitle = (props: ItemTitleProps) => {
     }
   `);
 
-  const handleSave = (value: string) => {
+  const handleSave = (title: string) => {
     console.log("saving", item.id);
-    updateItem({
-      variables: { input: { id: item.id, title: value } },
-      optimisticResponse: {
-        updateItem: {
-          id: item.id,
-          title: value,
+    if (isTemp) {
+      createItem({
+        variables: { input: { title, inboxPoints: 1 } },
+        updater: (store, data) => {
+          if (!data) return;
+          const createdItem = data.createItem;
+          store
+            .get(item.id)
+            ?.setValue(createdItem.id, "id")
+            .setValue(createdItem.id, "__id")
+            .setValue(createdItem.title, "title")
+            .setValue(createdItem.inboxPoints, "inboxPoints");
         },
-      },
-    });
+      });
+      if (!props.itemsConnectionId) return;
+      createVirtualItem({ itemsConnectionId: props.itemsConnectionId });
+    } else {
+      updateItem({
+        variables: { input: { id: item.id, title: title } },
+        optimisticResponse: { updateItem: { id: item.id, title } },
+      });
+    }
   };
 
-  return <ItemTitleInput initialValue={item.title} onSave={handleSave} />;
+  const handleCancel = () => {
+    if (!isTemp || !props.itemsConnectionId) return;
+    deleteVirtualItem({ itemId: item.id, itemsConnectionId: props.itemsConnectionId });
+  };
+
+  return (
+    <ItemTitleInput
+      toCreate={isTemp}
+      initialValue={item.title}
+      onSave={handleSave}
+      onCancel={handleCancel}
+    />
+  );
 };
 
 type ItemTitleInputProps = {
+  /** Whether this ItemTitleInput is used to create an item. This currently just auto-focuses the text editor. */
   toCreate?: boolean;
   initialValue?: string;
+  /**
+   * Triggered when the user:
+   * - clicks outside the input
+   * - OR, presses enter
+   */
   onSave?: (newValue: string) => void;
   onCancel?: () => void;
 };
@@ -83,7 +129,7 @@ export const ItemTitleInput = (props: ItemTitleInputProps) => {
     extensions: [
       MinimumKit,
       CatchNewLines(() => {
-        editorRef.current?.commands.blur();
+        editorRef.current!.commands.blur();
       }),
       Mention.configure({
         suggestion: {
@@ -114,7 +160,7 @@ export const ItemTitleInput = (props: ItemTitleInputProps) => {
 
   return (
     <EditorContent
-      className="CardEditorInput w-full cursor-text p-0"
+      className="TaskTitleInput w-full cursor-text p-0"
       editor={editorRef.current}
       onClick={handleClick}
     />

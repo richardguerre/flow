@@ -7,12 +7,12 @@ import { ReactSortable, Sortable } from "react-sortablejs";
 import { DayContent_day$key } from "@flowdev/web/relay/__generated__/DayContent_day.graphql";
 import { DayUpdateTaskDateMutation } from "@flowdev/web/relay/__generated__/DayUpdateTaskDateMutation.graphql";
 import { DayAddTaskActionsBar_day$key } from "@flowdev/web/relay/__generated__/DayAddTaskActionsBar_day.graphql";
-import { NewTaskCard } from "./NewTaskCard";
 import { Button } from "@flowdev/ui/Button";
 import { environment } from "@flowdev/web/relay/environment";
 import { OnCreateTaskItemRecordToCreateTaskFrom_item$data } from "@flowdev/web/relay/__generated__/OnCreateTaskItemRecordToCreateTaskFrom_item.graphql";
 import { getPlugins } from "@flowdev/web/getPlugin";
 import { OnCreateTask, OnCreateTaskProps, PluginStepInfo } from "./OnCreateTask";
+import { useDragContext } from "../useDragContext";
 
 type DayProps = {
   day: Day_day$key;
@@ -41,7 +41,7 @@ export const Day = (props: DayProps) => {
   }, [dayRef]);
 
   return (
-    <div className="relative flex h-full w-64 flex-col">
+    <div className="relative flex h-full w-64 flex-col shrink-0">
       <div ref={dayRef} className="absolute -left-2" />
       <div className="mb-3 px-2">
         <button
@@ -80,13 +80,13 @@ export const DayContent = (props: DayContentProps) => {
         tasks {
           __typename
           id
-          status
           ...TaskCard_task
         }
       }
     `,
     props.day,
   );
+  const { setDragged } = useDragContext();
 
   const [udpateTaskDate] = useMutation<DayUpdateTaskDateMutation>(graphql`
     mutation DayUpdateTaskDateMutation($input: MutationUpdateTaskDateInput!) {
@@ -107,6 +107,7 @@ export const DayContent = (props: DayContentProps) => {
   };
 
   const setList = async (newList: typeof tasks) => {
+    setDragged(null); // reset DragContext as TaskCard.onDragEnd may not be called
     setTasks(newList.filter((task) => task.__typename === "Task")); // ignore item(s) that were dropped
 
     const item = newList.find((task) => task.__typename !== "Task") as { id: string } | undefined; // there shouldn't be more than one item dropped at a time, so we just find the first one
@@ -185,7 +186,7 @@ export const DayContent = (props: DayContentProps) => {
       )}
       <ReactSortable
         id={day.date}
-        className="no-scrollbar mt-4 flex flex-auto flex-col overflow-y-scroll px-2"
+        className="no-scrollbar mt-4 flex flex-auto flex-col gap-4 overflow-y-scroll px-2 pb-4"
         list={tasks}
         setList={setList}
         animation={150}
@@ -195,9 +196,7 @@ export const DayContent = (props: DayContentProps) => {
         onEnd={handleTaskMove}
       >
         {tasks.map((task) => (
-          <div id={task.id} key={task.id} className="pb-4">
-            <TaskCard task={task} />
-          </div>
+          <TaskCard key={task.id} task={task} />
         ))}
       </ReactSortable>
     </>
@@ -227,7 +226,6 @@ const DayAddTaskActionsBar = (props: DayAddTaskActionsBarProps) => {
     `,
     props.day,
   );
-  const [showNewTaskCard, setShowNewTaskCard] = useState(false);
 
   return (
     <div className="flex flex-col gap-4 px-2">
@@ -235,17 +233,44 @@ const DayAddTaskActionsBar = (props: DayAddTaskActionsBarProps) => {
         secondary
         sm
         className="bg-background-300/50 text-foreground-900 hover:bg-background-300/70 active:bg-background-300/100 w-full"
-        onClick={() => setShowNewTaskCard(true)}
+        onClick={() => createVirtualTask({ date: day.date })}
       >
         Add task
       </Button>
-      {showNewTaskCard && (
-        <NewTaskCard
-          date={day.date}
-          onSave={() => setShowNewTaskCard(false)}
-          onCancel={() => setShowNewTaskCard(false)}
-        />
-      )}
     </div>
   );
+};
+
+export const createVirtualTask = (props: { date: string }) => {
+  const tempId = `Task_${Math.random()}`;
+  environment.commitUpdate((store) => {
+    const createdTask = store
+      .create(tempId, "Task")
+      .setValue(tempId, "id")
+      .setValue("", "title")
+      .setValue(new Date().toISOString(), "createdAt")
+      .setValue("TODO", "status")
+      .setValue(null, "completedAt")
+      .setValue(props.date, "date")
+      .setValue(null, "item")
+      .setValue(null, "durationInMinutes")
+      .setLinkedRecords([], "pluginDatas")
+      .setLinkedRecords([], "subtasks");
+
+    const dayRecord = store.get(`Day_${props.date}`);
+    const dayTasks = dayRecord?.getLinkedRecords("tasks");
+    // This adds the new task to the top of the list
+    dayRecord?.setLinkedRecords([createdTask, ...(dayTasks ?? [])], "tasks");
+  });
+};
+
+export const deleteVirtualTask = (tempId: string) => {
+  environment.commitUpdate((store) => {
+    const task = store.get(tempId);
+    if (!task) return;
+    const day = store.get(`Day_${task.getValue("date")}`);
+    const dayTasks = day?.getLinkedRecords("tasks");
+    day?.setLinkedRecords(dayTasks?.filter((task) => task.getDataID() !== tempId) ?? [], "tasks");
+    // store.delete(tempId); this causes a render issue so for now I'm not including it.
+  });
 };

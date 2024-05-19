@@ -5,7 +5,7 @@
   "scripts": {
     "setup:relay": "mkdir -p src/relay/__generated__",
     "relay": "cd ../.. && relay-compiler && echo '✅ Relay compiled!'",
-    "relay:watch": "bun run relay -- --watch",
+    "relay:watch": "cd ../.. && relay-compiler --watch",
     "predev": "bun run relay",
     "dev": "bunx --bun vite --port 3000",
     "print-schema": "cd ../server && DATABASE_URL=this_makes_it_run_wo_server_envs ORIGIN=same_as_db_url bun run print-schema",

@@ -31,7 +31,7 @@ export const Lists = (props: ListsProps) => {
   const [selectedList, setSelectedList] = useState<ListType>("inbox");
 
   return (
-    <div className="bg-background-50 z-10 flex h-full shadow-xl">
+    <div className="bg-background-50 flex h-full shadow-xl shrink-0">
       <div className="h-full w-72 flex-1">
         {selectedList === "inbox" ? (
           <InboxList />

@@ -37,6 +37,8 @@ import { toast } from "@flowdev/ui/Toast";
 import { RenderTaskCardDetails } from "./RenderTaskCardDetails";
 import { RenderTaskCardActions } from "./RenderTaskCardActions";
 import { TaskCardSubtask_task$key } from "../relay/__generated__/TaskCardSubtask_task.graphql";
+import { TaskCardContextMenu_task$key } from "../relay/__generated__/TaskCardContextMenu_task.graphql";
+import { useDragContext } from "../useDragContext";
 
 type TaskCardProps = {
   task: TaskCard_task$key;
@@ -58,6 +60,45 @@ export const TaskCard = (props: TaskCardProps) => {
         ...RenderTaskCardDetails_task
         ...TaskCardActions_task
         ...TaskTitle_task
+        ...TaskCardContextMenu_task
+        ...CalendarListTaskCardDraggedIn_task
+      }
+    `,
+    props.task,
+  );
+  const { setDragged } = useDragContext();
+
+  return (
+    <TaskCardContextMenu task={task}>
+      <div
+        id={task.id} // used for drag and drop
+        className={tw(
+          "bg-background-50 group flex cursor-pointer flex-col gap-1 rounded-lg p-3 shadow-sm hover:shadow-md",
+          task?.status !== "TODO" && "opacity-50 hover:opacity-100",
+        )}
+        onDragStart={() => setDragged(task)}
+        onDragEnd={() => setDragged(null)}
+      >
+        <TaskTitle task={task} />
+        <div className="flex flex-col gap-2">
+          {task?.subtasks?.map((subtask) => <TaskCardSubtask key={subtask.id} task={subtask} />)}
+        </div>
+        <RenderTaskCardDetails task={task} />
+        <TaskCardActions task={task} />
+      </div>
+    </TaskCardContextMenu>
+  );
+};
+
+const TaskCardContextMenu = (props: {
+  task: TaskCardContextMenu_task$key;
+  children: React.ReactNode;
+}) => {
+  const task = useFragment(
+    graphql`
+      fragment TaskCardContextMenu_task on Task {
+        id
+        date
       }
     `,
     props.task,
@@ -67,8 +108,8 @@ export const TaskCard = (props: TaskCardProps) => {
 
   const deleteTask = () => {
     $deleteTask({
-      variables: { id: task?.id },
-      optimisticResponse: { deleteTask: { id: task?.id, date: task?.date } },
+      variables: { id: task.id },
+      optimisticResponse: { deleteTask: { id: task.id, date: task.date } },
       optimisticUpdater: deleteTaskUpdater,
       updater: deleteTaskUpdater,
     });
@@ -76,21 +117,7 @@ export const TaskCard = (props: TaskCardProps) => {
 
   return (
     <ContextMenu>
-      <ContextMenuTrigger>
-        <div
-          className={tw(
-            "bg-background-50 group flex cursor-pointer flex-col gap-1 rounded-lg p-3 shadow-sm hover:shadow-md",
-            task?.status !== "TODO" && "opacity-50 hover:opacity-100",
-          )}
-        >
-          <TaskTitle task={task} />
-          <div className="flex flex-col gap-2">
-            {task?.subtasks?.map((subtask) => <TaskCardSubtask key={subtask.id} task={subtask} />)}
-          </div>
-          <RenderTaskCardDetails task={task} />
-          <TaskCardActions task={task} />
-        </div>
-      </ContextMenuTrigger>
+      <ContextMenuTrigger asChild>{props.children}</ContextMenuTrigger>
       <ContextMenuContent>
         <ContextMenuItem onClick={deleteTask}>Delete task</ContextMenuItem>
       </ContextMenuContent>
@@ -432,18 +459,6 @@ export const TaskDurationButtonDropdown = (props: {
   );
 };
 
-const deleteTaskUpdater: SelectorStoreUpdater<TaskCardDeleteTaskMutation["response"]> = (
-  store,
-  data,
-) => {
-  const day = store.get(`Day_${data?.deleteTask.date}`);
-  const dayTasks = day?.getLinkedRecords("tasks");
-  day?.setLinkedRecords(
-    (dayTasks ?? []).filter((dayTask) => dayTask.getValue("id") !== data?.deleteTask.id),
-    "tasks",
-  );
-};
-
 type CardActionButtonProps = React.ButtonHTMLAttributes<HTMLButtonElement>;
 export const CardActionButton = (props: CardActionButtonProps) => {
   return (
@@ -456,5 +471,17 @@ export const CardActionButton = (props: CardActionButtonProps) => {
     >
       {props.children}
     </button>
+  );
+};
+
+const deleteTaskUpdater: SelectorStoreUpdater<TaskCardDeleteTaskMutation["response"]> = (
+  store,
+  data,
+) => {
+  const day = store.get(`Day_${data?.deleteTask.date}`);
+  const dayTasks = day?.getLinkedRecords("tasks");
+  day?.setLinkedRecords(
+    (dayTasks ?? []).filter((dayTask) => dayTask.getValue("id") !== data?.deleteTask.id),
+    "tasks",
   );
 };

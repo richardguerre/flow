@@ -1,15 +1,24 @@
 {
   "name": "flow",
   "version": "0.1.0",
-  "private": true,
   "author": "@richardguerre",
+  "devDependencies": {
+    "bun-types": "1.0.4",
+    "patch-package": "^6.0.2",
+    "prettier": "3.0.3",
+    "prettier-plugin-tailwindcss": "^0.2.8",
+    "turbo": "^1.10.4",
+    "typescript": "5.2.2"
+  },
   "license": "MIT",
-  "workspaces": [
-    "apps/*",
-    "packages/*",
-    "plugins/*",
-    "plugin-apps/*"
-  ],
+  "prettier": {
+    "printWidth": 100
+  },
+  "private": true,
+  "resolutions": {
+    "vite": "5.2.4",
+    "prettier": "3.0.3"
+  },
   "scripts": {
     "dev": "bunx --bun turbo run dev",
     "db:dev": "cd apps/server && bun run db:dev",
@@ -33,19 +42,10 @@
     "relay": "cd apps/web && bun run relay",
     "unocss": "bunx --bun unocss"
   },
-  "devDependencies": {
-    "bun-types": "1.0.4",
-    "patch-package": "^6.0.2",
-    "prettier": "3.0.3",
-    "prettier-plugin-tailwindcss": "^0.2.8",
-    "turbo": "^1.10.4",
-    "typescript": "5.2.2"
-  },
-  "prettier": {
-    "printWidth": 100
-  },
-  "resolutions": {
-    "vite": "5.2.4",
-    "prettier": "3.0.3"
-  }
+  "workspaces": [
+    "apps/*",
+    "packages/*",
+    "plugins/*",
+    "plugin-apps/*"
+  ]
 }

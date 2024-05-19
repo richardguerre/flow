@@ -12,6 +12,7 @@ import { RenderItemCardActions } from "./RenderItemCardActions";
 type ItemCardProps = {
   item: ItemCard_item$key;
   inInbox?: boolean;
+  itemsConnectionId?: string;
 };
 
 export const ItemCard = (props: ItemCardProps) => {
@@ -31,7 +32,7 @@ export const ItemCard = (props: ItemCardProps) => {
 
   return (
     <div className="bg-background-50 group flex cursor-pointer flex-col gap-1 rounded-lg p-3 shadow-sm hover:shadow-md">
-      <ItemTitle item={item} />
+      <ItemTitle item={item} itemsConnectionId={props.itemsConnectionId} />
       <RenderItemCardDetails item={item} inInbox={props.inInbox} />
       <ItemCardActions item={item} inInbox={props.inInbox} />
     </div>
