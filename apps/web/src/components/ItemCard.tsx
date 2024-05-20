@@ -8,6 +8,8 @@ import { ItemCardUpdateItemMutation } from "../relay/__generated__/ItemCardUpdat
 import { ItemCardDismissFromInboxMutation } from "../relay/__generated__/ItemCardDismissFromInboxMutation.graphql";
 import { RenderItemCardDetails } from "./RenderItemCardDetails";
 import { RenderItemCardActions } from "./RenderItemCardActions";
+import { useEffect, useRef } from "react";
+import { isTempItemId } from "./InboxList";
 
 type ItemCardProps = {
   item: ItemCard_item$key;
@@ -16,9 +18,11 @@ type ItemCardProps = {
 };
 
 export const ItemCard = (props: ItemCardProps) => {
+  const ref = useRef<HTMLDivElement>(null);
   const item = useFragment(
     graphql`
       fragment ItemCard_item on Item {
+        id
         title
         durationInMinutes
         ...ItemTitle_item
@@ -30,8 +34,15 @@ export const ItemCard = (props: ItemCardProps) => {
     props.item,
   );
 
+  useEffect(() => {
+    isTempItemId(item.id) && ref.current?.scrollIntoView({ block: "end" });
+  }, [item.id]);
+
   return (
-    <div className="bg-background-50 group flex cursor-pointer flex-col gap-1 rounded-lg p-3 shadow-sm hover:shadow-md">
+    <div
+      className="bg-background-50 group flex cursor-pointer flex-col gap-1 rounded-lg p-3 shadow-sm hover:shadow-md"
+      ref={ref}
+    >
       <ItemTitle item={item} itemsConnectionId={props.itemsConnectionId} />
       <RenderItemCardDetails item={item} inInbox={props.inInbox} />
       <ItemCardActions item={item} inInbox={props.inInbox} />

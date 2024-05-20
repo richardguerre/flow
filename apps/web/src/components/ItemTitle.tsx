@@ -1,16 +1,16 @@
 import { useCallback, useEffect, useRef, useState } from "react";
-import { Editor, EditorContent, useEditor, Mention, MinimumKit } from "@flowdev/tiptap";
+import { Editor, EditorContent, useEditor, Mention, MinimumKit, OnEscape } from "@flowdev/tiptap";
 import { CatchNewLines } from "@flowdev/tiptap";
 import { graphql, useFragment, useMutation } from "@flowdev/relay";
 import { ItemTitle_item$key } from "../relay/__generated__/ItemTitle_item.graphql";
 import { ItemTitleUpdateItemTitleMutation } from "../relay/__generated__/ItemTitleUpdateItemTitleMutation.graphql";
 import { ItemTitleCreateItemMutation } from "../relay/__generated__/ItemTitleCreateItemMutation.graphql";
-import { createVirtualItem, deleteVirtualItem } from "./InboxList";
+import { deleteVirtualItem, isTempItemId } from "./InboxList";
 import "./TaskTitle.scss";
 
 type ItemTitleProps = {
   item: ItemTitle_item$key;
-  itemsConnectionId?: string;
+  itemsConnectionId: string | undefined;
 };
 
 export const ItemTitle = (props: ItemTitleProps) => {
@@ -24,7 +24,7 @@ export const ItemTitle = (props: ItemTitleProps) => {
     `,
     props.item,
   );
-  const isTemp = item.id.startsWith("Item_0.");
+  const isTemp = isTempItemId(item.id);
 
   const [createItem] = useMutation<ItemTitleCreateItemMutation>(graphql`
     mutation ItemTitleCreateItemMutation($input: MutationCreateItemInput!) {
@@ -60,8 +60,6 @@ export const ItemTitle = (props: ItemTitleProps) => {
             .setValue(createdItem.inboxPoints, "inboxPoints");
         },
       });
-      if (!props.itemsConnectionId) return;
-      createVirtualItem({ itemsConnectionId: props.itemsConnectionId });
     } else {
       updateItem({
         variables: { input: { id: item.id, title: title } },
@@ -128,9 +126,8 @@ export const ItemTitleInput = (props: ItemTitleInputProps) => {
   editorRef.current = useEditor({
     extensions: [
       MinimumKit,
-      CatchNewLines(() => {
-        editorRef.current!.commands.blur();
-      }),
+      CatchNewLines(() => editorRef.current!.commands.blur()),
+      OnEscape(() => editorRef.current!.commands.blur()),
       Mention.configure({
         suggestion: {
           char: "#",

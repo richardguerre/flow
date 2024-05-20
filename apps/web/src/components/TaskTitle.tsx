@@ -7,6 +7,7 @@ import {
   Mention,
   CatchNewLines,
   MinimumKit,
+  OnEscape,
 } from "@flowdev/tiptap";
 import { TaskTitle_task$key } from "@flowdev/web/relay/__generated__/TaskTitle_task.graphql";
 import { TaskTitleUpdateTaskTitleMutation } from "../relay/__generated__/TaskTitleUpdateTaskTitleMutation.graphql";
@@ -142,9 +143,8 @@ export const TaskTitleInput = (props: TaskTitleInputProps) => {
   editorRef.current = useEditor({
     extensions: [
       MinimumKit,
-      CatchNewLines(() => {
-        editorRef.current!.commands.blur();
-      }),
+      CatchNewLines(() => editorRef.current!.commands.blur()),
+      OnEscape(() => editorRef.current!.commands.blur()),
       Mention.configure({
         suggestion: {
           char: "#",

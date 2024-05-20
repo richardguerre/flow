@@ -148,6 +148,8 @@ export const createVirtualItem = (props: { itemsConnectionId: string }) => {
   });
 };
 
+export const isTempItemId = (id: string) => id.startsWith("Item_0.");
+
 export const deleteVirtualItem = (props: { itemId: string; itemsConnectionId: string }) => {
   environment.commitUpdate((store) => {
     const connection = store.get(props.itemsConnectionId);

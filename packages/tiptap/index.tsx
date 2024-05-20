@@ -22,6 +22,7 @@ import { History, HistoryOptions } from "@tiptap/extension-history";
 import { Mention } from "@tiptap/extension-mention";
 import { Markdown as MarkdownExtension } from "tiptap-markdown";
 import { Plugin, PluginKey } from "prosemirror-state";
+import { EditorView } from "@tiptap/pm/view";
 
 export {
   Document,
@@ -72,25 +73,41 @@ export const CodeBlock = $CodeBlock.configure({
   },
 });
 
-export const CatchNewLines = (onNewLine?: () => void) =>
+export const OnKeydown = (
+  onKeyDown?: (view: EditorView, event: KeyboardEvent) => boolean | undefined,
+  extensionName = "onKeyDown",
+) =>
   Extension.create({
-    name: "catchNewLines",
+    name: extensionName,
     addProseMirrorPlugins() {
       return [
         new Plugin({
-          key: new PluginKey("eventHandler"),
+          key: new PluginKey(extensionName),
           props: {
-            handleKeyDown: (_view, event) => {
-              if (event.key === "Enter") {
-                onNewLine?.();
-                return true;
-              }
+            handleKeyDown: (view, event) => {
+              return onKeyDown?.(view, event);
             },
           },
         }),
       ];
     },
   });
+
+export const OnEscape = (onEscape?: () => void) =>
+  OnKeydown((_view, event) => {
+    if (event.key === "Escape") {
+      onEscape?.();
+      return true;
+    }
+  }, "onEscape");
+
+export const CatchNewLines = (onNewLine?: () => void) =>
+  OnKeydown((view, event) => {
+    if (event.key === "Enter") {
+      onNewLine?.();
+      return true;
+    }
+  }, "onNewLine");
 
 interface MinimumKitOptions {
   document: false;
