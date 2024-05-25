@@ -37,6 +37,10 @@ export const getPluginOptions = (pluginSlug: string) => ({
     sendDebounced: pgBoss.sendDebounced,
     /** Documentation: https://github.com/timgit/pg-boss/blob/HEAD/docs/readme.md#schedulename-cron-data-options */
     schedule: pgBoss.schedule,
+    /** Documentation: https://github.com/timgit/pg-boss/blob/HEAD/docs/readme.md#unschedulename */
+    unschedule: pgBoss.unschedule,
+    /** Documentation: https://github.com/timgit/pg-boss/blob/HEAD/docs/readme.md#cancel */
+    cancel: pgBoss.cancel,
   },
   /**
    * Prisma client for non-sensitive tables.

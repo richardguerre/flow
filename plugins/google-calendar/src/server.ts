@@ -9,12 +9,43 @@ export default definePlugin((opts) => {
   const CALENDARS_SYNC_JOB_NAME = `${opts.pluginSlug}-calendars-sync`; // prefixed with the plugin slug to avoid collisions with other plugins
   const UPSERT_EVENT_JOB_NAME = `${opts.pluginSlug}-upsert-item-from-event`; // prefixed with the plugin slug to avoid collisions with other plugins
   const PROCESS_EVENTS_WEBHOOK_JOB_NAME = `${opts.pluginSlug}-process-events-webhook`; // prefixed with the plugin slug to avoid collisions with other plugins
+  const CLEANUP_EVENTS_JOB_NAME = `${opts.pluginSlug}-cleanup-events`; // prefixed with the plugin slug to avoid collisions with other plugins
   const EVENTS_WEBHOOK_CHANNEL_ID = `flow-${opts.pluginSlug}-events-webhook`;
+  const crons = [CALENDARS_SYNC_JOB_NAME];
+  const jobs = [
+    GET_EVENTS_JOB_NAME,
+    CALENDARS_SYNC_JOB_NAME,
+    UPSERT_EVENT_JOB_NAME,
+    PROCESS_EVENTS_WEBHOOK_JOB_NAME,
+    CLEANUP_EVENTS_JOB_NAME,
+  ];
 
   const getTokensFromStore = async () => {
     const accountsTokensItem =
       await opts.store.getPluginItem<AccountsTokens>(ACCOUNT_TOKENS_STORE_KEY);
     if (!accountsTokensItem) {
+      const today = opts.dayjs().startOf("day").utc(true).toDate();
+      // create a task for the user to fix the issue
+      await opts.prisma.task.create({
+        data: {
+          title:
+            '<a href="/settings/plugin/google-calendar">Re-connect your Google Calendar account.</a> There was an issue with the connection and it needs to be re-established.',
+          pluginDatas: {
+            create: {
+              pluginSlug: opts.pluginSlug,
+              originalId: "not-authenticated",
+              min: {},
+              full: {},
+            },
+          },
+          day: {
+            connectOrCreate: {
+              where: { date: today },
+              create: { date: today, tasksOrder: [] },
+            },
+          },
+        },
+      });
       throw new opts.GraphQLError("User not authenticated.", {
         extensions: {
           code: "NOT_AUTHENTICATED",
@@ -553,7 +584,39 @@ export default definePlugin((opts) => {
           await opts.pgBoss.send(GET_EVENTS_JOB_NAME, { calendarId, days: jobData.days ?? 7 });
         }
       }),
+      work(CLEANUP_EVENTS_JOB_NAME, async () => {
+        const timezone = await opts.getUsersTimezone();
+        const endOfWeek = opts
+          .dayjs()
+          .tz(timezone ?? undefined)
+          .endOf("day")
+          .add(1, "week");
+        await opts.prisma.task.deleteMany({
+          where: {
+            date: { gte: endOfWeek.toDate() },
+            pluginDatas: { some: { pluginSlug: opts.pluginSlug } },
+          },
+        });
+        await opts.prisma.item.deleteMany({
+          where: {
+            scheduledAt: { gte: endOfWeek.toDate() },
+            pluginDatas: { some: { pluginSlug: opts.pluginSlug } },
+          },
+        });
+      }),
     ],
+    onUninstall: async () => {
+      // cleanup events
+      await opts.pgBoss.send(CLEANUP_EVENTS_JOB_NAME, {});
+      // remove all connected calendars
+      await opts.store.deleteItem<ConnectedCalendar[]>(CONNECTED_CALENDARS_KEY);
+      // remove all tokens
+      await opts.store.deleteItem<AccountsTokens>(ACCOUNT_TOKENS_STORE_KEY);
+      // remove all crons
+      await Promise.all(crons.map((job) => opts.pgBoss.unschedule(job)));
+      // remove all jobs
+      await Promise.all(jobs.map((job) => opts.pgBoss.cancel(job)));
+    },
   };
 });
 

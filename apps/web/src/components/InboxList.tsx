@@ -129,7 +129,7 @@ const InboxListItems = (props: {
       list={items}
       setList={setList}
       group="shared"
-      className="no-scrollbar flex h-full flex-col gap-4 overflow-y-scroll px-4"
+      className="no-scrollbar flex h-full flex-col gap-4 overflow-y-scroll px-4 pb-4"
       sort={false}
     >
       {items.map((item) => (
