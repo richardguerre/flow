@@ -24,28 +24,36 @@ export default definePlugin((opts) => {
     const accountsTokensItem =
       await opts.store.getPluginItem<AccountsTokens>(ACCOUNT_TOKENS_STORE_KEY);
     if (!accountsTokensItem) {
-      const today = opts.dayjs().startOf("day").utc(true).toDate();
-      // create a task for the user to fix the issue
-      await opts.prisma.task.create({
-        data: {
-          title:
-            '<a href="/settings/plugin/google-calendar">Re-connect your Google Calendar account.</a> There was an issue with the connection and it needs to be re-established.',
-          pluginDatas: {
-            create: {
-              pluginSlug: opts.pluginSlug,
-              originalId: "not-authenticated",
-              min: {},
-              full: {},
-            },
-          },
-          day: {
-            connectOrCreate: {
-              where: { date: today },
-              create: { date: today, tasksOrder: [] },
-            },
-          },
+      const today = opts.dayjs().utc(true).startOf("day").toDate();
+      // create a task for the user to fix the issue if not already
+      const existingTask = await opts.prisma.task.findFirst({
+        where: {
+          date: { gte: today },
+          pluginDatas: { some: { originalId: "not-authenticated", pluginSlug: opts.pluginSlug } },
         },
       });
+      if (!existingTask) {
+        await opts.prisma.task.create({
+          data: {
+            title:
+              '<a href="/settings/plugin/google-calendar">Re-connect your Google Calendar account.</a> There was an issue with the connection and it needs to be re-established.',
+            pluginDatas: {
+              create: {
+                pluginSlug: opts.pluginSlug,
+                originalId: "not-authenticated",
+                min: {},
+                full: {},
+              },
+            },
+            day: {
+              connectOrCreate: {
+                where: { date: today },
+                create: { date: today, tasksOrder: [] },
+              },
+            },
+          },
+        });
+      }
       throw new opts.GraphQLError("User not authenticated.", {
         extensions: {
           code: "NOT_AUTHENTICATED",
