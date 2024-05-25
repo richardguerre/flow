@@ -27,7 +27,7 @@
     "@flowdev/tiptap": "workspace:*",
     "@flowdev/ui": "workspace:*",
     "@flowdev/unocss": "workspace:*",
-    "@unocss/runtime": "0.53.6",
+    "@unocss/runtime": "0.60.3",
     "dayjs": "^1.11.7",
     "framer-motion": "^10.12.10",
     "graphql-sse": "^2.3.0",

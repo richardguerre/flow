@@ -4,6 +4,6 @@
   "private": false,
   "main": "uno.config.ts",
   "dependencies": {
-    "unocss": "^0.53.5"
+    "unocss": "0.60.3"
   }
 }
