@@ -92,6 +92,7 @@ type Item implements Node {
 
   """The list in which the item is in"""
   list: List
+  listId: ID
 
   """The plugin datas linked to the item"""
   pluginDatas: [ItemPluginData!]!
@@ -956,6 +957,7 @@ type Task implements Node {
 
   """The item linked to the task"""
   item: Item
+  itemId: ID
 
   """The plugin datas of the task"""
   pluginDatas: [TaskPluginData!]!

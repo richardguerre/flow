@@ -53,7 +53,7 @@ const IndexViewContent = (props: IndexViewProps) => {
   useFlowNotitications(); // establish the `notifications` subscription and will update the Relay store with any updates that it receives. Done once the query is loaded so we don't ask too many things at once.
 
   return (
-    <div className="flex h-screen w-[calc(100%-60px)]">
+    <div className="flex h-screen w-[calc(100%-60px)] relative">
       <Days data={data} />
       <Lists data={data} />
     </div>

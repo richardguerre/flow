@@ -1,4 +1,10 @@
-import { graphql, useFragment, useMutation } from "@flowdev/relay";
+import {
+  ConnectionHandler,
+  SelectorStoreUpdater,
+  graphql,
+  useFragment,
+  useMutation,
+} from "@flowdev/relay";
 import { ItemCard_item$key } from "@flowdev/web/relay/__generated__/ItemCard_item.graphql";
 import { ItemCardActions_item$key } from "@flowdev/web/relay/__generated__/ItemCardActions_item.graphql";
 import { ItemTitle } from "./ItemTitle";
@@ -10,6 +16,14 @@ import { RenderItemCardDetails } from "./RenderItemCardDetails";
 import { RenderItemCardActions } from "./RenderItemCardActions";
 import { useEffect, useRef } from "react";
 import { isTempItemId } from "./InboxList";
+import { ItemCardContextMenu_item$key } from "../relay/__generated__/ItemCardContextMenu_item.graphql";
+import { ItemCardDeleteItemMutation } from "../relay/__generated__/ItemCardDeleteItemMutation.graphql";
+import {
+  ContextMenu,
+  ContextMenuContent,
+  ContextMenuItem,
+  ContextMenuTrigger,
+} from "@flowdev/ui/ContextMenu";
 
 type ItemCardProps = {
   item: ItemCard_item$key;
@@ -29,6 +43,7 @@ export const ItemCard = (props: ItemCardProps) => {
         ...RenderItemCardDetails_item
         ...ItemCardActions_item
         ...OnCreateTaskItemRecordToCreateTaskFrom_item # used to create tasks from items
+        ...ItemCardContextMenu_item
       }
     `,
     props.item,
@@ -39,14 +54,58 @@ export const ItemCard = (props: ItemCardProps) => {
   }, [item.id]);
 
   return (
-    <div
-      className="bg-background-50 group flex cursor-pointer flex-col gap-1 rounded-lg p-3 shadow-sm hover:shadow-md"
-      ref={ref}
-    >
-      <ItemTitle item={item} itemsConnectionId={props.itemsConnectionId} />
-      <RenderItemCardDetails item={item} inInbox={props.inInbox} />
-      <ItemCardActions item={item} inInbox={props.inInbox} />
-    </div>
+    <ItemCardContextMenu item={item} itemsConnectionId={props.itemsConnectionId}>
+      <div
+        id={item.id}
+        className="bg-background-50 group flex cursor-pointer flex-col gap-1 rounded-lg p-3 shadow-sm hover:shadow-md"
+        ref={ref}
+      >
+        <ItemTitle item={item} itemsConnectionId={props.itemsConnectionId} />
+        <RenderItemCardDetails item={item} inInbox={props.inInbox} />
+        <ItemCardActions item={item} inInbox={props.inInbox} />
+      </div>
+    </ItemCardContextMenu>
+  );
+};
+
+const ItemCardContextMenu = (props: {
+  item: ItemCardContextMenu_item$key;
+  itemsConnectionId?: string;
+  children: React.ReactNode;
+}) => {
+  const item = useFragment(
+    graphql`
+      fragment ItemCardContextMenu_item on Item {
+        id
+      }
+    `,
+    props.item,
+  );
+
+  const [$deleteItem] = useMutation<ItemCardDeleteItemMutation>(graphql`
+    mutation ItemCardDeleteItemMutation($id: ID!) {
+      deleteItem(id: $id) {
+        id
+      }
+    }
+  `);
+
+  const deleteItem = () => {
+    $deleteItem({
+      variables: { id: item.id },
+      optimisticResponse: { deleteItem: { id: item.id } },
+      optimisticUpdater: deleteItemUpdater({ itemsConnectionId: props.itemsConnectionId }),
+      updater: deleteItemUpdater({ itemsConnectionId: props.itemsConnectionId }),
+    });
+  };
+
+  return (
+    <ContextMenu>
+      <ContextMenuTrigger asChild>{props.children}</ContextMenuTrigger>
+      <ContextMenuContent>
+        <ContextMenuItem onClick={deleteItem}>Delete item</ContextMenuItem>
+      </ContextMenuContent>
+    </ContextMenu>
   );
 };
 
@@ -143,4 +202,13 @@ const ItemCardActions = (props: ItemCardActionsProps) => {
       <RenderItemCardActions item={item} />
     </div>
   );
+};
+
+const deleteItemUpdater: (props: {
+  itemsConnectionId?: string;
+}) => SelectorStoreUpdater<ItemCardDeleteItemMutation["response"]> = (props) => (store, data) => {
+  if (!data?.deleteItem || !props.itemsConnectionId) return;
+  const connection = store.get(props.itemsConnectionId);
+  if (!connection) return;
+  ConnectionHandler.deleteNode(connection, data.deleteItem.id);
 };

@@ -62,6 +62,7 @@ export const TaskCard = (props: TaskCardProps) => {
         ...TaskTitle_task
         ...TaskCardContextMenu_task
         ...CalendarListTaskCardDraggedIn_task
+        ...OnCreateItemTaskRecordToCreateItemFrom_task # used to create items from tasks
       }
     `,
     props.task,
@@ -133,7 +134,7 @@ const taskCardUpdateTaskStatusMutation = graphql`
   }
 `;
 
-const deleteTaskMutation = graphql`
+export const deleteTaskMutation = graphql`
   mutation TaskCardDeleteTaskMutation($id: ID!) {
     deleteTask(id: $id) {
       id
@@ -474,7 +475,7 @@ export const CardActionButton = (props: CardActionButtonProps) => {
   );
 };
 
-const deleteTaskUpdater: SelectorStoreUpdater<TaskCardDeleteTaskMutation["response"]> = (
+export const deleteTaskUpdater: SelectorStoreUpdater<TaskCardDeleteTaskMutation["response"]> = (
   store,
   data,
 ) => {
@@ -483,5 +484,12 @@ const deleteTaskUpdater: SelectorStoreUpdater<TaskCardDeleteTaskMutation["respon
   day?.setLinkedRecords(
     (dayTasks ?? []).filter((dayTask) => dayTask.getValue("id") !== data?.deleteTask.id),
     "tasks",
+  );
+  if (!data?.deleteTask.id) return;
+  const task = store.get(data?.deleteTask.id);
+  const itemTasks = task?.getLinkedRecords("subtasks");
+  task?.setLinkedRecords(
+    (itemTasks ?? []).filter((itemTask) => itemTask.getValue("id") !== data?.deleteTask.id),
+    "subtasks",
   );
 };

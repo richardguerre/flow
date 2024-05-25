@@ -127,7 +127,10 @@ export const ItemTitleInput = (props: ItemTitleInputProps) => {
     extensions: [
       MinimumKit,
       CatchNewLines(() => editorRef.current!.commands.blur()),
-      OnEscape(() => editorRef.current!.commands.blur()),
+      OnEscape(() => {
+        if (props.onCancel) props.onCancel();
+        else editorRef.current!.commands.blur();
+      }),
       Mention.configure({
         suggestion: {
           char: "#",

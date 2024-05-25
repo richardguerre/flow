@@ -7,6 +7,7 @@ import { BsCalendar4, BsInbox, BsList } from "@flowdev/icons";
 import { Tooltip, TooltipContent, TooltipTrigger } from "@flowdev/ui/Tooltip";
 import { tw } from "@flowdev/ui/tw";
 import { InboxList } from "./InboxList";
+import { useDragContext } from "../useDragContext";
 
 type ListsProps = {
   data: Lists_data$key;
@@ -29,9 +30,14 @@ export const Lists = (props: ListsProps) => {
   );
 
   const [selectedList, setSelectedList] = useState<ListType>("inbox");
+  const { setOver } = useDragContext();
 
   return (
-    <div className="bg-background-50 flex h-full shadow-xl shrink-0">
+    <div
+      className="bg-background-50 flex h-full shadow-xl shrink-0"
+      onDragEnter={() => setOver("lists")}
+      onDragExit={() => setOver(null)}
+    >
       <div className="h-full w-72 flex-1">
         {selectedList === "inbox" ? (
           <InboxList />

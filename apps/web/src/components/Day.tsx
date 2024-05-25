@@ -12,7 +12,7 @@ import { environment } from "@flowdev/web/relay/environment";
 import { OnCreateTaskItemRecordToCreateTaskFrom_item$data } from "@flowdev/web/relay/__generated__/OnCreateTaskItemRecordToCreateTaskFrom_item.graphql";
 import { getPlugins } from "@flowdev/web/getPlugin";
 import { OnCreateTask, OnCreateTaskProps, PluginStepInfo } from "./OnCreateTask";
-import { useDragContext } from "../useDragContext";
+import { DragContext, useDragContext } from "../useDragContext";
 
 type DayProps = {
   day: Day_day$key;
@@ -62,6 +62,7 @@ export const Day = (props: DayProps) => {
 type UpdateTaskDateInfo = {
   movedTaskId: string;
   htmlParent: HTMLElement;
+  over: DragContext["over"];
 } | null;
 
 type DayContentProps = {
@@ -86,7 +87,7 @@ export const DayContent = (props: DayContentProps) => {
     `,
     props.day,
   );
-  const { setDragged } = useDragContext();
+  const { setDragged, over } = useDragContext();
 
   const [udpateTaskDate] = useMutation<DayUpdateTaskDateMutation>(graphql`
     mutation DayUpdateTaskDateMutation($input: MutationUpdateTaskDateInput!) {
@@ -103,6 +104,7 @@ export const DayContent = (props: DayContentProps) => {
     setUpdateTaskDateInfo({
       htmlParent: e.to,
       movedTaskId: e.item.id,
+      over,
     });
   };
 
@@ -121,7 +123,7 @@ export const DayContent = (props: DayContentProps) => {
       | null;
     if (!itemRecord) return;
     const itemRecordPluginDatas = itemRecord.pluginDatas.__refs.map((ref) => store.get(ref));
-    const willBeDimissedFromInbox = !!((itemRecord.inboxPoints ?? 0) > 0 && itemRecord.list);
+    const willBeDimissedFromInbox = !!((itemRecord.inboxPoints ?? 0) > 0 && itemRecord.listId);
 
     const plugins = await getPlugins();
     const steps: PluginStepInfo[] = [];
@@ -157,23 +159,20 @@ export const DayContent = (props: DayContentProps) => {
   }, [day.tasks]);
 
   useEffect(() => {
-    if (updateTaskDateInfo) {
-      const newTasksOrder = Array.from(updateTaskDateInfo.htmlParent.children).map(
-        (task) => task.id,
-      );
+    if (!updateTaskDateInfo || updateTaskDateInfo.over === "lists") return; // as the Lists component may be super-imposed on top of the Day component (in the IndexView), the Day component is still a drop target but needs to be ignored as the user is trying to move the task to the Lists component
+    const newTasksOrder = Array.from(updateTaskDateInfo.htmlParent.children).map((task) => task.id);
 
-      udpateTaskDate({
-        variables: {
-          input: {
-            id: updateTaskDateInfo.movedTaskId,
-            date: updateTaskDateInfo.htmlParent.id,
-            newTasksOrder,
-          },
+    udpateTaskDate({
+      variables: {
+        input: {
+          id: updateTaskDateInfo.movedTaskId,
+          date: updateTaskDateInfo.htmlParent.id,
+          newTasksOrder,
         },
-      });
+      },
+    });
 
-      setUpdateTaskDateInfo(null);
-    }
+    setUpdateTaskDateInfo(null);
   }, [updateTaskDateInfo]);
 
   return (
@@ -194,6 +193,7 @@ export const DayContent = (props: DayContentProps) => {
         delay={100}
         group="shared"
         onEnd={handleTaskMove}
+        disabled={over === "lists"}
       >
         {tasks.map((task) => (
           <TaskCard key={task.id} task={task} />

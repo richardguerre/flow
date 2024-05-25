@@ -10,6 +10,7 @@ import { DurationBadge } from "./Badges";
 import { Tooltip, TooltipContent, TooltipTrigger } from "@flowdev/ui/Tooltip";
 import { pluralize } from "../utils";
 import { Badge } from "@flowdev/ui/Badge";
+import { dayjs } from "../dayjs";
 
 type Props = {
   inInbox?: boolean;
@@ -59,7 +60,9 @@ export const RenderItemCardDetails = (props: Props) => {
         </Tooltip>
       )}
       {item.durationInMinutes && <DurationBadge durationInMinutes={item.durationInMinutes} />}
-      {item.scheduledAt && <div>{item.scheduledAt}</div>}
+      {item.scheduledAt && (
+        <div className="text-foreground-600">{dayjs(item.scheduledAt).fromNow()}</div>
+      )}
     </>
   );
 

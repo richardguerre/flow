@@ -6,6 +6,8 @@ import { Button } from "@flowdev/ui/Button";
 import { InboxListSubscription } from "../relay/__generated__/InboxListSubscription.graphql";
 import { environment } from "../relay/environment";
 import { InboxListItems_itemsConnection$key } from "../relay/__generated__/InboxListItems_itemsConnection.graphql";
+import { useDragContext } from "../useDragContext";
+import { useConvertTaskToItem } from "./OnCreateItem";
 
 type InboxListProps = {};
 
@@ -44,6 +46,7 @@ const InboxListItems = (props: {
   onItemsConnectionIdChange: (id: string) => void;
   count: number;
 }) => {
+  const { setDragged } = useDragContext();
   const [data] = useSmartSubscription<InboxListSubscription>(graphql`
     subscription InboxListSubscription {
       items(
@@ -70,6 +73,7 @@ const InboxListItems = (props: {
         __id
         edges {
           node {
+            __typename
             id
             isRelevant
             inboxPoints
@@ -84,17 +88,31 @@ const InboxListItems = (props: {
     data?.items ?? null,
   );
 
-  const items = structuredClone(
-    // this filter matches the where clause in the subscription
-    // it ensures that the correct items are shown after Relay store udpates
-    itemsConnection?.edges
-      .filter((edge) => {
-        const passesBaseFilter = !!edge.node.isRelevant && (edge.node.inboxPoints ?? 0) > 0;
-        const hasTodoTasks = edge.node.tasks.some((task) => task.status === "TODO");
-        return passesBaseFilter && !hasTodoTasks;
-      })
-      .map((edge) => edge.node) ?? [],
-  );
+  const getItems = () => {
+    return structuredClone(
+      // this filter matches the where clause in the subscription
+      // it ensures that the correct items are shown after Relay store udpates
+      itemsConnection?.edges
+        .filter((edge) => {
+          const passesBaseFilter = !!edge.node.isRelevant && (edge.node.inboxPoints ?? 0) > 0;
+          const hasTodoTasks = edge.node.tasks.some((task) => task.status === "TODO");
+          return passesBaseFilter && !hasTodoTasks;
+        })
+        .map((edge) => edge.node) ?? [],
+    );
+  };
+  const [items, setItems] = useState(getItems());
+  const { convertTaskToItem } = useConvertTaskToItem();
+
+  const setList = async (newList: typeof items) => {
+    setDragged(null); // reset DragContext as ItemCard.onDragEnd may not be called
+    // no setList as re-ordering items in the inbox is not allowed for now and the task that was just dropped will be converted into an item and added to the bottom of the inbox
+
+    const task = newList.find((item) => item.__typename !== "Item") as { id: string } | undefined; // there shouldn't be more than one task dropped at a time, so we just find the first one
+    if (!task) return;
+    if (!itemsConnection?.__id) return;
+    convertTaskToItem({ task, itemsConnectionId: itemsConnection.__id });
+  };
 
   useEffect(() => {
     if (itemsConnection?.__id) {
@@ -102,17 +120,20 @@ const InboxListItems = (props: {
     }
   }, [itemsConnection?.__id]);
 
+  useEffect(() => {
+    setItems(getItems());
+  }, [itemsConnection?.edges]);
+
   return (
     <ReactSortable
       list={items}
-      setList={() => {}}
+      setList={setList}
       group="shared"
-      className="no-scrollbar flex h-full flex-col overflow-y-scroll px-4"
+      className="no-scrollbar flex h-full flex-col gap-4 overflow-y-scroll px-4"
+      sort={false}
     >
       {items.map((item) => (
-        <div id={item.id} key={item.id} className="pb-4">
-          <ItemCard key={item.id} item={item} inInbox itemsConnectionId={itemsConnection?.__id} />
-        </div>
+        <ItemCard key={item.id} item={item} inInbox itemsConnectionId={itemsConnection?.__id} />
       ))}
     </ReactSortable>
   );

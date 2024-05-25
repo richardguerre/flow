@@ -18,6 +18,10 @@ export const TaskType = builder.prismaNode("Task", {
     status: t.expose("status", { type: TaskStatusEnum }),
     completedAt: t.expose("completedAt", { type: "DateTime", nullable: true }),
     date: t.expose("date", { type: "Date" }),
+    itemId: t.id({
+      nullable: true,
+      resolve: (task) => (task.itemId ? `Item_${task.itemId}` : null),
+    }),
     item: t.relation("item", { nullable: true }),
     durationInMinutes: t.int({
       nullable: true,
@@ -270,8 +274,9 @@ builder.mutationField("deleteTask", (t) =>
     args: {
       id: t.arg.globalID({ required: true, description: "The Relay ID of the task to delete." }),
     },
-    resolve: (query, _, args) => {
-      return prisma.task.delete({ ...query, where: { id: parseInt(args.id.id) } });
+    resolve: async (query, _, args) => {
+      const task = await prisma.task.delete({ ...query, where: { id: parseInt(args.id.id) } });
+      return task;
     },
   }),
 );

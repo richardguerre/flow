@@ -13,9 +13,7 @@ graphql`
     id
     title
     inboxPoints
-    list {
-      id
-    }
+    listId
     pluginDatas {
       pluginSlug
       min
@@ -137,7 +135,7 @@ export const OnCreateTask = (props: OnCreateTaskProps) => {
   };
 
   const handleDone = async () => {
-    // the user done going through all the steps, so let's create the task
+    // the user is done going through all the steps, so let's create the task
     // hide the dialog so that the toast gets all the attention and we don't display stale dialog content
     props.onClose();
     const createTask = $createTask({
@@ -321,9 +319,7 @@ export type PluginOnCreateTask = (input: {
     readonly item?: {
       id: string;
       inboxPoints: number | null;
-      list: {
-        id: string;
-      } | null;
+      listId: string | null;
       pluginDatas: ReadonlyArray<{
         min: JsonValue;
         pluginSlug: string;
