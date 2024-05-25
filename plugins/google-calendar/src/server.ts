@@ -24,36 +24,6 @@ export default definePlugin((opts) => {
     const accountsTokensItem =
       await opts.store.getPluginItem<AccountsTokens>(ACCOUNT_TOKENS_STORE_KEY);
     if (!accountsTokensItem) {
-      const today = opts.dayjs().utc(true).startOf("day").toDate();
-      // create a task for the user to fix the issue if not already
-      const existingTask = await opts.prisma.task.findFirst({
-        where: {
-          date: { gte: today },
-          pluginDatas: { some: { originalId: "not-authenticated", pluginSlug: opts.pluginSlug } },
-        },
-      });
-      if (!existingTask) {
-        await opts.prisma.task.create({
-          data: {
-            title:
-              '<a href="/settings/plugin/google-calendar">Re-connect your Google Calendar account.</a> There was an issue with the connection and it needs to be re-established.',
-            pluginDatas: {
-              create: {
-                pluginSlug: opts.pluginSlug,
-                originalId: "not-authenticated",
-                min: {},
-                full: {},
-              },
-            },
-            day: {
-              connectOrCreate: {
-                where: { date: today },
-                create: { date: today, tasksOrder: [] },
-              },
-            },
-          },
-        });
-      }
       throw new opts.GraphQLError("User not authenticated.", {
         extensions: {
           code: "NOT_AUTHENTICATED",
@@ -92,6 +62,40 @@ export default definePlugin((opts) => {
           tokens.refresh_token,
       );
       if (!res.ok) {
+        const today = opts.dayjs().utc(true).startOf("day").toDate();
+        // create a task for the user to fix the issue if not already
+        const existingTask = await opts.prisma.task.findFirst({
+          where: {
+            date: { gte: today },
+            pluginDatas: { some: { originalId: "not-authenticated", pluginSlug: opts.pluginSlug } },
+          },
+        });
+        if (!existingTask) {
+          await opts.prisma.task.create({
+            data: {
+              title:
+                '<a href="/settings/plugin/google-calendar">Re-connect</a> your Google Calendar account. There was an issue with the connection.',
+              pluginDatas: {
+                create: {
+                  pluginSlug: opts.pluginSlug,
+                  originalId: "not-authenticated",
+                  min: {},
+                  full: {},
+                },
+              },
+              day: {
+                connectOrCreate: {
+                  where: { date: today },
+                  create: { date: today, tasksOrder: [] },
+                },
+              },
+            },
+          });
+        }
+        // send clean up job as events are not getting synced anyway
+        await opts.pgBoss.send(CLEANUP_EVENTS_JOB_NAME, {});
+
+        // throw error to user if this is part of a user initiated action
         throw new opts.GraphQLError("Could not refresh token.", {
           extensions: {
             code: "COULD_NOT_REFRESH_TOKEN",
