@@ -10,7 +10,7 @@ export default definePlugin((opts) => {
   const UPSERT_EVENT_JOB_NAME = `${opts.pluginSlug}-upsert-item-from-event`; // prefixed with the plugin slug to avoid collisions with other plugins
   const PROCESS_EVENTS_WEBHOOK_JOB_NAME = `${opts.pluginSlug}-process-events-webhook`; // prefixed with the plugin slug to avoid collisions with other plugins
   const CLEANUP_EVENTS_JOB_NAME = `${opts.pluginSlug}-cleanup-events`; // prefixed with the plugin slug to avoid collisions with other plugins
-  const EVENTS_WEBHOOK_CHANNEL_ID = `flow-${opts.pluginSlug}-events-webhook`;
+  const EVENTS_WEBHOOK_CHANNEL_ID = `flow-${opts.pluginSlug}-events-webhook-2024-05-26-1`; // suffixed with date to avoid collisions with already created channels
   const crons = [CALENDARS_SYNC_JOB_NAME];
   const jobs = [
     GET_EVENTS_JOB_NAME,
@@ -223,7 +223,7 @@ export default definePlugin((opts) => {
             { headers: { Authorization: `Bearer ${tokens.access_token}` } },
           )
             .then((res) => res.json() as calendar_v3.Schema$CalendarList)
-            .then((res) => res.items);
+            .then((res) => res.items ?? []);
 
           // connect any calendar that is not already connected
           for (const calendarId of input.calendarIds) {
@@ -231,7 +231,7 @@ export default definePlugin((opts) => {
             if (connectedCalendarsMap.has(calendarId)) continue;
 
             // ignore if not in the user's account
-            if (!allCalendarsInAccount?.some((calendar) => calendar.id === calendarId)) {
+            if (!allCalendarsInAccount.some((calendar) => calendar.id === calendarId)) {
               continue;
             }
 
@@ -239,7 +239,8 @@ export default definePlugin((opts) => {
             await opts.pgBoss.send(GET_EVENTS_JOB_NAME, { calendarId, days: 7 });
 
             // set up webhook
-            const res = await fetch(
+            const webhookAddress = `${opts.serverOrigin}/api/plugin/${opts.pluginSlug}/events/webhook`;
+            let res = await fetch(
               `https://www.googleapis.com/calendar/v3/calendars/${calendarId}/events/watch`,
               {
                 method: "POST",
@@ -250,11 +251,24 @@ export default definePlugin((opts) => {
                 body: JSON.stringify({
                   id: EVENTS_WEBHOOK_CHANNEL_ID,
                   type: "web_hook",
-                  address: `${opts.serverOrigin}/api/plugin/${opts.pluginSlug}/events/webhook`,
+                  address: webhookAddress,
                 }),
               },
-            ).then((res) => res.json() as calendar_v3.Schema$Channel);
-            console.log("✔ Set up webhook for calendar", calendarId);
+            ).then(async (res) => {
+              if (!res.ok) {
+                console.log(
+                  "❌ Failed to set up webhook for calendar",
+                  calendarId,
+                  webhookAddress,
+                  res.status,
+                  await res.text(),
+                );
+                return null;
+              }
+              return res.json() as calendar_v3.Schema$Channel;
+            });
+            if (!res) continue;
+            console.log("✔ Set up webhook for calendar", calendarId, webhookAddress);
 
             // add to connected calendars
             connectedCalendarsMap.set(calendarId, {
@@ -269,23 +283,38 @@ export default definePlugin((opts) => {
           }
 
           // disconnect any calendar that is not specified
-          for (const calendar of allCalendarsInAccount ?? []) {
+          for (const calendar of allCalendarsInAccount) {
             if (!calendar.id || input.calendarIds.includes(calendar.id)) continue;
 
             // remove webhook
             const calendarConnectInfo = connectedCalendarsMap.get(calendar.id);
             if (!calendarConnectInfo) continue;
-            await fetch(`https://www.googleapis.com/calendar/v3/channels/stop`, {
+            const res = await fetch(`https://www.googleapis.com/calendar/v3/channels/stop`, {
               method: "POST",
               headers: {
                 Authorization: `Bearer ${tokens.access_token}`,
                 "Content-Type": "application/json",
               },
               body: JSON.stringify({
+                resource: {
+                  id: calendarConnectInfo.channelId,
+                  resourceId: calendarConnectInfo.resourceId,
+                },
                 id: calendarConnectInfo.channelId,
                 resourceId: calendarConnectInfo.resourceId,
               }),
             });
+            if (!res.ok) {
+              console.log(
+                "❌ Failed to remove webhook for calendar",
+                calendar.id,
+                calendarConnectInfo.channelId,
+                calendarConnectInfo.resourceId,
+                res.status,
+                await res.text(),
+              );
+              continue;
+            }
             console.log("✔ Removed webhook for calendar", calendar.id);
 
             // remove from connected calendars
@@ -295,7 +324,7 @@ export default definePlugin((opts) => {
           data.push({
             account,
             calendars:
-              allCalendarsInAccount?.map((calendar) => ({
+              allCalendarsInAccount.map((calendar) => ({
                 ...calendar,
                 connected: connectedCalendarsMap.has(calendar.id ?? ""),
               })) ?? [],
@@ -317,6 +346,60 @@ export default definePlugin((opts) => {
           operationName: "calendars", // this should invalidate the cache for the calendars operation
           data,
         };
+      },
+      /**
+       * Disconnects the specified account.
+       */
+      disconnectAccount: async (input: { accountId: string }) => {
+        const accountsTokens = await getTokensFromStore();
+        const tokens = accountsTokens[input.accountId];
+        if (!tokens) {
+          return { data: "Account not connected." };
+        }
+        const connectedCalendars = await opts.store
+          .getPluginItem<ConnectedCalendar[]>(CONNECTED_CALENDARS_KEY)
+          .then((res) => res?.value ?? []);
+        for (const calendar of connectedCalendars.filter((c) => c.account === input.accountId)) {
+          const res = await fetch(`https://www.googleapis.com/calendar/v3/channels/stop`, {
+            method: "POST",
+            headers: {
+              Authorization: `Bearer ${tokens.access_token}`,
+              "Content-Type": "application/json",
+            },
+            body: JSON.stringify({
+              resource: {
+                id: calendar.channelId,
+                resourceId: calendar.resourceId,
+              },
+              id: calendar.channelId,
+              resourceId: calendar.resourceId,
+            }),
+          });
+          if (!res.ok) {
+            console.log(
+              "❌ Failed to remove webhook for calendar",
+              calendar.calendarId,
+              calendar.channelId,
+              calendar.resourceId,
+              res.status,
+              await res.text(),
+            );
+            continue;
+          }
+          console.log("✔ Removed webhook for calendar", calendar.calendarId);
+        }
+
+        await opts.store.setItem<ConnectedCalendar[]>(
+          CONNECTED_CALENDARS_KEY,
+          connectedCalendars.filter((c) => c.account !== input.accountId),
+        );
+        await opts.store.setItem<AccountsTokens>(
+          ACCOUNT_TOKENS_STORE_KEY,
+          Object.fromEntries(
+            Object.entries(accountsTokens).filter(([account]) => account !== input.accountId),
+          ),
+        );
+        return { data: "Account disconnected." };
       },
       /**
        * Refreshes the events of the specified calendars for the number of days specified (defaults to 7).

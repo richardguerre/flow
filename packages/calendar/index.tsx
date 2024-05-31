@@ -120,6 +120,11 @@ export const DayTimeGrid = (props: DayTimeGridProps) => {
     );
   }, []);
 
+  useEffect(() => {
+    if (!nowRef.current) return;
+    nowRef.current.scrollIntoView({ block: "center" });
+  }, [nowRef.current]);
+
   return (
     <div className="flex gap-1">
       <div
@@ -166,8 +171,7 @@ export const DayTimeGrid = (props: DayTimeGridProps) => {
         </div>
         <div
           ref={nowRef}
-          // #ef4444 is red-500
-          className="absolute z-20 h-[2px] w-full bg-[#ef4444]"
+          className="absolute z-20 h-[2px] w-full bg-red-500"
           style={{
             top: getTop(now),
           }}

@@ -70,7 +70,6 @@ export const CalendarList = (props: CalendarListProps) => {
     `,
     dragged,
   );
-  console.log(draggedInTask);
 
   const handleDragOver: DragEventHandler<HTMLDivElement> = (e) => {
     e.preventDefault();
@@ -97,32 +96,29 @@ export const CalendarList = (props: CalendarListProps) => {
     }
   };
 
-  const itemEvents = useMemo(() => {
-    return (
-      eventsData?.events.edges.reduce((events, edge) => {
-        if (!edge.node.scheduledAt) return events;
-        const color = edge.node.color;
-        events.push({
-          id: edge.node.id,
-          title: edge.node.title,
-          scheduledAt: new Date(edge.node.scheduledAt!),
-          textColor: color ? tailwindColors[edge.node.color]["900"] : undefined,
-          backgroundColor: color ? tailwindColors[edge.node.color]["100"] : undefined,
-          durationInMinutes: edge.node.durationInMinutes ?? 0,
-          ...(edge.node.isAllDay ? { isAllDay: true } : {}),
-        });
-        return events;
-      }, [] as CalendarEvent[]) ?? []
-    );
-  }, [eventsData?.events.edges]);
+  const events =
+    eventsData?.events.edges.reduce((events, edge) => {
+      if (!edge.node.scheduledAt) return events;
+      const color = edge.node.color;
+      events.push({
+        id: edge.node.id,
+        title: edge.node.title,
+        scheduledAt: new Date(edge.node.scheduledAt!),
+        textColor: color ? tailwindColors[edge.node.color]["900"] : undefined,
+        backgroundColor: color ? tailwindColors[edge.node.color]["100"] : undefined,
+        durationInMinutes: edge.node.durationInMinutes ?? 0,
+        ...(edge.node.isAllDay ? { isAllDay: true } : {}),
+      });
+      return events;
+    }, [] as CalendarEvent[]) ?? [];
 
-  const events = useMemo(() => {
-    if (!dragged || dragY === null) return itemEvents;
-    // itemEvents?.push({
-    //   id: dragged.id,
-    // });
-    return itemEvents;
-  }, [itemEvents?.length, dragged, dragY]);
+  // const events = useMemo(() => {
+  //   if (!dragged || dragY === null) return itemEvents;
+  //   // itemEvents?.push({
+  //   //   id: dragged.id,
+  //   // });
+  //   return itemEvents;
+  // }, [itemEvents?.length, dragged, dragY]);
 
   const artifacts = useMemo(() => {
     return tasksData.day?.tasks?.reduce((artifacts, task) => {

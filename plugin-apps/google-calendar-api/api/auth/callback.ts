@@ -12,6 +12,15 @@ export default async (request: Request) => {
   const requestUrl = new URL(request.url);
   const code = requestUrl.searchParams.get("code");
   const apiEndpoint = requestUrl.searchParams.get("state"); // the state contains the API endpoint to store the tokenData in the user's Flow instance. See api/auth/index.ts for more details.
+  const error = requestUrl.searchParams.get("error");
+
+  if (error === "access_denied" && apiEndpoint) {
+    // redirect to the Flow instance as the user denied access
+    return Response.redirect(apiEndpoint);
+  } else if (error) {
+    const errorDescription = requestUrl.searchParams.get("error_description");
+    return new Response(`Err: ${error} - ${errorDescription}`);
+  }
 
   if (!code) {
     return new Response("Missing code in search params", { status: 400 });

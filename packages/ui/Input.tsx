@@ -24,7 +24,7 @@ export const Input = React.forwardRef<HTMLInputElement, InputProps>((props, ref)
           {...props}
           ref={ref}
           className={tw(
-            "ring-primary-200 placeholder:text-foreground-700 text-foreground-900 disabled:bg-background-300/50 disabled:ring-none hover:ring-primary-300 focus:ring-primary-500 w-full rounded-md px-3 py-2 text-sm outline-none ring transition-colors duration-300 ease-in-out",
+            "ring-primary-200 placeholder:text-foreground-700 text-foreground-900 disabled:bg-background-300/50 disabled:ring-none hover:ring-primary-300 focus:ring-primary-500 w-full rounded-md px-3 py-2 text-sm outline-none ring-2 transition-colors duration-300 ease-in-out",
             props.leftIcon && "pl-10",
             props.rightIcon && "pr-10",
             props.hasError &&

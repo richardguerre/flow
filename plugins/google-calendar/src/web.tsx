@@ -57,7 +57,9 @@ export default definePlugin((options) => {
       <div className="flex flex-col gap-2">
         {calendarsQuery?.data?.map((googleAccount) => (
           <div className="flex flex-col gap-2 rounded w-full bg-background-50 shadow px-4 py-2">
-            <div className="font-semibold">{googleAccount.account}</div>
+            <div className="flex justify-between gap-2 items-center">
+              <div className="font-semibold">{googleAccount.account}</div>
+            </div>
             <div className="flex flex-col gap-2">
               {"authError" in googleAccount ? (
                 <div className="text-foreground-900 text-negative-500">
