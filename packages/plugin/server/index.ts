@@ -24,6 +24,8 @@ export type ServerPlugin = (opts: ServerPluginOptions) => {
   onUpdateTaskStatus?: PluginOnUpdateTaskStatus;
   /** Hook called before an item's status is updated. */
   onUpdateItemStatus?: PluginOnUpdateItemStatus;
+  /** Hook called when the user refreshes the calendar items. */
+  onRefreshCalendarItems?: () => Promise<void>;
   /**
    * Hook called when a request is made at `/api/plugin/:pluginSlug`.
    *

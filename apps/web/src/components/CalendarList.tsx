@@ -1,5 +1,11 @@
 import { DragEventHandler, useEffect, useMemo, useRef, useState } from "react";
-import { graphql, useFragment, useRefetchableFragment, useSmartSubscription } from "@flowdev/relay";
+import {
+  graphql,
+  useFragment,
+  useMutation,
+  useRefetchableFragment,
+  useSmartSubscription,
+} from "@flowdev/relay";
 import { CalendarList_data$key } from "@flowdev/web/relay/__generated__/CalendarList_data.graphql";
 import { DayTimeGrid, CalendarEvent, CalendarArtifact } from "@flowdev/calendar";
 import { tailwindColors } from "@flowdev/unocss";
@@ -7,6 +13,10 @@ import { CalendarListRefetchableQuery } from "../relay/__generated__/CalendarLis
 import { CalendarListSubscription } from "../relay/__generated__/CalendarListSubscription.graphql";
 import { dayjs } from "../dayjs";
 import { useDragContext } from "../useDragContext";
+import { RenderCalendarActions, RenderCalendarInlineActions } from "./RenderCalendarActions";
+import { Button } from "@flowdev/ui/Button";
+import { BsArrowClockwise } from "@flowdev/icons";
+import { CalendarListRefreshMutation } from "../relay/__generated__/CalendarListRefreshMutation.graphql";
 
 const START_HOUR = 4;
 
@@ -21,6 +31,7 @@ export const CalendarList = (props: CalendarListProps) => {
       fragment CalendarList_data on Query
       @refetchable(queryName: "CalendarListRefetchableQuery")
       @argumentDefinitions(dayIdInFocus: { type: "ID!" }) {
+        canRefreshCalendarItems
         day: node(id: $dayIdInFocus) {
           ... on Day {
             tasks {
@@ -46,6 +57,7 @@ export const CalendarList = (props: CalendarListProps) => {
               durationInMinutes
               isAllDay
               color
+              ...RenderCalendarActions_item
             }
           }
         }
@@ -135,6 +147,16 @@ export const CalendarList = (props: CalendarListProps) => {
     }, [] as CalendarArtifact[]);
   }, [tasksData.day?.tasks]);
 
+  const [refresh, isRefreshing] = useMutation<CalendarListRefreshMutation>(graphql`
+    mutation CalendarListRefreshMutation {
+      refreshCalendarItems
+    }
+  `);
+
+  const handleRefresh = () => {
+    refresh({ variables: {} });
+  };
+
   useEffect(() => {
     if (dragged) return;
     const timeout = setTimeout(() => setDragY(null), 100);
@@ -143,7 +165,24 @@ export const CalendarList = (props: CalendarListProps) => {
 
   return (
     <div className="flex h-full flex-col">
-      <div className="p-3 text-xl font-semibold">Calendar</div>
+      <div className="p-3 flex flex-col gap-2 shadow-sm">
+        <div className="flex gap-2 items-center justify-between">
+          <div className="text-xl font-semibold">Calendar</div>
+          <div className="flex items-center gap-2">
+            <RenderCalendarInlineActions
+              items={eventsData?.events.edges.map((edge) => edge.node) ?? []}
+            />
+            {tasksData.canRefreshCalendarItems && (
+              <Button tertiary sm onClick={handleRefresh} loading={isRefreshing}>
+                <BsArrowClockwise size={20} />
+              </Button>
+            )}
+          </div>
+        </div>
+        <div className="flex flex-col gap-2">
+          <RenderCalendarActions items={eventsData?.events.edges.map((edge) => edge.node) ?? []} />
+        </div>
+      </div>
       <div
         className="no-scrollbar h-full overflow-y-scroll pl-3 pt-0.5 pt-3"
         onDragOver={handleParentDragOver}

@@ -78,6 +78,19 @@ Pass the \`where\` argument to override these defaults.`,
   }),
 );
 
+builder.queryField("canRefreshCalendarItems", (t) =>
+  t.field({
+    type: "Boolean",
+    resolve: async () => {
+      const plugins = await getPlugins();
+      for (const plugin of Object.values(plugins)) {
+        if (plugin.onRefreshCalendarItems) return true;
+      }
+      return false;
+    },
+  }),
+);
+
 // --------------- Item mutation types ---------------
 
 builder.mutationField("createItem", (t) =>
@@ -249,6 +262,17 @@ builder.mutationField("dismissItemFromInbox", (t) =>
         where: { id: parseInt(args.input.id.id) },
         data: { inboxPoints: null },
       });
+    },
+  }),
+);
+
+builder.mutationField("refreshCalendarItems", (t) =>
+  t.field({
+    type: "Boolean",
+    resolve: async () => {
+      const plugins = await getPlugins();
+      await Promise.all(Object.values(plugins).map((plugin) => plugin.onRefreshCalendarItems?.()));
+      return true;
     },
   }),
 );

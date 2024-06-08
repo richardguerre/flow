@@ -7,6 +7,10 @@ import type { PluginRenderTaskCardActions as RenderTaskCardActions } from "@flow
 import type { PluginRenderItemCardDetails as RenderItemCardDetails } from "@flowdev/web/src/components/RenderItemCardDetails";
 import type { PluginRenderItemCardActions as RenderItemCardActions } from "@flowdev/web/src/components/RenderItemCardActions";
 import type { PluginSettingFieldProps as SettingField } from "@flowdev/web/src/views/PluginSettingsView";
+import type {
+  PluginRenderCalendarActions as RenderCalendarActions,
+  PluginRenderCalendarInlineActions as RenderCalendarInlineActions,
+} from "@flowdev/web/src/components/RenderCalendarActions";
 
 export type { WebPluginOptions, PluginRoutineStepProps, OnCreateTask };
 
@@ -72,6 +76,14 @@ export type WebPlugin = (options: WebPluginOptions) => {
    * The plugin can either return null or an array of React components.
    */
   renderItemCardActions?: RenderItemCardActions;
+  /**
+   * Render actions below the Calendar header.
+   */
+  renderCalendarActions?: RenderCalendarActions;
+  /**
+   * Render actions inline next to the Calendar header.
+   */
+  renderCalendarInlineActions?: RenderCalendarInlineActions;
 };
 
 export const definePlugin = (plugin: WebPlugin) => ({ plugin });

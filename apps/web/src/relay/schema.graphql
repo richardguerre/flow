@@ -237,6 +237,7 @@ type Mutation {
   """Make a task a subtask of another task."""
   makeTaskSubtaskOf(input: MutationMakeTaskSubtaskOfInput!): Task!
   pluginOperation(input: MutationPluginOperationInput!): PluginOperation
+  refreshCalendarItems: Boolean!
 
   """
   Set password for the Flow instance and get a session token to make authenticated requests.
@@ -683,6 +684,8 @@ input PrismaIntFilter {
 }
 
 type Query {
+  canRefreshCalendarItems: Boolean!
+
   """
   Get days using a Relay connection.
   

@@ -74,7 +74,7 @@ export default definePlugin((opts) => {
           await opts.prisma.task.create({
             data: {
               title:
-                '<a href="/settings/plugin/google-calendar">Re-connect</a> your Google Calendar account. There was an issue with the connection.',
+                '<a href="/settings/plugin/google-calendar">Reconnect</a> your Google Calendar account. There was an issue with the connection.',
               pluginDatas: {
                 create: {
                   pluginSlug: opts.pluginSlug,
@@ -120,6 +120,19 @@ export default definePlugin((opts) => {
       return newTokens;
     }
     return tokens;
+  };
+
+  const refreshEvents = async (input: { days: number }) => {
+    const connectedCalendarIds = await opts.store
+      .getPluginItem<ConnectedCalendar[]>(CONNECTED_CALENDARS_KEY)
+      .then((res) => res?.value.map((cal) => cal.calendarId) ?? []);
+    await opts.pgBoss.send(CALENDARS_SYNC_JOB_NAME, {
+      calendarIds: connectedCalendarIds ?? [],
+      days: input.days ?? 7,
+    });
+    return {
+      data: "Job sent to refresh events.",
+    };
   };
 
   return {
@@ -405,18 +418,7 @@ export default definePlugin((opts) => {
        * Refreshes the events of the specified calendars for the number of days specified (defaults to 7).
        * @throws If the user is not authenticated.
        */
-      refreshEvents: async (input: { days: number }) => {
-        const connectedCalendarIds = await opts.store
-          .getPluginItem<ConnectedCalendar[]>(CONNECTED_CALENDARS_KEY)
-          .then((res) => res?.value.map((cal) => cal.calendarId) ?? []);
-        await opts.pgBoss.send(CALENDARS_SYNC_JOB_NAME, {
-          calendarIds: connectedCalendarIds ?? [],
-          days: input.days ?? 7,
-        });
-        return {
-          data: "Job sent to refresh events.",
-        };
-      },
+      refreshEvents,
     },
     handlePgBossWork: (work) => [
       work(UPSERT_EVENT_JOB_NAME, { batchSize: 5 }, async (jobs) => {
@@ -714,6 +716,9 @@ export default definePlugin((opts) => {
       await Promise.all(crons.map((job) => opts.pgBoss.unschedule(job)));
       // remove all jobs
       await Promise.all(jobs.map((job) => opts.pgBoss.cancel(job)));
+    },
+    onRefreshCalendarItems: async () => {
+      await refreshEvents({ days: 7 });
     },
   };
 });
