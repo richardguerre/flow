@@ -17,13 +17,6 @@ const NotificationsType = builder.simpleObject("Notifications", {
   }),
 });
 
-const getArrayInObj = <T extends object>(payload: T | undefined, type: string) => {
-  if (!payload) return [];
-  if (type in payload) {
-    return payload[type as keyof typeof payload];
-  }
-  return [];
-};
 builder.subscriptionField("notifications", (t) =>
   t.field({
     type: NotificationsType,
@@ -31,42 +24,50 @@ builder.subscriptionField("notifications", (t) =>
       return Repeater.merge([
         undefined, // to make sure the subscription is initialized it will return empty arrays
         pipe(
-          pubsub.subscribe("itemsCreated"),
-          map((items) => ({ itemsCreated: items })),
+          pubsub.subscribe("ItemsCreated"),
+          map((items) => ({ ItemsCreated: items })),
         ),
         pipe(
-          pubsub.subscribe("itemsUpdated"),
-          map((items) => ({ itemsUpdated: items })),
+          pubsub.subscribe("ItemsUpdated"),
+          map((items) => ({ ItemsUpdated: items })),
         ),
         pipe(
-          pubsub.subscribe("itemsDeleted"),
-          map((items) => ({ itemsDeleted: items })),
+          pubsub.subscribe("ItemsDeleted"),
+          map((items) => ({ ItemsDeleted: items })),
         ),
 
         pipe(
-          pubsub.subscribe("tasksCreated"),
-          map((tasks) => ({ tasksCreated: tasks })),
+          pubsub.subscribe("TasksCreated"),
+          map((tasks) => ({ TasksCreated: tasks })),
         ),
         pipe(
-          pubsub.subscribe("tasksUpdated"),
-          map((tasks) => ({ tasksUpdated: tasks })),
+          pubsub.subscribe("TasksUpdated"),
+          map((tasks) => ({ TasksUpdated: tasks })),
         ),
         pipe(
-          pubsub.subscribe("tasksDeleted"),
-          map((tasks) => ({ tasksDeleted: tasks })),
+          pubsub.subscribe("TasksDeleted"),
+          map((tasks) => ({ TasksDeleted: tasks })),
         ),
       ]);
     },
     resolve: (payload) => {
       return {
-        itemsCreated: getArrayInObj(payload, "itemsCreated"),
-        itemsUpdated: getArrayInObj(payload, "itemsUpdated"),
-        itemsDeleted: getArrayInObj(payload, "itemsDeleted"),
+        itemsCreated: getArrayInObj(payload, "ItemsCreated"),
+        itemsUpdated: getArrayInObj(payload, "ItemsUpdated"),
+        itemsDeleted: getArrayInObj(payload, "ItemsDeleted"),
 
-        tasksCreated: getArrayInObj(payload, "tasksCreated"),
-        tasksUpdated: getArrayInObj(payload, "tasksUpdated"),
-        tasksDeleted: getArrayInObj(payload, "tasksDeleted"),
+        tasksCreated: getArrayInObj(payload, "TasksCreated"),
+        tasksUpdated: getArrayInObj(payload, "TasksUpdated"),
+        tasksDeleted: getArrayInObj(payload, "TasksDeleted"),
       };
     },
   }),
 );
+
+const getArrayInObj = <T extends object>(payload: T | undefined, type: string) => {
+  if (!payload) return [];
+  if (type in payload) {
+    return payload[type as keyof typeof payload];
+  }
+  return [];
+};

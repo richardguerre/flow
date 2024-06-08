@@ -476,6 +476,7 @@ export default definePlugin((opts) => {
           const isOver = scheduledEnd.isBefore(opts.dayjs());
           const scheduledAtDate = scheduledStart.tz(usersTimezone).utc(true).toISOString();
 
+          const isRelevant = event.status !== "cancelled";
           const itemCommonBetweenUpdateAndCreate = {
             title: event.summary ?? "No title",
             color: event.calendarColor ? opts.getNearestItemColor(event.calendarColor) : null,
@@ -484,7 +485,7 @@ export default definePlugin((opts) => {
             durationInMinutes: isAllDay
               ? null
               : Math.abs(opts.dayjs(scheduledStart).diff(scheduledEnd, "minute")),
-            isRelevant: event.status !== "cancelled",
+            isRelevant: isRelevant,
             inboxPoints: event.status === "tentative" ? 10 : null,
           } satisfies Prisma.ItemUpdateInput;
 
@@ -579,13 +580,15 @@ export default definePlugin((opts) => {
               },
             });
           }
+          console.log("✔ Upserted item from event", event.summary, scheduledStart?.toISOString());
+
+          if (!isRelevant || opts.dayjs(scheduledEnd).isBefore(opts.dayjs())) return;
           await opts.pgBoss.sendAfter(
             UPSERT_EVENT_JOB_NAME,
             { ...event },
             {},
-            scheduledEnd.toDate(),
+            scheduledEnd.add(1, "second").toDate(), // just to make sure the event is over
           );
-          console.log("✔ Upserted item from event", event.summary, scheduledStart?.toISOString());
         }
       }),
       work(GET_EVENTS_JOB_NAME, async (job) => {
