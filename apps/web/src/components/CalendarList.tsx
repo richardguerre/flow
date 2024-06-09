@@ -16,7 +16,7 @@ import { dayjs } from "../dayjs";
 import { useDragContext } from "../useDragContext";
 import { RenderCalendarActions, RenderCalendarInlineActions } from "./RenderCalendarActions";
 import { Button } from "@flowdev/ui/Button";
-import { BsArrowClockwise } from "@flowdev/icons";
+import { BsArrowClockwise, BsCheck } from "@flowdev/icons";
 import { CalendarListRefreshMutation } from "../relay/__generated__/CalendarListRefreshMutation.graphql";
 import { CalendarListCreateItemMutation } from "../relay/__generated__/CalendarListCreateItemMutation.graphql";
 import { CalendarList_eventsConnection$key } from "../relay/__generated__/CalendarList_eventsConnection.graphql";
@@ -158,7 +158,9 @@ export const CalendarList = (props: CalendarListProps) => {
           id: task.id,
           at: new Date(task.completedAt),
           element: (
-            <div className="h-6 w-6 -translate-x-1/2 -translate-y-1/2 transform rounded-full bg-green-500" />
+            <div className="h-5.5 w-5.5 -translate-x-1/2 -translate-y-1/2 transform rounded-full bg-green-500 flex items-center justify-center shadow">
+              <BsCheck size={20} className="text-white" />
+            </div>
           ),
         });
       }
@@ -180,9 +182,7 @@ export const CalendarList = (props: CalendarListProps) => {
     }
   `);
 
-  const handleRefresh = () => {
-    refresh({ variables: {} });
-  };
+  const handleRefresh = () => refresh({ variables: {} });
 
   useEffect(() => {
     if (dragged) return;
