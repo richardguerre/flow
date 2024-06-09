@@ -6,6 +6,9 @@ import { DateTimeFilter, IntFilter } from "./PrismaFilters";
 import { Item, ItemPluginData } from "@prisma/client";
 import { getPlugins } from "../utils/getPlugins";
 import { TaskListWhereInputType } from "./Task";
+import { GraphQLError } from "graphql";
+import { pgBoss } from "../utils/pgBoss";
+import { CALENDAR_ITEM_CREATED_JOB_NAME, ItemWithTasks } from "../utils";
 
 // -------------- Item types --------------
 
@@ -139,6 +142,70 @@ builder.mutationField("createItem", (t) =>
             : {}),
         },
       });
+    },
+  }),
+);
+
+builder.mutationField("createCalendarItem", (t) =>
+  t.prismaFieldWithInput({
+    type: "Item",
+    description: `Create an item in the calendar.`,
+    input: {
+      title: t.input.string({ required: true, description: "The title of the item." }),
+      scheduledAt: t.input.field({ type: "DateTime", required: true }),
+      durationInMinutes: t.input.int({ required: false }),
+      isAllDay: t.input.boolean({ required: false }),
+      color: t.input.field({ type: ColorEnum, required: false }),
+      pluginDatas: t.input.field({ type: [ItemPluginDataInput], required: false }),
+      fromTaskId: t.input.globalID({ required: false }),
+    },
+    resolve: async (query, _, { input }) => {
+      const fromTask = input.fromTaskId
+        ? await prisma.task
+            .findUniqueOrThrow({ where: { id: parseInt(input.fromTaskId.id) } })
+            .catch(() => {
+              throw new GraphQLError("Task not found.", { extensions: { code: "TASK_NOT_FOUND" } });
+            })
+        : null;
+
+      if (fromTask?.itemId) {
+        throw new GraphQLError(
+          `Task (${fromTask.id}) already linked to an item (${fromTask.itemId}).`,
+          {
+            extensions: {
+              code: "TASK_ALREADY_LINKED_TO_ITEM",
+              userFriendlyMessage: `This task is already linked to an item in your calendar.`,
+            },
+          },
+        );
+      }
+
+      const item = await prisma.item.create({
+        ...query,
+        data: {
+          title: input.title,
+          scheduledAt: u(input.scheduledAt),
+          durationInMinutes: u(input.durationInMinutes),
+          isAllDay: u(input.isAllDay),
+          color: u(input.color),
+          ...(input.pluginDatas
+            ? {
+                pluginDatas: {
+                  createMany: {
+                    data: input.pluginDatas,
+                  },
+                },
+              }
+            : {}),
+          ...(fromTask ? { tasks: { connect: { id: fromTask.id } } } : {}),
+        },
+        include: { tasks: { select: { id: true } } },
+      });
+
+      await pgBoss.send(CALENDAR_ITEM_CREATED_JOB_NAME, item satisfies ItemWithTasks);
+      console.log("Sent job to create calendar event", item.id);
+
+      return item;
     },
   }),
 );

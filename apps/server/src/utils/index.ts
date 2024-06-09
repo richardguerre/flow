@@ -2,8 +2,13 @@ import { FlowPluginSlug, StoreKeys } from "../graphql/Store";
 import { prisma } from "./prisma";
 import { pgBoss } from "./pgBoss";
 import { dayjs } from "./dayjs";
+import PgBoss from "pg-boss";
+import { Item } from "@prisma/client";
+import { getPlugins } from "./getPlugins";
+import { env } from "../env";
 
 export const ROLLOVER_TASKS_JOB_NAME = "rollover-tasks-to-today";
+export const CALENDAR_ITEM_CREATED_JOB_NAME = "calendar-item-created";
 const ROLLOVER_TASKS_CRON = "0 4 * * *";
 
 export const syncTasks = async () => {
@@ -71,4 +76,25 @@ export const getTimezone = async () => {
   } catch {
     return undefined;
   }
+};
+
+export type ItemWithTasks = Item & { tasks: { id: number }[] };
+export type PluginOnCreateCalendarItem = (input: { item: ItemWithTasks }) => Promise<void>;
+
+const createExternalCalendarItem: PgBoss.WorkHandler<ItemWithTasks> = async ({ data: item }) => {
+  console.log("📅 Creating calendar event for item", item.id);
+  const plugins = await getPlugins();
+  for (const plugin of Object.values(plugins)) {
+    if (!plugin.onCreateCalendarItem) continue;
+    await plugin.onCreateCalendarItem({ item });
+  }
+};
+
+export const pgBossWorkers = async () => {
+  if (env.NODE_ENV !== "development") {
+    await pgBoss.work(ROLLOVER_TASKS_JOB_NAME, syncTasks);
+    console.log("Started job to sync tasks");
+  }
+  await pgBoss.work(CALENDAR_ITEM_CREATED_JOB_NAME, createExternalCalendarItem);
+  console.log("Started job to create calendar events");
 };

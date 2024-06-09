@@ -145,7 +145,8 @@ builder.mutationField("createTask", (t) =>
         type: [TaskPluginDataInput],
       }),
       actionDatas: t.input.field({
-        description: "The actions to be executed after the task is created.",
+        description:
+          "Additional data separate from the pluginDatas to be passed to the plugins when creating the task.",
         type: [TaskActionDataInput],
       }),
     },

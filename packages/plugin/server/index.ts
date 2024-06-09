@@ -7,6 +7,7 @@ import type {
 } from "@flowdev/server/src/graphql/Task";
 import { PluginOnUpdateItemStatus } from "@flowdev/server/src/graphql/Item";
 import type { Elysia } from "elysia";
+import { PluginOnCreateCalendarItem } from "@flowdev/server/src/utils";
 export type { Prisma, TaskStatus } from "@flowdev/server/src/exportedTypes";
 
 export type ServerPluginOptions = _ServerPluginOptions;
@@ -24,6 +25,8 @@ export type ServerPlugin = (opts: ServerPluginOptions) => {
   onUpdateTaskStatus?: PluginOnUpdateTaskStatus;
   /** Hook called before an item's status is updated. */
   onUpdateItemStatus?: PluginOnUpdateItemStatus;
+  /** Hook called when the user creates a calendar item. */
+  onCreateCalendarItem?: PluginOnCreateCalendarItem;
   /** Hook called when the user refreshes the calendar items. */
   onRefreshCalendarItems?: () => Promise<void>;
   /**

@@ -3,6 +3,7 @@ import type { calendar_v3 } from "@googleapis/calendar"; // import type only to 
 
 const ACCOUNT_TOKENS_STORE_KEY = "account-tokens";
 const CONNECTED_CALENDARS_KEY = "connected-calendars";
+const DEFAULT_CALENDAR_ID_KEY = "default-calendar-id";
 
 export default definePlugin((opts) => {
   const GET_EVENTS_JOB_NAME = `${opts.pluginSlug}-get-events`; // prefixed with the plugin slug to avoid collisions with other plugins
@@ -135,6 +136,78 @@ export default definePlugin((opts) => {
     };
   };
 
+  const eventToInfo = async (input: { event: UpsertEventJobData; taskId: number | undefined }) => {
+    const usersTimezone = (await opts.getUsersTimezone()) ?? "Etc/GMT-0"; // this should not be null, but just in case
+
+    const isAllDay = !!input.event.start?.date;
+    const scheduledStart = input.event.start?.date
+      ? opts.dayjs(input.event.start.date).startOf("day")
+      : input.event.start?.dateTime
+      ? opts.dayjs(input.event.start.dateTime)
+      : opts.dayjs(); // it should never default to today, but at least we make it a valid day instead of null
+    const scheduledEnd = input.event.end?.date
+      ? opts.dayjs(input.event.end.date).endOf("day")
+      : input.event.end?.dateTime
+      ? opts.dayjs(input.event.end.dateTime)
+      : scheduledStart.add(1, "millisecond");
+    const isOver = scheduledEnd.isBefore(opts.dayjs());
+    const scheduledAtDate = scheduledStart.tz(usersTimezone).utc(true).toISOString();
+    const isRelevant = input.event.status !== "cancelled";
+
+    const itemCommonBetweenUpdateAndCreate = {
+      title: input.event.summary ?? "No title",
+      color: input.event.calendarColor ? opts.getNearestItemColor(input.event.calendarColor) : null,
+      isAllDay: !!input.event.start?.date,
+      scheduledAt: scheduledStart.toISOString(),
+      durationInMinutes: isAllDay
+        ? null
+        : Math.abs(opts.dayjs(scheduledStart).diff(scheduledEnd, "minute")),
+      isRelevant,
+      inboxPoints: input.event.status === "tentative" ? 10 : null,
+    } satisfies Prisma.ItemUpdateInput;
+
+    const min = {
+      eventType: input.event.eventType as PluginDataFull["eventType"],
+      status: input.event.status as PluginDataMin["status"],
+      htmlLink: input.event.htmlLink!,
+      numOfAttendees: input.event.attendees?.length ?? 0,
+      conferenceData: input.event.conferenceData as any,
+      hexBackgroundColor: input.event.calendarColor,
+    } satisfies PluginDataMin;
+    const full = {
+      ...input.event,
+      ...min,
+    } satisfies PluginDataFull as any; // the any is required to make typescript happy with Prisma's type system (theoretically there are no issues since we are getting all events from Google's REST API, which returns serialized JSON)
+
+    const taskCommonBetweenUpdateAndCreate = {
+      title: itemCommonBetweenUpdateAndCreate["title"],
+      completedAt: isOver ? scheduledEnd.toISOString() : null,
+      status: input.event.status === "cancelled" ? "CANCELED" : isOver ? "DONE" : "TODO",
+      day: {
+        connectOrCreate: {
+          where: { date: scheduledAtDate },
+          create: { date: scheduledAtDate, tasksOrder: input.taskId ? [input.taskId] : [] },
+        },
+      },
+    } satisfies Prisma.TaskUpdateInput;
+
+    return {
+      itemInfo: {
+        commonBetweenUpdateAndCreate: itemCommonBetweenUpdateAndCreate,
+        min,
+        full,
+        isRelevant,
+        scheduledStart,
+        scheduledEnd,
+      },
+      taskInfo: {
+        commonBetweenUpdateAndCreate: taskCommonBetweenUpdateAndCreate,
+        min,
+        full,
+      },
+    };
+  };
+
   return {
     onRequest: async (req) => {
       if (req.path === "/auth") {
@@ -224,6 +297,9 @@ export default definePlugin((opts) => {
        */
       connectCalendars: async (input: { calendarIds: string[] }) => {
         const accountsTokens = await getTokensFromStore();
+        let defaultCalendar = await opts.store
+          .getPluginItem<DefaultCalendarInfo>(DEFAULT_CALENDAR_ID_KEY)
+          .then((res) => res?.value);
         const connectedCalendarsMap = await opts.store
           .getPluginItem<ConnectedCalendar[]>(CONNECTED_CALENDARS_KEY)
           .then((res) => new Map(res?.value?.map((c) => [c.calendarId, c]) ?? []));
@@ -283,6 +359,14 @@ export default definePlugin((opts) => {
             if (!res) continue;
             console.log("✔ Set up webhook for calendar", calendarId, webhookAddress);
 
+            // if no default calendar is set, set it to the first calendar
+            if (!defaultCalendar) {
+              defaultCalendar = {
+                account,
+                id: calendarId,
+              };
+            }
+
             // add to connected calendars
             connectedCalendarsMap.set(calendarId, {
               account,
@@ -292,6 +376,7 @@ export default definePlugin((opts) => {
               resourceId: res.resourceId!,
               // res.data.expiration is in Unix time, convert it to ISO string
               expiresAt: opts.dayjs(res.expiration ?? 0).toISOString(),
+              default: defaultCalendar?.id === calendarId,
             });
           }
 
@@ -348,6 +433,9 @@ export default definePlugin((opts) => {
           CONNECTED_CALENDARS_KEY,
           Array.from(connectedCalendarsMap.values()),
         );
+        if (defaultCalendar) {
+          await opts.store.setItem<DefaultCalendarInfo>(DEFAULT_CALENDAR_ID_KEY, defaultCalendar);
+        }
         // schedule a job to sync calendars every 3 days at 3am (least busy time and not midnight so less likely to be peak time for Google).
         // If the schedule already exists, it will be updated.
         await opts.pgBoss.schedule(CALENDARS_SYNC_JOB_NAME, "0 3 */3 * *", {
@@ -424,7 +512,7 @@ export default definePlugin((opts) => {
       work(UPSERT_EVENT_JOB_NAME, { batchSize: 5 }, async (jobs) => {
         // process 5 events at a time to go a little faster (processing 100s at a time might consume too much memory as Google Calendar events can be quite large, especially if it includes conference data)
         for (const job of jobs) {
-          const event = job.data as calendar_v3.Schema$Event & { calendarColor: string | null };
+          const event = job.data as UpsertEventJobData;
           const item = await opts.prisma.item.findFirst({
             where: {
               pluginDatas: { some: { originalId: event.id, pluginSlug: opts.pluginSlug } },
@@ -461,92 +549,40 @@ export default definePlugin((opts) => {
             continue;
           }
 
-          const usersTimezone = (await opts.getUsersTimezone()) ?? "Etc/GMT-0"; // this should not be null, but just in case
-
           const task = item?.tasks[0];
-          const isAllDay = !!event.start?.date;
-          const scheduledStart = event.start?.date
-            ? opts.dayjs(event.start.date).startOf("day")
-            : event.start?.dateTime
-            ? opts.dayjs(event.start.dateTime)
-            : opts.dayjs(); // it should never default to today, but at least we make it a valid day instead of null
-          const scheduledEnd = event.end?.date
-            ? opts.dayjs(event.end.date).endOf("day")
-            : event.end?.dateTime
-            ? opts.dayjs(event.end.dateTime)
-            : scheduledStart.add(1, "millisecond");
-          const isOver = scheduledEnd.isBefore(opts.dayjs());
-          const scheduledAtDate = scheduledStart.tz(usersTimezone).utc(true).toISOString();
-
-          const isRelevant = event.status !== "cancelled";
-          const itemCommonBetweenUpdateAndCreate = {
-            title: event.summary ?? "No title",
-            color: event.calendarColor ? opts.getNearestItemColor(event.calendarColor) : null,
-            isAllDay,
-            scheduledAt: scheduledStart.toISOString(),
-            durationInMinutes: isAllDay
-              ? null
-              : Math.abs(opts.dayjs(scheduledStart).diff(scheduledEnd, "minute")),
-            isRelevant: isRelevant,
-            inboxPoints: event.status === "tentative" ? 10 : null,
-          } satisfies Prisma.ItemUpdateInput;
-
-          const min = {
-            eventType: event.eventType as PluginDataFull["eventType"],
-            status: event.status as PluginDataMin["status"],
-            htmlLink: event.htmlLink!,
-            numOfAttendees: event.attendees?.length ?? 0,
-            conferenceData: event.conferenceData as any,
-            hexBackgroundColor: event.calendarColor,
-          } satisfies PluginDataMin;
-          const full = {
-            ...event,
-            ...min,
-          } satisfies PluginDataFull as any; // the any is required to make typescript happy with Prisma's type system (theoretically there are no issues since we are getting all events from Google's REST API, which returns serialized JSON)
-
-          const taskCommonBetweenUpdateAndCreate = {
-            title: itemCommonBetweenUpdateAndCreate["title"],
-            completedAt: isOver ? scheduledEnd.toISOString() : null,
-            status: event.status === "cancelled" ? "CANCELED" : isOver ? "DONE" : "TODO",
-            day: {
-              connectOrCreate: {
-                where: { date: scheduledAtDate },
-                create: { date: scheduledAtDate, tasksOrder: task?.id ? [task.id] : [] },
-              },
-            },
-          } satisfies Prisma.TaskUpdateInput;
+          const { itemInfo, taskInfo } = await eventToInfo({ event, taskId: task?.id });
 
           if (item) {
             await opts.prisma.item.update({
               where: { id: item.id },
               data: {
-                ...itemCommonBetweenUpdateAndCreate,
+                ...itemInfo.commonBetweenUpdateAndCreate,
                 pluginDatas: {
                   update: {
                     where: { id: item.pluginDatas[0]?.id },
-                    data: { min, full },
+                    data: { min: itemInfo.min, full: itemInfo.full },
                   },
                 },
                 tasks: {
                   upsert: {
                     where: { id: task?.id },
                     update: {
-                      ...taskCommonBetweenUpdateAndCreate,
+                      ...taskInfo.commonBetweenUpdateAndCreate,
                       pluginDatas: {
                         update: {
                           where: { id: task?.pluginDatas[0]?.id },
-                          data: { min, full },
+                          data: { min: taskInfo.min, full: taskInfo.full },
                         },
                       },
                     },
                     create: {
-                      ...taskCommonBetweenUpdateAndCreate,
+                      ...taskInfo.commonBetweenUpdateAndCreate,
                       pluginDatas: {
                         create: {
                           pluginSlug: opts.pluginSlug,
                           originalId: event.id,
-                          min,
-                          full,
+                          min: taskInfo.min,
+                          full: taskInfo.full,
                         },
                       },
                     },
@@ -557,24 +593,24 @@ export default definePlugin((opts) => {
           } else {
             await opts.prisma.item.create({
               data: {
-                ...itemCommonBetweenUpdateAndCreate,
+                ...itemInfo.commonBetweenUpdateAndCreate,
                 pluginDatas: {
                   create: {
                     pluginSlug: opts.pluginSlug,
                     originalId: event.id,
-                    min,
-                    full,
+                    min: itemInfo.min,
+                    full: itemInfo.full,
                   },
                 },
                 tasks: {
                   create: {
-                    ...taskCommonBetweenUpdateAndCreate,
+                    ...taskInfo.commonBetweenUpdateAndCreate,
                     pluginDatas: {
                       create: {
                         pluginSlug: opts.pluginSlug,
                         originalId: event.id,
-                        min,
-                        full,
+                        min: taskInfo.min,
+                        full: taskInfo.full,
                       },
                     },
                   },
@@ -582,14 +618,19 @@ export default definePlugin((opts) => {
               },
             });
           }
-          console.log("✔ Upserted item from event", event.summary, scheduledStart?.toISOString());
+          console.log(
+            "✔ Upserted item from event",
+            event.summary,
+            itemInfo.scheduledStart?.toISOString(),
+          );
 
-          if (!isRelevant || opts.dayjs(scheduledEnd).isBefore(opts.dayjs())) return;
+          if (!itemInfo.isRelevant || opts.dayjs(itemInfo.scheduledEnd).isBefore(opts.dayjs()))
+            return;
           await opts.pgBoss.sendAfter(
             UPSERT_EVENT_JOB_NAME,
             { ...event },
             {},
-            scheduledEnd.add(1, "second").toDate(), // just to make sure the event is over
+            itemInfo.scheduledEnd.add(1, "second").toDate(), // just to make sure the event is over
           );
         }
       }),
@@ -717,11 +758,87 @@ export default definePlugin((opts) => {
       // remove all jobs
       await Promise.all(jobs.map((job) => opts.pgBoss.cancel(job)));
     },
+    onCreateCalendarItem: async ({ item }) => {
+      const defaultCalendar = await opts.store
+        .getPluginItem<DefaultCalendarInfo>(DEFAULT_CALENDAR_ID_KEY)
+        .then((res) => res?.value);
+      if (!defaultCalendar) return;
+      const token = await getRefreshedTokens({ account: defaultCalendar.account });
+      // get calendar to get the calendar color
+      const calendar = await fetch(
+        `https://www.googleapis.com/calendar/v3/calendars/${defaultCalendar.id}`,
+        { headers: { Authorization: `Bearer ${token.access_token}` } },
+      ).then((res) => res.json() as calendar_v3.Schema$CalendarListEntry);
+      // create event in Google Calendar with the default calendar
+      console.log("📅 Creating Google calendar event from Flow item", item.id);
+      let event = await fetch(
+        `https://www.googleapis.com/calendar/v3/calendars/${defaultCalendar.id}/events`,
+        {
+          method: "POST",
+          headers: {
+            Authorization: `Bearer ${token.access_token}`,
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({
+            summary: item.title,
+            start: {
+              dateTime: opts.dayjs(item.scheduledAt).toISOString(),
+            },
+            end: {
+              dateTime: opts
+                .dayjs(item.scheduledAt)
+                .add(item.durationInMinutes ?? 30, "minute")
+                .toISOString(),
+            },
+          }),
+        },
+      ).then((res) => res.json() as Promise<UpsertEventJobData>);
+      if (!event) return;
+      console.log("✔ Created event in Google Calendar", defaultCalendar.id, event.id);
+      event = {
+        ...event,
+        calendarColor: calendar.backgroundColor ?? null,
+      };
+
+      // update the item and task in Flow
+      const taskId = item.tasks[0]?.id;
+      const { itemInfo, taskInfo } = await eventToInfo({ event, taskId });
+      await opts.prisma.item.update({
+        where: { id: item.id },
+        data: {
+          ...itemInfo.commonBetweenUpdateAndCreate,
+          pluginDatas: {
+            create: {
+              pluginSlug: opts.pluginSlug,
+              originalId: event.id,
+              min: itemInfo.min,
+              full: itemInfo.full,
+            },
+          },
+        },
+      });
+      await opts.prisma.task.update({
+        where: { id: taskId },
+        data: {
+          ...taskInfo.commonBetweenUpdateAndCreate,
+          pluginDatas: {
+            create: {
+              pluginSlug: opts.pluginSlug,
+              originalId: event.id,
+              min: taskInfo.min,
+              full: taskInfo.full,
+            },
+          },
+        },
+      });
+    },
     onRefreshCalendarItems: async () => {
       await refreshEvents({ days: 7 });
     },
   };
 });
+
+type UpsertEventJobData = calendar_v3.Schema$Event & { calendarColor: string | null };
 
 export type PluginDataMin = {
   eventType: "default" | "outOfOffice" | "focusTime" | "workingLocation";
@@ -767,4 +884,10 @@ type ConnectedCalendar = {
   channelId: string;
   resourceId: string;
   expiresAt: string;
+  default: boolean;
+};
+
+type DefaultCalendarInfo = {
+  id: string;
+  account: string;
 };

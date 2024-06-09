@@ -190,6 +190,9 @@ type Mutation {
   changePassword(input: MutationChangePasswordInput!): String!
   completeRoutine(input: MutationCompleteRoutineInput!): Boolean!
 
+  """Create an item in the calendar."""
+  createCalendarItem(input: MutationCreateCalendarItemInput!): Item!
+
   """Create an item."""
   createItem(input: MutationCreateItemInput!): Item!
 
@@ -313,6 +316,18 @@ input MutationCompleteRoutineInput {
   routineId: ID!
 }
 
+input MutationCreateCalendarItemInput {
+  color: Color
+  durationInMinutes: Int
+  fromTaskId: ID
+  isAllDay: Boolean
+  pluginDatas: [ItemPluginDataInput!]
+  scheduledAt: DateTime!
+
+  """The title of the item."""
+  title: String!
+}
+
 input MutationCreateItemInput {
   color: Color
   durationInMinutes: Int
@@ -375,7 +390,9 @@ input MutationCreateSubtaskInput {
 }
 
 input MutationCreateTaskInput {
-  """The actions to be executed after the task is created."""
+  """
+  Additional data separate from the pluginDatas to be passed to the plugins when creating the task.
+  """
   actionDatas: [TaskActionDataInput!]
 
   """

@@ -12,9 +12,9 @@ import { prisma } from "./utils/prisma";
 import { pgBoss } from "./utils/pgBoss";
 import { env } from "./env";
 import {
-  ROLLOVER_TASKS_JOB_NAME,
   getTimezone,
   isSessionTokenValid,
+  pgBossWorkers,
   scheduleRolloverTasks,
   syncTasks,
 } from "./utils";
@@ -175,8 +175,8 @@ if (env.NODE_ENV !== "test") {
     const handlers = plugin.handlePgBossWork?.(pgBoss.work) ?? [];
     await Promise.all(handlers);
   }
+  await pgBossWorkers();
   if (env.NODE_ENV !== "development") {
-    await pgBoss.work(ROLLOVER_TASKS_JOB_NAME, syncTasks);
     const timezone = await getTimezone();
     await scheduleRolloverTasks(timezone);
     await syncTasks(); // initial sync on server start

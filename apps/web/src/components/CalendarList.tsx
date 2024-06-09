@@ -166,9 +166,9 @@ export const CalendarList = (props: CalendarListProps) => {
     }, [] as CalendarArtifact[]);
   }, [tasksData.day?.tasks]);
 
-  const [createItem] = useMutation<CalendarListCreateItemMutation>(graphql`
-    mutation CalendarListCreateItemMutation($input: MutationCreateItemInput!) {
-      createItem(input: $input) {
+  const [createEvent] = useMutation<CalendarListCreateItemMutation>(graphql`
+    mutation CalendarListCreateItemMutation($input: MutationCreateCalendarItemInput!) {
+      createCalendarItem(input: $input) {
         ...CalendarList_item @relay(mask: false)
       }
     }
@@ -194,13 +194,13 @@ export const CalendarList = (props: CalendarListProps) => {
     if (!dragEndedWith || !draggedInTask || !dragY) return;
     // create the item (i.e. an event in the calendar) from the dragged task
     const scheduledAt = today.current.add(dragY, "hours").toISOString();
-    createItem({
+    createEvent({
       variables: {
         input: {
           title: dragEndedWith.titleAsText,
           durationInMinutes: draggedInTask.durationInMinutes ?? 30,
           scheduledAt,
-          isRelevant: true,
+          fromTaskId: draggedInTask.id,
         },
       },
       onCompleted: () => setDragEndedWith(null),
@@ -209,7 +209,7 @@ export const CalendarList = (props: CalendarListProps) => {
         if (!eventsConnection?.__id) return;
         const eventsConnectionRec = store.get(eventsConnection.__id);
 
-        const createdEvent = store.getRootField("createItem");
+        const createdEvent = store.getRootField("createCalendarItem");
         if (!eventsConnectionRec) return;
 
         const edge = ConnectionHandler.createEdge(
