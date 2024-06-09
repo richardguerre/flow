@@ -13,6 +13,7 @@ import { OnCreateTaskItemRecordToCreateTaskFrom_item$data } from "@flowdev/web/r
 import { getPlugins } from "@flowdev/web/getPlugin";
 import { OnCreateTask, OnCreateTaskProps, PluginStepInfo } from "./OnCreateTask";
 import { DragContext, useDragContext } from "../useDragContext";
+import { getStartOfToday } from "./CalendarList";
 
 type DayProps = {
   day: Day_day$key;
@@ -34,7 +35,7 @@ export const Day = (props: DayProps) => {
   const dayRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
-    const today = dayjs().format("YYYY-MM-DD");
+    const today = getStartOfToday().format("YYYY-MM-DD");
     if (day.date === today && dayRef.current) {
       dayRef.current.scrollIntoView({ inline: "start", behavior: "auto" });
     }

@@ -47,6 +47,7 @@ export type DayTimeGridProps = {
   onDragOver?: DragEventHandler<HTMLDivElement>;
   onEventDragStart?: (event: CalendarEvent) => void;
   onEventDragEnd?: (event: CalendarEvent) => void;
+  draggedIn?: CalendarEvent;
 };
 
 export const DayTimeGrid = (props: DayTimeGridProps) => {

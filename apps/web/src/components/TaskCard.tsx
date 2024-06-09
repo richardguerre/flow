@@ -1,4 +1,4 @@
-import { ReactNode, useMemo, useState } from "react";
+import { ReactNode, useMemo, useRef, useState } from "react";
 import {
   SelectorStoreUpdater,
   graphql,
@@ -39,12 +39,14 @@ import { RenderTaskCardActions } from "./RenderTaskCardActions";
 import { TaskCardSubtask_task$key } from "../relay/__generated__/TaskCardSubtask_task.graphql";
 import { TaskCardContextMenu_task$key } from "../relay/__generated__/TaskCardContextMenu_task.graphql";
 import { useDragContext } from "../useDragContext";
+import { Editor } from "@flowdev/tiptap";
 
 type TaskCardProps = {
   task: TaskCard_task$key;
 };
 
 export const TaskCard = (props: TaskCardProps) => {
+  const titleEditorRef = useRef<Editor | null>(null);
   const task = useFragment(
     graphql`
       fragment TaskCard_task on Task {
@@ -77,10 +79,12 @@ export const TaskCard = (props: TaskCardProps) => {
           "bg-background-50 group flex cursor-pointer flex-col gap-1 rounded-lg p-3 shadow-sm hover:shadow-md",
           task?.status !== "TODO" && "opacity-50 hover:opacity-100",
         )}
-        onDragStart={() => setDragged(task)}
+        onDragStart={() =>
+          setDragged({ ...task, titleAsText: titleEditorRef.current?.getText() ?? task.title })
+        }
         onDragEnd={() => setDragged(null)}
       >
-        <TaskTitle task={task} />
+        <TaskTitle task={task} editorRef={titleEditorRef} />
         <div className="flex flex-col gap-2">
           {task?.subtasks?.map((subtask) => <TaskCardSubtask key={subtask.id} task={subtask} />)}
         </div>

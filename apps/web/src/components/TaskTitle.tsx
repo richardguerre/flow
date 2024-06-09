@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useRef, useState } from "react";
+import { MutableRefObject, useCallback, useEffect, useRef, useState } from "react";
 import { graphql, useFragment, useMutation } from "@flowdev/relay";
 import {
   useEditor,
@@ -17,6 +17,7 @@ import { createVirtualTask, deleteVirtualTask } from "./Day";
 
 type TaskTitleProps = {
   task: TaskTitle_task$key;
+  editorRef?: TaskTitleInputProps["editorRef"];
 };
 
 export const TaskTitle = (props: TaskTitleProps) => {
@@ -94,6 +95,7 @@ export const TaskTitle = (props: TaskTitleProps) => {
       initialValue={task.title}
       onSave={handleSave}
       onCancel={handleCancel}
+      editorRef={props.editorRef}
     />
   );
 };
@@ -111,6 +113,7 @@ type TaskTitleInputProps = {
   onCancel?: () => void;
   /** The className to apply to the input. This will **override** the default className. */
   className?: string;
+  editorRef?: MutableRefObject<Editor | null>;
 };
 
 export const TaskTitleInput = (props: TaskTitleInputProps) => {
@@ -168,6 +171,7 @@ export const TaskTitleInput = (props: TaskTitleInputProps) => {
     if (editable) {
       editorRef.current?.commands.focus("end");
     }
+    if (props.editorRef) props.editorRef.current = editorRef.current;
   }, [editable, editorRef.current]);
 
   useEffect(() => {

@@ -5,6 +5,7 @@ import { Lists } from "../components/Lists";
 import { dayjs } from "@flowdev/web/dayjs";
 import { useEffect, useRef } from "react";
 import { useFlowNotitications } from "../useFlowNotitications";
+import { getStartOfToday } from "../components/CalendarList";
 
 const indexViewQuery = graphql`
   query IndexViewQuery($daysAfter: ID, $firstDays: Int, $dayIdInFocus: ID!) {
@@ -14,8 +15,7 @@ const indexViewQuery = graphql`
 `;
 
 export default () => {
-  // today 4am
-  const today = useRef(dayjs().startOf("day").add(4, "hours"));
+  const today = useRef(getStartOfToday());
   const { queryRef, loadQuery } = useQueryLoader<IndexViewQuery>(indexViewQuery, {
     daysAfter: today.current.subtract(7, "day").format("YYYY-MM-DD"),
     firstDays: 17, // 7 days before and 10 days after today

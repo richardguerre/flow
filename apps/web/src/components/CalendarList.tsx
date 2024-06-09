@@ -1,5 +1,6 @@
 import { DragEventHandler, useEffect, useMemo, useRef, useState } from "react";
 import {
+  ConnectionHandler,
   graphql,
   useFragment,
   useMutation,
@@ -17,15 +18,17 @@ import { RenderCalendarActions, RenderCalendarInlineActions } from "./RenderCale
 import { Button } from "@flowdev/ui/Button";
 import { BsArrowClockwise } from "@flowdev/icons";
 import { CalendarListRefreshMutation } from "../relay/__generated__/CalendarListRefreshMutation.graphql";
+import { CalendarListCreateItemMutation } from "../relay/__generated__/CalendarListCreateItemMutation.graphql";
+import { CalendarList_eventsConnection$key } from "../relay/__generated__/CalendarList_eventsConnection.graphql";
 
-const START_HOUR = 4;
+export const START_HOUR = 4;
 
 type CalendarListProps = {
   data: CalendarList_data$key;
 };
 
 export const CalendarList = (props: CalendarListProps) => {
-  const today = useRef(dayjs().startOf("day").add(START_HOUR, "hours"));
+  const today = useRef(getStartOfToday());
   const [tasksData] = useRefetchableFragment<CalendarListRefetchableQuery, CalendarList_data$key>(
     graphql`
       fragment CalendarList_data on Query
@@ -49,17 +52,7 @@ export const CalendarList = (props: CalendarListProps) => {
     graphql`
       subscription CalendarListSubscription($scheduledAt: PrismaDateTimeFilter!) {
         events: items(where: { isRelevant: true, scheduledAt: $scheduledAt }) {
-          edges {
-            node {
-              id
-              title
-              scheduledAt
-              durationInMinutes
-              isAllDay
-              color
-              ...RenderCalendarActions_item
-            }
-          }
+          ...CalendarList_eventsConnection
         }
       }
     `,
@@ -70,17 +63,41 @@ export const CalendarList = (props: CalendarListProps) => {
       },
     },
   );
+  const eventsConnection = useFragment<CalendarList_eventsConnection$key>(
+    graphql`
+      fragment CalendarList_eventsConnection on QueryItemsConnection {
+        __id
+        edges {
+          node {
+            ...CalendarList_item @relay(mask: false)
+          }
+        }
+      }
+    `,
+    eventsData?.events ?? null,
+  );
+  graphql`
+    fragment CalendarList_item on Item {
+      id
+      title
+      scheduledAt
+      durationInMinutes
+      isAllDay
+      color
+      ...RenderCalendarActions_item
+    }
+  `;
+
   const [dragY, setDragY] = useState<number | null>(null);
-  const { dragged } = useDragContext();
+  const { dragged, dragEndedWith, setDragEndedWith } = useDragContext();
   const draggedInTask = useFragment(
     graphql`
       fragment CalendarListTaskCardDraggedIn_task on Task {
         id
-        title
         durationInMinutes
       }
     `,
-    dragged,
+    dragged ?? dragEndedWith,
   );
 
   const handleDragOver: DragEventHandler<HTMLDivElement> = (e) => {
@@ -109,7 +126,7 @@ export const CalendarList = (props: CalendarListProps) => {
   };
 
   const events =
-    eventsData?.events.edges.reduce((events, edge) => {
+    eventsConnection?.edges.reduce((events, edge) => {
       if (!edge.node.scheduledAt) return events;
       const color = edge.node.color;
       events.push({
@@ -123,14 +140,16 @@ export const CalendarList = (props: CalendarListProps) => {
       });
       return events;
     }, [] as CalendarEvent[]) ?? [];
-
-  // const events = useMemo(() => {
-  //   if (!dragged || dragY === null) return itemEvents;
-  //   // itemEvents?.push({
-  //   //   id: dragged.id,
-  //   // });
-  //   return itemEvents;
-  // }, [itemEvents?.length, dragged, dragY]);
+  if (dragged && draggedInTask && dragY) {
+    // dragY is the height of the dragged task - START_HOUR * heightOf1Hour
+    const scheduledAt = today.current.add(dragY, "hours").toDate();
+    events.push({
+      id: draggedInTask.id,
+      title: dragged.titleAsText,
+      durationInMinutes: draggedInTask.durationInMinutes ?? 30,
+      scheduledAt,
+    });
+  }
 
   const artifacts = useMemo(() => {
     return tasksData.day?.tasks?.reduce((artifacts, task) => {
@@ -146,6 +165,14 @@ export const CalendarList = (props: CalendarListProps) => {
       return artifacts;
     }, [] as CalendarArtifact[]);
   }, [tasksData.day?.tasks]);
+
+  const [createItem] = useMutation<CalendarListCreateItemMutation>(graphql`
+    mutation CalendarListCreateItemMutation($input: MutationCreateItemInput!) {
+      createItem(input: $input) {
+        ...CalendarList_item @relay(mask: false)
+      }
+    }
+  `);
 
   const [refresh, isRefreshing] = useMutation<CalendarListRefreshMutation>(graphql`
     mutation CalendarListRefreshMutation {
@@ -163,6 +190,39 @@ export const CalendarList = (props: CalendarListProps) => {
     return () => clearTimeout(timeout);
   }, [dragged]);
 
+  useEffect(() => {
+    if (!dragEndedWith || !draggedInTask || !dragY) return;
+    // create the item (i.e. an event in the calendar) from the dragged task
+    const scheduledAt = today.current.add(dragY, "hours").toISOString();
+    createItem({
+      variables: {
+        input: {
+          title: dragEndedWith.titleAsText,
+          durationInMinutes: draggedInTask.durationInMinutes ?? 30,
+          scheduledAt,
+          isRelevant: true,
+        },
+      },
+      onCompleted: () => setDragEndedWith(null),
+      updater: (store) => {
+        // add item to the events list
+        if (!eventsConnection?.__id) return;
+        const eventsConnectionRec = store.get(eventsConnection.__id);
+
+        const createdEvent = store.getRootField("createItem");
+        if (!eventsConnectionRec) return;
+
+        const edge = ConnectionHandler.createEdge(
+          store,
+          eventsConnectionRec,
+          createdEvent,
+          "QueryItemsConnectionEdge",
+        );
+        ConnectionHandler.insertEdgeAfter(eventsConnectionRec, edge);
+      },
+    });
+  }, [dragEndedWith, draggedInTask, dragY]);
+
   return (
     <div className="flex h-full flex-col">
       <div className="p-3 flex flex-col gap-2 shadow-sm">
@@ -170,7 +230,7 @@ export const CalendarList = (props: CalendarListProps) => {
           <div className="text-xl font-semibold">Calendar</div>
           <div className="flex items-center gap-2">
             <RenderCalendarInlineActions
-              items={eventsData?.events.edges.map((edge) => edge.node) ?? []}
+              items={eventsConnection?.edges.map((edge) => edge.node) ?? []}
             />
             {tasksData.canRefreshCalendarItems && (
               <Button tertiary sm onClick={handleRefresh} loading={isRefreshing}>
@@ -179,9 +239,7 @@ export const CalendarList = (props: CalendarListProps) => {
             )}
           </div>
         </div>
-        <div className="flex flex-col gap-2">
-          <RenderCalendarActions items={eventsData?.events.edges.map((edge) => edge.node) ?? []} />
-        </div>
+        <RenderCalendarActions items={eventsConnection?.edges.map((edge) => edge.node) ?? []} />
       </div>
       <div
         className="no-scrollbar h-full overflow-y-scroll pl-3 pt-0.5 pt-3"
@@ -197,4 +255,9 @@ export const CalendarList = (props: CalendarListProps) => {
       </div>
     </div>
   );
+};
+
+export const getStartOfToday = () => {
+  const startHour = dayjs().startOf("day").add(START_HOUR, "hours");
+  return dayjs().isBefore(startHour) ? startHour.subtract(1, "day") : startHour;
 };

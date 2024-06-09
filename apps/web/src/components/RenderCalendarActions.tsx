@@ -40,12 +40,14 @@ const RenderCalendarActionsPlugins = (props: { items: RenderCalendarActions_item
     setActions(updatedActions);
   }, [plugins]);
 
+  if (!actions.length) return null;
+
   return (
-    <>
+    <div className="flex flex-col gap-2">
       {actions.map(({ component: Action }, i) => (
         <Action key={i} />
       ))}
-    </>
+    </div>
   );
 };
 
