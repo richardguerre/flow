@@ -22,7 +22,6 @@
     "@flowdev/icons": "workspace:*",
     "@flowdev/jotai": "workspace:*",
     "@flowdev/plugin": "workspace:*",
-    "@flowdev/react": "workspace:*",
     "@flowdev/relay": "workspace:*",
     "@flowdev/tiptap": "workspace:*",
     "@flowdev/ui": "workspace:*",

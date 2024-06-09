@@ -93,8 +93,8 @@ const createExternalCalendarItem: PgBoss.WorkHandler<ItemWithTasks> = async ({ d
 export const pgBossWorkers = async () => {
   if (env.NODE_ENV !== "development") {
     await pgBoss.work(ROLLOVER_TASKS_JOB_NAME, syncTasks);
-    console.log("Started job to sync tasks");
+    console.log("Started worker to sync tasks");
   }
   await pgBoss.work(CALENDAR_ITEM_CREATED_JOB_NAME, createExternalCalendarItem);
-  console.log("Started job to create calendar events");
+  console.log("Started worker to create calendar events");
 };
