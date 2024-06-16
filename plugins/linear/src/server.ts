@@ -40,11 +40,14 @@ export default definePlugin((opts) => {
     return accountsTokensItem.value;
   };
 
-  const operatonLists = async (listIsInStore?: ListsInStore) => {
-    const listsItem = await opts.store.getPluginItem<ListsInStore>(LISTS_STORE_KEY);
-    if (!listsItem) {
+  const operationLists = async (listIsInStore?: ListsInStore) => {
+    listIsInStore ??= await opts.store
+      .getPluginItem<ListsInStore>(LISTS_STORE_KEY)
+      .then((item) => item?.value);
+    if (!listIsInStore) {
       return { data: [] };
     }
+
     const tokenItem = await getTokensFromStore();
     if (!tokenItem) {
       return {
@@ -52,11 +55,11 @@ export default definePlugin((opts) => {
       };
     }
     const lists = await opts.prisma.list.findMany({
-      where: { id: { in: Object.keys(listsItem.value).map(parseInt) } },
+      where: { id: { in: Object.keys(listIsInStore).map(parseInt) } },
     });
 
     return {
-      data: Object.entries(listsItem.value).map(([listId, listInfo]) => {
+      data: Object.entries(listIsInStore).map(([listId, listInfo]) => {
         const list = lists.find((list) => list.id === parseInt(listId));
         return {
           id: list?.id ?? parseInt(listId),
@@ -89,8 +92,7 @@ export default definePlugin((opts) => {
     onRequest: async (req) => {
       if (req.path === "/auth") {
         return Response.redirect(
-          // `https://linear-api-flow-dev.vercel.app/api/auth?api_endpoint=${opts.serverOrigin}/api/plugin/${opts.pluginSlug}/auth/callback`,
-          `http://localhost:4321/api/auth?api_endpoint=${opts.serverOrigin}/api/plugin/${opts.pluginSlug}/auth/callback`,
+          `https://linear-api-flow-dev.vercel.app/api/auth?api_endpoint=${opts.serverOrigin}/api/plugin/${opts.pluginSlug}/auth/callback`,
         );
       } else if (req.path === "/auth/callback") {
         const accountsTokensItem =
@@ -160,7 +162,7 @@ export default definePlugin((opts) => {
           })) satisfies AccountsOperationData,
         };
       },
-      lists: operatonLists,
+      lists: operationLists,
       views: async () => {
         const tokenItem = await getTokensFromStore();
         if (!tokenItem) {
@@ -338,7 +340,7 @@ export default definePlugin((opts) => {
             });
           }
         }
-        return { operationName: "lists", data: await operatonLists(updatedListsInStore) };
+        return { operationName: "lists", data: await operationLists(updatedListsInStore) };
       },
       deleteList: async (input: DeleteListOperationInput) => {
         if (!input.listId) {
@@ -364,7 +366,7 @@ export default definePlugin((opts) => {
           LISTS_STORE_KEY,
           newListsInStore,
         );
-        return { operationName: "lists", data: await operatonLists(updatedListsInStore) };
+        return { operationName: "lists", data: await operationLists(updatedListsInStore) };
       },
       syncView: async (input) => {
         if (!input.listId || !input.viewId || !input.account) {
