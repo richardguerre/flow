@@ -22,16 +22,24 @@ declare global {
     };
   }[];
 
-  type ViewsOperationData = ListsOperationData[number]["linkedView"][];
-
-  type CreateListOperationInput = {
-    listName: string;
-    viewId: string;
+  type ViewsOperationData = {
+    id: string;
+    name: string;
+    icon: string | null;
+    color: string | null;
     account: string;
-  };
+    synced: boolean;
+  }[];
 
-  type DeleteListOperationInput = {
-    listId: ListsOperationData[number]["id"];
+  type AddViewToSyncOperationInput = {
+    viewId?: string;
+    account?: string;
+  };
+  type removeViewToSyncOperationInput = AddViewToSyncOperationInput;
+
+  type SyncViewOperationInput = {
+    viewId?: string;
+    account?: string;
   };
 
   type LinearIssueState = {

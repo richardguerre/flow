@@ -1,7 +1,7 @@
 import { Prisma, definePlugin } from "@flowdev/plugin/server";
 
 const ACCOUNT_TOKENS_STORE_KEY = "account-tokens";
-const LISTS_STORE_KEY = "lists";
+const SYNCED_VIEWS_STORE_KEY = "synced-views";
 
 export default definePlugin((opts) => {
   const PROCESS_WEBHOOK_EVENT_JOB_NAME = `${opts.pluginSlug}-process-webhook`;
@@ -40,42 +40,61 @@ export default definePlugin((opts) => {
     return accountsTokensItem.value;
   };
 
-  const operationLists = async (listIsInStore?: ListsInStore) => {
-    listIsInStore ??= await opts.store
-      .getPluginItem<ListsInStore>(LISTS_STORE_KEY)
-      .then((item) => item?.value);
-    if (!listIsInStore) {
-      return { data: [] };
-    }
-
+  const operationViews = async () => {
     const tokenItem = await getTokensFromStore();
     if (!tokenItem) {
       return {
         data: [],
       };
     }
-    const lists = await opts.prisma.list.findMany({
-      where: { id: { in: Object.keys(listIsInStore).map(parseInt) } },
-    });
-
-    return {
-      data: Object.entries(listIsInStore).map(([listId, listInfo]) => {
-        const list = lists.find((list) => list.id === parseInt(listId));
-        return {
-          id: list?.id ?? parseInt(listId),
-          name: list?.name ?? "Unknown or deleted list",
-          description: list?.description ?? "This list may have been deleted or was left unamed",
-          slug: list?.slug ?? null,
-          linkedView: {
-            id: listInfo.view.id,
-            name: listInfo.view.name,
-            color: listInfo.view.color,
-            icon: listInfo.view.icon,
-            account: listInfo.account,
-          },
+    const syncedViewsItem = await opts.store
+      .getPluginItem<SyncedViews>(SYNCED_VIEWS_STORE_KEY)
+      .then((item) => item?.value.views ?? []);
+    const views: ViewsOperationData = [];
+    for (const [account, tokens] of Object.entries(tokenItem)) {
+      const query = await gqlRequest<{
+        customViews: {
+          edges: {
+            node: {
+              id: string;
+              name: string;
+              icon: string | null;
+              color: string | null;
+            };
+          }[];
         };
-      }) satisfies ListsOperationData,
-    };
+      }>(
+        /* GraphQL */ `
+          query ViewsQuery {
+            customViews {
+              edges {
+                node {
+                  id
+                  name
+                  icon
+                  color
+                }
+              }
+            }
+          }
+        `,
+        { token: tokens.access_token },
+      ).catch(() => null);
+      views.push(
+        ...(query?.customViews.edges.map(
+          (viewEdge) =>
+            ({
+              id: viewEdge.node.id,
+              name: viewEdge.node.name,
+              icon: viewEdge.node.icon,
+              color: viewEdge.node.color,
+              account,
+              synced: syncedViewsItem.some((view) => view.id === viewEdge.node.id),
+            }) satisfies ViewsOperationData[number],
+        ) ?? []),
+      );
+    }
+    return { data: views };
   };
 
   const isRelevantWebhookEvent = (event: WebhookEvent) => {
@@ -135,7 +154,7 @@ export default definePlugin((opts) => {
       } else if (req.path === "/events/webhook" && req.request.method === "POST") {
         const event = req.body as WebhookEvent;
         if (!isRelevantWebhookEvent(event)) {
-          console.log("❌ Could not find Linear issue ID in req.body");
+          console.log("👌 The webhook event is not relevant to this plugin");
           return new Response(); // return 200 as the webhook event doesn't concern the plugin and we don't want Linear to retry sending it.
         }
         await opts.pgBoss.send(PROCESS_WEBHOOK_EVENT_JOB_NAME, {
@@ -162,145 +181,64 @@ export default definePlugin((opts) => {
           })) satisfies AccountsOperationData,
         };
       },
-      lists: operationLists,
-      views: async () => {
-        const tokenItem = await getTokensFromStore();
-        if (!tokenItem) {
-          return {
-            data: [],
-          };
+      views: operationViews,
+      addViewToSync: async (input: AddViewToSyncOperationInput) => {
+        if (!input.viewId || !input.account) {
+          throw new opts.GraphQLError("Missing an input", {
+            extensions: {
+              code: "ADD_VIEW_TO_SYNC_MISSING_INPUT",
+              userFriendlyMessage: "Missing an input. `viewId` and `account` are required.",
+            },
+          });
         }
-        const views: ViewsOperationData = [];
-        for (const [account, tokens] of Object.entries(tokenItem)) {
-          const query = await gqlRequest<{
-            customViews: {
+        const tokenItem = await getTokensFromStore();
+
+        // get issues in the view and upsert them
+        const query = await gqlRequest<{
+          customView: {
+            issues: {
               edges: {
-                node: {
-                  id: string;
-                  name: string;
-                  icon: string | null;
-                  color: string | null;
-                };
+                node: LinearIssue;
               }[];
             };
-          }>(
-            /* GraphQL */ `
-              query ViewsQuery {
-                customViews {
+          };
+        }>(
+          /* GraphQL */ `
+            query GetView($viewId: String!) {
+              customView(id: $viewId) {
+                issues {
                   edges {
                     node {
-                      id
-                      name
-                      icon
-                      color
+                      ...LinearIssue
                     }
                   }
                 }
               }
-            `,
-            { token: tokens.access_token },
-          ).catch(() => null);
-          views.push(
-            ...(query?.customViews.edges.map(
-              (viewEdge) =>
-                ({
-                  id: viewEdge.node.id,
-                  name: viewEdge.node.name,
-                  icon: viewEdge.node.icon,
-                  color: viewEdge.node.color,
-                  account,
-                }) satisfies ViewsOperationData[number],
-            ) ?? []),
-          );
-        }
-        return { data: views };
-      },
-      createList: async (input: CreateListOperationInput) => {
-        /**
-         * Input:
-         * - account
-         * - viewId
-         * - list name
-         */
-        if (!input.account || !input.viewId || !input.listName) {
-          throw new opts.GraphQLError("Missing an input", {
-            extensions: {
-              code: "CREATE_LIST_MISSING_INPUT",
-              userFriendlyMessage: "Missing an input. Either `account`, `viewId` or `listName`",
-            },
-          });
-        }
-        const tokenItem = await getTokensFromStore();
-        const listsItem = await opts.store.getPluginItem<ListsInStore>(LISTS_STORE_KEY);
-        if (
-          !Object.values(listsItem?.value ?? {}).find(
-            (listInfo) => listInfo.view.id === input.viewId,
-          )
-        ) {
-          throw new opts.GraphQLError("List with this view already exists.", {
-            extensions: {
-              code: "CREATE_LIST_ALREADY_EXISTS",
-              userFriendlyMessage: "A list with this view already exists.",
-            },
-          });
-        }
-        const viewQuery = await gqlRequest<{
-          customView: {
-            id: string;
-            name: string;
-            color: string;
-            icon: string;
-          } | null;
-        }>(
-          /* GraphQL */ `
-            query ViewQuery($viewId: String!) {
-              customView(id: $viewId) {
-                id
-                name
-                color
-                icon
-              }
             }
+            ${linearIssueFragment}
           `,
           {
             token: tokenItem[input.account].access_token,
             variables: { viewId: input.viewId },
           },
         );
-        if (!viewQuery.customView) {
-          throw new opts.GraphQLError("No view exists with that id.", {
-            extensions: {
-              code: "CREATE_LIST_NO_VIEW_EXISTS",
-              userFriendlyMessage:
-                "The selected view doesn't seem to exist in Linear. Make sure the view exists in your Linear and refresh the page.",
-            },
-          });
+        for (const { node: issue } of query.customView.issues.edges) {
+          await opts.pgBoss.send(UPSERT_ISSUE_JOB, { issue } satisfies JobUpsertIssue);
         }
-        const createdList = await opts.prisma.list.create({
-          data: {
-            name: input.listName,
-            slug: input.listName
-              .toLowerCase()
-              .replace(/\s/g, "-")
-              .replace(/['#?]/g, " ")
-              .slice(0, 50),
-            description: "List created from Linear plugin.",
+
+        const syncedViewsItem = await opts.store
+          .getPluginItem<SyncedViews>(SYNCED_VIEWS_STORE_KEY)
+          .then((item) => item?.value ?? { views: [] });
+        const syncedViewsItemUpdated = await opts.store.setItem<SyncedViews>(
+          SYNCED_VIEWS_STORE_KEY,
+          {
+            ...syncedViewsItem,
+            views: [...syncedViewsItem.views, { id: input.viewId, account: input.account }],
           },
-        });
-        const updatedListsInStore = await opts.store.setItem<ListsInStore>(LISTS_STORE_KEY, {
-          ...(listsItem?.value ?? {}),
-          [createdList.id]: {
-            account: input.account,
-            view: {
-              id: input.viewId,
-              color: viewQuery.customView.color,
-              icon: viewQuery.customView.icon,
-              name: viewQuery.customView.name,
-            },
-          },
-        });
-        if (Object.keys(updatedListsInStore.value).length === 1) {
-          // setup webhook
+        );
+
+        // setup webhook if it's the first view to be synced
+        if (syncedViewsItemUpdated.value.views.length === 1) {
           const webhook = await gqlRequest<{
             webhookCreate: {
               success: boolean;
@@ -333,48 +271,42 @@ export default definePlugin((opts) => {
           if (!webhook.webhookCreate.success) {
             throw new opts.GraphQLError("Failed to create a webhook.", {
               extensions: {
-                code: "CREATE_LIST_FAILED_WEBHOOK",
+                code: "ADD_VIEW_TO_SYNC_FAILED_CREATE_WEBHOOK",
                 userFriendlyMessage:
                   "Failed to connect to Linear. Please try again or contact the Flow team for help.",
               },
             });
           }
         }
-        return { operationName: "lists", data: await operationLists(updatedListsInStore) };
+
+        const views = await operationViews();
+        return { operationName: "views", data: views.data };
       },
-      deleteList: async (input: DeleteListOperationInput) => {
-        if (!input.listId) {
+      removeViewToSync: async (input: removeViewToSyncOperationInput) => {
+        if (!input.viewId) {
           throw new opts.GraphQLError("Missing an input", {
             extensions: {
-              code: "DELETE_LIST_MISSING_INPUT",
-              userFriendlyMessage: "Missing an input. `listId` is required.",
+              code: "REMOVE_VIEW_TO_SYNC_MISSING_INPUT",
+              userFriendlyMessage: "Missing an input. `viewId` is required.",
             },
           });
         }
-        const listsItem = await opts.store.getPluginItem<ListsInStore>(LISTS_STORE_KEY);
-        if (!listsItem?.value[input.listId]) {
-          throw new opts.GraphQLError("List with this id doesn't exist.", {
-            extensions: {
-              code: "DELETE_LIST_DOESNT_EXIST",
-              userFriendlyMessage: "A list with this id doesn't exist.",
-            },
-          });
-        }
-        await opts.prisma.list.delete({ where: { id: input.listId } });
-        const { [input.listId]: _, ...newListsInStore } = listsItem.value;
-        const updatedListsInStore = await opts.store.setItem<ListsInStore>(
-          LISTS_STORE_KEY,
-          newListsInStore,
-        );
-        return { operationName: "lists", data: await operationLists(updatedListsInStore) };
+        const syncedViewsItem = await opts.store
+          .getPluginItem<SyncedViews>(SYNCED_VIEWS_STORE_KEY)
+          .then((item) => item?.value ?? { views: [] });
+        await opts.store.setItem<SyncedViews>(SYNCED_VIEWS_STORE_KEY, {
+          ...syncedViewsItem,
+          views: syncedViewsItem.views.filter((view) => view.id !== input.viewId),
+        });
+        const views = await operationViews();
+        return { operationName: "views", data: views.data };
       },
-      syncView: async (input) => {
-        if (!input.listId || !input.viewId || !input.account) {
+      syncView: async (input: SyncViewOperationInput) => {
+        if (!input.viewId || !input.account) {
           throw new opts.GraphQLError("Missing an input", {
             extensions: {
               code: "SYNC_VIEW_MISSING_INPUT",
-              userFriendlyMessage:
-                "Missing an input. `listId`, `viewId` and `account` are required.",
+              userFriendlyMessage: "Missing an input. `viewId` and `account` are required.",
             },
           });
         }
@@ -389,7 +321,6 @@ export default definePlugin((opts) => {
           });
         }
         await opts.pgBoss.send(SYNC_VIEW_JOB_NAME, {
-          listId: input.listId,
           viewId: input.viewId,
           token: tokenItem[input.account].access_token,
         } as JobSyncView);
@@ -402,20 +333,21 @@ export default definePlugin((opts) => {
     },
     handlePgBossWork: (work) => [
       work(SYNC_ALL_VIEWS_JOB_NAME, async () => {
-        const listsItem = await opts.store.getPluginItem<ListsInStore>(LISTS_STORE_KEY);
-        if (!listsItem) return;
         const tokenItem = await getTokensFromStore();
         if (!tokenItem) return;
-        for (const [listId, { view, account }] of Object.entries(listsItem.value)) {
+        const syncedViewsItem = await opts.store
+          .getPluginItem<SyncedViews>(SYNCED_VIEWS_STORE_KEY)
+          .then((item) => item?.value.views ?? []);
+
+        for (const view of syncedViewsItem) {
           await opts.pgBoss.send(SYNC_VIEW_JOB_NAME, {
-            listId: parseInt(listId),
             viewId: view.id,
-            token: tokenItem[account].access_token,
+            token: tokenItem[view.account].access_token,
           } as JobSyncView);
         }
       }),
       work(SYNC_VIEW_JOB_NAME, async (job) => {
-        const { viewId, listId, token } = job.data as JobSyncView;
+        const { viewId, token } = job.data as JobSyncView;
         const query = await gqlRequest<{
           customView: {
             issues: {
@@ -443,13 +375,13 @@ export default definePlugin((opts) => {
         );
 
         for (const { node: issue } of query.customView.issues.edges) {
-          await opts.pgBoss.send(UPSERT_ISSUE_JOB, { issue, listId } as JobUpsertIssue);
+          await opts.pgBoss.send(UPSERT_ISSUE_JOB, { issue } as JobUpsertIssue);
         }
       }),
       work(UPSERT_ISSUE_JOB, { batchSize: 5 }, async (jobs) => {
         // process 5 events at a time to go a little faster (processing 100 at a time might consume too much memory as webhook events and fetched issues can be large, especially if it includes conference data).
         for (const job of jobs) {
-          const { issue, listId } = job.data as JobUpsertIssue;
+          const { issue } = job.data as JobUpsertIssue;
           const item = await opts.prisma.item.findFirst({
             where: {
               pluginDatas: { some: { originalId: issue.id, pluginSlug: opts.pluginSlug } },
@@ -461,11 +393,6 @@ export default definePlugin((opts) => {
               },
             },
           });
-
-          if (!item && !listId) {
-            console.log("❌ Could not upsert issue as it's unknown which list it belongs to");
-            return;
-          }
 
           // TODO: have and use user setting to configure terminal status(es).
           const isRelevant = issue.state.type !== "canceled" && issue.state.type !== "completed";
@@ -479,7 +406,6 @@ export default definePlugin((opts) => {
             title: issue.title,
             isRelevant,
             inboxPoints: 10, // TODO: make it configurable by the user.
-            list: { connect: { id: listId } },
           } satisfies Prisma.ItemUpdateInput;
 
           const min = {
@@ -591,8 +517,8 @@ type Tokens = {
   organizationName: string;
 };
 
-type JobSyncView = { viewId: string; listId: number; token: string };
-type JobUpsertIssue = { issue: LinearIssue; listId?: number };
+type JobSyncView = { viewId: string; token: string };
+type JobUpsertIssue = { issue: LinearIssue };
 type JobProcessWebhookEvent = { event: WebhookEvent };
 
 type WebhookEvent = WebhookEventIssueUpdate | WebhookEventCommentCreate;
@@ -673,13 +599,12 @@ type WebhookEventIssueUpdate = {
   webhookId: string;
 };
 
-type ListsInStore = Record<
-  number,
-  {
-    view: { id: string; name: string; icon: string | null; color: string | null };
+type SyncedViews = {
+  views: {
+    id: string;
     account: string;
-  }
->;
+  }[];
+};
 
 const linearCommentFragment = /* GraphQL */ `
   fragment LinearComment on Comment {
