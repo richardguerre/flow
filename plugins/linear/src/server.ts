@@ -5,8 +5,10 @@ const SYNCED_VIEWS_STORE_KEY = "synced-views";
 
 export default definePlugin((opts) => {
   const PROCESS_WEBHOOK_EVENT_JOB_NAME = `${opts.pluginSlug}-process-webhook`;
+  const CONNECT_ACCOUNT_JOB_NAME = `${opts.pluginSlug}-connect-account`;
   const SYNC_ALL_VIEWS_JOB_NAME = `${opts.pluginSlug}-sync-all-views`;
   const SYNC_VIEW_JOB_NAME = `${opts.pluginSlug}-sync-view`;
+  const SYNC_USER_ISSUES_JOB_NAME = `${opts.pluginSlug}-sync-user-issues`;
   const UPSERT_ISSUE_JOB = `${opts.pluginSlug}-upsert-item-from-issue`;
 
   const gqlRequest = async <T>(query: string, params: { token: string; variables?: object }) => {
@@ -150,6 +152,11 @@ export default definePlugin((opts) => {
           ...(accountsTokensItem?.value ?? {}),
           [tokensData.email]: tokensData,
         });
+
+        await opts.pgBoss.send(CONNECT_ACCOUNT_JOB_NAME, {
+          token: body.access_token,
+        } satisfies JobConnectAccount);
+
         return new Response(); // return 200
       } else if (req.path === "/events/webhook" && req.request.method === "POST") {
         const event = req.body as WebhookEvent;
@@ -229,55 +236,10 @@ export default definePlugin((opts) => {
         const syncedViewsItem = await opts.store
           .getPluginItem<SyncedViews>(SYNCED_VIEWS_STORE_KEY)
           .then((item) => item?.value ?? { views: [] });
-        const syncedViewsItemUpdated = await opts.store.setItem<SyncedViews>(
-          SYNCED_VIEWS_STORE_KEY,
-          {
-            ...syncedViewsItem,
-            views: [...syncedViewsItem.views, { id: input.viewId, account: input.account }],
-          },
-        );
-
-        // setup webhook if it's the first view to be synced
-        if (syncedViewsItemUpdated.value.views.length === 1) {
-          const webhook = await gqlRequest<{
-            webhookCreate: {
-              success: boolean;
-              webhook: {
-                id: string;
-                enabled: boolean;
-              };
-            };
-          }>(
-            /* GraphQL */ `
-              mutation CreateWebhook($url: String!) {
-                webhookCreate(
-                  input: { url: $url, allPublicTeams: true, resourceTypes: ["Comment", "Issue"] }
-                ) {
-                  success
-                  webhook {
-                    id
-                    enabled
-                  }
-                }
-              }
-            `,
-            {
-              token: tokenItem[input.account].access_token,
-              variables: {
-                url: `${opts.serverOrigin}/api/plugin/${opts.pluginSlug}/events/webhook`,
-              },
-            },
-          );
-          if (!webhook.webhookCreate.success) {
-            throw new opts.GraphQLError("Failed to create a webhook.", {
-              extensions: {
-                code: "ADD_VIEW_TO_SYNC_FAILED_CREATE_WEBHOOK",
-                userFriendlyMessage:
-                  "Failed to connect to Linear. Please try again or contact the Flow team for help.",
-              },
-            });
-          }
-        }
+        await opts.store.setItem<SyncedViews>(SYNCED_VIEWS_STORE_KEY, {
+          ...syncedViewsItem,
+          views: [...syncedViewsItem.views, { id: input.viewId, account: input.account }],
+        });
 
         const views = await operationViews();
         return { operationName: "views", data: views.data };
@@ -332,6 +294,113 @@ export default definePlugin((opts) => {
       },
     },
     handlePgBossWork: (work) => [
+      work(CONNECT_ACCOUNT_JOB_NAME, async (job) => {
+        const { token } = job.data as JobConnectAccount;
+
+        // 1. create a webhook for that account
+        const webhook = await gqlRequest<{
+          webhookCreate: {
+            success: boolean;
+            webhook: {
+              id: string;
+              enabled: boolean;
+            };
+          };
+        }>(
+          /* GraphQL */ `
+            mutation CreateWebhook($url: String!) {
+              webhookCreate(
+                input: { url: $url, allPublicTeams: true, resourceTypes: ["Comment", "Issue"] }
+              ) {
+                success
+                webhook {
+                  id
+                  enabled
+                }
+              }
+            }
+          `,
+          {
+            token,
+            variables: {
+              url: `${opts.serverOrigin}/api/plugin/${opts.pluginSlug}/events/webhook`,
+            },
+          },
+        );
+        if (!webhook.webhookCreate.success) {
+          throw new opts.GraphQLError("Failed to create a webhook.", {
+            extensions: {
+              code: "ADD_VIEW_TO_SYNC_FAILED_CREATE_WEBHOOK",
+              userFriendlyMessage:
+                "Failed to connect to Linear. Please try again or contact the Flow team for help.",
+            },
+          });
+        }
+
+        // 2. get the user's issues
+        await opts.pgBoss.send(SYNC_USER_ISSUES_JOB_NAME, { token } satisfies JobSyncUserIssues);
+      }),
+      work(SYNC_USER_ISSUES_JOB_NAME, async (job) => {
+        const { token } = job.data as JobSyncUserIssues;
+        const query = await gqlRequest<{
+          viewer: {
+            assignedIssues: {
+              edges: {
+                node: LinearIssue;
+              }[];
+            };
+            createdIssues: {
+              edges: {
+                node: LinearIssue;
+              }[];
+            };
+          };
+          issues: {
+            edges: {
+              node: LinearIssue;
+            }[];
+          };
+        }>(
+          /* GraphQL */ `
+            query GetUserIssues {
+              viewer {
+                assignedIssues {
+                  edges {
+                    node {
+                      ...LinearIssue
+                    }
+                  }
+                }
+                createdIssues {
+                  edges {
+                    node {
+                      ...LinearIssue
+                    }
+                  }
+                }
+              }
+              issues(filter: { subscribers: { isMe: true } }) {
+                edges {
+                  node {
+                    ...LinearIssue
+                  }
+                }
+              }
+            }
+          `,
+          { token },
+        );
+
+        for (const { node: issue } of query.viewer.assignedIssues.edges) {
+          await opts.pgBoss.send(UPSERT_ISSUE_JOB, { issue } satisfies JobUpsertIssue);
+        }
+        for (const { node: issue } of query.viewer.createdIssues.edges) {
+          await opts.pgBoss.send(UPSERT_ISSUE_JOB, { issue } satisfies JobUpsertIssue);
+        }
+        for (const { node: issue } of query.issues.edges) {
+          await opts.pgBoss.send(UPSERT_ISSUE_JOB, { issue } satisfies JobUpsertIssue);
+        }
+      }),
       work(SYNC_ALL_VIEWS_JOB_NAME, async () => {
         const tokenItem = await getTokensFromStore();
         if (!tokenItem) return;
@@ -517,6 +586,8 @@ type Tokens = {
   organizationName: string;
 };
 
+type JobConnectAccount = { token: string };
+type JobSyncUserIssues = { token: string };
 type JobSyncView = { viewId: string; token: string };
 type JobUpsertIssue = { issue: LinearIssue };
 type JobProcessWebhookEvent = { event: WebhookEvent };
