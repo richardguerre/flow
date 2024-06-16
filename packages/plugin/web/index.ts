@@ -11,6 +11,8 @@ import type {
   PluginRenderCalendarActions as RenderCalendarActions,
   PluginRenderCalendarInlineActions as RenderCalendarInlineActions,
 } from "@flowdev/web/src/components/RenderCalendarActions";
+import type { PluginRenderLists as RenderLists } from "@flowdev/web/src/components/RenderLists";
+import type { PluginRenderList as RenderList } from "@flowdev/web/src/components/RenderList";
 
 export type { WebPluginOptions, PluginRoutineStepProps, OnCreateTask };
 
@@ -84,6 +86,14 @@ export type WebPlugin = (options: WebPluginOptions) => {
    * Render actions inline next to the Calendar header.
    */
   renderCalendarInlineActions?: RenderCalendarInlineActions;
+  /**
+   * Render lists in the Lists component (i.e. the right sidebar).
+   */
+  renderLists?: RenderLists;
+  /**
+   * Render a list in the Lists component (i.e. the right sidebar).
+   */
+  renderList?: RenderList;
 };
 
 export const definePlugin = (plugin: WebPlugin) => ({ plugin });

@@ -99,7 +99,13 @@ export const getPluginOptions = (slug: string) => ({
   /** The plugin's slug. There is no difference with the one passed into `definePlugin`. It can be used to not repeat it throughout the plugin's code. */
   pluginSlug: slug,
   /**
-   * React version that Flow uses.
+   * React version that Flow uses, so you don't have a conflicting version of it in your plugin.
+   *
+   * You can simply do the following at the start of your plugin to use the same version of React as Flow.
+   * ```
+   * const React = opts.React;
+   * ```
+   * Otherwise, when bundling your plugin with a tool like Vite, it will bundle your version of React in your plugin making it bigger and potentially incompatible with Flow.
    */
   React,
   /** The tailwind merge function that Flow uses. It's the same as clsx and cn. */

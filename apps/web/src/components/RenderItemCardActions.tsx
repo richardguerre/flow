@@ -38,10 +38,10 @@ type RenderItemCardActionsPluginsProps = {
 };
 const RenderItemCardActionsPlugins = (props: RenderItemCardActionsPluginsProps) => {
   const { plugins } = usePlugins();
-  const [actions, setActions] = useState<Actions[]>([]);
+  const [actions, setActions] = useState<Action[]>([]);
 
   useAsyncEffect(async () => {
-    const updatedActions: Actions[] = [];
+    const updatedActions: Action[] = [];
     for (const plugin of Object.values(plugins)) {
       if (!plugin.renderItemCardActions) continue;
       const result = await plugin.renderItemCardActions({ item: props.item });
@@ -62,6 +62,6 @@ const RenderItemCardActionsPlugins = (props: RenderItemCardActionsPluginsProps) 
 
 export type PluginRenderItemCardActions = (input: {
   item: RenderItemCardActions_item$data; // TODO type
-}) => Promise<null | Actions[]>;
+}) => Promise<null | Action[]>;
 
-type Actions = { component: ComponentType };
+type Action = { component: ComponentType };
