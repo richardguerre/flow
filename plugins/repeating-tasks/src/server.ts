@@ -1,156 +1,129 @@
 import { definePlugin } from "@flowdev/plugin/server";
+import { NUM_TASKS_IN_ADVANCE } from "./utils";
 import cronParser from "cron-parser";
 
-export const NUM_TASKS_IN_ADVANCE = "numTasksPerBatch";
 const NUM_TASKS_IN_ADVANCE_DEFAULT = 10;
+const generateId = () => Date.now().toString();
 const log = console.log;
 // const log = (..._args: any) => {};
 export default definePlugin((opts) => {
   const CREATE_TASKS_JOB_NAME = `${opts.pluginSlug}-create-tasks-schedule`;
+  const UPDATE_TASKS_JOB_NAME = `${opts.pluginSlug}-update-tasks-schedule`;
+  const REMOVE_FUTURE_TASKS_JOB_NAME = `${opts.pluginSlug}-remove-future-tasks-schedule`;
+  const operationRepeatingTasks = async () => {
+    const repeatingTasks = await opts.store.getItem<RepeatingTasksInStore>("repeatingTasks");
+    return {
+      operationName: "repeatingTasks",
+      data: repeatingTasks?.value ?? [],
+    };
+  };
   return {
     operations: {
-      repeatingTasks: async () => {
-        const repeatingTasks = await opts.store.getItem<RepeatingTask[]>("repeatingTasks");
-        return {
-          operationName: "repeatingTasks",
-          data: repeatingTasks?.value ?? [],
-        };
-      },
-      setRepeatingTasks: async (input: SetRepeatingTasksInput) => {
-        log("setRepeatingTasks");
-        const newTasks = input.repeatingTasks;
-        const currTasks = await opts.store.getItem<RepeatingTask[]>("repeatingTasks");
-        log("currTasks", currTasks);
+      repeatingTasks: operationRepeatingTasks,
+      addRepeatingTask: async (input: AddRepeatingTaskInput) => {
+        const currentRepeatingTasks = await opts.store
+          .getItem<RepeatingTasksInStore>("repeatingTasks")
+          .then((item) => item?.value ?? []);
 
-        const addedTasks = newTasks.filter(
-          (task) => !currTasks?.value.find((t) => t.id === task.id),
-        );
-        log("addedTasks", addedTasks);
-        const deletedTasks =
-          currTasks?.value.filter((task) => !newTasks.find((t) => t.id === task.id)) ?? [];
-        log("deletedTasks", deletedTasks);
-        const updatedTasks = newTasks.filter(
-          (task) =>
-            !addedTasks.find((t) => t.id === task.id) &&
-            !deletedTasks.find((t) => t.id === task.id),
-        );
-        log("updatedTasks", updatedTasks);
-        const reEnabledTasks = updatedTasks.filter(
-          (task) =>
-            task.enabled && currTasks?.value.find((t) => t.id === task.id)?.enabled === false,
-        );
-        log("reEnabledTasks", reEnabledTasks);
-        const disabledTasks = updatedTasks.filter(
-          (task) =>
-            !task.enabled && currTasks?.value.find((t) => t.id === task.id)?.enabled === true,
-        );
-        log("disabledTasks", disabledTasks);
-        const updatedOnlyTasks = updatedTasks.filter(
-          (task) =>
-            !reEnabledTasks.find((t) => t.id === task.id) &&
-            !disabledTasks.find((t) => t.id === task.id),
-        );
-
-        const timezone = await opts.getUsersTimezone();
-        log("timezone", timezone);
-        const numOfTasksInAdvance = await opts.store.getItem<number>(NUM_TASKS_IN_ADVANCE);
-        log("numOfTasksInAdvance", numOfTasksInAdvance);
-        for (const template of [...addedTasks, ...reEnabledTasks]) {
-          log("template", template);
-          const interval = cronParser.parseExpression(template.cron, {
-            currentDate: new Date(),
-            tz: timezone ?? undefined,
-            utc: true,
-          });
-          const pluginData = { repeatingTaskId: template.id };
-          for (let i = 0; i < (numOfTasksInAdvance?.value ?? NUM_TASKS_IN_ADVANCE_DEFAULT); i++) {
-            const date = interval.next().toDate();
-            log("i, date", i, date);
-            await opts.prisma.task.create({
-              data: {
-                title: template.title,
-                durationInMinutes: template.durationInMinutes,
-                pluginDatas: {
-                  create: {
-                    pluginSlug: opts.pluginSlug,
-                    min: pluginData,
-                    full: pluginData,
-                  },
-                },
-                day: {
-                  connectOrCreate: {
-                    where: { date },
-                    create: { date },
-                  },
-                },
-              },
-            });
-          }
-        }
-        log("for loop for addedTasks, reEnabledTasks done");
-        for (const template of [...deletedTasks, ...disabledTasks]) {
-          await opts.prisma.task.deleteMany({
-            where: {
-              status: { equals: "TODO" },
-              pluginDatas: {
-                some: {
-                  pluginSlug: opts.pluginSlug,
-                  min: {
-                    path: ["repeatingTaskId"],
-                    equals: template.id,
-                  },
-                },
-              },
-            },
-          });
-        }
-        log("for loop for deletedTasks, disabledTasks done");
-        for (const template of updatedOnlyTasks) {
-          await opts.prisma.task.updateMany({
-            where: {
-              status: { equals: "TODO" },
-              pluginDatas: {
-                some: {
-                  pluginSlug: opts.pluginSlug,
-                  min: {
-                    path: ["repeatingTaskId"],
-                    equals: template.id,
-                  },
-                },
-              },
-            },
-            data: {
-              title: template.title,
-              durationInMinutes: template.durationInMinutes,
-            },
-          });
-        }
-        log("for loop for updatedOnlyTasks done");
-
-        if (input.repeatingTasks.length > 0) {
-          opts.pgBoss.schedule(CREATE_TASKS_JOB_NAME, "0 0 * * *");
-        }
-
-        // update the store
-        const repeatingTasks = await opts.store.setItem<RepeatingTask[]>(
+        const newRepeatingTasks = [
+          ...currentRepeatingTasks,
+          {
+            id: generateId(),
+            title: input.title,
+            cron: input.cron,
+            simplified: input.simplified,
+            durationInMinutes: input.durationInMinutes,
+            enabled: true,
+          } satisfies RepeatingTask,
+        ];
+        const repeatingTasksItemUpdated = await opts.store.setItem<RepeatingTasksInStore>(
           "repeatingTasks",
-          input.repeatingTasks,
+          newRepeatingTasks,
         );
-        log("repeatingTasks", repeatingTasks);
+        log("repeatingTasks", repeatingTasksItemUpdated);
+        if (repeatingTasksItemUpdated.value.length > 0) {
+          // this operation is idempotent, so we can safely schedule the job again
+          await opts.pgBoss.schedule(CREATE_TASKS_JOB_NAME, "0 0 * * *");
+        }
+        // create initial tasks
+        await opts.pgBoss.send(CREATE_TASKS_JOB_NAME, {});
+
         return {
           operationName: "repeatingTasks", // invalidates the frontend cache of the repeatingTasks operation
-          data: repeatingTasks.value,
+          data: repeatingTasksItemUpdated.value,
+        };
+      },
+      editRepeatingTask: async (input: EditRepeatingTaskInput) => {
+        const currentRepeatingTasks = await opts.store
+          .getItem<RepeatingTasksInStore>("repeatingTasks")
+          .then((item) => item?.value ?? []);
+
+        const updatedRepeatingTasks = currentRepeatingTasks.map((task) => {
+          if (task.id !== input.id) {
+            return task;
+          }
+          return {
+            ...task,
+            ...input,
+          } satisfies RepeatingTask;
+        });
+        const repeatingTasksItemUpdated = await opts.store.setItem<RepeatingTasksInStore>(
+          "repeatingTasks",
+          updatedRepeatingTasks,
+        );
+        log("repeatingTasks", repeatingTasksItemUpdated);
+        if (repeatingTasksItemUpdated.value.length > 0) {
+          // this operation is idempotent, so we can safely schedule the job again
+          await opts.pgBoss.schedule(CREATE_TASKS_JOB_NAME, "0 0 * * *");
+        } else {
+          await opts.pgBoss.unschedule(UPDATE_TASKS_JOB_NAME);
+        }
+
+        // update future tasks
+        await opts.pgBoss.send(UPDATE_TASKS_JOB_NAME, { repeatingTaskId: input.id });
+
+        return {
+          operationName: "repeatingTasks", // invalidates the frontend cache of the repeatingTasks operation
+          data: repeatingTasksItemUpdated.value,
+        };
+      },
+      removeRepeatingTask: async (input: RemoveRepeatingTaskInput) => {
+        const currentRepeatingTasks = await opts.store
+          .getItem<RepeatingTasksInStore>("repeatingTasks")
+          .then((item) => item?.value ?? []);
+
+        const updatedRepeatingTasks = currentRepeatingTasks.filter((task) => task.id !== input.id);
+        const repeatingTasksItemUpdated = await opts.store.setItem<RepeatingTasksInStore>(
+          "repeatingTasks",
+          updatedRepeatingTasks,
+        );
+        log("repeatingTasks", repeatingTasksItemUpdated);
+        if (repeatingTasksItemUpdated.value.length > 0) {
+          // this operation is idempotent, so we can safely schedule the job again
+          await opts.pgBoss.schedule(CREATE_TASKS_JOB_NAME, "0 0 * * *");
+        } else {
+          await opts.pgBoss.unschedule(CREATE_TASKS_JOB_NAME);
+        }
+
+        // remove future tasks
+        await opts.pgBoss.send(REMOVE_FUTURE_TASKS_JOB_NAME, { repeatingTaskId: input.id });
+
+        return {
+          operationName: "repeatingTasks", // invalidates the frontend cache of the repeatingTasks operation
+          data: repeatingTasksItemUpdated.value,
         };
       },
     },
     handlePgBossWork: (work) => [
       work(CREATE_TASKS_JOB_NAME, async () => {
         log(`job: ${CREATE_TASKS_JOB_NAME} started`);
-        const repeatingTasks = await opts.store.getItem<RepeatingTask[]>("repeatingTasks");
+        const repeatingTasks = await opts.store.getItem<RepeatingTasksInStore>("repeatingTasks");
         log("repeatingTasks", repeatingTasks);
         const timezone = await opts.getUsersTimezone();
         log("timezone", timezone);
-        const numOfTasksInAdvance = await opts.store.getItem<number>(NUM_TASKS_IN_ADVANCE);
+        const numOfTasksInAdvance = await opts.store
+          .getItem<number>(NUM_TASKS_IN_ADVANCE)
+          .then((item) => item?.value ?? NUM_TASKS_IN_ADVANCE_DEFAULT);
         log("numOfTasksInAdvance", numOfTasksInAdvance);
         for (const template of repeatingTasks?.value ?? []) {
           log("template", template);
@@ -170,10 +143,7 @@ export default definePlugin((opts) => {
             },
           });
           log("currentTasksLeft", currentTasksLeft.length);
-          if (
-            currentTasksLeft.length >
-            (numOfTasksInAdvance?.value ?? NUM_TASKS_IN_ADVANCE_DEFAULT) / 2
-          ) {
+          if (currentTasksLeft.length > numOfTasksInAdvance / 2) {
             log("skipping template:", template.id, template.title);
             continue;
           }
@@ -182,37 +152,111 @@ export default definePlugin((opts) => {
             currentDate:
               opts
                 .dayjs(lastTaskLeft?.date)
-                .add(1, "day")
+                .subtract(1, "day")
                 .toDate() ?? new Date(),
             tz: timezone ?? undefined,
             utc: true,
           });
           const pluginData = { repeatingTaskId: template.id };
-          for (let i = 0; i < (numOfTasksInAdvance?.value ?? NUM_TASKS_IN_ADVANCE_DEFAULT); i++) {
+          for (let i = 0; i < numOfTasksInAdvance; i++) {
             const date = interval.next().toDate();
             log("i, date", i, date);
-            await opts.prisma.task.create({
-              data: {
-                title: template.title,
-                durationInMinutes: template.durationInMinutes,
-                date,
-                pluginDatas: {
-                  create: {
-                    pluginSlug: opts.pluginSlug,
-                    min: pluginData,
-                    full: pluginData,
+            await opts.prisma.task
+              .create({
+                data: {
+                  title: template.title,
+                  durationInMinutes: template.durationInMinutes,
+                  pluginDatas: {
+                    create: {
+                      pluginSlug: opts.pluginSlug,
+                      min: pluginData,
+                      full: pluginData,
+                    },
                   },
+                  day: { connectOrCreate: { where: { date }, create: { date } } },
                 },
-              },
-            });
+              })
+              .catch(console.error);
           }
         }
+      }),
+      work(UPDATE_TASKS_JOB_NAME, async (job) => {
+        const { repeatingTaskId } = job.data as JobUpdateTasks;
+        const repeatingTasks = await opts.store
+          .getItem<RepeatingTasksInStore>("repeatingTasks")
+          .then((item) => item?.value ?? []);
+        if (!repeatingTasks.length) {
+          log(`Repeating tasks in store is empty`);
+          return;
+        }
+        const template = repeatingTasks.find((template) => template.id === repeatingTaskId);
+        if (!template) {
+          log(`repeatingTaskId ${repeatingTaskId} not found in store`);
+          return;
+        }
+
+        log(`job: ${UPDATE_TASKS_JOB_NAME} started for repeatingTaskId: ${repeatingTaskId}`);
+        const futureTasks = await opts.prisma.task.findMany({
+          where: {
+            status: { equals: "TODO" },
+            pluginDatas: {
+              some: {
+                pluginSlug: opts.pluginSlug,
+                min: {
+                  path: ["repeatingTaskId"],
+                  equals: repeatingTaskId,
+                },
+              },
+            },
+          },
+          select: { id: true },
+        });
+        // update these tasks to match the template
+        await opts.prisma.task.updateMany({
+          where: {
+            id: { in: futureTasks.map((task) => task.id) },
+          },
+          data: {
+            title: template.title,
+            durationInMinutes: template.durationInMinutes,
+          },
+        });
+      }),
+      work(REMOVE_FUTURE_TASKS_JOB_NAME, async (job) => {
+        const { repeatingTaskId } = job.data as JobRemoveFutureTasks;
+
+        log(`job: ${REMOVE_FUTURE_TASKS_JOB_NAME} started for repeatingTaskId: ${repeatingTaskId}`);
+        const futureTasks = await opts.prisma.task.findMany({
+          where: {
+            status: { equals: "TODO" },
+            pluginDatas: {
+              some: {
+                pluginSlug: opts.pluginSlug,
+                min: {
+                  path: ["repeatingTaskId"],
+                  equals: repeatingTaskId,
+                },
+              },
+            },
+          },
+          select: { id: true },
+        });
+        // update these tasks to match the template
+        await opts.prisma.task.deleteMany({
+          where: {
+            id: { in: futureTasks.map((task) => task.id) },
+          },
+        });
       }),
     ],
   };
 });
 
-export type SetRepeatingTasksInput = {
-  repeatingTasks: RepeatingTask[];
-  currentDate: string;
+type RepeatingTasksInStore = RepeatingTask[];
+
+type JobUpdateTasks = {
+  repeatingTaskId: string;
+};
+type JobRemoveFutureTasks = {
+  repeatingTaskId: string;
 };

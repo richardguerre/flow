@@ -27,7 +27,7 @@ export const SelectTrigger = forwardRef<
   <Trigger
     ref={ref}
     className={tw(
-      "bg-background-50 ring-primary-200 placeholder:text-foreground-700 text-foreground-900 hover:ring-primary-300 disabled:bg-background-300/50 focus:ring-primary-500 disabled:ring-none flex h-9 w-full items-center justify-between rounded-md border px-3 py-2 text-sm shadow-sm ring focus:outline-none focus:ring-1 disabled:cursor-not-allowed disabled:opacity-50",
+      "bg-background-50 ring-primary-200 placeholder:text-foreground-700 text-foreground-900 hover:ring-primary-300 disabled:bg-background-300/50 focus:ring-primary-500 disabled:ring-none flex h-9 w-full items-center justify-between rounded-md border px-3 py-2 text-sm shadow-sm ring-2 focus:outline-none focus:ring-2 disabled:cursor-not-allowed disabled:opacity-50",
       className,
     )}
     {...props}

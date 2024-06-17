@@ -114,6 +114,7 @@ type TaskTitleInputProps = {
   /** The className to apply to the input. This will **override** the default className. */
   className?: string;
   editorRef?: MutableRefObject<Editor | null>;
+  readOnly?: boolean;
 };
 
 export const TaskTitleInput = (props: TaskTitleInputProps) => {
@@ -155,6 +156,7 @@ export const TaskTitleInput = (props: TaskTitleInputProps) => {
       }),
     ],
     content: props.initialValue ?? "",
+    editable: props.readOnly ? false : undefined,
     onBlur: handleSave,
   });
 
@@ -168,7 +170,7 @@ export const TaskTitleInput = (props: TaskTitleInputProps) => {
 
   useEffect(() => {
     editorRef.current?.setEditable(editable);
-    if (editable) {
+    if (editable && !props.readOnly) {
       editorRef.current?.commands.focus("end");
     }
     if (props.editorRef) props.editorRef.current = editorRef.current;

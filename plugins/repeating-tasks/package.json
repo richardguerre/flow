@@ -6,7 +6,8 @@
   "scripts": {
     "build:web": "bunx --bun vite build -c vite.web.ts",
     "build:server": "bunx --bun vite build -c vite.server.ts",
-    "build": "bun run build:web && bun run build:server"
+    "build": "bun run build:web && bun run build:server",
+    "dev:server": "bun --bun run vite build -c vite.server.dev.ts --watch"
   },
   "dependencies": {
     "@flowdev/icons": "workspace:*",

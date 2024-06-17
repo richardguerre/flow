@@ -94,13 +94,11 @@ export default definePlugin((opts) => {
       opts.operations.useMutation<AddViewToSyncOperationInput>("addViewToSync");
     const [removeViewToSync, removingView] =
       opts.operations.useMutation<RemoveViewToSyncOperationInput>("removeViewToSync");
+    const nearestColor = props.view.color ? opts.nearestTailwindColor(props.view.color) : "blue";
 
     return (
       <div className="flex gap-2 w-full items-center">
-        <div
-          className="h-2 w-2 rounded-full"
-          style={{ backgroundColor: props.view.color ?? "#3b82f6" }}
-        />
+        <div className={`h-2 w-2 rounded-full bg-${nearestColor}-500`} />
         <div className="font-semibold">{props.view.name}</div>
         {props.isUserIssues ? (
           <div className="bg-primary-50 text-primary-500 rounded-md text-sm shadow-none px-2 py-1">
