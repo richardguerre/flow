@@ -141,6 +141,7 @@ export default definePlugin((opts) => {
 
         const tokensData = {
           ...body,
+          created_at: new Date().toISOString(),
           expires_at: opts
             .dayjs()
             .add((body.expires_in ?? 10) - 10, "seconds") // -10 is a 10 second buffer to account for latency in network requests
@@ -187,6 +188,7 @@ export default definePlugin((opts) => {
         }
         return {
           data: Object.entries(tokenItem).map(([email, tokens]) => ({
+            connectedAt: tokens.created_at,
             email,
             expiresAt: tokens.expires_at,
           })) satisfies AccountsOperationData,
@@ -535,6 +537,7 @@ export default definePlugin((opts) => {
             id: issue.id,
             state: issue.state,
             url: issue.url,
+            priority: issue.priority,
             views: Array.from(new Set(existinPluginData?.min.views ?? []).add(viewId)),
           } satisfies LinearIssueItemMin;
           const full = {
@@ -640,6 +643,7 @@ type AuthCallbackData = {
 };
 
 type Tokens = {
+  created_at: string;
   access_token: string;
   token_type: string;
   expires_at: string;
@@ -776,6 +780,7 @@ const linearIssueFragment = /* GraphQL */ `
       type
       color
     }
+    priority
     description
     comments(last: 10) {
       edges {

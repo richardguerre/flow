@@ -1,4 +1,11 @@
-import { BsArrowClockwise, BsCloudHaze2Fill } from "@flowdev/icons";
+import {
+  BsArrowClockwise,
+  BsCloudHaze2Fill,
+  BsExclamationSquareFill,
+  BsReception1,
+  BsReception2,
+  BsReception4,
+} from "@flowdev/icons";
 import { definePlugin } from "@flowdev/plugin/web";
 import { BsChevronDown } from "react-icons/bs";
 
@@ -12,19 +19,26 @@ export default definePlugin((opts) => {
       operationName: "accounts",
     });
     return (
-      <div>
+      <div className="flex flex-col gap-2 rounded w-full bg-background-50 shadow p-4 max-w-3xl">
         {accountsQuery?.data?.map((account) => {
+          const connectedAt = opts.dayjs(account.connectedAt);
           const expiresAt = opts.dayjs(account.expiresAt);
           return (
-            <div
-              key={account.email}
-              className="flex flex-col gap-2 rounded w-full bg-background-50 shadow px-4 py-2"
-            >
+            <div key={account.email} className="flex gap-2 items-center">
               <div className="font-semibold">{account.email}</div>
-              <div>Expires: {expiresAt.fromNow()}</div>
+              <span className="text-sm text-foreground-700">
+                connected {connectedAt.fromNow()} • expires {expiresAt.fromNow()}
+              </span>
             </div>
           );
         })}
+        <a href={`${opts.serverOrigin}/api/plugin/linear/auth`}>
+          {accountsQuery?.data?.length ? (
+            <Flow.Button secondary>Connect another account</Flow.Button>
+          ) : (
+            <Flow.Button>Connect Linear</Flow.Button>
+          )}
+        </a>
       </div>
     );
   };
@@ -50,19 +64,27 @@ export default definePlugin((opts) => {
     });
 
     return (
-      <div className="flex flex-col gap-2">
-        <View
-          isUserIssues
-          view={{
-            id: "user-issues",
-            name: "My Issues",
-            account: "me",
-            synced: true,
-            color: null,
-            icon: null,
-          }}
-        />
-        {viewsQuery?.data?.views.map((view) => <View key={view.id} view={view} />)}
+      <div className="flex flex-col gap-4 bg-background-50 shadow px-4 py-2 rounded max-w-3xl">
+        <div>
+          <div className="text-lg font-semibold">Linear Views</div>
+          <div className="text-foreground-700">
+            Create and connect views to sync issues from Linear with specific filters.
+          </div>
+        </div>
+        <div className="flex flex-col gap-2">
+          <View
+            isUserIssues
+            view={{
+              id: "my-issues",
+              name: "My Issues",
+              account: "me",
+              synced: true,
+              color: null,
+              icon: null,
+            }}
+          />
+          {viewsQuery?.data?.views.map((view) => <View key={view.id} view={view} />)}
+        </div>
       </div>
     );
   };
@@ -74,16 +96,19 @@ export default definePlugin((opts) => {
       opts.operations.useMutation<RemoveViewToSyncOperationInput>("removeViewToSync");
 
     return (
-      <div className="flex gap-2 rounded w-full items-center bg-background-50 shadow px-4 py-2">
+      <div className="flex gap-2 w-full items-center">
         <div
           className="h-2 w-2 rounded-full"
           style={{ backgroundColor: props.view.color ?? "#3b82f6" }}
         />
         <div className="font-semibold">{props.view.name}</div>
         {props.isUserIssues ? (
-          <div>Connected</div>
+          <div className="bg-primary-50 text-primary-500 rounded-md text-sm shadow-none px-2 py-1">
+            Connected
+          </div>
         ) : props.view.synced ? (
           <Flow.Button
+            secondary
             sm
             onClick={() => removeViewToSync({ viewId: props.view.id, account: props.view.account })}
             loading={removingView}
@@ -92,6 +117,7 @@ export default definePlugin((opts) => {
           </Flow.Button>
         ) : (
           <Flow.Button
+            secondary
             sm
             onClick={() => addViewToSync({ viewId: props.view.id, account: props.view.account })}
             loading={addingView}
@@ -228,23 +254,27 @@ export default definePlugin((opts) => {
         type: "custom",
         render: () => {
           return (
-            <div className="flex flex-col gap-2">
-              <a href={`${opts.serverOrigin}/api/plugin/linear/auth`}>
-                <Flow.Button>Connect Linear</Flow.Button>
-              </a>
-              <Flow.ErrorBoundary
-                fallbackRender={({ error }) => {
-                  if (error.cause?.[0]?.extensions?.code === "NOT_AUTHENTICATED") {
-                    return <></>;
-                  }
-                  return <p className="text-sm text-negative-600">{error.message}</p>;
-                }}
+            <Flow.ErrorBoundary
+              fallbackRender={({ error }) => {
+                if (error.cause?.[0]?.extensions?.code === "NOT_AUTHENTICATED") {
+                  return <></>;
+                }
+                return <p className="text-sm text-negative-600">{error.message}</p>;
+              }}
+            >
+              <React.Suspense
+                fallback={
+                  <div className="flex flex-col gap-2 rounded w-full bg-background-50 shadow p-4 max-w-3xl">
+                    <div className="text-foreground-700">Loading connected accounts...</div>
+                    <a href={`${opts.serverOrigin}/api/plugin/linear/auth`}>
+                      <Flow.Button>Connect Linear</Flow.Button>
+                    </a>
+                  </div>
+                }
               >
-                <React.Suspense fallback="Loading connected accounts...">
-                  <Accounts />
-                </React.Suspense>
-              </Flow.ErrorBoundary>
-            </div>
+                <Accounts />
+              </React.Suspense>
+            </Flow.ErrorBoundary>
           );
         },
       },
@@ -269,8 +299,9 @@ export default definePlugin((opts) => {
         render: () => {
           const [loading, setLoading] = React.useState(false);
           return (
-            <div>
+            <div className="flex gap-2 items-center">
               <Flow.Button
+                secondary
                 onClick={async () => {
                   setLoading(true);
                   await opts.operations.mutation({
@@ -303,6 +334,7 @@ export default definePlugin((opts) => {
             </Flow.Badge>
           ),
         },
+        { component: () => priorityToBadge[min.priority] },
       ];
     },
     renderItemCardActions: async ({ item }) => {
@@ -328,3 +360,31 @@ export default definePlugin((opts) => {
 });
 
 type MinPath = [keyof LinearIssueItemMin];
+
+const priorityToBadge: Record<number, React.ReactNode> = {
+  0: null,
+  1: (
+    <div className="bg-orange-200 text-orange-700 flex items-center gap-1 px-1 py-px rounded text-sm">
+      <BsExclamationSquareFill size={14} />
+      Urgent
+    </div>
+  ),
+  2: (
+    <div className="bg-gray-200 text-gray-700 flex items-center gap-1 px-1 py-px rounded text-sm">
+      <BsReception4 size={14} />
+      High
+    </div>
+  ),
+  3: (
+    <div className="bg-gray-200 text-gray-700 flex items-center gap-1 px-1 py-px rounded text-sm">
+      <BsReception2 size={14} />
+      Medium
+    </div>
+  ),
+  4: (
+    <div className="bg-gray-200 text-gray-700 flex items-center gap-1 px-1 py-px rounded text-sm">
+      <BsReception1 size={14} />
+      Low
+    </div>
+  ),
+};

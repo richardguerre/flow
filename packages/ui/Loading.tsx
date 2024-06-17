@@ -1,6 +1,7 @@
 import { AnimatePresence, motion } from "framer-motion";
 import { ReactNode, Suspense } from "react";
 import { suspend } from "./suspend";
+import { tw } from "./tw";
 
 const WAVELENGTH = 82;
 
@@ -114,10 +115,10 @@ export const Loading = (props: LoadingProps) => {
   );
 };
 
-export const LoadingView = () => {
+export const LoadingView = (props: { className?: string }) => {
   return (
     <motion.div
-      className="flex h-screen w-full items-center justify-center"
+      className={tw("flex h-screen w-full items-center justify-center", props.className)}
       transition={{ duration: 0.3 }}
       initial={{ opacity: 0 }}
       animate={{ opacity: 1 }}

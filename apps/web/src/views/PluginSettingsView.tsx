@@ -27,6 +27,7 @@ import { FormSelect, FormSelectProps } from "@flowdev/ui/FormSelect";
 import { SelectContent, SelectItem, SelectTrigger } from "@flowdev/ui/Select";
 import { tw } from "@flowdev/ui/tw";
 import { toast } from "@flowdev/ui/Toast";
+import { LoadingView } from "@flowdev/ui/Loading";
 
 export default () => {
   const params = useParams<"pluginSlug">();
@@ -89,7 +90,7 @@ const PluginSettingsViewContent = (props: Props) => {
           </Button>
         </div>
       </div>
-      <Suspense fallback="Loading settings... (better loading animation coming soon)">
+      <Suspense fallback={<LoadingView />}>
         <PluginSettingFields
           pluginSlug={pluginInstallation.slug}
           settings={plugin.settings ?? {}}

@@ -4,6 +4,7 @@ declare global {
   type React = typeof React;
 
   type AccountsOperationData = {
+    connectedAt: string;
     email: string;
     expiresAt: string;
   }[];
@@ -57,6 +58,7 @@ declare global {
     id: string;
     url: string;
     title: string;
+    priority: number;
     description: string | null;
     state: LinearIssueState;
     comments: {
@@ -92,6 +94,7 @@ declare global {
     state: LinearIssueState;
     views: ViewId[];
     url: string;
+    priority: number;
   };
 
   type LinearIssueItemFull = LinearIssueItemMi & {
