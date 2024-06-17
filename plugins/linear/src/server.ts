@@ -650,10 +650,6 @@ type Tokens = {
   organizationName: string;
 };
 
-type ConnectedWebhooks = {
-  [webhookId: string]: boolean;
-};
-
 type JobConnectAccount = { token: string };
 type JobSyncUserIssues = { token: string };
 type JobSyncView = { viewId: string; token: string };
