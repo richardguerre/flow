@@ -61,13 +61,7 @@ declare global {
     state: LinearIssueState;
     comments: {
       edges: {
-        node: LinearComment & {
-          children: {
-            edges: {
-              node: LinearComment;
-            }[];
-          };
-        };
+        node: LinearComment;
       }[];
     };
   };

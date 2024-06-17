@@ -22,7 +22,8 @@ export default definePlugin((opts) => {
     });
     const json = await res.json();
     if (json.errors) {
-      throw new opts.GraphQLError(`GitStart API error: ${json.errors[0].message}`);
+      console.log(json.errors);
+      throw new opts.GraphQLError(`Linear API error: ${json.errors[0].message}`);
     }
     return json.data as T;
   };
@@ -270,7 +271,16 @@ export default definePlugin((opts) => {
         return { operationName: "views", data: views.data };
       },
       syncUserIssues: async () => {
-        await opts.pgBoss.send(SYNC_USER_ISSUES_JOB_NAME, {});
+        const tokenItem = await getTokensFromStore().catch(() => null);
+        if (!tokenItem) {
+          console.log("❌ Could not sync user issues as no tokens are found");
+          return { data: "Could not sync user issues as no tokens are found" };
+        }
+        for (const account of Object.keys(tokenItem)) {
+          await opts.pgBoss.send(SYNC_USER_ISSUES_JOB_NAME, {
+            token: tokenItem[account].access_token,
+          } satisfies JobSyncUserIssues);
+        }
         return { data: true };
       },
       syncView: async (input: SyncViewOperationInput) => {
@@ -343,27 +353,18 @@ export default definePlugin((opts) => {
       }),
       work(SYNC_USER_ISSUES_JOB_NAME, async (job) => {
         const { token } = job.data as JobSyncUserIssues;
-        const query = await gqlRequest<{
+
+        const queryAssignedIssues = await gqlRequest<{
           viewer: {
             assignedIssues: {
               edges: {
                 node: LinearIssue;
               }[];
             };
-            createdIssues: {
-              edges: {
-                node: LinearIssue;
-              }[];
-            };
-          };
-          issues: {
-            edges: {
-              node: LinearIssue;
-            }[];
           };
         }>(
           /* GraphQL */ `
-            query GetUserIssues {
+            query GetUserAssignedIssues {
               viewer {
                 assignedIssues {
                   edges {
@@ -372,6 +373,31 @@ export default definePlugin((opts) => {
                     }
                   }
                 }
+              }
+            }
+            ${linearIssueFragment}
+          `,
+          { token },
+        );
+        for (const { node: issue } of queryAssignedIssues.viewer.assignedIssues.edges) {
+          await opts.pgBoss.send(UPSERT_ISSUE_JOB, {
+            issue,
+            viewId: "my-issues",
+          } satisfies JobUpsertIssue);
+        }
+
+        const queryCreatedIssues = await gqlRequest<{
+          viewer: {
+            createdIssues: {
+              edges: {
+                node: LinearIssue;
+              }[];
+            };
+          };
+        }>(
+          /* GraphQL */ `
+            query GetUserCreatedIssues {
+              viewer {
                 createdIssues {
                   edges {
                     node {
@@ -380,9 +406,30 @@ export default definePlugin((opts) => {
                   }
                 }
               }
+            }
+            ${linearIssueFragment}
+          `,
+          { token },
+        );
+        for (const { node: issue } of queryCreatedIssues.viewer.createdIssues.edges) {
+          await opts.pgBoss.send(UPSERT_ISSUE_JOB, {
+            issue,
+            viewId: "my-issues",
+          } satisfies JobUpsertIssue);
+        }
+
+        const queryIssues = await gqlRequest<{
+          issues: {
+            edges: {
+              node: LinearIssue;
+            }[];
+          };
+        }>(
+          /* GraphQL */ `
+            query GetUserSubscribedIssues {
               issues(
                 filter: {
-                  subscribers: { isMe: true }
+                  subscribers: { isMe: { eq: true } }
                   state: { type: { nin: ["triage", "backlog", "completed", "canceled"] } }
                 }
               ) {
@@ -393,23 +440,11 @@ export default definePlugin((opts) => {
                 }
               }
             }
+            ${linearIssueFragment}
           `,
           { token },
         );
-
-        for (const { node: issue } of query.viewer.assignedIssues.edges) {
-          await opts.pgBoss.send(UPSERT_ISSUE_JOB, {
-            issue,
-            viewId: "my-issues",
-          } satisfies JobUpsertIssue);
-        }
-        for (const { node: issue } of query.viewer.createdIssues.edges) {
-          await opts.pgBoss.send(UPSERT_ISSUE_JOB, {
-            issue,
-            viewId: "my-issues",
-          } satisfies JobUpsertIssue);
-        }
-        for (const { node: issue } of query.issues.edges) {
+        for (const { node: issue } of queryIssues.issues.edges) {
           await opts.pgBoss.send(UPSERT_ISSUE_JOB, {
             issue,
             viewId: "my-issues",
@@ -459,7 +494,7 @@ export default definePlugin((opts) => {
         );
 
         for (const { node: issue } of query.customView.issues.edges) {
-          await opts.pgBoss.send(UPSERT_ISSUE_JOB, { issue } as JobUpsertIssue);
+          await opts.pgBoss.send(UPSERT_ISSUE_JOB, { issue, viewId } satisfies JobUpsertIssue);
         }
       }),
       work(UPSERT_ISSUE_JOB, { batchSize: 5 }, async (jobs) => {
@@ -580,7 +615,10 @@ export default definePlugin((opts) => {
           `,
           { token: token.access_token, variables: { issueId } },
         );
-        await opts.pgBoss.send(UPSERT_ISSUE_JOB, { issue: issueQuery.issue } as JobUpsertIssue);
+        await opts.pgBoss.send(UPSERT_ISSUE_JOB, {
+          issue: issueQuery.issue,
+          viewId: "my-issues",
+        } satisfies JobUpsertIssue);
       }),
     ],
   };
@@ -735,17 +773,10 @@ const linearIssueFragment = /* GraphQL */ `
       color
     }
     description
-    comments {
+    comments(last: 10) {
       edges {
         node {
           ...LinearComment
-          children {
-            edges {
-              node {
-                ...LinearComment
-              }
-            }
-          }
         }
       }
     }

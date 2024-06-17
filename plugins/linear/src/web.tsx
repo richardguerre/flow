@@ -298,7 +298,7 @@ export default definePlugin((opts) => {
       return [
         {
           component: () => (
-            <Flow.Badge className={`bg-${stateColor}-200 text-${stateColor}-600`}>
+            <Flow.Badge className={`bg-${stateColor}-200 text-${stateColor}-700`}>
               {min.state.name}
             </Flow.Badge>
           ),
@@ -312,7 +312,12 @@ export default definePlugin((opts) => {
       return [
         {
           component: () => (
-            <a href={min.url} target="_blank" rel="noreferrer">
+            <a
+              href={min.url}
+              target="_blank"
+              rel="noreferrer"
+              className="bg-background-200 text-foreground-700 hover:bg-background-300 active:bg-background-300 flex h-6 w-6 items-center justify-center rounded-full bg-opacity-50 text-sm hover:bg-opacity-70 active:bg-opacity-100"
+            >
               <LinearIcon size={16} />
             </a>
           ),
