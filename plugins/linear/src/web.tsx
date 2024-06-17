@@ -112,12 +112,14 @@ export default definePlugin((opts) => {
       account: "me",
     });
     opts.hooks.useAsyncEffect(async () => {
-      const res = await opts.operations.query<ViewsOperationData>({
-        operationName: "views",
-      });
+      setLoading(true);
+      const res = await opts.operations
+        .query<ViewsOperationData>({
+          operationName: "views",
+        })
+        .finally(() => setLoading(false));
       setConnected(res?.data?.connected ?? false);
       setViews(res?.data?.views ?? []);
-      setLoading(false);
     }, []);
 
     const [refreshMyIssues, isRefreshingMyIssues] = opts.operations.useMutation("syncUserIssues", {
@@ -139,7 +141,7 @@ export default definePlugin((opts) => {
 
     return (
       <div className="flex flex-col gap-2 bg-background-100 h-full">
-        <div className="px-3 flex">
+        <div className="px-4 pt-3 flex">
           <span className="text-xl font-semibold">Linear</span>
         </div>
         <div className="px-3 flex justify-between gap-2 items-center">
@@ -211,7 +213,7 @@ export default definePlugin((opts) => {
             />
           </>
         ) : (
-          <div className="h-full flex items-center justify-center">
+          <div className="h-full flex items-center justify-center transform scale-70">
             <Flow.Loading />
           </div>
         )}
