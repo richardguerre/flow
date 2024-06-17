@@ -23,23 +23,26 @@ declare global {
   }[];
 
   type ViewsOperationData = {
-    id: string;
-    name: string;
-    icon: string | null;
-    color: string | null;
-    account: string;
-    synced: boolean;
-  }[];
+    connected: boolean;
+    views: {
+      id: string;
+      name: string;
+      icon: string | null;
+      color: string | null;
+      account: string;
+      synced: boolean;
+    }[];
+  };
 
   type AddViewToSyncOperationInput = {
-    viewId?: string;
-    account?: string;
+    viewId: string;
+    account: string;
   };
-  type removeViewToSyncOperationInput = AddViewToSyncOperationInput;
+  type RemoveViewToSyncOperationInput = AddViewToSyncOperationInput;
 
   type SyncViewOperationInput = {
-    viewId?: string;
-    account?: string;
+    viewId: string;
+    account: string;
   };
 
   type LinearIssueState = {
@@ -52,6 +55,7 @@ declare global {
 
   type LinearIssue = {
     id: string;
+    url: string;
     title: string;
     description: string | null;
     state: LinearIssueState;
@@ -87,10 +91,13 @@ declare global {
     } | null;
   };
 
+  type ViewId = "my-issues" | (string & {});
+
   type LinearIssueItemMin = {
     id: string;
-    title: string;
     state: LinearIssueState;
+    views: ViewId[];
+    url: string;
   };
 
   type LinearIssueItemFull = LinearIssueItemMi & {

@@ -67,14 +67,14 @@ export type WebPlugin = (options: WebPluginOptions) => {
    */
   renderTaskCardActions?: RenderTaskCardActions;
   /**
-   * Function called when rendering the item card details.
+   * Function called when rendering the item card details (i.e. right above the item card actions).
    * The plugin can either return null or an array of React components.
    *
    * You can use the `opts.Flow.Badge` component to render badges similar to the default ones on the Item card.
    */
   renderItemCardDetails?: RenderItemCardDetails;
   /**
-   * Function called when rendering the item card actions.
+   * Function called when rendering the item card actions (i.e. right next to the existing actions).
    * The plugin can either return null or an array of React components.
    */
   renderItemCardActions?: RenderItemCardActions;

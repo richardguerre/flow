@@ -2,7 +2,7 @@ import { Prisma } from ".prisma/client";
 import { dayjs } from "./dayjs";
 import { prisma } from "./prisma";
 import { pgBoss } from "./pgBoss";
-import { nearestTailwindColor } from "./nearestTailwindColor";
+import { nearestTailwindColor } from "@flowdev/nearest-color";
 import type { Color, Store } from "@prisma/client";
 import { env } from "../env";
 import { GraphQLError } from "graphql";

@@ -43,16 +43,17 @@ export default definePlugin((opts) => {
   };
 
   const operationViews = async () => {
-    const tokenItem = await getTokensFromStore();
+    const tokenItem = await getTokensFromStore().catch(() => null);
     if (!tokenItem) {
+      console.log("not connected");
       return {
-        data: [],
+        data: { connected: false, views: [] } satisfies ViewsOperationData,
       };
     }
     const syncedViewsItem = await opts.store
       .getPluginItem<SyncedViews>(SYNCED_VIEWS_STORE_KEY)
       .then((item) => item?.value.views ?? []);
-    const views: ViewsOperationData = [];
+    const views: ViewsOperationData["views"] = [];
     for (const [account, tokens] of Object.entries(tokenItem)) {
       const query = await gqlRequest<{
         customViews: {
@@ -92,11 +93,11 @@ export default definePlugin((opts) => {
               color: viewEdge.node.color,
               account,
               synced: syncedViewsItem.some((view) => view.id === viewEdge.node.id),
-            }) satisfies ViewsOperationData[number],
+            }) satisfies ViewsOperationData["views"][number],
         ) ?? []),
       );
     }
-    return { data: views };
+    return { data: { connected: true, views } satisfies ViewsOperationData };
   };
 
   const isRelevantWebhookEvent = (event: WebhookEvent) => {
@@ -120,11 +121,12 @@ export default definePlugin((opts) => {
           await opts.store.getPluginItem<AccountsTokens>(ACCOUNT_TOKENS_STORE_KEY);
         const body = req.body as AuthCallbackData;
         const viewerQuery = await gqlRequest<{
-          viewer: { email: string; organization: { id: string; name: string } };
+          viewer: { id: string; email: string; organization: { id: string; name: string } };
         }>(
           /* GraphQL */ `
             query {
               viewer {
+                id
                 email
                 organization {
                   id
@@ -143,6 +145,7 @@ export default definePlugin((opts) => {
             .add((body.expires_in ?? 10) - 10, "seconds") // -10 is a 10 second buffer to account for latency in network requests
             .toISOString(),
           email: viewerQuery.viewer.email,
+          userId: viewerQuery.viewer.id,
           organizationId: viewerQuery.viewer.organization.id,
           organizationName: viewerQuery.viewer.organization.name,
         } as Tokens;
@@ -175,7 +178,7 @@ export default definePlugin((opts) => {
     operations: {
       /** Get the connected Linear account, if any. */
       accounts: async () => {
-        const tokenItem = await getTokensFromStore();
+        const tokenItem = await getTokensFromStore().catch(() => null);
         if (!tokenItem) {
           return {
             data: [],
@@ -230,7 +233,10 @@ export default definePlugin((opts) => {
           },
         );
         for (const { node: issue } of query.customView.issues.edges) {
-          await opts.pgBoss.send(UPSERT_ISSUE_JOB, { issue } satisfies JobUpsertIssue);
+          await opts.pgBoss.send(UPSERT_ISSUE_JOB, {
+            issue,
+            viewId: input.viewId,
+          } satisfies JobUpsertIssue);
         }
 
         const syncedViewsItem = await opts.store
@@ -244,7 +250,7 @@ export default definePlugin((opts) => {
         const views = await operationViews();
         return { operationName: "views", data: views.data };
       },
-      removeViewToSync: async (input: removeViewToSyncOperationInput) => {
+      removeViewToSync: async (input: RemoveViewToSyncOperationInput) => {
         if (!input.viewId) {
           throw new opts.GraphQLError("Missing an input", {
             extensions: {
@@ -263,6 +269,10 @@ export default definePlugin((opts) => {
         const views = await operationViews();
         return { operationName: "views", data: views.data };
       },
+      syncUserIssues: async () => {
+        await opts.pgBoss.send(SYNC_USER_ISSUES_JOB_NAME, {});
+        return { data: true };
+      },
       syncView: async (input: SyncViewOperationInput) => {
         if (!input.viewId || !input.account) {
           throw new opts.GraphQLError("Missing an input", {
@@ -273,15 +283,6 @@ export default definePlugin((opts) => {
           });
         }
         const tokenItem = await getTokensFromStore();
-        if (!tokenItem) {
-          throw new opts.GraphQLError("User not authenticated.", {
-            extensions: {
-              code: "NOT_AUTHENTICATED",
-              userFriendlyMessage:
-                "You are not authenticated and will need to connect your Linear account(s) first.",
-            },
-          });
-        }
         await opts.pgBoss.send(SYNC_VIEW_JOB_NAME, {
           viewId: input.viewId,
           token: tokenItem[input.account].access_token,
@@ -379,7 +380,12 @@ export default definePlugin((opts) => {
                   }
                 }
               }
-              issues(filter: { subscribers: { isMe: true } }) {
+              issues(
+                filter: {
+                  subscribers: { isMe: true }
+                  state: { type: { nin: ["triage", "backlog", "completed", "canceled"] } }
+                }
+              ) {
                 edges {
                   node {
                     ...LinearIssue
@@ -392,17 +398,26 @@ export default definePlugin((opts) => {
         );
 
         for (const { node: issue } of query.viewer.assignedIssues.edges) {
-          await opts.pgBoss.send(UPSERT_ISSUE_JOB, { issue } satisfies JobUpsertIssue);
+          await opts.pgBoss.send(UPSERT_ISSUE_JOB, {
+            issue,
+            viewId: "my-issues",
+          } satisfies JobUpsertIssue);
         }
         for (const { node: issue } of query.viewer.createdIssues.edges) {
-          await opts.pgBoss.send(UPSERT_ISSUE_JOB, { issue } satisfies JobUpsertIssue);
+          await opts.pgBoss.send(UPSERT_ISSUE_JOB, {
+            issue,
+            viewId: "my-issues",
+          } satisfies JobUpsertIssue);
         }
         for (const { node: issue } of query.issues.edges) {
-          await opts.pgBoss.send(UPSERT_ISSUE_JOB, { issue } satisfies JobUpsertIssue);
+          await opts.pgBoss.send(UPSERT_ISSUE_JOB, {
+            issue,
+            viewId: "my-issues",
+          } satisfies JobUpsertIssue);
         }
       }),
       work(SYNC_ALL_VIEWS_JOB_NAME, async () => {
-        const tokenItem = await getTokensFromStore();
+        const tokenItem = await getTokensFromStore().catch(() => null);
         if (!tokenItem) return;
         const syncedViewsItem = await opts.store
           .getPluginItem<SyncedViews>(SYNCED_VIEWS_STORE_KEY)
@@ -450,7 +465,7 @@ export default definePlugin((opts) => {
       work(UPSERT_ISSUE_JOB, { batchSize: 5 }, async (jobs) => {
         // process 5 events at a time to go a little faster (processing 100 at a time might consume too much memory as webhook events and fetched issues can be large, especially if it includes conference data).
         for (const job of jobs) {
-          const { issue } = job.data as JobUpsertIssue;
+          const { issue, viewId } = job.data as JobUpsertIssue;
           const item = await opts.prisma.item.findFirst({
             where: {
               pluginDatas: { some: { originalId: issue.id, pluginSlug: opts.pluginSlug } },
@@ -458,7 +473,7 @@ export default definePlugin((opts) => {
             include: {
               pluginDatas: {
                 where: { originalId: issue.id, pluginSlug: opts.pluginSlug },
-                select: { id: true },
+                select: { id: true, min: true, full: true },
               },
             },
           });
@@ -471,6 +486,9 @@ export default definePlugin((opts) => {
             return;
           }
 
+          const existinPluginData = item?.pluginDatas[0] as
+            | { min: LinearIssueItemMin; full: LinearIssueItemFull }
+            | undefined;
           const itemCommonBetweenUpdateAndCreate = {
             title: issue.title,
             isRelevant,
@@ -478,11 +496,14 @@ export default definePlugin((opts) => {
           } satisfies Prisma.ItemUpdateInput;
 
           const min = {
+            ...((existinPluginData?.min as LinearIssueItemMin) ?? {}),
             id: issue.id,
-            title: issue.title,
             state: issue.state,
+            url: issue.url,
+            views: Array.from(new Set(existinPluginData?.min.views ?? []).add(viewId)),
           } satisfies LinearIssueItemMin;
           const full = {
+            ...((existinPluginData?.full as LinearIssueItemFull) ?? {}),
             ...issue,
             ...min,
           } satisfies LinearIssueItemFull;
@@ -582,6 +603,7 @@ type Tokens = {
   expires_at: string;
   scope: string;
   email: string;
+  userId: string;
   organizationId: string;
   organizationName: string;
 };
@@ -589,7 +611,10 @@ type Tokens = {
 type JobConnectAccount = { token: string };
 type JobSyncUserIssues = { token: string };
 type JobSyncView = { viewId: string; token: string };
-type JobUpsertIssue = { issue: LinearIssue };
+type JobUpsertIssue = {
+  issue: LinearIssue;
+  viewId: ViewId;
+};
 type JobProcessWebhookEvent = { event: WebhookEvent };
 
 type WebhookEvent = WebhookEventIssueUpdate | WebhookEventCommentCreate;
@@ -702,6 +727,7 @@ const linearIssueFragment = /* GraphQL */ `
   fragment LinearIssue on Issue {
     id
     title
+    url
     state {
       id
       name

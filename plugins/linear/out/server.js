@@ -1,6 +1,20 @@
-"use strict";const E=t=>({plugin:t}),h="account-tokens",u="lists",k=E(t=>{const v=`${t.pluginSlug}-process-webhook`,y=`${t.pluginSlug}-sync-all-views`,w=`${t.pluginSlug}-sync-view`,g=`${t.pluginSlug}-upsert-item-from-issue`,d=async(e,n)=>{const a=await(await fetch("https://api.linear.app/graphql",{method:"POST",headers:{"Content-Type":"application/json",Authorization:`Bearer ${n.token}`},body:JSON.stringify({query:e,variables:n.variables})})).json();if(a.errors)throw new t.GraphQLError(`GitStart API error: ${a.errors[0].message}`);return a.data},c=async()=>{const e=await t.store.getPluginItem(h);if(!e)throw new t.GraphQLError("User not authenticated.",{extensions:{code:"NOT_AUTHENTICATED",userFriendlyMessage:"You are not authenticated and will need to connect your Linear account(s) first."}});return e.value},m=async e=>{const n=await t.store.getPluginItem(u);if(!n)return{data:[]};if(!await c())return{data:[]};const a=await t.prisma.list.findMany({where:{id:{in:Object.keys(n.value).map(parseInt)}}});return{data:Object.entries(n.value).map(([s,r])=>{const o=a.find(l=>l.id===parseInt(s));return{id:(o==null?void 0:o.id)??parseInt(s),name:(o==null?void 0:o.name)??"Unknown or deleted list",description:(o==null?void 0:o.description)??"This list may have been deleted or was left unamed",slug:(o==null?void 0:o.slug)??null,linkedView:{id:r.view.id,name:r.view.name,color:r.view.color,icon:r.view.icon,account:r.account}}})}},_=e=>e.type==="Issue"&&e.action==="update"?!0:e.type==="Comment";return{onRequest:async e=>{if(e.path==="/auth")return Response.redirect(`http://localhost:4321/api/auth?api_endpoint=${t.serverOrigin}/api/plugin/${t.pluginSlug}/auth/callback`);if(e.path==="/auth/callback"){const n=await t.store.getPluginItem(h),i=e.body,a=await d(`
+"use strict";const C=e=>({plugin:e}),h="account-tokens",g="synced-views",N=C(e=>{const p=`${e.pluginSlug}-process-webhook`,_=`${e.pluginSlug}-connect-account`,S=`${e.pluginSlug}-sync-all-views`,I=`${e.pluginSlug}-sync-view`,v=`${e.pluginSlug}-sync-user-issues`,d=`${e.pluginSlug}-upsert-item-from-issue`,u=async(s,a)=>{const n=await(await fetch("https://api.linear.app/graphql",{method:"POST",headers:{"Content-Type":"application/json",Authorization:`Bearer ${a.token}`},body:JSON.stringify({query:s,variables:a.variables})})).json();if(n.errors)throw new e.GraphQLError(`GitStart API error: ${n.errors[0].message}`);return n.data},l=async()=>{const s=await e.store.getPluginItem(h);if(!s)throw new e.GraphQLError("User not authenticated.",{extensions:{code:"NOT_AUTHENTICATED",userFriendlyMessage:"You are not authenticated and will need to connect your Linear account(s) first."}});return s.value},m=async()=>{const s=await l().catch(()=>null);if(!s)return console.log("not connected"),{data:{connected:!1,views:[]}};const a=await e.store.getPluginItem(g).then(n=>(n==null?void 0:n.value.views)??[]),t=[];for(const[n,i]of Object.entries(s)){const o=await u(`
+          query ViewsQuery {
+            customViews {
+              edges {
+                node {
+                  id
+                  name
+                  icon
+                  color
+                }
+              }
+            }
+          }
+        `,{token:i.access_token}).catch(()=>null);t.push(...(o==null?void 0:o.customViews.edges.map(r=>({id:r.node.id,name:r.node.name,icon:r.node.icon,color:r.node.color,account:n,synced:a.some(w=>w.id===r.node.id)})))??[])}return{data:{connected:!0,views:t}}},E=s=>s.type==="Issue"&&s.action==="update"?!0:s.type==="Comment";return{onRequest:async s=>{if(s.path==="/auth")return Response.redirect(`https://linear-api-flow-dev.vercel.app/api/auth?api_endpoint=${e.serverOrigin}/api/plugin/${e.pluginSlug}/auth/callback`);if(s.path==="/auth/callback"){const a=await e.store.getPluginItem(h),t=s.body,n=await u(`
             query {
               viewer {
+                id
                 email
                 organization {
                   id
@@ -8,41 +22,7 @@
                 }
               }
             }
-          `,{token:i.access_token}),s={...i,expires_at:t.dayjs().add((i.expires_in??10)-10,"seconds").toISOString(),email:a.viewer.email,organizationId:a.viewer.organization.id,organizationName:a.viewer.organization.name};return"expires_in"in s&&delete s.expires_in,await t.store.setSecretItem(h,{...(n==null?void 0:n.value)??{},[s.email]:s}),new Response}else if(e.path==="/events/webhook"&&e.request.method==="POST"){const n=e.body;return _(n)?(await t.pgBoss.send(v,{event:n}),new Response):(console.log("❌ Could not find Linear issue ID in req.body"),new Response)}return new Response},operations:{accounts:async()=>{const e=await c();return e?{data:Object.entries(e).map(([n,i])=>({email:n,expiresAt:i.expires_at}))}:{data:[]}},lists:m,views:async()=>{const e=await c();if(!e)return{data:[]};const n=[];for(const[i,a]of Object.entries(e)){const s=await d(`
-              query ViewsQuery {
-                customViews {
-                  edges {
-                    node {
-                      id
-                      name
-                      icon
-                      color
-                    }
-                  }
-                }
-              }
-            `,{token:a.access_token}).catch(()=>null);n.push(...(s==null?void 0:s.customViews.edges.map(r=>({id:r.node.id,name:r.node.name,icon:r.node.icon,color:r.node.color,account:i})))??[])}return{data:n}},createList:async e=>{if(!e.account||!e.viewId||!e.listName)throw new t.GraphQLError("Missing an input",{extensions:{code:"CREATE_LIST_MISSING_INPUT",userFriendlyMessage:"Missing an input. Either `account`, `viewId` or `listName`"}});const n=await c(),i=await t.store.getPluginItem(u);if(!Object.values((i==null?void 0:i.value)??{}).find(o=>o.view.id===e.viewId))throw new t.GraphQLError("List with this view already exists.",{extensions:{code:"CREATE_LIST_ALREADY_EXISTS",userFriendlyMessage:"A list with this view already exists."}});const a=await d(`
-            query ViewQuery($viewId: String!) {
-              customView(id: $viewId) {
-                id
-                name
-                color
-                icon
-              }
-            }
-          `,{token:n[e.account].access_token,variables:{viewId:e.viewId}});if(!a.customView)throw new t.GraphQLError("No view exists with that id.",{extensions:{code:"CREATE_LIST_NO_VIEW_EXISTS",userFriendlyMessage:"The selected view doesn't seem to exist in Linear. Make sure the view exists in your Linear and refresh the page."}});const s=await t.prisma.list.create({data:{name:e.listName,slug:e.listName.toLowerCase().replace(/\s/g,"-").replace(/['#?]/g," ").slice(0,50),description:"List created from Linear plugin."}}),r=await t.store.setItem(u,{...(i==null?void 0:i.value)??{},[s.id]:{account:e.account,view:{id:e.viewId,color:a.customView.color,icon:a.customView.icon,name:a.customView.name}}});if(Object.keys(r.value).length===1&&!(await d(`
-              mutation CreateWebhook($url: String!) {
-                webhookCreate(
-                  input: { url: $url, allPublicTeams: true, resourceTypes: ["Comment", "Issue"] }
-                ) {
-                  success
-                  webhook {
-                    id
-                    enabled
-                  }
-                }
-              }
-            `,{token:n[e.account].access_token,variables:{url:`${t.serverOrigin}/api/plugin/${t.pluginSlug}/events/webhook`}})).webhookCreate.success)throw new t.GraphQLError("Failed to create a webhook.",{extensions:{code:"CREATE_LIST_FAILED_WEBHOOK",userFriendlyMessage:"Failed to connect to Linear. Please try again or contact the Flow team for help."}});return{operationName:"lists",data:await m()}},deleteList:async e=>{if(!e.listId)throw new t.GraphQLError("Missing an input",{extensions:{code:"DELETE_LIST_MISSING_INPUT",userFriendlyMessage:"Missing an input. `listId` is required."}});const n=await t.store.getPluginItem(u);if(!(n!=null&&n.value[e.listId]))throw new t.GraphQLError("List with this id doesn't exist.",{extensions:{code:"DELETE_LIST_DOESNT_EXIST",userFriendlyMessage:"A list with this id doesn't exist."}});await t.prisma.list.delete({where:{id:e.listId}});const{[e.listId]:i,...a}=n.value;return await t.store.setItem(u,a),{operationName:"lists",data:await m()}},syncView:async e=>{if(!e.listId||!e.viewId||!e.account)throw new t.GraphQLError("Missing an input",{extensions:{code:"SYNC_VIEW_MISSING_INPUT",userFriendlyMessage:"Missing an input. `listId`, `viewId` and `account` are required."}});const n=await c();if(!n)throw new t.GraphQLError("User not authenticated.",{extensions:{code:"NOT_AUTHENTICATED",userFriendlyMessage:"You are not authenticated and will need to connect your Linear account(s) first."}});return await t.pgBoss.send(w,{listId:e.listId,viewId:e.viewId,token:n[e.account].access_token}),{data:!0}},syncAllViews:async()=>(await t.pgBoss.send(y,{}),{data:!0})},handlePgBossWork:e=>[e(y,async()=>{const n=await t.store.getPluginItem(u);if(!n)return;const i=await c();if(i)for(const[a,{view:s,account:r}]of Object.entries(n.value))await t.pgBoss.send(w,{listId:parseInt(a),viewId:s.id,token:i[r].access_token})}),e(w,async n=>{const{viewId:i,listId:a,token:s}=n.data,r=await d(`
+          `,{token:t.access_token}),i={...t,expires_at:e.dayjs().add((t.expires_in??10)-10,"seconds").toISOString(),email:n.viewer.email,userId:n.viewer.id,organizationId:n.viewer.organization.id,organizationName:n.viewer.organization.name};return"expires_in"in i&&delete i.expires_in,await e.store.setSecretItem(h,{...(a==null?void 0:a.value)??{},[i.email]:i}),await e.pgBoss.send(_,{token:t.access_token}),new Response}else if(s.path==="/events/webhook"&&s.request.method==="POST"){const a=s.body;return E(a)?(await e.pgBoss.send(p,{event:a}),new Response):(console.log("👌 The webhook event is not relevant to this plugin"),new Response)}return new Response},operations:{accounts:async()=>{const s=await l().catch(()=>null);return s?{data:Object.entries(s).map(([a,t])=>({email:a,expiresAt:t.expires_at}))}:{data:[]}},views:m,addViewToSync:async s=>{if(!s.viewId||!s.account)throw new e.GraphQLError("Missing an input",{extensions:{code:"ADD_VIEW_TO_SYNC_MISSING_INPUT",userFriendlyMessage:"Missing an input. `viewId` and `account` are required."}});const a=await l(),t=await u(`
             query GetView($viewId: String!) {
               customView(id: $viewId) {
                 issues {
@@ -54,15 +34,71 @@
                 }
               }
             }
-            ${S}
-          `,{token:s,variables:{viewId:i}});for(const{node:o}of r.customView.issues.edges)await t.pgBoss.send(g,{issue:o,listId:a})}),e(g,{batchSize:5},async n=>{var i;for(const a of n){const{issue:s,listId:r}=a.data,o=await t.prisma.item.findFirst({where:{pluginDatas:{some:{originalId:s.id,pluginSlug:t.pluginSlug}}},include:{pluginDatas:{where:{originalId:s.id,pluginSlug:t.pluginSlug},select:{id:!0}}}});if(!o&&!r){console.log("❌ Could not upsert issue as it's unknown which list it belongs to");return}const l=s.state.type!=="canceled"&&s.state.type!=="completed";if(!o&&!l){console.log("❌ Issue not upserted as it's not relevant and it's not in the database.");return}const f={title:s.title,isRelevant:l,inboxPoints:10,list:{connect:{id:r}}},I={id:s.id,title:s.title,state:s.state},p={...s,...I};o?await t.prisma.item.update({where:{id:o.id},data:{...f,pluginDatas:{update:{where:{id:(i=o.pluginDatas[0])==null?void 0:i.id},data:{min:I,full:p}}}}}):await t.prisma.item.create({data:{...f,pluginDatas:{create:{pluginSlug:t.pluginSlug,originalId:s.id,min:I,full:p}}}}),console.log("✔ Upserted item from Linear issue",s.id)}}),e(v,async n=>{const{event:i}=n.data;console.log("Processing webhook event",i.type,i.action,i.data.id);let a=null;if(i.type==="Issue"?a=i.data.id:i.type==="Comment"&&(a=i.data.issue.id),!a){console.log("❌ Could not find Linear issue ID in req.body");return}const s=await c();if(!s){console.log("❌ Could not process webhook event as no tokens are found");return}const r=Object.values(s).find(l=>l.organizationId===i.organizationId);if(!r){console.log("❌ Could not process webhook event as no token is found for the organization of the event");return}const o=await d(`
+            ${f}
+          `,{token:a[s.account].access_token,variables:{viewId:s.viewId}});for(const{node:o}of t.customView.issues.edges)await e.pgBoss.send(d,{issue:o,viewId:s.viewId});const n=await e.store.getPluginItem(g).then(o=>(o==null?void 0:o.value)??{views:[]});return await e.store.setItem(g,{...n,views:[...n.views,{id:s.viewId,account:s.account}]}),{operationName:"views",data:(await m()).data}},removeViewToSync:async s=>{if(!s.viewId)throw new e.GraphQLError("Missing an input",{extensions:{code:"REMOVE_VIEW_TO_SYNC_MISSING_INPUT",userFriendlyMessage:"Missing an input. `viewId` is required."}});const a=await e.store.getPluginItem(g).then(n=>(n==null?void 0:n.value)??{views:[]});return await e.store.setItem(g,{...a,views:a.views.filter(n=>n.id!==s.viewId)}),{operationName:"views",data:(await m()).data}},syncUserIssues:async()=>(await e.pgBoss.send(v,{}),{data:!0}),syncView:async s=>{if(!s.viewId||!s.account)throw new e.GraphQLError("Missing an input",{extensions:{code:"SYNC_VIEW_MISSING_INPUT",userFriendlyMessage:"Missing an input. `viewId` and `account` are required."}});const a=await l();return await e.pgBoss.send(I,{viewId:s.viewId,token:a[s.account].access_token}),{data:!0}},syncAllViews:async()=>(await e.pgBoss.send(S,{}),{data:!0})},handlePgBossWork:s=>[s(_,async a=>{const{token:t}=a.data;if(!(await u(`
+            mutation CreateWebhook($url: String!) {
+              webhookCreate(
+                input: { url: $url, allPublicTeams: true, resourceTypes: ["Comment", "Issue"] }
+              ) {
+                success
+                webhook {
+                  id
+                  enabled
+                }
+              }
+            }
+          `,{token:t,variables:{url:`${e.serverOrigin}/api/plugin/${e.pluginSlug}/events/webhook`}})).webhookCreate.success)throw new e.GraphQLError("Failed to create a webhook.",{extensions:{code:"ADD_VIEW_TO_SYNC_FAILED_CREATE_WEBHOOK",userFriendlyMessage:"Failed to connect to Linear. Please try again or contact the Flow team for help."}});await e.pgBoss.send(v,{token:t})}),s(v,async a=>{const{token:t}=a.data,n=await u(`
+            query GetUserIssues {
+              viewer {
+                assignedIssues {
+                  edges {
+                    node {
+                      ...LinearIssue
+                    }
+                  }
+                }
+                createdIssues {
+                  edges {
+                    node {
+                      ...LinearIssue
+                    }
+                  }
+                }
+              }
+              issues(
+                filter: {
+                  subscribers: { isMe: true }
+                  state: { type: { nin: ["triage", "backlog", "completed", "canceled"] } }
+                }
+              ) {
+                edges {
+                  node {
+                    ...LinearIssue
+                  }
+                }
+              }
+            }
+          `,{token:t});for(const{node:i}of n.viewer.assignedIssues.edges)await e.pgBoss.send(d,{issue:i,viewId:"my-issues"});for(const{node:i}of n.viewer.createdIssues.edges)await e.pgBoss.send(d,{issue:i,viewId:"my-issues"});for(const{node:i}of n.issues.edges)await e.pgBoss.send(d,{issue:i,viewId:"my-issues"})}),s(S,async()=>{const a=await l().catch(()=>null);if(!a)return;const t=await e.store.getPluginItem(g).then(n=>(n==null?void 0:n.value.views)??[]);for(const n of t)await e.pgBoss.send(I,{viewId:n.id,token:a[n.account].access_token})}),s(I,async a=>{const{viewId:t,token:n}=a.data,i=await u(`
+            query GetView($viewId: String!) {
+              customView(id: $viewId) {
+                issues {
+                  edges {
+                    node {
+                      ...LinearIssue
+                    }
+                  }
+                }
+              }
+            }
+            ${f}
+          `,{token:n,variables:{viewId:t}});for(const{node:o}of i.customView.issues.edges)await e.pgBoss.send(d,{issue:o})}),s(d,{batchSize:5},async a=>{var t;for(const n of a){const{issue:i,viewId:o}=n.data,r=await e.prisma.item.findFirst({where:{pluginDatas:{some:{originalId:i.id,pluginSlug:e.pluginSlug}}},include:{pluginDatas:{where:{originalId:i.id,pluginSlug:e.pluginSlug},select:{id:!0,min:!0,full:!0}}}}),w=i.state.type!=="canceled"&&i.state.type!=="completed";if(!r&&!w){console.log("❌ Issue not upserted as it's not relevant and it's not in the database.");return}const c=r==null?void 0:r.pluginDatas[0],k={title:i.title,isRelevant:w,inboxPoints:10},y={...(c==null?void 0:c.min)??{},id:i.id,state:i.state,url:i.url,views:Array.from(new Set((c==null?void 0:c.min.views)??[]).add(o))},b={...(c==null?void 0:c.full)??{},...i,...y};r?await e.prisma.item.update({where:{id:r.id},data:{...k,pluginDatas:{update:{where:{id:(t=r.pluginDatas[0])==null?void 0:t.id},data:{min:y,full:b}}}}}):await e.prisma.item.create({data:{...k,pluginDatas:{create:{pluginSlug:e.pluginSlug,originalId:i.id,min:y,full:b}}}}),console.log("✔ Upserted item from Linear issue",i.id)}}),s(p,async a=>{const{event:t}=a.data;console.log("Processing webhook event",t.type,t.action,t.data.id);let n=null;if(t.type==="Issue"?n=t.data.id:t.type==="Comment"&&(n=t.data.issue.id),!n){console.log("❌ Could not find Linear issue ID in req.body");return}const i=await l();if(!i){console.log("❌ Could not process webhook event as no tokens are found");return}const o=Object.values(i).find(w=>w.organizationId===t.organizationId);if(!o){console.log("❌ Could not process webhook event as no token is found for the organization of the event");return}const r=await u(`
             query GetIssue($issueId: String!) {
               issue(id: $issueId) {
                 ...LinearIssue
               }
             }
-            ${S}
-          `,{token:r.access_token,variables:{issueId:a}});await t.pgBoss.send(g,{issue:o.issue})})]}}),L=`
+            ${f}
+          `,{token:o.access_token,variables:{issueId:n}});await e.pgBoss.send(d,{issue:r.issue})})]}}),O=`
   fragment LinearComment on Comment {
     id
     body
@@ -81,10 +117,11 @@
       avatarUrl
     }
   }
-`,S=`
+`,f=`
   fragment LinearIssue on Issue {
     id
     title
+    url
     state {
       id
       name
@@ -107,5 +144,5 @@
       }
     }
   }
-  ${L}
-`;module.exports=k;
+  ${O}
+`;module.exports=N;

@@ -112,6 +112,7 @@ type Item implements Node {
 input ItemFilter {
   inboxPoints: PrismaIntFilter
   isRelevant: Boolean
+  pluginDatas: ItemPluginDataListFilter
   scheduledAt: PrismaDateTimeFilter
   tasks: TaskListFilter
 }
@@ -142,11 +143,26 @@ type ItemPluginData implements Node {
   updatedAt: DateTime!
 }
 
+input ItemPluginDataFilter {
+  AND: [ItemPluginDataFilter!]
+  OR: [ItemPluginDataFilter!]
+  full: PrismaJsonFilter
+  min: PrismaJsonFilter
+  originalId: String
+  pluginSlug: String
+}
+
 input ItemPluginDataInput {
   full: JSON!
   min: JSON!
   originalId: String
   pluginSlug: String!
+}
+
+input ItemPluginDataListFilter {
+  every: ItemPluginDataFilter
+  none: ItemPluginDataFilter
+  some: ItemPluginDataFilter
 }
 
 """
@@ -698,6 +714,15 @@ input PrismaIntFilter {
   lte: Int
   not: PrismaIntFilter
   notIn: [Int!]
+}
+
+"""Filter input of JSON"""
+input PrismaJsonFilter {
+  array_contains: JSON
+  array_ends_with: JSON
+  array_starts_with: JSON
+  equals: JSON
+  path: JSON
 }
 
 type Query {

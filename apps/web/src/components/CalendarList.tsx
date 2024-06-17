@@ -20,6 +20,7 @@ import { BsArrowClockwise, BsCheck } from "@flowdev/icons";
 import { CalendarListRefreshMutation } from "../relay/__generated__/CalendarListRefreshMutation.graphql";
 import { CalendarListCreateItemMutation } from "../relay/__generated__/CalendarListCreateItemMutation.graphql";
 import { CalendarList_eventsConnection$key } from "../relay/__generated__/CalendarList_eventsConnection.graphql";
+import { tw } from "@flowdev/ui/tw";
 
 export const START_HOUR = 4;
 
@@ -182,7 +183,7 @@ export const CalendarList = (props: CalendarListProps) => {
     }
   `);
 
-  const handleRefresh = () => refresh({ variables: {} });
+  const handleRefresh = () => refresh({ variables: {}, minimumWait: 1000 });
 
   useEffect(() => {
     if (dragged) return;
@@ -233,8 +234,8 @@ export const CalendarList = (props: CalendarListProps) => {
               items={eventsConnection?.edges.map((edge) => edge.node) ?? []}
             />
             {tasksData.canRefreshCalendarItems && (
-              <Button tertiary sm onClick={handleRefresh} loading={isRefreshing}>
-                <BsArrowClockwise size={20} />
+              <Button tertiary sm onClick={handleRefresh} disabled={isRefreshing}>
+                <BsArrowClockwise size={20} className={tw(isRefreshing && "animate-spin")} />
               </Button>
             )}
           </div>

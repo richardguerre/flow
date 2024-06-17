@@ -118,12 +118,17 @@ type UseMutationConfigParams<TMutation extends MutationParameters> = UseMutation
   ExtraMutationConfig<TMutation>;
 
 export function useMutation<TMutation extends MutationParameters>(mutation: GraphQLTaggedNode) {
-  const [mutate, ...rest] = useRelayMutation(mutation);
+  const [mutate, $loading] = useRelayMutation(mutation);
+  const [loading, setLoading] = useState(false);
   const environment = useRelayEnvironment();
 
-  const newMutate = (mutationConfig: UseMutationConfigParams<TMutation>) => {
+  const newMutate = (mutationConfig: UseMutationConfigParams<TMutation> & MutationOpts) => {
     if (mutationConfig.optimistic?.updater) {
       environment.commitUpdate(mutationConfig.optimistic.updater);
+    }
+    if (mutationConfig.minimumWait) {
+      setLoading(true);
+      setTimeout(() => setLoading(false), mutationConfig.minimumWait);
     }
     return mutate({
       ...mutationConfig,
@@ -148,7 +153,7 @@ export function useMutation<TMutation extends MutationParameters>(mutation: Grap
     });
   };
 
-  return [newMutate, ...rest] as const;
+  return [newMutate, $loading || loading] as const;
 }
 
 export function useMutationPromise<TMutation extends MutationParameters>(
@@ -185,14 +190,20 @@ export const fetchQuery = relayFetchQuery;
 type MutationConfigParams<TMutation extends MutationParameters> = MutationConfig<TMutation> &
   ExtraMutationConfig<TMutation>;
 
+// TODO: add this MutationOpts to other functions and hooks
+export type MutationOpts = {
+  /** The minimum amount of time to wait for the mutation to resolve. This is a UX trick to prevent the user from seeing a flash or not seeing any action when clicking a button. */
+  minimumWait?: number;
+};
+
 export const commitMutation = relayCommitMutation;
 export const commitMutationPromise = async <
   TOperation extends MutationParameters = MutationParameters,
 >(
   environemnt: Environment,
-  config: MutationConfigParams<TOperation>,
+  config: MutationConfigParams<TOperation> & MutationOpts,
 ) => {
-  return new Promise<TOperation["response"]>((resolve, reject) => {
+  const promise = new Promise<TOperation["response"]>((resolve, reject) => {
     commitMutation(environemnt, {
       ...config,
       onCompleted: (response, errors) => {
@@ -211,6 +222,8 @@ export const commitMutationPromise = async <
       },
     });
   });
+  const [res] = await Promise.all([promise, config.minimumWait ? wait(config.minimumWait) : null]);
+  return res;
 };
 
 /**
@@ -258,3 +271,5 @@ export const useSmartSubscription = <TSubscription extends OperationType>(
   useRelaySubscription(config);
   return [data] as const;
 };
+
+const wait = (ms: number) => new Promise((resolve) => setTimeout(resolve, ms));

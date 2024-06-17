@@ -1,7 +1,14 @@
-import { commitMutationPromise, fetchQuery, graphql, useLazyLoadQuery } from "@flowdev/relay";
+import {
+  MutationOpts,
+  commitMutationPromise,
+  fetchQuery,
+  graphql,
+  useLazyLoadQuery,
+} from "@flowdev/relay";
 import { environment } from "@flowdev/web/relay/environment";
 import { pluginOperationQuery } from "@flowdev/web/relay/__generated__/pluginOperationQuery.graphql";
 import { pluginOperationMutation } from "@flowdev/web/relay/__generated__/pluginOperationMutation.graphql";
+import { useState } from "react";
 
 const queryDoc = graphql`
   query pluginOperationQuery($input: QueryPluginOperationInput!) {
@@ -11,6 +18,46 @@ const queryDoc = graphql`
     }
   }
 `;
+
+const mutation =
+  (pluginSlug: string) =>
+  async <T extends JsonValue>(
+    params: PluginOperationParams,
+    opts?: MutationOpts,
+  ): Promise<PluginOperationsReturn<T>> => {
+    try {
+      const mutation = await commitMutationPromise<pluginOperationMutation>(environment, {
+        mutation: graphql`
+          mutation pluginOperationMutation($input: MutationPluginOperationInput!) {
+            pluginOperation(input: $input) {
+              id
+              data
+            }
+          }
+        `,
+        variables: {
+          input: {
+            pluginSlug,
+            operationName: params.operationName,
+            data: params.input ?? {},
+          },
+        },
+        minimumWait: opts?.minimumWait,
+        onError: (err) => {
+          throw err;
+        },
+      });
+
+      if (!mutation?.pluginOperation) return null;
+      return {
+        id: mutation.pluginOperation.id,
+        data: mutation.pluginOperation.data as T,
+      };
+    } catch (e) {
+      console.error(e);
+      return null;
+    }
+  };
 
 export const getPluginOperationUtils = (pluginSlug: string) => ({
   /**
@@ -74,40 +121,19 @@ export const getPluginOperationUtils = (pluginSlug: string) => ({
    *
    * If you need to fetch data, use `query` instead.
    */
-  mutation: async <T extends JsonValue>(
-    params: PluginOperationParams,
-  ): Promise<PluginOperationsReturn<T>> => {
-    try {
-      const mutation = await commitMutationPromise<pluginOperationMutation>(environment, {
-        mutation: graphql`
-          mutation pluginOperationMutation($input: MutationPluginOperationInput!) {
-            pluginOperation(input: $input) {
-              id
-              data
-            }
-          }
-        `,
-        variables: {
-          input: {
-            pluginSlug,
-            operationName: params.operationName,
-            data: params.input ?? {},
-          },
-        },
-        onError: (err) => {
-          throw err;
-        },
-      });
+  mutation: mutation(pluginSlug),
+  useMutation: <T extends JsonValue>(operationName: string, opts?: MutationOpts) => {
+    const [loading, setLoading] = useState(false);
 
-      if (!mutation?.pluginOperation) return null;
-      return {
-        id: mutation.pluginOperation.id,
-        data: mutation.pluginOperation.data as T,
-      };
-    } catch (e) {
-      console.error(e);
-      return null;
-    }
+    return [
+      async (input?: T) => {
+        setLoading(true);
+        const res = await mutation(pluginSlug)({ operationName, input }, opts);
+        setLoading(false);
+        return res as PluginOperationsReturn<T>;
+      },
+      loading,
+    ] as const;
   },
 });
 

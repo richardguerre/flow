@@ -38,6 +38,14 @@ export const SelectTrigger = forwardRef<
     </Icon>
   </Trigger>
 ));
+export const SelectUnstyledTrigger = forwardRef<
+  ElementRef<typeof Trigger>,
+  ComponentPropsWithoutRef<typeof Trigger>
+>(({ className, children, ...props }, ref) => (
+  <Trigger ref={ref} className={tw(className)} {...props}>
+    {children}
+  </Trigger>
+));
 
 export const SelectContent = forwardRef<
   ElementRef<typeof Content>,

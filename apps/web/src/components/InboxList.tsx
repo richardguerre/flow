@@ -5,7 +5,10 @@ import { useEffect, useState } from "react";
 import { Button } from "@flowdev/ui/Button";
 import { InboxListSubscription } from "../relay/__generated__/InboxListSubscription.graphql";
 import { environment } from "../relay/environment";
-import { InboxListItems_itemsConnection$key } from "../relay/__generated__/InboxListItems_itemsConnection.graphql";
+import {
+  InboxListItems_itemsConnection$data,
+  InboxListItems_itemsConnection$key,
+} from "../relay/__generated__/InboxListItems_itemsConnection.graphql";
 import { useDragContext } from "../useDragContext";
 import { useConvertTaskToItem } from "./OnCreateItem";
 
@@ -46,7 +49,6 @@ const InboxListItems = (props: {
   onItemsConnectionIdChange: (id: string) => void;
   count: number;
 }) => {
-  const { setDragged } = useDragContext();
   const [data] = useSmartSubscription<InboxListSubscription>(graphql`
     subscription InboxListSubscription {
       items(
@@ -62,12 +64,32 @@ const InboxListItems = (props: {
     }
   `);
 
+  return (
+    <ItemsConnection
+      items={data?.items ?? null}
+      onItemsConnectionIdChange={props.onItemsConnectionIdChange}
+      filter={(edge) => {
+        const passesBaseFilter = !!edge.node.isRelevant && (edge.node.inboxPoints ?? 0) > 0;
+        const hasTodoTasks = edge.node.tasks.some((task) => task.status === "TODO");
+        return passesBaseFilter && !hasTodoTasks;
+      }}
+    />
+  );
+};
+
+export const ItemsConnection = (props: {
+  items: InboxListItems_itemsConnection$key | null;
+  onItemsConnectionIdChange?: (id: string) => void;
+  filter?: (edge: InboxListItems_itemsConnection$data["edges"][number]) => boolean;
+  emptyState?: React.ReactNode;
+}) => {
+  const { setDragged } = useDragContext();
   /**
    * This fragment subscribes to the Relay store for 2 reasons:
    * 1. It automatically updates after creating a virtual item.
    * 2. It automatically updates when a task is marked as done which changes the relevance of the item.
    */
-  const itemsConnection = useFragment<InboxListItems_itemsConnection$key>(
+  const itemsConnection = useFragment(
     graphql`
       fragment InboxListItems_itemsConnection on QueryItemsConnection {
         __id
@@ -85,20 +107,14 @@ const InboxListItems = (props: {
         }
       }
     `,
-    data?.items ?? null,
+    props.items,
   );
 
   const getItems = () => {
     return structuredClone(
       // this filter matches the where clause in the subscription
       // it ensures that the correct items are shown after Relay store udpates
-      itemsConnection?.edges
-        .filter((edge) => {
-          const passesBaseFilter = !!edge.node.isRelevant && (edge.node.inboxPoints ?? 0) > 0;
-          const hasTodoTasks = edge.node.tasks.some((task) => task.status === "TODO");
-          return passesBaseFilter && !hasTodoTasks;
-        })
-        .map((edge) => edge.node) ?? [],
+      itemsConnection?.edges.filter(props.filter ?? (() => true)).map((edge) => edge.node) ?? [],
     );
   };
   const [items, setItems] = useState(getItems());
@@ -116,13 +132,17 @@ const InboxListItems = (props: {
 
   useEffect(() => {
     if (itemsConnection?.__id) {
-      props.onItemsConnectionIdChange(itemsConnection.__id);
+      props.onItemsConnectionIdChange?.(itemsConnection.__id);
     }
   }, [itemsConnection?.__id]);
 
   useEffect(() => {
     setItems(getItems());
   }, [itemsConnection?.edges]);
+
+  if (items.length === 0 && props.emptyState !== undefined) {
+    return props.emptyState;
+  }
 
   return (
     <ReactSortable

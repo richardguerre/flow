@@ -2,7 +2,7 @@ import { builder, u } from "./builder";
 import { prisma } from "../utils/prisma";
 import { ColorEnum } from "./Color";
 import { ItemPluginDataInput } from "./ItemPluginData";
-import { DateTimeFilter, IntFilter } from "./PrismaFilters";
+import { DateTimeFilter, IntFilter, JsonFilter } from "./PrismaFilters";
 import { Item, ItemPluginData } from "@prisma/client";
 import { getPlugins } from "../utils/getPlugins";
 import { TaskListWhereInputType } from "./Task";
@@ -33,12 +33,30 @@ export const ItemType = builder.prismaNode("Item", {
   }),
 });
 
+const ItemPluginDataWhereInputTypeFields = {
+  originalId: "String",
+  pluginSlug: "String",
+  min: JsonFilter,
+  full: JsonFilter,
+} as const;
+
+export const ItemPluginDataWhereInputType = builder.prismaWhere("ItemPluginData", {
+  fields: {
+    ...ItemPluginDataWhereInputTypeFields,
+    AND: true,
+    OR: true,
+  },
+});
+
 export const ItemWhereInputType = builder.prismaWhere("Item", {
   fields: {
     isRelevant: "Boolean",
     scheduledAt: DateTimeFilter,
     inboxPoints: IntFilter,
     tasks: TaskListWhereInputType,
+    pluginDatas: builder.prismaListFilter(ItemPluginDataWhereInputType, {
+      ops: ["every", "some", "none"],
+    }),
   },
 });
 

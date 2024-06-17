@@ -2,6 +2,13 @@ import { ComponentType, Suspense, useState } from "react";
 import { usePlugins } from "../getPlugin";
 import { useAsyncEffect } from "../useAsyncEffect";
 import { SelectedList } from "./Lists";
+import { graphql, useSmartSubscription } from "@flowdev/relay";
+import { ItemsConnection } from "./InboxList";
+import {
+  ItemFilter,
+  RenderListPluginItemsSubscription,
+} from "../relay/__generated__/RenderListPluginItemsSubscription.graphql";
+
 type Props = { listId: string; plugin: NonNullable<SelectedList["plugin"]> };
 export const RenderList = (props: Props) => {
   return (
@@ -32,3 +39,26 @@ const RenderListFromPlugin = (props: Props) => {
 type PluginProps = { listId: string };
 export type PluginRenderList = (input: PluginProps) => Promise<null | ToRender>;
 type ToRender = { component: ComponentType };
+
+/**
+ * Component to be used in the
+ */
+export const ItemsList = (props: { where?: ItemFilter; emptyState?: React.ReactNode }) => {
+  const [data] = useSmartSubscription<RenderListPluginItemsSubscription>(
+    graphql`
+      subscription RenderListPluginItemsSubscription($where: ItemFilter) {
+        items(where: $where) {
+          edges {
+            node {
+              id
+            }
+          }
+          ...InboxListItems_itemsConnection
+        }
+      }
+    `,
+    { where: props.where },
+  );
+
+  return <ItemsConnection items={data?.items ?? null} emptyState={props.emptyState} />;
+};

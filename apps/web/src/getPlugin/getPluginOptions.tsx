@@ -54,6 +54,7 @@ import {
   SelectLabel,
   SelectSeparator,
   SelectTrigger,
+  SelectUnstyledTrigger,
   SelectValue,
 } from "@flowdev/ui/Select";
 import {
@@ -88,6 +89,10 @@ import {
   DialogTitle,
   DialogTrigger,
 } from "@flowdev/ui/Dialog";
+import { ItemsList } from "../components/RenderList";
+import { nearestTailwindColor } from "@flowdev/nearest-color";
+import { Spinner } from "@flowdev/ui/Spinner";
+import { Loading } from "@flowdev/ui/Loading";
 
 export const getPluginOptions = (slug: string) => ({
   /**
@@ -114,6 +119,8 @@ export const getPluginOptions = (slug: string) => ({
   clsx: tw,
   /** The tailwind merge function that Flow uses. It's the same as tw and clsx. */
   cn: tw,
+  /** Get the nearest tailwind color from a hex string. */
+  nearestTailwindColor,
   /**
    * Components that Flow uses you can re-use in your plugin views to feel more integrated.
    *
@@ -139,6 +146,7 @@ export const getPluginOptions = (slug: string) => ({
     Lists,
     TaskTitleInput,
     TaskDurationButtonDropdown,
+    ItemsList,
 
     // UI components
     Input,
@@ -154,6 +162,7 @@ export const getPluginOptions = (slug: string) => ({
     SelectGroup,
     SelectValue,
     SelectTrigger,
+    SelectUnstyledTrigger,
     SelectContent,
     SelectLabel,
     SelectItem,
@@ -198,6 +207,8 @@ export const getPluginOptions = (slug: string) => ({
     Tooltip,
     TooltipTrigger,
     TooltipContent,
+    Spinner,
+    Loading,
   },
   hooks: {
     /**
