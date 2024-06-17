@@ -544,32 +544,36 @@ export default definePlugin((opts) => {
           } satisfies LinearIssueItemFull;
 
           if (item) {
-            await opts.prisma.item.update({
-              where: { id: item.id },
-              data: {
-                ...itemCommonBetweenUpdateAndCreate,
-                pluginDatas: {
-                  update: {
-                    where: { id: item.pluginDatas[0]?.id },
-                    data: { min, full },
+            await opts.prisma.item
+              .update({
+                where: { id: item.id },
+                data: {
+                  ...itemCommonBetweenUpdateAndCreate,
+                  pluginDatas: {
+                    update: {
+                      where: { id: item.pluginDatas[0]?.id },
+                      data: { min, full },
+                    },
                   },
                 },
-              },
-            });
+              })
+              .catch((e) => console.error(e));
           } else {
-            await opts.prisma.item.create({
-              data: {
-                ...itemCommonBetweenUpdateAndCreate,
-                pluginDatas: {
-                  create: {
-                    pluginSlug: opts.pluginSlug,
-                    originalId: issue.id,
-                    min,
-                    full,
+            await opts.prisma.item
+              .create({
+                data: {
+                  ...itemCommonBetweenUpdateAndCreate,
+                  pluginDatas: {
+                    create: {
+                      pluginSlug: opts.pluginSlug,
+                      originalId: issue.id,
+                      min,
+                      full,
+                    },
                   },
                 },
-              },
-            });
+              })
+              .catch((e) => console.error(e));
           }
 
           console.log("✔ Upserted item from Linear issue", issue.id);
@@ -644,6 +648,10 @@ type Tokens = {
   userId: string;
   organizationId: string;
   organizationName: string;
+};
+
+type ConnectedWebhooks = {
+  [webhookId: string]: boolean;
 };
 
 type JobConnectAccount = { token: string };
