@@ -179,7 +179,7 @@ export default definePlugin((opts) => {
                   day: { connectOrCreate: { where: { date }, create: { date } } },
                 },
               })
-              .catch(console.error);
+              .catch(log);
           }
         }
       }),
@@ -187,7 +187,8 @@ export default definePlugin((opts) => {
         const { repeatingTaskId, recreate } = job.data as JobRemoveFutureTasks;
 
         log(`job: ${REMOVE_FUTURE_TASKS_JOB_NAME} started for repeatingTaskId: ${repeatingTaskId}`);
-        const futureTasks = await opts.prisma.task.findMany({
+        // delete all future tasks
+        await opts.prisma.task.deleteMany({
           where: {
             status: { equals: "TODO" },
             pluginDatas: {
@@ -199,13 +200,6 @@ export default definePlugin((opts) => {
                 },
               },
             },
-          },
-          select: { id: true },
-        });
-        // update these tasks to match the template
-        await opts.prisma.task.deleteMany({
-          where: {
-            id: { in: futureTasks.map((task) => task.id) },
           },
         });
 
