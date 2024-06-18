@@ -8,7 +8,6 @@ const log = console.log;
 // const log = (..._args: any) => {};
 export default definePlugin((opts) => {
   const CREATE_TASKS_JOB_NAME = `${opts.pluginSlug}-create-tasks-schedule`;
-  const UPDATE_TASKS_JOB_NAME = `${opts.pluginSlug}-update-tasks-schedule`;
   const REMOVE_FUTURE_TASKS_JOB_NAME = `${opts.pluginSlug}-remove-future-tasks-schedule`;
   const operationRepeatingTasks = async () => {
     const repeatingTasks = await opts.store.getItem<RepeatingTasksInStore>("repeatingTasks");
@@ -76,11 +75,14 @@ export default definePlugin((opts) => {
           // this operation is idempotent, so we can safely schedule the job again
           await opts.pgBoss.schedule(CREATE_TASKS_JOB_NAME, "0 0 * * *");
         } else {
-          await opts.pgBoss.unschedule(UPDATE_TASKS_JOB_NAME);
+          await opts.pgBoss.unschedule(CREATE_TASKS_JOB_NAME);
         }
 
-        // update future tasks
-        await opts.pgBoss.send(UPDATE_TASKS_JOB_NAME, { repeatingTaskId: input.id });
+        // recreate future tasks
+        await opts.pgBoss.send(REMOVE_FUTURE_TASKS_JOB_NAME, {
+          repeatingTaskId: input.id,
+          recreate: true,
+        });
 
         return {
           operationName: "repeatingTasks", // invalidates the frontend cache of the repeatingTasks operation
@@ -126,6 +128,7 @@ export default definePlugin((opts) => {
           .then((item) => item?.value ?? NUM_TASKS_IN_ADVANCE_DEFAULT);
         log("numOfTasksInAdvance", numOfTasksInAdvance);
         for (const template of repeatingTasks?.value ?? []) {
+          if (!template.enabled) continue;
           log("template", template);
           const currentTasksLeft = await opts.prisma.task.findMany({
             select: { date: true },
@@ -180,50 +183,8 @@ export default definePlugin((opts) => {
           }
         }
       }),
-      work(UPDATE_TASKS_JOB_NAME, async (job) => {
-        const { repeatingTaskId } = job.data as JobUpdateTasks;
-        const repeatingTasks = await opts.store
-          .getItem<RepeatingTasksInStore>("repeatingTasks")
-          .then((item) => item?.value ?? []);
-        if (!repeatingTasks.length) {
-          log(`Repeating tasks in store is empty`);
-          return;
-        }
-        const template = repeatingTasks.find((template) => template.id === repeatingTaskId);
-        if (!template) {
-          log(`repeatingTaskId ${repeatingTaskId} not found in store`);
-          return;
-        }
-
-        log(`job: ${UPDATE_TASKS_JOB_NAME} started for repeatingTaskId: ${repeatingTaskId}`);
-        const futureTasks = await opts.prisma.task.findMany({
-          where: {
-            status: { equals: "TODO" },
-            pluginDatas: {
-              some: {
-                pluginSlug: opts.pluginSlug,
-                min: {
-                  path: ["repeatingTaskId"],
-                  equals: repeatingTaskId,
-                },
-              },
-            },
-          },
-          select: { id: true },
-        });
-        // update these tasks to match the template
-        await opts.prisma.task.updateMany({
-          where: {
-            id: { in: futureTasks.map((task) => task.id) },
-          },
-          data: {
-            title: template.title,
-            durationInMinutes: template.durationInMinutes,
-          },
-        });
-      }),
       work(REMOVE_FUTURE_TASKS_JOB_NAME, async (job) => {
-        const { repeatingTaskId } = job.data as JobRemoveFutureTasks;
+        const { repeatingTaskId, recreate } = job.data as JobRemoveFutureTasks;
 
         log(`job: ${REMOVE_FUTURE_TASKS_JOB_NAME} started for repeatingTaskId: ${repeatingTaskId}`);
         const futureTasks = await opts.prisma.task.findMany({
@@ -247,6 +208,10 @@ export default definePlugin((opts) => {
             id: { in: futureTasks.map((task) => task.id) },
           },
         });
+
+        if (recreate) {
+          await opts.pgBoss.send(CREATE_TASKS_JOB_NAME, {});
+        }
       }),
     ],
   };
@@ -254,9 +219,7 @@ export default definePlugin((opts) => {
 
 type RepeatingTasksInStore = RepeatingTask[];
 
-type JobUpdateTasks = {
-  repeatingTaskId: string;
-};
 type JobRemoveFutureTasks = {
   repeatingTaskId: string;
+  recreate?: boolean;
 };
