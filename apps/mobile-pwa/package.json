@@ -1,0 +1,30 @@
+{
+  "name": "@flowdev/mobile-pwa",
+  "private": true,
+  "version": "0.0.0",
+  "type": "module",
+  "scripts": {
+    "dev": "vite",
+    "build": "tsc && vite build",
+    "preview": "vite preview"
+  },
+  "dependencies": {
+    "react": "^18.3.1",
+    "react-dom": "^18.3.1"
+  },
+  "devDependencies": {
+    "@types/react": "^18.3.1",
+    "@types/react-dom": "^18.3.0",
+    "@vite-pwa/assets-generator": "^0.2.4",
+    "@vitejs/plugin-react": "^4.2.1",
+    "eslint": "^8.57.0",
+    "typescript": "^5.2.2",
+    "vite": "^5.2.10",
+    "vite-plugin-pwa": "^0.20.0",
+    "workbox-core": "^7.1.0"
+  },
+  "resolutions": {
+    "sharp": "0.32.6",
+    "sharp-ico": "0.1.5"
+  }
+}
