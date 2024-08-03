@@ -9,8 +9,23 @@
     "preview": "vite preview"
   },
   "dependencies": {
+    "@flowdev/error-boundary": "workspace:*",
+    "@flowdev/icons": "workspace:*",
+    "@flowdev/plugin": "workspace:*",
+    "@flowdev/relay": "workspace:*",
+    "@flowdev/tiptap": "workspace:*",
+    "@flowdev/ui": "workspace:*",
+    "@flowdev/unocss": "workspace:*",
+    "@unocss/runtime": "0.60.3",
+    "dayjs": "1.11.7",
+    "framer-motion": "10.12.10",
+    "graphql-sse": "2.3.0",
     "react": "^18.3.1",
-    "react-dom": "^18.3.1"
+    "react-dom": "^18.3.1",
+    "react-hook-form": "^7.52.1",
+    "react-router-dom": "6.6.2",
+    "react-sortablejs": "6.1.4",
+    "sortablejs": "1.15.0"
   },
   "devDependencies": {
     "@types/react": "^18.3.1",

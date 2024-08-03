@@ -17,7 +17,6 @@
   },
   "dependencies": {
     "@flowdev/calendar": "workspace:*",
-    "@flowdev/dndkit": "workspace:*",
     "@flowdev/error-boundary": "workspace:*",
     "@flowdev/icons": "workspace:*",
     "@flowdev/jotai": "workspace:*",

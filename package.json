@@ -47,5 +47,15 @@
     "packages/*",
     "plugins/*",
     "plugin-apps/*"
-  ]
+  ],
+  "dependencies": {
+    "@unocss/runtime": "0.60.3",
+    "dayjs": "1.11.7",
+    "framer-motion": "10.12.10",
+    "graphql-sse": "2.3.0",
+    "react-hook-form": "^7.52.1",
+    "react-router-dom": "6.6.2",
+    "react-sortablejs": "6.1.4",
+    "sortablejs": "1.15.0"
+  }
 }
