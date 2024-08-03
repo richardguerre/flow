@@ -327,7 +327,7 @@ export const SetTimezoneForm = () => {
         render={({ field }) => (
           <TimezoneSelect
             {...field}
-            onChange={(tzObj) => field.onChange(tzObj.value)}
+            onChange={(tzObj) => field.onChange(typeof tzObj === "string" ? tzObj : tzObj.value)}
             placeholder="Select your timezone"
             error={formState.errors.timezone}
           />

@@ -8,7 +8,7 @@ import {
 } from "@flowdev/relay";
 import { Button } from "@flowdev/ui/Button";
 import { FormInput } from "@flowdev/ui/FormInput";
-import { LoginViewQuery } from "@flowdev/web/relay/__generated__/LoginViewQuery.graphql";
+import { LoginViewQuery } from "@flowdev/mobile-pwa/relay/__generated__/LoginViewQuery.graphql";
 import { useForm } from "react-hook-form";
 import { LoginViewLoginMutation } from "../relay/__generated__/LoginViewLoginMutation.graphql";
 import { LOCAL_STORAGE_USER_TOKEN_KEY } from "../relay/environment";
@@ -17,7 +17,6 @@ import { useNavigate } from "react-router-dom";
 const loginViewQuery = graphql`
   query LoginViewQuery {
     isFullySetup
-    ...SetupView_data
   }
 `;
 
@@ -35,7 +34,12 @@ const LoginViewContent = (props: LoginViewContentProps) => {
   const data = usePreloadedQuery(loginViewQuery, props.queryRef);
 
   if (!data.isFullySetup) {
-    return <SetupView data={data} />;
+    return (
+      <div>
+        You have not set up your Flow yet. Please use a laptop to first set it up. (I honestly think
+        setting it up on a phone is a bad idea)
+      </div>
+    );
   }
 
   return <LoginForm />;
