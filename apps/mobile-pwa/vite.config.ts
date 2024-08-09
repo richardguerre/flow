@@ -27,7 +27,7 @@ const relay = () =>
 
           const graphqlFileName = `graphql__${crypto.randomBytes(10).toString("hex")}`;
           imports.push(
-            `import ${graphqlFileName} from "@flowdev/web/relay/__generated__/${operationName}.graphql.ts";`,
+            `import ${graphqlFileName} from "@flowdev/mobile-pwa/relay/__generated__/${operationName}.graphql.ts";`,
           );
           return graphqlFileName;
         });
@@ -47,6 +47,7 @@ export default defineConfig({
       // root is required for vite to detect the tsconfig.json file
       root: __dirname,
     }),
+    relay(),
     VitePWA({
       registerType: "autoUpdate",
       injectRegister: false,

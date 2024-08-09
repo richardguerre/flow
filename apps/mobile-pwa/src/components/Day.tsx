@@ -1,19 +1,15 @@
 import { useEffect, useRef, useState } from "react";
 import { graphql, useFragment, useMutation } from "@flowdev/relay";
-import { Day_day$key } from "@flowdev/web/relay/__generated__/Day_day.graphql";
+import { Day_day$key } from "@flowdev/mobile-pwa/relay/__generated__/Day_day.graphql";
 import { TaskCard } from "./TaskCard";
-import { dayjs } from "@flowdev/web/dayjs";
+import { dayjs } from "@flowdev/mobile-pwa/dayjs";
 import { ReactSortable, Sortable } from "react-sortablejs";
-import { DayContent_day$key } from "@flowdev/web/relay/__generated__/DayContent_day.graphql";
-import { DayUpdateTaskDateMutation } from "@flowdev/web/relay/__generated__/DayUpdateTaskDateMutation.graphql";
-import { DayAddTaskActionsBar_day$key } from "@flowdev/web/relay/__generated__/DayAddTaskActionsBar_day.graphql";
+import { DayContent_day$key } from "@flowdev/mobile-pwa/relay/__generated__/DayContent_day.graphql";
+import { DayUpdateTaskDateMutation } from "@flowdev/mobile-pwa/relay/__generated__/DayUpdateTaskDateMutation.graphql";
+import { DayAddTaskActionsBar_day$key } from "@flowdev/mobile-pwa/relay/__generated__/DayAddTaskActionsBar_day.graphql";
 import { Button } from "@flowdev/ui/Button";
-import { environment } from "@flowdev/web/relay/environment";
-import { OnCreateTaskItemRecordToCreateTaskFrom_item$data } from "@flowdev/web/relay/__generated__/OnCreateTaskItemRecordToCreateTaskFrom_item.graphql";
-import { getPlugins } from "@flowdev/web/getPlugin";
-import { OnCreateTask, OnCreateTaskProps, PluginStepInfo } from "./OnCreateTask";
-import { DragContext, useDragContext } from "../useDragContext";
-import { getStartOfToday } from "./CalendarList";
+import { environment } from "@flowdev/mobile-pwa/relay/environment";
+import { getStartOfToday } from "../views/IndexView";
 
 type DayProps = {
   day: Day_day$key;
@@ -63,7 +59,6 @@ export const Day = (props: DayProps) => {
 type UpdateTaskDateInfo = {
   movedTaskId: string;
   htmlParent: HTMLElement;
-  over: DragContext["over"];
 } | null;
 
 type DayContentProps = {
@@ -71,10 +66,6 @@ type DayContentProps = {
 };
 
 export const DayContent = (props: DayContentProps) => {
-  const [createTaskFromItemState, setCreateTaskFromItemState] = useState<Omit<
-    OnCreateTaskProps,
-    "onClose"
-  > | null>(null);
   const day = useFragment(
     graphql`
       fragment DayContent_day on Day {
@@ -88,7 +79,6 @@ export const DayContent = (props: DayContentProps) => {
     `,
     props.day,
   );
-  const { setDragged, over } = useDragContext();
 
   const [udpateTaskDate] = useMutation<DayUpdateTaskDateMutation>(graphql`
     mutation DayUpdateTaskDateMutation($input: MutationUpdateTaskDateInput!) {
@@ -105,55 +95,11 @@ export const DayContent = (props: DayContentProps) => {
     setUpdateTaskDateInfo({
       htmlParent: e.to,
       movedTaskId: e.item.id,
-      over,
     });
   };
 
   const setList = async (newList: typeof tasks) => {
-    setDragged(null); // reset DragContext as TaskCard.onDragEnd may not be called
     setTasks(newList.filter((task) => task.__typename === "Task")); // ignore item(s) that were dropped
-
-    const item = newList.find((task) => task.__typename !== "Task") as { id: string } | undefined; // there shouldn't be more than one item dropped at a time, so we just find the first one
-    if (!item) return;
-    const store = environment.getStore().getSource();
-    const itemRecord = store.get(item.id) as unknown as
-      | (Omit<OnCreateTaskItemRecordToCreateTaskFrom_item$data, "pluginDatas"> & {
-          pluginDatas: { __refs: string[] };
-        })
-      | undefined
-      | null;
-    if (!itemRecord) return;
-    const itemRecordPluginDatas = itemRecord.pluginDatas.__refs.map((ref) => store.get(ref));
-    const willBeDimissedFromInbox = !!((itemRecord.inboxPoints ?? 0) > 0 && itemRecord.listId);
-
-    const plugins = await getPlugins();
-    const steps: PluginStepInfo[] = [];
-    for (const [pluginSlug, plugin] of Object.entries(plugins)) {
-      if (!plugin.onCreateTask) continue;
-      steps.push({
-        pluginSlug,
-        onCreateTask: plugin.onCreateTask,
-      });
-    }
-    const atIndex = newList.findIndex((task) => task.id === item.id);
-    setCreateTaskFromItemState({
-      atIndex,
-      steps,
-      task: {
-        title: { value: itemRecord.title, overriden: false },
-        status: { value: "TODO", overriden: false },
-        durationInMinutes: { value: null, overriden: false },
-        date: { value: day.date, overriden: false },
-        item: {
-          ...itemRecord,
-          inboxPoints: itemRecord.inboxPoints ?? null,
-          listId: itemRecord.listId ?? null,
-          willBeDimissedFromInbox,
-          pluginDatas:
-            itemRecordPluginDatas as unknown as OnCreateTaskItemRecordToCreateTaskFrom_item$data["pluginDatas"],
-        },
-      },
-    });
     return;
   };
 
@@ -162,7 +108,7 @@ export const DayContent = (props: DayContentProps) => {
   }, [day.tasks]);
 
   useEffect(() => {
-    if (!updateTaskDateInfo || updateTaskDateInfo.over === "lists") return; // as the Lists component may be super-imposed on top of the Day component (in the IndexView), the Day component is still a drop target but needs to be ignored as the user is trying to move the task to the Lists component
+    if (!updateTaskDateInfo) return; // as the Lists component may be super-imposed on top of the Day component (in the IndexView), the Day component is still a drop target but needs to be ignored as the user is trying to move the task to the Lists component
     const newTasksOrder = Array.from(updateTaskDateInfo.htmlParent.children).map((task) => task.id);
 
     udpateTaskDate({
@@ -179,30 +125,21 @@ export const DayContent = (props: DayContentProps) => {
   }, [updateTaskDateInfo]);
 
   return (
-    <>
-      {createTaskFromItemState && (
-        <OnCreateTask
-          {...createTaskFromItemState}
-          onClose={() => setCreateTaskFromItemState(null)}
-        />
-      )}
-      <ReactSortable
-        id={day.date}
-        className="no-scrollbar mt-4 flex flex-auto flex-col gap-4 overflow-y-scroll px-2 pb-4"
-        list={tasks}
-        setList={setList}
-        animation={150}
-        delayOnTouchOnly
-        delay={100}
-        group="shared"
-        onEnd={handleTaskMove}
-        disabled={over === "lists"}
-      >
-        {tasks.map((task) => (
-          <TaskCard key={task.id} task={task} />
-        ))}
-      </ReactSortable>
-    </>
+    <ReactSortable
+      id={day.date}
+      className="no-scrollbar mt-4 flex flex-auto flex-col gap-4 overflow-y-scroll px-2 pb-4"
+      list={tasks}
+      setList={setList}
+      animation={150}
+      delayOnTouchOnly
+      delay={100}
+      group="shared"
+      onEnd={handleTaskMove}
+    >
+      {tasks.map((task) => (
+        <TaskCard key={task.id} task={task} />
+      ))}
+    </ReactSortable>
   );
 };
 

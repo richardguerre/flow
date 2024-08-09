@@ -70,8 +70,8 @@ export const LoginForm = () => {
   };
 
   return (
-    <div className="flex h-screen items-center justify-center">
-      <div className="bg-background-50 flex max-w-md flex-col gap-8 rounded-lg p-16">
+    <div className="flex h-screen p-4">
+      <div className="bg-background-50 flex max-w-md flex-col gap-8 rounded-lg p-10 justify-center">
         <h1 className="text-center text-3xl font-semibold">Welcome back!</h1>
         <form onSubmit={handleSubmit(onSubmit)} className="flex flex-col gap-4">
           <div className="flex flex-col gap-2">

@@ -41,7 +41,7 @@
     "clean:apps": "rm -rf ./apps/**/node_modules",
     "clean:packages": "rm -rf ./packages/**/node_modules",
     "relay": "cd apps/web && bun run relay",
-    "unocss": "bunx --bun unocss"
+    "unocss": "bunx --bun unocss -m && cp apps/web/uno.css apps/mobile-pwa/uno.css"
   },
   "workspaces": [
     "apps/*",

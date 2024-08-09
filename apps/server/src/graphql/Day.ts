@@ -94,7 +94,7 @@ If \`last\` (Int) is provided, it will return the current day and the previous d
 
 If \`before\` (Date*) is provided, it will return the days before the given date.
 
-*Ignore that the GraphQL type is ID as Pothos doesn't support overriding the type of the connection fields.
+*Ignore that the GraphQL type is ID as Pothos (the library used to build the GraphQL API) doesn't support overriding the type of the connection fields.
 Please input a Date in the format: YYYY-MM-DD`,
     resolve: async (_, args, context, info) => {
       const start = getStartFromConnectionArgs(args);
