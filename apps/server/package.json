@@ -5,7 +5,7 @@
   "scripts": {
     "postinstall": "bun run gen",
     "print-schema": "bun run gen && NODE_ENV=development bun run src/graphql/index.ts",
-    "dev": "NODE_ENV=production bun --watch run src/index.ts",
+    "dev": "NODE_ENV=development bun --watch run src/index.ts",
     "type-check": "bun run gen && tsc --noEmit && echo '✅ Type checking passed!'",
     "build": "bun build ./src/index.ts --outdir dist --target bun && bun run copy-web && bun run copy-mobile-pwa",
     "preview": "cd dist && NODE_ENV=production PORT=4040 DATABASE_URL=postgres://postgres:postgres@localhost:5432/flow ORIGIN=https://lamporchestra.isflow.in PATH_TO_PLUGINS=../plugins BUN_JSC_forceRAMSize=180000000 bun run index.js",
