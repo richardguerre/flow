@@ -90,10 +90,10 @@ export default defineConfig({
       },
 
       manifest: {
-        name: "Flow Mobile PWA",
-        short_name: "Flow PWA",
-        description: "PWA resolved when using a mobile to login to a user's Flow app.",
-        theme_color: "#4F46E5",
+        name: "Flow",
+        short_name: "Flow",
+        description: "Flow is a plugin-based daily planner.",
+        theme_color: "#E5E7EB",
       },
 
       workbox: {
