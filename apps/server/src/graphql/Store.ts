@@ -45,6 +45,8 @@ export type PluginInstallation = {
   url: string;
   /** Whether the plugin has a web runtime. */
   web: boolean;
+  /** Whether the plugin has a mobile runtime. */
+  mobile: boolean;
   /** Whether the plugin has a server runtime. */
   server: boolean;
 };
@@ -177,6 +179,7 @@ const PluginInstallationType = builder.objectType(
       slug: t.exposeString("slug"),
       url: t.exposeString("url"),
       hasWebRuntime: t.exposeBoolean("web"),
+      hasMobileRuntime: t.exposeBoolean("mobile"),
       hasServerRuntime: t.exposeBoolean("server"),
     }),
   },
@@ -297,6 +300,7 @@ builder.mutationField("installPlugin", (t) =>
         url: args.input.url,
         slug: newPluginJson.slug,
         web: newPluginJson.web ?? false,
+        mobile: newPluginJson.mobile ?? false,
         server: newPluginJson.server ?? false,
       });
 

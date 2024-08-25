@@ -3,4 +3,5 @@ export type PluginJson = {
   version: string;
   server?: true;
   web?: true;
+  mobile?: true;
 };

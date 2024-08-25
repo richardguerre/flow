@@ -1,12 +1,12 @@
-const f = (r) => ({ plugin: r });
+const f = (a) => ({ plugin: a });
 var t = "/Users/richardguerre/Projects/flow/plugins/essentials/src/web.tsx";
-const N = f((r) => {
-  const i = r.components, {
+const N = f((a) => {
+  const i = a.components, {
     motion: _
-  } = r.framerMotion, e = r.React, d = 5, c = (o) => (e.useEffect(() => {
-    const a = setTimeout(o.onNext, d * 1e3);
-    return () => clearTimeout(a);
-  }, []), /* @__PURE__ */ e.createElement("div", { className: "flex h-screen w-screen items-center justify-center bg-gray-100", onClick: o.onNext, __self: void 0, __source: {
+  } = a.framerMotion, e = a.React, d = 5, c = (o) => (e.useEffect(() => {
+    const l = setTimeout(o.onNext, d * 1e3);
+    return () => clearTimeout(l);
+  }, []), /* @__PURE__ */ e.createElement("div", { className: "flex h-screen w-full items-center justify-center bg-background-100", onClick: o.onNext, __self: void 0, __source: {
     fileName: t,
     lineNumber: 18,
     columnNumber: 7
@@ -37,10 +37,10 @@ const N = f((r) => {
         name: "Retro on yesterday",
         description: "Retro on yesterday by writing down a note. The default template is a list of tasks you did yesterday, and headers for what went well and what didn't go well.",
         component: (o) => {
-          const [a, l] = e.useState(null), m = r.dayjs().subtract(1, "day");
+          const [l, r] = e.useState(null), m = a.dayjs().subtract(1, "day");
           return e.useEffect(() => {
             (async () => {
-              const n = await r.getDays({
+              const n = await a.getDays({
                 from: m.toDate(),
                 to: m.toDate(),
                 include: {
@@ -48,29 +48,41 @@ const N = f((r) => {
                 }
               });
               if (!n.length) {
-                l("");
+                r("");
                 return;
               }
               const s = n[0];
-              l(`<ul>${s.tasks.map((u) => `<li>${u.status === "DONE" ? "✅" : u.status === "CANCELED" ? "❌" : "⏳"} ${u.title}</li>`).join("")}</ul>`);
+              r(`<ul>${s.tasks.map((u) => `<li><p>${u.status === "DONE" ? "✅" : u.status === "CANCELED" ? "❌" : "⏳"} ${u.title}</p></li>`).join("")}</ul>`);
             })();
-          }, []), /* @__PURE__ */ e.createElement("div", { __self: void 0, __source: {
+          }, []), /* @__PURE__ */ e.createElement("div", { className: "w-full flex flex-col items-center", __self: void 0, __source: {
             fileName: t,
             lineNumber: 84,
             columnNumber: 13
-          } }, /* @__PURE__ */ e.createElement(i.NoteEditor, { slug: `flow-essentials_retro-${m.format("YYYY-MM-DD")}`, title: `Retro of ${m.format("MMMM D")}`, loading: a === null, initialValue: a ?? "", __self: void 0, __source: {
+          } }, /* @__PURE__ */ e.createElement("div", { className: "flex flex-col items-start mt-36 w-2xl", __self: void 0, __source: {
             fileName: t,
             lineNumber: 85,
             columnNumber: 15
-          } }), /* @__PURE__ */ e.createElement(o.BackButton, { __self: void 0, __source: {
+          } }, /* @__PURE__ */ e.createElement("h1", { className: "font-semibold text-3xl", __self: void 0, __source: {
             fileName: t,
-            lineNumber: 91,
-            columnNumber: 15
+            lineNumber: 86,
+            columnNumber: 17
+          } }, "Reflect on what you did yesterday"), /* @__PURE__ */ e.createElement(i.NoteEditor, { slug: `flow-essentials_retro-${m.format("YYYY-MM-DD")}`, title: `Retro of ${m.format("MMMM D")}`, loading: l === null, initialValue: l ?? "", __self: void 0, __source: {
+            fileName: t,
+            lineNumber: 87,
+            columnNumber: 17
+          } }), /* @__PURE__ */ e.createElement("div", { className: "flex gap-2", __self: void 0, __source: {
+            fileName: t,
+            lineNumber: 93,
+            columnNumber: 17
+          } }, /* @__PURE__ */ e.createElement(o.BackButton, { __self: void 0, __source: {
+            fileName: t,
+            lineNumber: 94,
+            columnNumber: 19
           } }), /* @__PURE__ */ e.createElement(o.NextButton, { __self: void 0, __source: {
             fileName: t,
-            lineNumber: 92,
-            columnNumber: 15
-          } }));
+            lineNumber: 95,
+            columnNumber: 19
+          } }))));
         }
       },
       "intro-to-today": {
@@ -78,7 +90,7 @@ const N = f((r) => {
         description: "Animated screen to get you in the mood to plan for today.",
         component: (o) => /* @__PURE__ */ e.createElement(c, { ...o, __self: void 0, __source: {
           fileName: t,
-          lineNumber: 100,
+          lineNumber: 105,
           columnNumber: 31
         } }, "Today")
       },
@@ -86,32 +98,32 @@ const N = f((r) => {
         name: "Plan for today",
         description: "Plan for today by dragging items from your different lists into today's list.",
         component: (o) => {
-          const a = r.dayjs(), [l, m] = r.hooks.useAsyncLoader(async () => await r.getDays({
-            from: a.toDate(),
-            to: a.toDate(),
+          const l = a.dayjs(), [r, m] = a.hooks.useAsyncLoader(async () => await a.getDays({
+            from: l.toDate(),
+            to: l.toDate(),
             toRender: {
               Day: !0
             }
-          })), n = l == null ? void 0 : l[0];
+          })), n = r == null ? void 0 : r[0];
           return m ? /* @__PURE__ */ e.createElement(e.Fragment, null, "Loading...") : /* @__PURE__ */ e.createElement("div", { __self: void 0, __source: {
             fileName: t,
-            lineNumber: 123,
+            lineNumber: 128,
             columnNumber: 13
           } }, /* @__PURE__ */ e.createElement("div", { __self: void 0, __source: {
             fileName: t,
-            lineNumber: 124,
+            lineNumber: 129,
             columnNumber: 15
           } }, /* @__PURE__ */ e.createElement(o.BackButton, { __self: void 0, __source: {
             fileName: t,
-            lineNumber: 125,
+            lineNumber: 130,
             columnNumber: 17
           } }), /* @__PURE__ */ e.createElement(o.NextButton, { __self: void 0, __source: {
             fileName: t,
-            lineNumber: 126,
+            lineNumber: 131,
             columnNumber: 17
           } })), /* @__PURE__ */ e.createElement(i.Day, { day: n, label: "Today", __self: void 0, __source: {
             fileName: t,
-            lineNumber: 128,
+            lineNumber: 133,
             columnNumber: 15
           } }));
         }
@@ -120,43 +132,43 @@ const N = f((r) => {
         name: "Today, tomorrow, next week",
         description: "Choose to move tasks from today to tomorrow or next week if you have too many.",
         component: (o) => {
-          const a = r.dayjs(), l = a.add(1, "day"), m = a.weekday(7), [n, s] = r.hooks.useAsyncLoader(async () => await r.getDaysMax10({
-            dates: [a.toDate(), l.toDate(), m.toDate()],
+          const l = a.dayjs(), r = l.add(1, "day"), m = l.weekday(7), [n, s] = a.hooks.useAsyncLoader(async () => await a.getDaysMax10({
+            dates: [l.toDate(), r.toDate(), m.toDate()],
             toRender: {
               Day: !0
             }
           }));
           return s ? /* @__PURE__ */ e.createElement(e.Fragment, null, "Loading...") : /* @__PURE__ */ e.createElement("div", { __self: void 0, __source: {
             fileName: t,
-            lineNumber: 153,
+            lineNumber: 158,
             columnNumber: 13
           } }, /* @__PURE__ */ e.createElement("div", { __self: void 0, __source: {
             fileName: t,
-            lineNumber: 154,
+            lineNumber: 159,
             columnNumber: 15
           } }, /* @__PURE__ */ e.createElement(o.BackButton, { __self: void 0, __source: {
             fileName: t,
-            lineNumber: 155,
+            lineNumber: 160,
             columnNumber: 17
           } }), /* @__PURE__ */ e.createElement(o.NextButton, { __self: void 0, __source: {
             fileName: t,
-            lineNumber: 156,
+            lineNumber: 161,
             columnNumber: 17
           } })), /* @__PURE__ */ e.createElement("div", { className: "flex", __self: void 0, __source: {
             fileName: t,
-            lineNumber: 158,
+            lineNumber: 163,
             columnNumber: 15
           } }, /* @__PURE__ */ e.createElement(i.Day, { day: n == null ? void 0 : n[0], label: "Today", __self: void 0, __source: {
             fileName: t,
-            lineNumber: 159,
+            lineNumber: 164,
             columnNumber: 17
           } }), /* @__PURE__ */ e.createElement(i.Day, { day: n == null ? void 0 : n[1], label: "Tomorrow", __self: void 0, __source: {
             fileName: t,
-            lineNumber: 160,
+            lineNumber: 165,
             columnNumber: 17
           } }), /* @__PURE__ */ e.createElement(i.Day, { day: n == null ? void 0 : n[2], label: "Next week", __self: void 0, __source: {
             fileName: t,
-            lineNumber: 161,
+            lineNumber: 166,
             columnNumber: 17
           } })));
         }
@@ -171,10 +183,10 @@ const N = f((r) => {
         name: "Today's plan",
         description: "Write down your plan for today so you can share it with others. By default, it's a list of tasks you plan to do today.",
         component: (o) => {
-          const [a, l] = e.useState(null), m = r.dayjs();
+          const [l, r] = e.useState(null), m = a.dayjs();
           return e.useEffect(() => {
             (async () => {
-              const n = await r.getDays({
+              const n = await a.getDays({
                 from: m.toDate(),
                 to: m.toDate(),
                 include: {
@@ -182,27 +194,27 @@ const N = f((r) => {
                 }
               });
               if (!n.length) {
-                l("");
+                r("");
                 return;
               }
               const s = n[0];
-              l(`<ul>${s.tasks.map((u) => `<li>${u.status === "DONE" ? "✅ " : u.status === "CANCELED" ? "❌ " : ""}${u.title}</li>`).join("")}</ul>`);
+              r(`<ul>${s.tasks.map((u) => `<li>${u.status === "DONE" ? "✅ " : u.status === "CANCELED" ? "❌ " : ""}${u.title}</li>`).join("")}</ul>`);
             })();
           }, []), /* @__PURE__ */ e.createElement("div", { __self: void 0, __source: {
             fileName: t,
-            lineNumber: 215,
+            lineNumber: 220,
             columnNumber: 13
-          } }, /* @__PURE__ */ e.createElement(i.NoteEditor, { slug: `flow-essentials_retro-${m.format("YYYY-MM-DD")}`, title: `Plan for ${m.format("MMMM D")}`, loading: a === null, initialValue: a ?? "", __self: void 0, __source: {
+          } }, /* @__PURE__ */ e.createElement(i.NoteEditor, { slug: `flow-essentials_retro-${m.format("YYYY-MM-DD")}`, title: `Plan for ${m.format("MMMM D")}`, loading: l === null, initialValue: l ?? "", __self: void 0, __source: {
             fileName: t,
-            lineNumber: 216,
+            lineNumber: 221,
             columnNumber: 15
           } }), /* @__PURE__ */ e.createElement(o.BackButton, { __self: void 0, __source: {
             fileName: t,
-            lineNumber: 222,
+            lineNumber: 227,
             columnNumber: 15
           } }), /* @__PURE__ */ e.createElement(o.NextButton, { __self: void 0, __source: {
             fileName: t,
-            lineNumber: 223,
+            lineNumber: 228,
             columnNumber: 15
           } }));
         }
@@ -213,7 +225,7 @@ const N = f((r) => {
         description: "Animated screen to get you in the mood to shutdown and retrospect on today.",
         component: (o) => /* @__PURE__ */ e.createElement(c, { ...o, __self: void 0, __source: {
           fileName: t,
-          lineNumber: 233,
+          lineNumber: 238,
           columnNumber: 11
         } }, "Let's reflect on what you did today")
       },
@@ -221,32 +233,32 @@ const N = f((r) => {
         name: "Clean up today",
         description: "Clean up today by marking tasks as done or canceling tasks.",
         component: (o) => {
-          const a = r.dayjs(), [l, m] = r.hooks.useAsyncLoader(async () => await r.getDays({
-            from: a.toDate(),
-            to: a.toDate(),
+          const l = a.dayjs(), [r, m] = a.hooks.useAsyncLoader(async () => await a.getDays({
+            from: l.toDate(),
+            to: l.toDate(),
             toRender: {
               Day: !0
             }
-          })), n = l == null ? void 0 : l[0];
+          })), n = r == null ? void 0 : r[0];
           return m ? /* @__PURE__ */ e.createElement(e.Fragment, null, "Loading...") : /* @__PURE__ */ e.createElement("div", { __self: void 0, __source: {
             fileName: t,
-            lineNumber: 256,
+            lineNumber: 261,
             columnNumber: 13
           } }, /* @__PURE__ */ e.createElement("div", { __self: void 0, __source: {
             fileName: t,
-            lineNumber: 257,
+            lineNumber: 262,
             columnNumber: 15
           } }, /* @__PURE__ */ e.createElement(o.BackButton, { __self: void 0, __source: {
             fileName: t,
-            lineNumber: 258,
+            lineNumber: 263,
             columnNumber: 17
           } }), /* @__PURE__ */ e.createElement(o.NextButton, { __self: void 0, __source: {
             fileName: t,
-            lineNumber: 259,
+            lineNumber: 264,
             columnNumber: 17
           } })), /* @__PURE__ */ e.createElement(i.Day, { day: n, label: "Today", __self: void 0, __source: {
             fileName: t,
-            lineNumber: 261,
+            lineNumber: 266,
             columnNumber: 15
           } }));
         }
@@ -255,10 +267,10 @@ const N = f((r) => {
         name: "Retro on today",
         description: "Retro on today by writing down a note. The default template is a list of tasks you did today, and headers for what went well and what didn't go well.",
         component: (o) => {
-          const [a, l] = e.useState(null), m = r.dayjs();
+          const [l, r] = e.useState(null), m = a.dayjs();
           return e.useEffect(() => {
             (async () => {
-              const n = await r.getDays({
+              const n = await a.getDays({
                 from: m.toDate(),
                 to: m.toDate(),
                 include: {
@@ -266,27 +278,27 @@ const N = f((r) => {
                 }
               });
               if (!n.length) {
-                l("");
+                r("");
                 return;
               }
               const s = n[0];
-              l(`<ul>${s.tasks.map((u) => `<li>${u.status === "DONE" ? "✅ " : u.status === "CANCELED" ? "❌ " : ""}${u.title}</li>`).join("")}</ul>`);
+              r(`<ul>${s.tasks.map((u) => `<li>${u.status === "DONE" ? "✅ " : u.status === "CANCELED" ? "❌ " : ""}${u.title}</li>`).join("")}</ul>`);
             })();
           }, []), /* @__PURE__ */ e.createElement("div", { __self: void 0, __source: {
             fileName: t,
-            lineNumber: 308,
+            lineNumber: 313,
             columnNumber: 13
-          } }, /* @__PURE__ */ e.createElement(i.NoteEditor, { slug: `flow-essentials_retro-${m.format("YYYY-MM-DD")}`, title: `Retro of ${m.format("MMMM D")}`, loading: a === null, initialValue: a ?? "", __self: void 0, __source: {
+          } }, /* @__PURE__ */ e.createElement(i.NoteEditor, { slug: `flow-essentials_retro-${m.format("YYYY-MM-DD")}`, title: `Retro of ${m.format("MMMM D")}`, loading: l === null, initialValue: l ?? "", __self: void 0, __source: {
             fileName: t,
-            lineNumber: 309,
+            lineNumber: 314,
             columnNumber: 15
           } }), /* @__PURE__ */ e.createElement(o.BackButton, { __self: void 0, __source: {
             fileName: t,
-            lineNumber: 315,
+            lineNumber: 320,
             columnNumber: 15
           } }), /* @__PURE__ */ e.createElement(o.NextButton, { __self: void 0, __source: {
             fileName: t,
-            lineNumber: 316,
+            lineNumber: 321,
             columnNumber: 15
           } }));
         }
@@ -296,7 +308,7 @@ const N = f((r) => {
         description: "Animated screen to get you in the mood to plan for tomorrow.",
         component: (o) => /* @__PURE__ */ e.createElement(c, { ...o, __self: void 0, __source: {
           fileName: t,
-          lineNumber: 324,
+          lineNumber: 329,
           columnNumber: 31
         } }, "Tomorrow")
       },
@@ -304,32 +316,32 @@ const N = f((r) => {
         name: "Plan for tomorrow",
         description: "Plan for tomorrow by dragging items from your different lists into tomorrow's list.",
         component: (o) => {
-          const a = r.dayjs().add(1, "day"), [l, m] = r.hooks.useAsyncLoader(async () => await r.getDays({
-            from: a.toDate(),
-            to: a.toDate(),
+          const l = a.dayjs().add(1, "day"), [r, m] = a.hooks.useAsyncLoader(async () => await a.getDays({
+            from: l.toDate(),
+            to: l.toDate(),
             toRender: {
               Day: !0
             }
-          })), n = l == null ? void 0 : l[0];
+          })), n = r == null ? void 0 : r[0];
           return m ? /* @__PURE__ */ e.createElement(e.Fragment, null, "Loading...") : /* @__PURE__ */ e.createElement("div", { __self: void 0, __source: {
             fileName: t,
-            lineNumber: 347,
+            lineNumber: 352,
             columnNumber: 13
           } }, /* @__PURE__ */ e.createElement("div", { __self: void 0, __source: {
             fileName: t,
-            lineNumber: 348,
+            lineNumber: 353,
             columnNumber: 15
           } }, /* @__PURE__ */ e.createElement(o.BackButton, { __self: void 0, __source: {
             fileName: t,
-            lineNumber: 349,
+            lineNumber: 354,
             columnNumber: 17
           } }), /* @__PURE__ */ e.createElement(o.NextButton, { __self: void 0, __source: {
             fileName: t,
-            lineNumber: 350,
+            lineNumber: 355,
             columnNumber: 17
           } })), /* @__PURE__ */ e.createElement(i.Day, { day: n, label: "Tomorrow", __self: void 0, __source: {
             fileName: t,
-            lineNumber: 352,
+            lineNumber: 357,
             columnNumber: 15
           } }));
         }

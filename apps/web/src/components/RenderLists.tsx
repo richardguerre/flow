@@ -80,7 +80,7 @@ const RenderListsFromPlugins = (props: {
             ) : "icon" in list ? (
               list.icon
             ) : (
-              bootstrapIcons[list.bootstrapIcon] ?? <BsList size={18} />
+              (bootstrapIcons[list.bootstrapIcon] ?? <BsList size={18} />)
             )}
           </ListButton>
         );

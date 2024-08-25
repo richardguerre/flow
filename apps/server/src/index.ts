@@ -102,6 +102,25 @@ app.all("*", async (req) => {
       return new Response("Local frontend is not running on port 3000.", { status: 404 });
     }
   }
+  // if request is from a mobile device, serve the mobile-pwa instead of the web app
+  if (req.headers["user-agent"]?.includes("Mobile")) {
+    const mobilePwaDir = "./mobile-pwa";
+    try {
+      const path = await Bun.resolve(`${mobilePwaDir}${req.path}`, import.meta.dir);
+      return new Response(Bun.file(path));
+    } catch {
+      try {
+        const path = await Bun.resolve(`${mobilePwaDir}/index.html`, import.meta.dir);
+        return new Response(Bun.file(path));
+      } catch {
+        console.error("index.html not found in mobile-pwa directory.");
+        return new Response(
+          "Not sure how you got here. Contact Richard Guerre (through Slack or @richardguerre_ on Twitter) with a screenshot of this screen with the URL.",
+          { status: 404 },
+        );
+      }
+    }
+  }
   const webDir = "./web";
   try {
     const path = await Bun.resolve(`${webDir}${req.path}`, import.meta.dir);
@@ -111,6 +130,7 @@ app.all("*", async (req) => {
       const path = await Bun.resolve(`${webDir}/index.html`, import.meta.dir);
       return new Response(Bun.file(path));
     } catch {
+      console.error("index.html not found in web directory.");
       return new Response(
         "Not sure how you got here. Contact Richard Guerre (through Slack or @richardguerre_ on Twitter) with a screenshot of this screen with the URL.",
         { status: 404 },

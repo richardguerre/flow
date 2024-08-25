@@ -72,10 +72,10 @@ export const Combobox = (
   const [open, setOpen] = useState(props.open ?? false);
   const [values, setValues] = useState<string[]>(
     props.multiselect
-      ? props.defaultValues ?? []
+      ? (props.defaultValues ?? [])
       : !props.multiselect && props.defaultValue
-      ? [props.defaultValue]
-      : [],
+        ? [props.defaultValue]
+        : [],
   );
   const handleOnOpenChange: ComboboxContextType["onOpenChange"] = (newOpen) => {
     setOpen(newOpen);

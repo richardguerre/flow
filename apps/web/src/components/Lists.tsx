@@ -111,8 +111,8 @@ export const ListButton = (props: ListButtonProps) => {
                 ? `bg-${props.color}-100 text-${props.color}-600`
                 : "hover:bg-background-200 text-foreground-700 bg-transparent"
               : props.isSelected
-              ? "bg-primary-100 text-primary-600"
-              : "hover:bg-background-200 text-foreground-700 bg-transparent",
+                ? "bg-primary-100 text-primary-600"
+                : "hover:bg-background-200 text-foreground-700 bg-transparent",
           )}
           onClick={props.onClick}
         >

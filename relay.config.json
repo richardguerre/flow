@@ -1,17 +1,41 @@
 {
-  "src": "./apps/web/src",
-  "schema": "./apps/web/src/relay/schema.graphql",
-  "language": "typescript",
-  "artifactDirectory": "./apps/web/src/relay/__generated__",
-  "schemaExtensions": ["./apps/web/src/relay/local"],
-  "eagerEsModules": true,
-  "noFutureProofEnums": true,
-  "customScalars": {
-    "Date": "string",
-    "DateTime": "string",
-    "PositiveInt": "number",
-    "JSON": "JsonValue",
-    "Time": "string"
+  "root": ".",
+  "excludes": ["**/node_modules/**", "**/__mocks__/**", "**/__generated__/**"],
+  "sources": {
+    "apps/web/src": "web",
+    "apps/mobile-pwa/src": "mobile-pwa"
   },
-  "exclude": ["**/node_modules/**", "**/__mocks__/**", "**/__generated__/**"]
+  "projects": {
+    "web": {
+      "schema": "packages/relay/schema.graphql",
+      "output": "apps/web/src/relay/__generated__",
+      "language": "typescript",
+      "schemaExtensions": ["apps/web/src/relay/local"],
+      "eagerEsModules": true,
+      "noFutureProofEnums": true,
+      "requireCustomScalarTypes": true,
+      "customScalarTypes": {
+        "Date": "string",
+        "DateTime": "string",
+        "PositiveInt": "number",
+        "JSON": "JsonValue",
+        "Time": "string"
+      }
+    },
+    "mobile-pwa": {
+      "schema": "packages/relay/schema.graphql",
+      "output": "apps/mobile-pwa/src/relay/__generated__",
+      "language": "typescript",
+      "eagerEsModules": true,
+      "noFutureProofEnums": true,
+      "requireCustomScalarTypes": true,
+      "customScalarTypes": {
+        "Date": "string",
+        "DateTime": "string",
+        "PositiveInt": "number",
+        "JSON": "JsonValue",
+        "Time": "string"
+      }
+    }
+  }
 }

@@ -146,6 +146,8 @@ export const DayContent = (props: DayContentProps) => {
         date: { value: day.date, overriden: false },
         item: {
           ...itemRecord,
+          inboxPoints: itemRecord.inboxPoints ?? null,
+          listId: itemRecord.listId ?? null,
           willBeDimissedFromInbox,
           pluginDatas:
             itemRecordPluginDatas as unknown as OnCreateTaskItemRecordToCreateTaskFrom_item$data["pluginDatas"],

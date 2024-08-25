@@ -1,0 +1,5 @@
+{
+  "name": "@flowdev/env",
+  "description": "Tiny library to properly ensure environment variables are defined and to get them.",
+  "version": "0.1.0"
+}

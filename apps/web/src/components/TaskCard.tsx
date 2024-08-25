@@ -219,8 +219,8 @@ const TaskCardSubtask = (props: { task: TaskCardSubtask_task$key }) => {
         {task.status === "TODO"
           ? doneButton
           : task.status === "DONE"
-          ? undoDoneButton
-          : undoCancelButton}
+            ? undoDoneButton
+            : undoCancelButton}
       </div>
       <ContextMenu>
         <ContextMenuTrigger>
