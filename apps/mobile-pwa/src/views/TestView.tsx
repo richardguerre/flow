@@ -1,3 +1,5 @@
-export const TestView = () => {
-  return <div>TestView</div>;
-};
+export default () => (
+  <div>
+    <h1>TestView</h1>
+  </div>
+);

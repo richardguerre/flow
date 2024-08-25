@@ -14,9 +14,11 @@ import { createClient } from "graphql-sse";
 
 export const LOCAL_STORAGE_USER_TOKEN_KEY = "token";
 
+const url = import.meta.env.PROD ? "/graphql" : import.meta.env.VITE_GRAPHQL_URL;
+
 // graphql-sse setup copied from https://the-guild.dev/graphql/sse/recipes#with-relay
 const subscriptionsClient = createClient({
-  url: import.meta.env.PROD ? "/graphql" : import.meta.env.VITE_GRAPHQL_URL,
+  url: url,
   headers: () => {
     const token = window.localStorage.getItem(LOCAL_STORAGE_USER_TOKEN_KEY);
     return {
@@ -51,7 +53,7 @@ function executeSubscription(operation: RequestParameters, variables: Variables)
 
 const executeQueryOrMutation = async (operation: RequestParameters, variables: Variables) => {
   const token = window.localStorage.getItem(LOCAL_STORAGE_USER_TOKEN_KEY);
-  const res = await fetch(import.meta.env.PROD ? "/graphql" : import.meta.env.VITE_GRAPHQL_URL, {
+  const res = await fetch(url, {
     method: "POST",
     headers: {
       "content-type": "application/json",

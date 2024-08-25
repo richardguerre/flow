@@ -1,3 +1,5 @@
-export const NotFoundView = () => {
-  return <div>NotFoundView</div>;
-};
+export default () => (
+  <div>
+    <h1>404</h1>
+  </div>
+);

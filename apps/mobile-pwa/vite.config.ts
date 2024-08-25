@@ -40,6 +40,38 @@ const relay = () =>
 
 // https://vitejs.dev/config/
 export default defineConfig({
+  build: {
+    chunkSizeWarningLimit: 2000, // it's a big app, and size is not a prioritized concern for now
+    rollupOptions: {
+      shimMissingExports: true,
+      external: [
+        "fs",
+        "path",
+        "os",
+        "crypto",
+        "util",
+        "assert",
+        "buffer",
+        "stream",
+        "events",
+        "module",
+        "url",
+        "process",
+        "child_process",
+        "node:path",
+        "node:fs",
+        "node:fs/promises",
+        "node:process",
+        "node:url",
+        "node:module",
+        "node:assert",
+        "node:v8",
+        "node:util",
+        "readline",
+        // the above come from unocss/runtime but are not used in the browser
+      ],
+    },
+  },
   plugins: [
     react(),
     // @ts-ignore as tsconfigPaths types are not updated to those of Vite 4.0, but the plugin works fine
