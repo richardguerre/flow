@@ -1,4 +1,4 @@
-import { MutableRefObject, useCallback, useEffect, useRef, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import { graphql, useFragment, useMutation } from "@flowdev/relay";
 import {
   useEditor,
@@ -11,13 +11,11 @@ import {
 } from "@flowdev/tiptap";
 import { TaskTitle_task$key } from "@flowdev/mobile-pwa/relay/__generated__/TaskTitle_task.graphql";
 import { TaskTitleUpdateTaskTitleMutation } from "../relay/__generated__/TaskTitleUpdateTaskTitleMutation.graphql";
-import "./TaskTitle.scss";
 import { TaskTitleCreateTaskMutation } from "../relay/__generated__/TaskTitleCreateTaskMutation.graphql";
 import { createVirtualTask, deleteVirtualTask } from "./Day";
 
 type TaskTitleProps = {
   task: TaskTitle_task$key;
-  editorRef?: TaskTitleInputProps["editorRef"];
 };
 
 export const TaskTitle = (props: TaskTitleProps) => {
@@ -95,7 +93,6 @@ export const TaskTitle = (props: TaskTitleProps) => {
       initialValue={task.title}
       onSave={handleSave}
       onCancel={handleCancel}
-      editorRef={props.editorRef}
     />
   );
 };
@@ -113,7 +110,6 @@ type TaskTitleInputProps = {
   onCancel?: () => void;
   /** The className to apply to the input. This will **override** the default className. */
   className?: string;
-  editorRef?: MutableRefObject<Editor | null>;
   readOnly?: boolean;
 };
 
@@ -173,7 +169,6 @@ export const TaskTitleInput = (props: TaskTitleInputProps) => {
     if (editable && !props.readOnly) {
       editorRef.current?.commands.focus("end");
     }
-    if (props.editorRef) props.editorRef.current = editorRef.current;
   }, [editable, editorRef.current]);
 
   useEffect(() => {

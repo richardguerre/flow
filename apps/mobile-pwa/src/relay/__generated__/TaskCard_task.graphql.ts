@@ -1,5 +1,5 @@
 /**
- * @generated SignedSource<<a5ffbc384973a7922e4f47f20c1fce87>>
+ * @generated SignedSource<<dceffb6896dcc5cdbb925bc48b0fe3d6>>
  * @lightSyntaxTransform
  * @nogrep
  */
@@ -21,7 +21,7 @@ export type TaskCard_task$data = {
     readonly " $fragmentSpreads": FragmentRefs<"TaskCardSubtask_task">;
   }>;
   readonly title: string;
-  readonly " $fragmentSpreads": FragmentRefs<"TaskCardActions_task" | "TaskCardContextMenu_task" | "TaskTitle_task">;
+  readonly " $fragmentSpreads": FragmentRefs<"TaskCardStatusButton_task" | "TaskCardTitle_task">;
   readonly " $fragmentType": "TaskCard_task";
 };
 export type TaskCard_task$key = {
@@ -92,17 +92,12 @@ return {
     {
       "args": null,
       "kind": "FragmentSpread",
-      "name": "TaskCardActions_task"
+      "name": "TaskCardStatusButton_task"
     },
     {
       "args": null,
       "kind": "FragmentSpread",
-      "name": "TaskTitle_task"
-    },
-    {
-      "args": null,
-      "kind": "FragmentSpread",
-      "name": "TaskCardContextMenu_task"
+      "name": "TaskCardTitle_task"
     }
   ],
   "type": "Task",
@@ -110,6 +105,6 @@ return {
 };
 })();
 
-(node as any).hash = "30fd2c66aae76960ee4f60d1dea215bc";
+(node as any).hash = "4ffeb343eca6b7053658a36efc770c94";
 
 export default node;

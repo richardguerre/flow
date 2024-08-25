@@ -1,5 +1,5 @@
 /**
- * @generated SignedSource<<6551f07422221b08c4ad60990c8641e1>>
+ * @generated SignedSource<<5d6bdecdcc8a386ee9f65d588552bea5>>
  * @lightSyntaxTransform
  * @nogrep
  */
@@ -10,6 +10,7 @@
 
 import { ConcreteRequest, Query } from 'relay-runtime';
 import { FragmentRefs } from "relay-runtime";
+export type TaskStatus = "CANCELED" | "DONE" | "TODO";
 export type IndexViewQuery$variables = {
   afterDay: string;
 };
@@ -17,6 +18,10 @@ export type IndexViewQuery$data = {
   readonly days: {
     readonly edges: ReadonlyArray<{
       readonly node: {
+        readonly tasks: ReadonlyArray<{
+          readonly id: string;
+          readonly status: TaskStatus;
+        }>;
         readonly " $fragmentSpreads": FragmentRefs<"Day_day">;
       };
     }>;
@@ -51,28 +56,28 @@ v2 = {
   "alias": null,
   "args": null,
   "kind": "ScalarField",
-  "name": "date",
+  "name": "id",
   "storageKey": null
 },
 v3 = {
   "alias": null,
   "args": null,
   "kind": "ScalarField",
-  "name": "id",
+  "name": "status",
   "storageKey": null
 },
 v4 = {
   "alias": null,
   "args": null,
   "kind": "ScalarField",
-  "name": "title",
+  "name": "date",
   "storageKey": null
 },
 v5 = {
   "alias": null,
   "args": null,
   "kind": "ScalarField",
-  "name": "status",
+  "name": "title",
   "storageKey": null
 };
 return {
@@ -106,6 +111,19 @@ return {
                 "name": "node",
                 "plural": false,
                 "selections": [
+                  {
+                    "alias": null,
+                    "args": null,
+                    "concreteType": "Task",
+                    "kind": "LinkedField",
+                    "name": "tasks",
+                    "plural": true,
+                    "selections": [
+                      (v2/*: any*/),
+                      (v3/*: any*/)
+                    ],
+                    "storageKey": null
+                  },
                   {
                     "args": null,
                     "kind": "FragmentSpread",
@@ -154,7 +172,6 @@ return {
                 "name": "node",
                 "plural": false,
                 "selections": [
-                  (v2/*: any*/),
                   {
                     "alias": null,
                     "args": null,
@@ -163,6 +180,8 @@ return {
                     "name": "tasks",
                     "plural": true,
                     "selections": [
+                      (v2/*: any*/),
+                      (v3/*: any*/),
                       {
                         "alias": null,
                         "args": null,
@@ -170,8 +189,6 @@ return {
                         "name": "__typename",
                         "storageKey": null
                       },
-                      (v3/*: any*/),
-                      (v2/*: any*/),
                       (v4/*: any*/),
                       (v5/*: any*/),
                       {
@@ -189,43 +206,17 @@ return {
                         "name": "subtasks",
                         "plural": true,
                         "selections": [
+                          (v2/*: any*/),
                           (v3/*: any*/),
-                          (v4/*: any*/),
-                          (v5/*: any*/),
-                          (v2/*: any*/)
+                          (v5/*: any*/)
                         ],
-                        "storageKey": null
-                      },
-                      {
-                        "alias": null,
-                        "args": null,
-                        "concreteType": "Item",
-                        "kind": "LinkedField",
-                        "name": "item",
-                        "plural": false,
-                        "selections": [
-                          (v3/*: any*/),
-                          {
-                            "alias": null,
-                            "args": null,
-                            "kind": "ScalarField",
-                            "name": "isRelevant",
-                            "storageKey": null
-                          }
-                        ],
-                        "storageKey": null
-                      },
-                      {
-                        "alias": null,
-                        "args": null,
-                        "kind": "ScalarField",
-                        "name": "durationInMinutes",
                         "storageKey": null
                       }
                     ],
                     "storageKey": null
                   },
-                  (v3/*: any*/)
+                  (v4/*: any*/),
+                  (v2/*: any*/)
                 ],
                 "storageKey": null
               }
@@ -238,16 +229,16 @@ return {
     ]
   },
   "params": {
-    "cacheID": "949807583087a0f166ccc07b63458703",
+    "cacheID": "7a25a7e3f688a21229edb2874dbeceae",
     "id": null,
     "metadata": {},
     "name": "IndexViewQuery",
     "operationKind": "query",
-    "text": "query IndexViewQuery(\n  $afterDay: ID!\n) {\n  days(after: $afterDay, first: 1) {\n    edges {\n      node {\n        ...Day_day\n        id\n      }\n    }\n  }\n}\n\nfragment DayAddTaskActionsBar_day on Day {\n  date\n}\n\nfragment DayContent_day on Day {\n  date\n  tasks {\n    __typename\n    id\n    ...TaskCard_task\n  }\n}\n\nfragment Day_day on Day {\n  date\n  ...DayContent_day\n  ...DayAddTaskActionsBar_day\n}\n\nfragment TaskCardActions_task on Task {\n  status\n  id\n  item {\n    id\n    isRelevant\n  }\n  ...TaskCardDurationButton_task\n}\n\nfragment TaskCardContextMenu_task on Task {\n  id\n  date\n}\n\nfragment TaskCardDurationButton_task on Task {\n  id\n  durationInMinutes\n}\n\nfragment TaskCardSubtask_task on Task {\n  id\n  title\n  status\n  date\n}\n\nfragment TaskCard_task on Task {\n  id\n  date\n  title\n  status\n  completedAt\n  subtasks {\n    id\n    ...TaskCardSubtask_task\n  }\n  ...TaskCardActions_task\n  ...TaskTitle_task\n  ...TaskCardContextMenu_task\n}\n\nfragment TaskTitle_task on Task {\n  id\n  title\n  date\n  status\n  durationInMinutes\n}\n"
+    "text": "query IndexViewQuery(\n  $afterDay: ID!\n) {\n  days(after: $afterDay, first: 1) {\n    edges {\n      node {\n        tasks {\n          id\n          status\n        }\n        ...Day_day\n        id\n      }\n    }\n  }\n}\n\nfragment DayContent_day on Day {\n  date\n  tasks {\n    __typename\n    id\n    ...TaskCard_task\n  }\n}\n\nfragment Day_day on Day {\n  date\n  ...DayContent_day\n}\n\nfragment TaskCardStatusButton_task on Task {\n  status\n  id\n}\n\nfragment TaskCardSubtask_task on Task {\n  id\n  status\n  ...TaskCardStatusButton_task\n  ...TaskCardTitle_task\n}\n\nfragment TaskCardTitle_task on Task {\n  id\n  title\n}\n\nfragment TaskCard_task on Task {\n  id\n  date\n  title\n  status\n  completedAt\n  subtasks {\n    id\n    ...TaskCardSubtask_task\n  }\n  ...TaskCardStatusButton_task\n  ...TaskCardTitle_task\n}\n"
   }
 };
 })();
 
-(node as any).hash = "775030734cb471a1337758ecb7dd494e";
+(node as any).hash = "7bc5e123f20731976091756cec8a3936";
 
 export default node;

@@ -1,9 +1,13 @@
 .TaskTitleInput {
+  .ProseMirror {
+    height: 20lvh;
+  }
   .ProseMirror:focus {
     outline: 2px solid transparent;
   }
 
   p {
+    font-size: large;
     margin: 0;
   }
 }

@@ -1,5 +1,5 @@
 /**
- * @generated SignedSource<<ee424ed3222c45d2e3b9c32d37ecb5d0>>
+ * @generated SignedSource<<c8b4cac1ac20ae1d355936283e0a98bc>>
  * @lightSyntaxTransform
  * @nogrep
  */
@@ -148,36 +148,9 @@ return {
                 "plural": true,
                 "selections": [
                   (v3/*: any*/),
-                  (v4/*: any*/),
                   (v5/*: any*/),
-                  (v2/*: any*/)
+                  (v4/*: any*/)
                 ],
-                "storageKey": null
-              },
-              {
-                "alias": null,
-                "args": null,
-                "concreteType": "Item",
-                "kind": "LinkedField",
-                "name": "item",
-                "plural": false,
-                "selections": [
-                  (v3/*: any*/),
-                  {
-                    "alias": null,
-                    "args": null,
-                    "kind": "ScalarField",
-                    "name": "isRelevant",
-                    "storageKey": null
-                  }
-                ],
-                "storageKey": null
-              },
-              {
-                "alias": null,
-                "args": null,
-                "kind": "ScalarField",
-                "name": "durationInMinutes",
                 "storageKey": null
               }
             ],
@@ -190,12 +163,12 @@ return {
     ]
   },
   "params": {
-    "cacheID": "57ff7e0e3ae19593ecf9a37f901db68e",
+    "cacheID": "2534cea629e6bc9fd16a2968bf01f6b2",
     "id": null,
     "metadata": {},
     "name": "DayUpdateTaskDateMutation",
     "operationKind": "mutation",
-    "text": "mutation DayUpdateTaskDateMutation(\n  $input: MutationUpdateTaskDateInput!\n) {\n  updateTaskDate(input: $input) {\n    ...Day_day\n    id\n  }\n}\n\nfragment DayAddTaskActionsBar_day on Day {\n  date\n}\n\nfragment DayContent_day on Day {\n  date\n  tasks {\n    __typename\n    id\n    ...TaskCard_task\n  }\n}\n\nfragment Day_day on Day {\n  date\n  ...DayContent_day\n  ...DayAddTaskActionsBar_day\n}\n\nfragment TaskCardActions_task on Task {\n  status\n  id\n  item {\n    id\n    isRelevant\n  }\n  ...TaskCardDurationButton_task\n}\n\nfragment TaskCardContextMenu_task on Task {\n  id\n  date\n}\n\nfragment TaskCardDurationButton_task on Task {\n  id\n  durationInMinutes\n}\n\nfragment TaskCardSubtask_task on Task {\n  id\n  title\n  status\n  date\n}\n\nfragment TaskCard_task on Task {\n  id\n  date\n  title\n  status\n  completedAt\n  subtasks {\n    id\n    ...TaskCardSubtask_task\n  }\n  ...TaskCardActions_task\n  ...TaskTitle_task\n  ...TaskCardContextMenu_task\n}\n\nfragment TaskTitle_task on Task {\n  id\n  title\n  date\n  status\n  durationInMinutes\n}\n"
+    "text": "mutation DayUpdateTaskDateMutation(\n  $input: MutationUpdateTaskDateInput!\n) {\n  updateTaskDate(input: $input) {\n    ...Day_day\n    id\n  }\n}\n\nfragment DayContent_day on Day {\n  date\n  tasks {\n    __typename\n    id\n    ...TaskCard_task\n  }\n}\n\nfragment Day_day on Day {\n  date\n  ...DayContent_day\n}\n\nfragment TaskCardStatusButton_task on Task {\n  status\n  id\n}\n\nfragment TaskCardSubtask_task on Task {\n  id\n  status\n  ...TaskCardStatusButton_task\n  ...TaskCardTitle_task\n}\n\nfragment TaskCardTitle_task on Task {\n  id\n  title\n}\n\nfragment TaskCard_task on Task {\n  id\n  date\n  title\n  status\n  completedAt\n  subtasks {\n    id\n    ...TaskCardSubtask_task\n  }\n  ...TaskCardStatusButton_task\n  ...TaskCardTitle_task\n}\n"
   }
 };
 })();

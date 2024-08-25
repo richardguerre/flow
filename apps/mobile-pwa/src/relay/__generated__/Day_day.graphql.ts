@@ -1,5 +1,5 @@
 /**
- * @generated SignedSource<<8244b1c9459008ea9f6f7711af2e146c>>
+ * @generated SignedSource<<a07c8387493e1ce0d3fb53e079c8ae0a>>
  * @lightSyntaxTransform
  * @nogrep
  */
@@ -12,7 +12,7 @@ import { Fragment, ReaderFragment } from 'relay-runtime';
 import { FragmentRefs } from "relay-runtime";
 export type Day_day$data = {
   readonly date: string;
-  readonly " $fragmentSpreads": FragmentRefs<"DayAddTaskActionsBar_day" | "DayContent_day">;
+  readonly " $fragmentSpreads": FragmentRefs<"DayContent_day">;
   readonly " $fragmentType": "Day_day";
 };
 export type Day_day$key = {
@@ -37,17 +37,12 @@ const node: ReaderFragment = {
       "args": null,
       "kind": "FragmentSpread",
       "name": "DayContent_day"
-    },
-    {
-      "args": null,
-      "kind": "FragmentSpread",
-      "name": "DayAddTaskActionsBar_day"
     }
   ],
   "type": "Day",
   "abstractKey": null
 };
 
-(node as any).hash = "72d16b5a1bc3290d01debf8f07fc5abb";
+(node as any).hash = "1fb3d6bdbe57ff3180a32025d1304d5a";
 
 export default node;

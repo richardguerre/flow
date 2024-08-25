@@ -1,12 +1,4 @@
-import { ReactNode, useMemo, useRef, useState } from "react";
-import {
-  SelectorStoreUpdater,
-  graphql,
-  useFragment,
-  useMutation,
-  useMutationPromise,
-} from "@flowdev/relay";
-import { TaskTitle } from "./TaskTitle";
+import { SelectorStoreUpdater, graphql, useFragment, useMutation } from "@flowdev/relay";
 import { tw } from "@flowdev/ui/tw";
 import {
   DropdownMenu,
@@ -16,34 +8,24 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@flowdev/ui/DropdownMenu";
-import {
-  ContextMenu,
-  ContextMenuContent,
-  ContextMenuItem,
-  ContextMenuTrigger,
-} from "@flowdev/ui/ContextMenu";
-import { BsCheck, BsCheckAll, BsClock, BsX } from "@flowdev/icons";
+import { BsCheck, BsClock, BsX } from "@flowdev/icons";
 import { TaskCard_task$key } from "@flowdev/mobile-pwa/relay/__generated__/TaskCard_task.graphql";
-import { TaskCardActions_task$key } from "@flowdev/mobile-pwa/relay/__generated__/TaskCardActions_task.graphql";
 import {
   TaskCardUpdateTaskStatusMutation,
   TaskStatus,
 } from "@flowdev/mobile-pwa/relay/__generated__/TaskCardUpdateTaskStatusMutation.graphql";
-import { TaskCardUpdateTaskDurationMutation } from "../relay/__generated__/TaskCardUpdateTaskDurationMutation.graphql";
-import { TaskCardUpdateItemStatusMutation } from "../relay/__generated__/TaskCardUpdateItemStatusMutation.graphql";
-import { TaskCardDurationButton_task$key } from "../relay/__generated__/TaskCardDurationButton_task.graphql";
 import { TaskCardDeleteTaskMutation } from "../relay/__generated__/TaskCardDeleteTaskMutation.graphql";
-import { toast } from "@flowdev/ui/Toast";
 import { TaskCardSubtask_task$key } from "../relay/__generated__/TaskCardSubtask_task.graphql";
-import { TaskCardContextMenu_task$key } from "../relay/__generated__/TaskCardContextMenu_task.graphql";
-import { Editor } from "@flowdev/tiptap";
+import { EditorContent, MinimumKit, useEditor } from "@flowdev/tiptap";
+import { TaskCardTitle_task$key } from "../relay/__generated__/TaskCardTitle_task.graphql";
+import "./TaskCardTitle.scss";
+import { TaskCardStatusButton_task$key } from "../relay/__generated__/TaskCardStatusButton_task.graphql";
 
 type TaskCardProps = {
   task: TaskCard_task$key;
 };
 
 export const TaskCard = (props: TaskCardProps) => {
-  const titleEditorRef = useRef<Editor | null>(null);
   const task = useFragment(
     graphql`
       fragment TaskCard_task on Task {
@@ -56,66 +38,102 @@ export const TaskCard = (props: TaskCardProps) => {
           id
           ...TaskCardSubtask_task
         }
-        ...TaskCardActions_task
-        ...TaskTitle_task
-        ...TaskCardContextMenu_task
+        ...TaskCardStatusButton_task
+        ...TaskCardTitle_task
       }
     `,
     props.task,
   );
 
   return (
-    <TaskCardContextMenu task={task}>
-      <div
-        id={task.id} // used for drag and drop
-        className={tw(
-          "bg-background-50 group flex cursor-pointer flex-col gap-1 rounded-lg p-3 shadow-sm hover:shadow-md",
-          task?.status !== "TODO" && "opacity-50 hover:opacity-100",
-        )}
-      >
-        <TaskTitle task={task} editorRef={titleEditorRef} />
-        <div className="flex flex-col gap-2">
-          {task?.subtasks?.map((subtask) => <TaskCardSubtask key={subtask.id} task={subtask} />)}
-        </div>
-        <TaskCardActions task={task} />
+    <div
+      id={task.id} // used for drag and drop
+      className={tw(
+        "bg-background-50 group flex cursor-pointer gap-1 flex-col rounded-lg p-3 shadow-sm hover:shadow-md",
+        task?.status !== "TODO" && "opacity-50 hover:opacity-100",
+      )}
+    >
+      <div className="flex gap-1">
+        <TaskCardStatusButton task={task} />
+        <TaskCardTitle task={task} />
       </div>
-    </TaskCardContextMenu>
+      <div className="flex flex-col gap-1">
+        {task?.subtasks?.map((subtask) => <TaskCardSubtask key={subtask.id} task={subtask} />)}
+      </div>
+    </div>
   );
 };
 
-const TaskCardContextMenu = (props: {
-  task: TaskCardContextMenu_task$key;
-  children: React.ReactNode;
-}) => {
+const TaskCardStatusButton = (props: { task: TaskCardStatusButton_task$key; small?: boolean }) => {
   const task = useFragment(
     graphql`
-      fragment TaskCardContextMenu_task on Task {
+      fragment TaskCardStatusButton_task on Task {
+        status
         id
-        date
       }
     `,
     props.task,
   );
 
-  const [$deleteTask] = useMutation<TaskCardDeleteTaskMutation>(deleteTaskMutation);
+  const [$updateTaskStatus] = useMutation<TaskCardUpdateTaskStatusMutation>(
+    taskCardUpdateTaskStatusMutation,
+  );
 
-  const deleteTask = () => {
-    $deleteTask({
-      variables: { id: task.id },
-      optimisticResponse: { deleteTask: { id: task.id, date: task.date } },
-      optimisticUpdater: deleteTaskUpdater,
-      updater: deleteTaskUpdater,
+  const updateStatus = async (status: TaskStatus) => {
+    $updateTaskStatus({
+      variables: { input: { id: task?.id, status } },
+      optimisticResponse: { updateTask: { id: task?.id, status } },
     });
   };
 
-  return (
-    <ContextMenu>
-      <ContextMenuTrigger asChild>{props.children}</ContextMenuTrigger>
-      <ContextMenuContent>
-        <ContextMenuItem onClick={deleteTask}>Delete task</ContextMenuItem>
-      </ContextMenuContent>
-    </ContextMenu>
+  if (task.status === "TODO") {
+    return (
+      <CardActionButton onClick={() => updateStatus("DONE")} small={props.small}>
+        <BsCheck size={props.small ? 20 : 24} />
+      </CardActionButton>
+    );
+  } else if (task.status === "DONE") {
+    return (
+      <CardActionButton
+        className="bg-positive-100 text-positive-600 active:bg-positive-300"
+        onClick={() => updateStatus("TODO")}
+        small={props.small}
+      >
+        <BsCheck size={props.small ? 20 : 24} />
+      </CardActionButton>
+    );
+  } else if (task.status === "CANCELED") {
+    return (
+      <CardActionButton
+        className="bg-negative-100 text-negative-600 active:bg-negative-300"
+        onClick={() => updateStatus("TODO")}
+        small={props.small}
+      >
+        <BsX size={props.small ? 20 : 24} />
+      </CardActionButton>
+    );
+  }
+
+  return null;
+};
+
+const TaskCardTitle = (props: { task: TaskCardTitle_task$key }) => {
+  const task = useFragment(
+    graphql`
+      fragment TaskCardTitle_task on Task {
+        id
+        title
+      }
+    `,
+    props.task,
   );
+  const editor = useEditor({
+    extensions: [MinimumKit],
+    content: task.title,
+    editable: false, // readonly
+  });
+
+  return <EditorContent editor={editor} className="TaskCardTitleInput w-full cursor-text p-0" />;
 };
 
 const taskCardUpdateTaskStatusMutation = graphql`
@@ -140,224 +158,23 @@ const TaskCardSubtask = (props: { task: TaskCardSubtask_task$key }) => {
     graphql`
       fragment TaskCardSubtask_task on Task {
         id
-        title
         status
-        date
+        ...TaskCardStatusButton_task
+        ...TaskCardTitle_task
       }
     `,
     props.task,
   );
 
-  const [$updateTaskStatus] = useMutationPromise<TaskCardUpdateTaskStatusMutation>(
-    taskCardUpdateTaskStatusMutation,
-  );
-  const [$deleteTask] = useMutation<TaskCardDeleteTaskMutation>(deleteTaskMutation);
-
-  const updateStatus = async (status: TaskStatus) => {
-    const updatePromise = $updateTaskStatus({
-      variables: { input: { id: task.id, status } },
-    });
-    toast.promise(updatePromise, {
-      loading: "Updating task...",
-      success: "Task updated",
-      error: (err) => err.message,
-    });
-  };
-
-  const deleteTask = () => {
-    $deleteTask({
-      variables: { id: task?.id },
-      optimisticResponse: { deleteTask: { id: task?.id, date: task.date } },
-      optimisticUpdater: deleteTaskUpdater,
-      updater: deleteTaskUpdater,
-    });
-  };
-
-  const doneButton = (
-    <CardActionButton key="done" onClick={() => updateStatus("DONE")}>
-      <BsCheck />
-    </CardActionButton>
-  );
-
-  const undoDoneButton = (
-    <CardActionButton
-      key="undoDone"
-      className="bg-positive-100 text-positive-600 hover:bg-positive-200 active:bg-positive-300"
-      onClick={() => updateStatus("TODO")}
-    >
-      <BsCheck />
-    </CardActionButton>
-  );
-
-  const undoCancelButton = (
-    <CardActionButton
-      key="undoCancel"
-      className="bg-negative-100 text-negative-600 hover:bg-negative-200 active:bg-negative-300"
-      onClick={() => updateStatus("TODO")}
-    >
-      <BsX size={20} />
-    </CardActionButton>
-  );
-
-  const longTitle = task.title.length > 24;
-
   return (
-    <div className={tw("flex gap-2", longTitle && "min-h-[3.25em]")}>
-      <div className={tw("flex gap-2 relative", longTitle && "flex-col gap-1")}>
-        {task.status === "TODO"
-          ? doneButton
-          : task.status === "DONE"
-          ? undoDoneButton
-          : undoCancelButton}
-      </div>
-      <ContextMenu>
-        <ContextMenuTrigger>
-          <div>{task.title}</div>
-        </ContextMenuTrigger>
-        <ContextMenuContent>
-          <ContextMenuItem onClick={() => updateStatus("CANCELED")}>Cancel subtask</ContextMenuItem>
-          <ContextMenuItem onClick={deleteTask}>Delete subtask</ContextMenuItem>
-        </ContextMenuContent>
-      </ContextMenu>
+    <div className="flex gap-2 pl-1">
+      <TaskCardStatusButton task={task} small />
+      <TaskCardTitle task={task} />
     </div>
   );
 };
 
-type TaskCardActionsProps = {
-  task: TaskCardActions_task$key;
-};
-
-const TaskCardActions = (props: TaskCardActionsProps) => {
-  const task = useFragment(
-    graphql`
-      fragment TaskCardActions_task on Task {
-        status
-        id
-        item {
-          id
-          isRelevant
-        }
-        ...TaskCardDurationButton_task
-      }
-    `,
-    props.task,
-  );
-
-  const [$updateTaskStatus] = useMutationPromise<TaskCardUpdateTaskStatusMutation>(
-    taskCardUpdateTaskStatusMutation,
-  );
-
-  const [updateItemStatus] = useMutationPromise<TaskCardUpdateItemStatusMutation>(graphql`
-    mutation TaskCardUpdateItemStatusMutation($input: MutationUpdateItemStatusInput!) {
-      updateItemStatus(input: $input) {
-        id
-        isRelevant
-      }
-    }
-  `);
-
-  const updateStatus = async (status: TaskStatus) => {
-    const updatePromise = $updateTaskStatus({
-      variables: {
-        input: { id: task?.id, status },
-      },
-    });
-    toast.promise(updatePromise, {
-      loading: "Updating task...",
-      success: "Task updated",
-      error: (err) => err.message,
-    });
-  };
-
-  const markAsSuperdone = async (done: boolean) => {
-    await updateStatus(done ? "DONE" : "TODO");
-    if (!task?.item) return;
-    await updateItemStatus({ variables: { input: { id: task?.item.id, done } } });
-  };
-
-  const doneButton = (
-    <CardActionButton key="done" onClick={() => updateStatus("DONE")}>
-      <BsCheck />
-    </CardActionButton>
-  );
-
-  const undoDoneButton = (
-    <CardActionButton
-      key="undoDone"
-      className="bg-positive-100 text-positive-600 hover:bg-positive-200 active:bg-positive-300"
-      onClick={() => updateStatus("TODO")}
-    >
-      <BsCheck />
-    </CardActionButton>
-  );
-
-  const superdoneButton = (
-    <CardActionButton
-      key="superdone"
-      className="hidden group-hover:flex"
-      onClick={() => markAsSuperdone(true)}
-    >
-      <BsCheckAll />
-    </CardActionButton>
-  );
-
-  const undoSuperdoneButton = (
-    <CardActionButton
-      key="undoSuperdone"
-      className="bg-positive-100 text-positive-600 hover:bg-positive-200 active:bg-positive-300"
-      onClick={() => markAsSuperdone(false)}
-    >
-      <BsCheckAll />
-    </CardActionButton>
-  );
-
-  const cancelButton = (
-    <CardActionButton
-      key="cancel"
-      className="hidden group-hover:flex"
-      onClick={() => updateStatus("CANCELED")}
-    >
-      <BsX size={20} />
-    </CardActionButton>
-  );
-
-  const undoCancelButton = (
-    <CardActionButton
-      key="undoCancel"
-      className="bg-negative-100 text-negative-600 hover:bg-negative-200 active:bg-negative-300"
-      onClick={() => updateStatus("TODO")}
-    >
-      <BsX size={20} />
-    </CardActionButton>
-  );
-
-  const taskStatusActions: Array<ReactNode> = useMemo(() => {
-    if (task?.status === "TODO") {
-      return [doneButton, ...(task?.item ? [superdoneButton] : []), cancelButton];
-    } else if (task?.status === "DONE") {
-      // when the item is relevant, it's considered not done.
-      return task?.item && !task?.item.isRelevant
-        ? [undoDoneButton, undoSuperdoneButton]
-        : [undoDoneButton];
-    } else if (task?.status === "CANCELED") {
-      return [undoCancelButton];
-    }
-    return [];
-  }, [task?.status]);
-
-  return (
-    <div className="flex gap-2">
-      {taskStatusActions.map((action) => action)}
-      <TaskDurationButton task={task} />
-    </div>
-  );
-};
-
-type TaskDurationButtonProps = {
-  task: TaskCardDurationButton_task$key;
-};
-
-const durationOptions = [
+export const durationOptions = [
   { label: "None", value: null },
   { label: "5 minutes", value: 5 },
   { label: "10 minutes", value: 10 },
@@ -372,48 +189,6 @@ const durationOptions = [
   { label: "2.5 hours", value: 150 },
   { label: "3 hours", value: 180 },
 ];
-
-const TaskDurationButton = (props: TaskDurationButtonProps) => {
-  const [isOpen, setIsOpen] = useState(false);
-  const task = useFragment(
-    graphql`
-      fragment TaskCardDurationButton_task on Task {
-        id
-        durationInMinutes
-      }
-    `,
-    props.task,
-  );
-
-  const [updateTaskDuration] = useMutation<TaskCardUpdateTaskDurationMutation>(graphql`
-    mutation TaskCardUpdateTaskDurationMutation($input: MutationUpdateTaskInput!) {
-      updateTask(input: $input) {
-        durationInMinutes
-      }
-    }
-  `);
-
-  const handleDurationChange = (durationInMinutes: number | null) => {
-    updateTaskDuration({
-      variables: { input: { id: task?.id, durationInMinutes } },
-      optimisticResponse: {
-        updateTask: {
-          id: task?.id,
-          durationInMinutes,
-        },
-      },
-    });
-  };
-
-  return (
-    <TaskDurationButtonDropdown
-      open={isOpen}
-      setOpen={setIsOpen}
-      value={task?.durationInMinutes}
-      onChange={handleDurationChange}
-    />
-  );
-};
 
 export const TaskDurationButtonDropdown = (props: {
   open?: boolean;
@@ -450,13 +225,16 @@ export const TaskDurationButtonDropdown = (props: {
   );
 };
 
-type CardActionButtonProps = React.ButtonHTMLAttributes<HTMLButtonElement>;
+type CardActionButtonProps = React.ButtonHTMLAttributes<HTMLButtonElement> & {
+  small?: boolean;
+};
 export const CardActionButton = (props: CardActionButtonProps) => {
   return (
     <button
       {...props}
       className={tw(
-        "bg-background-200/50 text-foreground-700 hover:bg-background-300/70 active:bg-background-300/100 flex h-6 w-6 items-center justify-center rounded-full text-sm",
+        "bg-background-200/50 text-foreground-700 hover:bg-background-300/70 active:bg-background-300/100 flex items-center justify-center rounded-full text-sm shrink-0",
+        props.small ? "h-6 w-6" : "h-8 w-8",
         props.className,
       )}
     >

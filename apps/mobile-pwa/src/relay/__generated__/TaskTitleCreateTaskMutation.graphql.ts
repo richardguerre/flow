@@ -1,5 +1,5 @@
 /**
- * @generated SignedSource<<4150b855b6c3a3ec8fa34cc7ff22d3d4>>
+ * @generated SignedSource<<0e2377fc61b69980bb40b0cac3ed0e33>>
  * @lightSyntaxTransform
  * @nogrep
  */
@@ -166,28 +166,8 @@ return {
             "plural": true,
             "selections": [
               (v2/*: any*/),
-              (v3/*: any*/),
               (v5/*: any*/),
-              (v4/*: any*/)
-            ],
-            "storageKey": null
-          },
-          {
-            "alias": null,
-            "args": null,
-            "concreteType": "Item",
-            "kind": "LinkedField",
-            "name": "item",
-            "plural": false,
-            "selections": [
-              (v2/*: any*/),
-              {
-                "alias": null,
-                "args": null,
-                "kind": "ScalarField",
-                "name": "isRelevant",
-                "storageKey": null
-              }
+              (v3/*: any*/)
             ],
             "storageKey": null
           }
@@ -197,12 +177,12 @@ return {
     ]
   },
   "params": {
-    "cacheID": "e4cd64e3d2f5bd6825f90ad2692097fb",
+    "cacheID": "6bcaed2a4765115cd57f0f36d152e29d",
     "id": null,
     "metadata": {},
     "name": "TaskTitleCreateTaskMutation",
     "operationKind": "mutation",
-    "text": "mutation TaskTitleCreateTaskMutation(\n  $input: MutationCreateTaskInput!\n) {\n  createTask(input: $input) {\n    id\n    title\n    date\n    status\n    durationInMinutes\n    ...TaskCard_task\n  }\n}\n\nfragment TaskCardActions_task on Task {\n  status\n  id\n  item {\n    id\n    isRelevant\n  }\n  ...TaskCardDurationButton_task\n}\n\nfragment TaskCardContextMenu_task on Task {\n  id\n  date\n}\n\nfragment TaskCardDurationButton_task on Task {\n  id\n  durationInMinutes\n}\n\nfragment TaskCardSubtask_task on Task {\n  id\n  title\n  status\n  date\n}\n\nfragment TaskCard_task on Task {\n  id\n  date\n  title\n  status\n  completedAt\n  subtasks {\n    id\n    ...TaskCardSubtask_task\n  }\n  ...TaskCardActions_task\n  ...TaskTitle_task\n  ...TaskCardContextMenu_task\n}\n\nfragment TaskTitle_task on Task {\n  id\n  title\n  date\n  status\n  durationInMinutes\n}\n"
+    "text": "mutation TaskTitleCreateTaskMutation(\n  $input: MutationCreateTaskInput!\n) {\n  createTask(input: $input) {\n    id\n    title\n    date\n    status\n    durationInMinutes\n    ...TaskCard_task\n  }\n}\n\nfragment TaskCardStatusButton_task on Task {\n  status\n  id\n}\n\nfragment TaskCardSubtask_task on Task {\n  id\n  status\n  ...TaskCardStatusButton_task\n  ...TaskCardTitle_task\n}\n\nfragment TaskCardTitle_task on Task {\n  id\n  title\n}\n\nfragment TaskCard_task on Task {\n  id\n  date\n  title\n  status\n  completedAt\n  subtasks {\n    id\n    ...TaskCardSubtask_task\n  }\n  ...TaskCardStatusButton_task\n  ...TaskCardTitle_task\n}\n"
   }
 };
 })();

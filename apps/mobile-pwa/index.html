@@ -3,10 +3,11 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <!-- Set theme color to background-200 in hex format. -->
+    <meta name="theme-color" content="#e5e7eb" />
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@unocss/reset/tailwind.min.css" />
     <title>Flow</title>
     <!-- the follow 2 style tags are manual copies of what unocss generated in the Kanban View. It is missing some classes, but already prevents a lot of jerkiness coming from missing styles when loading the page. -->
-    <link rel="stylesheet" href="./uno.css" />
     <style>
       .no-scrollbar::-webkit-scrollbar {
         display: none;
@@ -16,6 +17,7 @@
         scrollbar-width: none; /* Firefox */
       }
     </style>
+    <link rel="stylesheet" href="./uno.css" />
   </head>
   <body class="bg-background-200 text-foreground-900">
     <div id="root">

@@ -21,6 +21,7 @@ import { Gapcursor } from "@tiptap/extension-gapcursor";
 import { History, HistoryOptions } from "@tiptap/extension-history";
 import { Mention } from "@tiptap/extension-mention";
 import { Markdown as MarkdownExtension } from "tiptap-markdown";
+import { Placeholder as $Placholder, PlaceholderOptions } from "@tiptap/extension-placeholder";
 import { Plugin, PluginKey } from "prosemirror-state";
 import { EditorView } from "@tiptap/pm/view";
 
@@ -73,6 +74,11 @@ export const CodeBlock = $CodeBlock.configure({
   },
 });
 
+export const Placeholder = $Placholder.configure({
+  emptyNodeClass:
+    "cursor-text before:content-[attr(data-placeholder)] before:absolute before:top-0 before:left-0 before:text-foreground-700 before:opacity-50 before:transition-opacity before:duration-300 before:pointer-events-none", // got it from here: https://github.com/ueberdosis/tiptap/issues/2659#issuecomment-1230954941
+});
+
 export const OnKeydown = (
   onKeyDown?: (view: EditorView, event: KeyboardEvent) => boolean | undefined,
   extensionName = "onKeyDown",
@@ -119,6 +125,7 @@ interface MinimumKitOptions {
   italic: Partial<ItalicOptions> | false;
   strike: Partial<StrikeOptions> | false;
   history: Partial<HistoryOptions> | false;
+  placeholder: Partial<PlaceholderOptions> | false;
 }
 
 /**
@@ -134,6 +141,7 @@ interface MinimumKitOptions {
  * - Italic
  * - Strike
  * - History
+ * - Placeholder
  */
 export const MinimumKit = Extension.create<MinimumKitOptions>({
   name: "minimumKit",
@@ -167,6 +175,9 @@ export const MinimumKit = Extension.create<MinimumKitOptions>({
     if (this.options.history !== false) {
       extensions.push(History.configure(this.options?.history));
     }
+    if (this.options.placeholder !== false) {
+      extensions.push(Placeholder.configure(this.options?.placeholder));
+    }
 
     return extensions;
   },
@@ -194,6 +205,7 @@ export interface StarterKitOptions {
   paragraph: Partial<ParagraphOptions> | false;
   strike: Partial<StrikeOptions> | false;
   text: false;
+  placeholder: Partial<PlaceholderOptions> | false;
 }
 
 export const StarterKit = Extension.create<StarterKitOptions>({
@@ -258,6 +270,9 @@ export const StarterKit = Extension.create<StarterKitOptions>({
     }
     if (this.options.text !== false) {
       extensions.push(Text.configure(this.options?.text));
+    }
+    if (this.options.placeholder !== false) {
+      extensions.push($Placholder.configure(this.options?.placeholder));
     }
 
     return extensions;

@@ -1,5 +1,5 @@
 /**
- * @generated SignedSource<<566e2caadef765877b6bfd91ee845c26>>
+ * @generated SignedSource<<8cfe91748260f739fed38fa9fdd9469f>>
  * @lightSyntaxTransform
  * @nogrep
  */
@@ -10,21 +10,21 @@
 
 import { Fragment, ReaderFragment } from 'relay-runtime';
 import { FragmentRefs } from "relay-runtime";
-export type TaskCardDurationButton_task$data = {
-  readonly durationInMinutes: number | null | undefined;
+export type TaskCardTitle_task$data = {
   readonly id: string;
-  readonly " $fragmentType": "TaskCardDurationButton_task";
+  readonly title: string;
+  readonly " $fragmentType": "TaskCardTitle_task";
 };
-export type TaskCardDurationButton_task$key = {
-  readonly " $data"?: TaskCardDurationButton_task$data;
-  readonly " $fragmentSpreads": FragmentRefs<"TaskCardDurationButton_task">;
+export type TaskCardTitle_task$key = {
+  readonly " $data"?: TaskCardTitle_task$data;
+  readonly " $fragmentSpreads": FragmentRefs<"TaskCardTitle_task">;
 };
 
 const node: ReaderFragment = {
   "argumentDefinitions": [],
   "kind": "Fragment",
   "metadata": null,
-  "name": "TaskCardDurationButton_task",
+  "name": "TaskCardTitle_task",
   "selections": [
     {
       "alias": null,
@@ -37,7 +37,7 @@ const node: ReaderFragment = {
       "alias": null,
       "args": null,
       "kind": "ScalarField",
-      "name": "durationInMinutes",
+      "name": "title",
       "storageKey": null
     }
   ],
@@ -45,6 +45,6 @@ const node: ReaderFragment = {
   "abstractKey": null
 };
 
-(node as any).hash = "e79bab612e24897ba958afb86976cd24";
+(node as any).hash = "96e8eea96897b1c954afda2b3d03436d";
 
 export default node;

@@ -1,5 +1,5 @@
 /**
- * @generated SignedSource<<47a0a733a0c73f9215b02a019d4bf542>>
+ * @generated SignedSource<<5d2915cb3eb221b15d89b774a1d47033>>
  * @lightSyntaxTransform
  * @nogrep
  */
@@ -12,10 +12,9 @@ import { Fragment, ReaderFragment } from 'relay-runtime';
 export type TaskStatus = "CANCELED" | "DONE" | "TODO";
 import { FragmentRefs } from "relay-runtime";
 export type TaskCardSubtask_task$data = {
-  readonly date: string;
   readonly id: string;
   readonly status: TaskStatus;
-  readonly title: string;
+  readonly " $fragmentSpreads": FragmentRefs<"TaskCardStatusButton_task" | "TaskCardTitle_task">;
   readonly " $fragmentType": "TaskCardSubtask_task";
 };
 export type TaskCardSubtask_task$key = {
@@ -40,28 +39,24 @@ const node: ReaderFragment = {
       "alias": null,
       "args": null,
       "kind": "ScalarField",
-      "name": "title",
-      "storageKey": null
-    },
-    {
-      "alias": null,
-      "args": null,
-      "kind": "ScalarField",
       "name": "status",
       "storageKey": null
     },
     {
-      "alias": null,
       "args": null,
-      "kind": "ScalarField",
-      "name": "date",
-      "storageKey": null
+      "kind": "FragmentSpread",
+      "name": "TaskCardStatusButton_task"
+    },
+    {
+      "args": null,
+      "kind": "FragmentSpread",
+      "name": "TaskCardTitle_task"
     }
   ],
   "type": "Task",
   "abstractKey": null
 };
 
-(node as any).hash = "ac07f44d2f5251973f0cc27016a709e8";
+(node as any).hash = "0093fdba5f9929f32f541a3fec885244";
 
 export default node;
