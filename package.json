@@ -4,6 +4,7 @@
   "author": "@richardguerre",
   "devDependencies": {
     "bun-types": "1.0.4",
+    "decompress-response": "^9.0.0",
     "patch-package": "^6.0.2",
     "prettier": "3.0.3",
     "prettier-plugin-tailwindcss": "^0.2.8",
