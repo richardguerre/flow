@@ -25,19 +25,13 @@ enum Color {
 }
 
 input CreateNoteTagInput {
-  """
-  The color of the tag.
-  """
+  """The color of the tag."""
   color: String!
 
-  """
-  The name of the tag.
-  """
+  """The name of the tag."""
   name: String!
 
-  """
-  The slug of the tag. Defaults to dashcase version of the name.
-  """
+  """The slug of the tag. Defaults to dashcase version of the name."""
   slug: String
 }
 
@@ -55,20 +49,14 @@ scalar DateTime
 A day a user has planned or already done.\nDays that have not yet been planned are virtually created in the GraphQL API.
 """
 type Day implements Node {
-  """
-  The date of the day.
-  """
+  """The date of the day."""
   date: Date!
   id: ID!
 
-  """
-  The notes linked to the day.
-  """
+  """The notes linked to the day."""
   notes: [Note!]!
 
-  """
-  The routines for the day in chronological order.
-  """
+  """The routines for the day in chronological order."""
   routines: [Routine!]!
   tasks: [Task!]!
 }
@@ -77,14 +65,10 @@ type Day implements Node {
 An item created by the user or a plugin. The user can then create 1 or more tasks from the item.\nIt can be a calendar event, a Trello task, a Linear issue, a GitHub request for review, a notification, etc.
 """
 type Item implements Node {
-  """
-  The tailwind color of the item. Used in the calendar view.
-  """
+  """The tailwind color of the item. Used in the calendar view."""
   color: Color
 
-  """
-  The date and time of creation of the item
-  """
+  """The date and time of creation of the item"""
   createdAt: DateTime!
 
   """
@@ -98,9 +82,7 @@ type Item implements Node {
   """
   inboxPoints: Int
 
-  """
-  Whether the item is all-day on the date of `scheduledAt`.
-  """
+  """Whether the item is all-day on the date of `scheduledAt`."""
   isAllDay: Boolean
 
   """
@@ -108,25 +90,17 @@ type Item implements Node {
   """
   isRelevant: Boolean!
 
-  """
-  The list in which the item is in
-  """
+  """The list in which the item is in"""
   list: List
   listId: ID
 
-  """
-  The plugin datas linked to the item
-  """
+  """The plugin datas linked to the item"""
   pluginDatas: [ItemPluginData!]!
 
-  """
-  The date and time the item is scheduled for.
-  """
+  """The date and time the item is scheduled for."""
   scheduledAt: DateTime
 
-  """
-  The tasks linked to the item
-  """
+  """The tasks linked to the item"""
   tasks: [Task!]!
 
   """
@@ -150,34 +124,22 @@ input ItemOrderBy {
   updatedAt: OrderBy
 }
 
-"""
-The data a plugin links to an item.
-"""
+"""The data a plugin links to an item."""
 type ItemPluginData implements Node {
-  """
-  The date and time of creation of the item plugin data
-  """
+  """The date and time of creation of the item plugin data"""
   createdAt: DateTime!
 
-  """
-  The full data required by the plugin to be linked to the item.
-  """
+  """The full data required by the plugin to be linked to the item."""
   full: JSON!
   id: ID!
 
-  """
-  The minimum data required to render the information on item cards.
-  """
+  """The minimum data required to render the information on item cards."""
   min: JSON!
 
-  """
-  The slug of the plugin that created the data
-  """
+  """The slug of the plugin that created the data"""
   pluginSlug: String!
 
-  """
-  The date and time the item plugin data was last updated
-  """
+  """The date and time the item plugin data was last updated"""
   updatedAt: DateTime!
 }
 
@@ -208,34 +170,22 @@ The `JSON` scalar type represents JSON values as specified by [ECMA-404](http://
 """
 scalar JSON
 
-"""
-List of items
-"""
+"""List of items"""
 type List implements Node {
-  """
-  The date and time of creation of the list
-  """
+  """The date and time of creation of the list"""
   createdAt: DateTime!
 
-  """
-  The description of the list
-  """
+  """The description of the list"""
   description: String
   id: ID!
 
-  """
-  The items linked to the list
-  """
+  """The items linked to the list"""
   items(after: ID, before: ID, first: Int, last: Int, where: ItemFilter): ListItemsConnection!
 
-  """
-  The name of the list
-  """
+  """The name of the list"""
   name: String!
 
-  """
-  The slug (i.e. the url-safe version) of the list name
-  """
+  """The slug (i.e. the url-safe version) of the list name"""
   slug: String!
 }
 
@@ -256,14 +206,10 @@ type Mutation {
   changePassword(input: MutationChangePasswordInput!): String!
   completeRoutine(input: MutationCompleteRoutineInput!): Boolean!
 
-  """
-  Create an item in the calendar.
-  """
+  """Create an item in the calendar."""
   createCalendarItem(input: MutationCreateCalendarItemInput!): Item!
 
-  """
-  Create an item.
-  """
+  """Create an item."""
   createItem(input: MutationCreateItemInput!): Item!
 
   """
@@ -272,28 +218,18 @@ type Mutation {
   createOrUpdateNote(input: MutationCreateOrUpdateNoteInput!): Note!
   createRoutine(input: MutationCreateRoutineInput!): Routine!
 
-  """
-  Create a new subtask.
-  """
+  """Create a new subtask."""
   createSubtask(input: MutationCreateSubtaskInput!): Task!
 
-  """
-  Create a new task.
-  """
+  """Create a new task."""
   createTask(input: MutationCreateTaskInput!): Task!
 
-  """
-  Delete an item.
-  """
+  """Delete an item."""
   deleteItem(id: ID!): Item!
 
-  """
-  Delete a task.
-  """
+  """Delete a task."""
   deleteTask(
-    """
-    The Relay ID of the task to delete.
-    """
+    """The Relay ID of the task to delete."""
     id: ID!
   ): Task!
 
@@ -317,9 +253,7 @@ type Mutation {
   """
   logout: Boolean!
 
-  """
-  Make a task a subtask of another task.
-  """
+  """Make a task a subtask of another task."""
   makeTaskSubtaskOf(input: MutationMakeTaskSubtaskOfInput!): Task!
   pluginOperation(input: MutationPluginOperationInput!): PluginOperation
   refreshCalendarItems: Boolean!
@@ -334,14 +268,10 @@ type Mutation {
   """
   setTimezone(input: MutationSetTimezoneInput!): String!
 
-  """
-  Uninstall a plugin.
-  """
+  """Uninstall a plugin."""
   uninstallPlugin(input: MutationUninstallPluginInput!): [PluginInstallation!]!
 
-  """
-  Update an item.
-  """
+  """Update an item."""
   updateItem(input: MutationUpdateItemInput!): Item!
 
   """
@@ -350,19 +280,17 @@ type Mutation {
   updateItemStatus(input: MutationUpdateItemStatusInput!): Item!
   updateRoutine(input: MutationUpdateRoutineInput!): Routine!
 
-  """
-  Update a task.
-  """
+  """Update a task."""
   updateTask(input: MutationUpdateTaskInput!): Task!
 
   """
   Update the date of a task and/or position of the task in the day, and get the updated days (as a list in chronological order).
-
+  
   Input:
   - `id`: The ID of the task to update.
   - `date`: The new date of the task.
   - `after`: The ID of the task to place the task after. If `null`, the task will be placed at the beginning of the day.
-
+  
   When the task is:
   - already in the desired date, it updates the order and returns the day.
   - moved to today, it updates the date and order but not the status, and returns the original day and today.
@@ -378,37 +306,29 @@ type Mutation {
 
   """
   Creates a store item. If a store item with the same key exists, only its value will be updated (`isSecret` and `isServerOnly` will not be updated).
-
+  
   If the `pluginSlug` is passed, it will create/update a store item for that plugin. Otherwise, it will create/update a store item for flow.
-
+  
   If `isSecret` is set to true, `isServerOnly` will also be set to true and will not be returned in the `storeItems` query (it will be `null`). The item will only be accessible by plugin with the same `pluginSlug` in the server.
-
+  
   If `isServerOnly` is set to true, the store item will not be returned in the `storeItems` query (it will be `null`). The item will be accessible by all plugins in the server.
   """
   upsertStoreItem(input: MutationUpsertStoreItemInput!): Store!
 }
 
 input MutationChangePasswordInput {
-  """
-  The new password (unhashed).
-  """
+  """The new password (unhashed)."""
   newPassword: String!
 
-  """
-  The old password (unhashed).
-  """
+  """The old password (unhashed)."""
   oldPassword: String!
 }
 
 input MutationCompleteRoutineInput {
-  """
-  The date the routine was completed.
-  """
+  """The date the routine was completed."""
   date: Date!
 
-  """
-  The ID of the routine that was completed.
-  """
+  """The ID of the routine that was completed."""
   routineId: ID!
 }
 
@@ -420,9 +340,7 @@ input MutationCreateCalendarItemInput {
   pluginDatas: [ItemPluginDataInput!]
   scheduledAt: DateTime!
 
-  """
-  The title of the item.
-  """
+  """The title of the item."""
   title: String!
 }
 
@@ -433,8 +351,8 @@ input MutationCreateItemInput {
   isAllDay: Boolean
 
   """
-  If set to true, it will return items where `isRelevant` is true.
-
+  If set to true, it will return items where `isRelevant` is true. 
+  
   `isRelevant` is used in the List component to only show relevant items. If the item becomes irrelevant (e.g. because the trello task was already completed), you can update the item to make this `isRelevant = false`
   """
   isRelevant: Boolean
@@ -442,36 +360,24 @@ input MutationCreateItemInput {
   pluginDatas: [ItemPluginDataInput!]
   scheduledAt: DateTime
 
-  """
-  The title of the item.
-  """
+  """The title of the item."""
   title: String!
 }
 
 input MutationCreateOrUpdateNoteInput {
-  """
-  The content of the note.
-  """
+  """The content of the note."""
   content: String!
 
-  """
-  The date of the note.
-  """
+  """The date of the note."""
   date: Date!
 
-  """
-  Create new tags and link them to the note.
-  """
+  """Create new tags and link them to the note."""
   newTags: [CreateNoteTagInput!]
 
-  """
-  The IDs of tags to be unlinked from the note.
-  """
+  """The IDs of tags to be unlinked from the note."""
   removedTags: [ID!]
 
-  """
-  The slug of the note. Used for retrieving the note back.
-  """
+  """The slug of the note. Used for retrieving the note back."""
   slug: String!
 
   """
@@ -479,9 +385,7 @@ input MutationCreateOrUpdateNoteInput {
   """
   tags: [ID!]
 
-  """
-  The title of the note.
-  """
+  """The title of the note."""
   title: String!
 }
 
@@ -494,14 +398,10 @@ input MutationCreateRoutineInput {
 }
 
 input MutationCreateSubtaskInput {
-  """
-  The Relay ID of the parent task.
-  """
+  """The Relay ID of the parent task."""
   parentTaskId: ID!
 
-  """
-  The title of the subtask.
-  """
+  """The title of the subtask."""
   title: String!
 }
 
@@ -516,34 +416,22 @@ input MutationCreateTaskInput {
   """
   atIndex: Int
 
-  """
-  The day (no time required) the task is planned for.
-  """
+  """The day (no time required) the task is planned for."""
   date: Date
 
-  """
-  The length of time (in minutes) the task is expected to take.
-  """
+  """The length of time (in minutes) the task is expected to take."""
   durationInMinutes: PositiveInt
 
-  """
-  The Relay ID of the Item that should be linked to the task.
-  """
+  """The Relay ID of the Item that should be linked to the task."""
   itemId: ID
 
-  """
-  The plugin data to be linked to the task.
-  """
+  """The plugin data to be linked to the task."""
   pluginDatas: [TaskPluginDataInput!]
 
-  """
-  The initial status of the task. Defaults to `TODO`.
-  """
+  """The initial status of the task. Defaults to `TODO`."""
   status: TaskStatus = TODO
 
-  """
-  The title of the task.
-  """
+  """The title of the task."""
   title: String!
 }
 
@@ -557,21 +445,15 @@ input MutationInstallPluginInput {
 }
 
 input MutationLoginInput {
-  """
-  The password (unhashed).
-  """
+  """The password (unhashed)."""
   password: String!
 }
 
 input MutationMakeTaskSubtaskOfInput {
-  """
-  The Relay ID of the parent task.
-  """
+  """The Relay ID of the parent task."""
   parentTaskId: ID!
 
-  """
-  The Relay ID of the task to update.
-  """
+  """The Relay ID of the task to update."""
   taskId: ID!
 }
 
@@ -582,9 +464,7 @@ input MutationPluginOperationInput {
 }
 
 input MutationSetPasswordInput {
-  """
-  The password to set (unhashed).
-  """
+  """The password to set (unhashed)."""
   password: String!
 }
 
@@ -608,7 +488,7 @@ input MutationUpdateItemInput {
 
   """
   If set to true, it will return items where `isRelevant` is true.
-
+  
   `isRelevant` is used in the List component to only show relevant items. If the item becomes irrelevant (e.g. because the trello task was already completed), you can update the item to make this `isRelevant = false`
   """
   isRelevant: Boolean
@@ -619,102 +499,66 @@ input MutationUpdateItemInput {
 }
 
 input MutationUpdateItemStatusInput {
-  """
-  Whether the item is done or not.
-  """
+  """Whether the item is done or not."""
   done: Boolean!
 
-  """
-  The ID of the item.
-  """
+  """The ID of the item."""
   id: ID!
 }
 
 input MutationUpdateRoutineInput {
-  """
-  The action name to update the routine with.
-  """
+  """The action name to update the routine with."""
   actionName: String
 
-  """
-  Whether the routine is active.
-  """
+  """Whether the routine is active."""
   isActive: Boolean
 
-  """
-  The name to update the routine with.
-  """
+  """The name to update the routine with."""
   name: String
 
-  """
-  The repetition patterns to update the routine with.
-  """
+  """The repetition patterns to update the routine with."""
   repeats: [RepetitionPattern!]
 
-  """
-  The ID of the routine to update.
-  """
+  """The ID of the routine to update."""
   routineId: ID!
 
-  """
-  The steps to update the routine with.
-  """
+  """The steps to update the routine with."""
   steps: [RoutineStepInput!]
 
-  """
-  The time to update the routine with.
-  """
+  """The time to update the routine with."""
   time: Time
 }
 
 input MutationUpdateTaskDateInput {
-  """
-  The new date of the task.
-  """
+  """The new date of the task."""
   date: Date!
 
-  """
-  The Relay ID of the task to update.
-  """
+  """The Relay ID of the task to update."""
   id: ID!
 
-  """
-  The new order of the tasks in the day the task is moved into.
-  """
+  """The new order of the tasks in the day the task is moved into."""
   newTasksOrder: [ID!]!
 }
 
 input MutationUpdateTaskInput {
-  """
-  The length of time (in minutes) the task is expected to take.
-  """
+  """The length of time (in minutes) the task is expected to take."""
   durationInMinutes: PositiveInt
 
-  """
-  The Relay ID of the task to update.
-  """
+  """The Relay ID of the task to update."""
   id: ID!
 
-  """
-  The title of the task.
-  """
+  """The title of the task."""
   title: String
 }
 
 input MutationUpdateTaskStatusInput {
-  """
-  The action data to be passed to the plugin.
-  """
+  """The action data to be passed to the plugin."""
   actionData: [TaskActionDataInput!]
 
-  """
-  The Relay ID of the task to update.
-  """
+  """The Relay ID of the task to update."""
   id: ID!
 
-  """
-  The new status of the task.
-  """
+  """The new status of the task."""
   status: TaskStatus!
 }
 
@@ -730,23 +574,17 @@ interface Node {
   id: ID!
 }
 
-"""
-A note that the user has created.
-"""
+"""A note that the user has created."""
 type Note implements Node {
   """
   The content of the note in HTML. If it's text (i.e. one line),\nit will most likely be converted to HTML by the TipTap editor.
   """
   content: String!
 
-  """
-  The date and time of creation of the note
-  """
+  """The date and time of creation of the note"""
   createdAt: DateTime!
 
-  """
-  The date the note was created
-  """
+  """The date the note was created"""
   date: Date!
   id: ID!
 
@@ -755,55 +593,35 @@ type Note implements Node {
   """
   slug: String!
 
-  """
-  The tags of the note
-  """
+  """The tags of the note"""
   tags: [NoteTag!]!
 
-  """
-  The title of the note
-  """
+  """The title of the note"""
   title: String!
 
-  """
-  The date and time the note was last updated
-  """
+  """The date and time the note was last updated"""
   updatedAt: DateTime!
 }
 
-"""
-A tag that can be applied to a note.
-"""
+"""A tag that can be applied to a note."""
 type NoteTag implements Node {
-  """
-  The color of the note tag in hex
-  """
+  """The color of the note tag in hex"""
   color: Color!
 
-  """
-  The date and time of creation of the note tag
-  """
+  """The date and time of creation of the note tag"""
   createdAt: DateTime!
   id: ID!
 
-  """
-  Whether notes with this tag should be private. (default: true)
-  """
+  """Whether notes with this tag should be private. (default: true)"""
   isPrivate: Boolean!
 
-  """
-  The name of the note tag
-  """
+  """The name of the note tag"""
   name: String!
 
-  """
-  The notes with this tag
-  """
+  """The notes with this tag"""
   notes(after: ID, before: ID, first: Int, last: Int): NoteTagNotesConnection!
 
-  """
-  The slug (i.e. the url-safe version) of the note tag name
-  """
+  """The slug (i.e. the url-safe version) of the note tag name"""
   slug: String!
 }
 
@@ -818,14 +636,10 @@ type NoteTagNotesConnectionEdge {
 }
 
 input NoteTagWhereInput {
-  """
-  Filter by whether the tag is for private use.
-  """
+  """Filter by whether the tag is for private use."""
   isPrivate: Boolean
 
-  """
-  Filter by name. Case insensitive.
-  """
+  """Filter by name. Case insensitive."""
   nameIsLike: String
 }
 
@@ -864,14 +678,10 @@ type PluginOperation implements Node {
   id: ID!
 }
 
-"""
-Integers that will have a value greater than 0.
-"""
+"""Integers that will have a value greater than 0."""
 scalar PositiveInt
 
-"""
-Filter input of Date
-"""
+"""Filter input of Date"""
 input PrismaDateFilter {
   equals: Date
   gt: Date
@@ -883,9 +693,7 @@ input PrismaDateFilter {
   notIn: [Date!]
 }
 
-"""
-Filter input of DateTime
-"""
+"""Filter input of DateTime"""
 input PrismaDateTimeFilter {
   equals: DateTime
   gt: DateTime
@@ -897,9 +705,7 @@ input PrismaDateTimeFilter {
   notIn: [DateTime!]
 }
 
-"""
-Filter input of Int
-"""
+"""Filter input of Int"""
 input PrismaIntFilter {
   equals: Int
   gt: Int
@@ -911,9 +717,7 @@ input PrismaIntFilter {
   notIn: [Int!]
 }
 
-"""
-Filter input of JSON
-"""
+"""Filter input of JSON"""
 input PrismaJsonFilter {
   array_contains: JSON
   array_ends_with: JSON
@@ -927,40 +731,32 @@ type Query {
 
   """
   Get days using a Relay connection.
-
+  
   If no arguments are provided, it will return the current day.
-
+  
   If `first` (Int) is provided, it will return the current day and the following days.
-
+  
   If `after` (Date*) is provided, it will return the days after the given date.
-
+  
   If `last` (Int) is provided, it will return the current day and the previous days.
-
+  
   If `before` (Date*) is provided, it will return the days before the given date.
-
+  
   *Ignore that the GraphQL type is ID as Pothos (the library used to build the GraphQL API) doesn't support overriding the type of the connection fields.
   Please input a Date in the format: YYYY-MM-DD
   """
   days(after: ID, before: ID, first: Int, last: Int): QueryDaysConnection!
 
-  """
-  Get all installed plugins.
-  """
+  """Get all installed plugins."""
   installedPlugins: [PluginInstallation!]!
 
-  """
-  Whether the Flow instance is fully setup.
-  """
+  """Whether the Flow instance is fully setup."""
   isFullySetup: Boolean!
 
-  """
-  Whether the password is set.
-  """
+  """Whether the password is set."""
   isPasswordSet: Boolean!
 
-  """
-  Whether the session is valid.
-  """
+  """Whether the session is valid."""
   isSessionValid: Boolean!
 
   """
@@ -968,23 +764,12 @@ type Query {
   By default, only items where `isRelevant` is true.
   Pass the `where` argument to override these defaults.
   """
-  items(
-    after: ID
-    before: ID
-    first: Int
-    last: Int
-    orderBy: ItemOrderBy
-    where: ItemFilter
-  ): QueryItemsConnection!
+  items(after: ID, before: ID, first: Int, last: Int, orderBy: ItemOrderBy, where: ItemFilter): QueryItemsConnection!
 
-  """
-  Get a list by its id or slug.
-  """
+  """Get a list by its id or slug."""
   list(id: ID, slug: String): List
 
-  """
-  Get all lists.
-  """
+  """Get all lists."""
   lists(
     """
     The number of lists to return. If not provided, all lists will be returned.
@@ -994,13 +779,9 @@ type Query {
   node(id: ID!): Node
   nodes(ids: [ID!]!): [Node]!
 
-  """
-  Get a note by its `slug`.
-  """
+  """Get a note by its `slug`."""
   note(
-    """
-    The slug of the note.
-    """
+    """The slug of the note."""
     slug: String!
   ): Note
 
@@ -1013,21 +794,17 @@ type Query {
     first: Int
     last: Int
 
-    """
-    Filters to use when querying note tags.
-    """
+    """Filters to use when querying note tags."""
     where: NoteTagWhereInput
   ): QueryNoteTagsConnection!
   pluginOperation(input: QueryPluginOperationInput!): PluginOperation
 
-  """
-  Get all routines.
-  """
+  """Get all routines."""
   routines: [Routine!]!
 
   """
   Get store items.
-
+  
   Pass the `pluginSlug` if you want to get items created by a specific plugin. Not passing the `pluginSlug` will return items created by flow.
   """
   storeItems(where: QueryStoreItemsInput): [Store!]!
@@ -1041,15 +818,11 @@ type Query {
     first: Int
     last: Int
 
-    """
-    Filters to use when querying task tags.
-    """
+    """Filters to use when querying task tags."""
     where: TaskTagWhereInput
   ): QueryTaskTagsConnection!
 
-  """
-  The timezone set for the Flow instance. `null` if no timezone is set.
-  """
+  """The timezone set for the Flow instance. `null` if no timezone is set."""
   timezoneSet: String
 }
 
@@ -1114,18 +887,12 @@ enum RepetitionPattern {
   WEDNESDAY
 }
 
-"""
-A routine the user has set up.
-"""
+"""A routine the user has set up."""
 type Routine implements Node {
-  """
-  Action name used on the button to start the routine
-  """
+  """Action name used on the button to start the routine"""
   actionName: String!
 
-  """
-  The date and time of creation of the routine
-  """
+  """The date and time of creation of the routine"""
   createdAt: DateTime!
 
   """
@@ -1139,25 +906,17 @@ type Routine implements Node {
   firstStep: String
   id: ID!
 
-  """
-  Whether the routine is active. This can be used to pause a routine.
-  """
+  """Whether the routine is active. This can be used to pause a routine."""
   isActive: Boolean!
 
-  """
-  The name of the routine
-  """
+  """The name of the routine"""
   name: String!
 
-  """
-  The pattern(s) the routine repeats on
-  """
+  """The pattern(s) the routine repeats on"""
   repeats: [RepetitionPattern!]!
   steps: [RoutineStep!]!
 
-  """
-  The time the routine takes place
-  """
+  """The time the routine takes place"""
   time: Time!
 }
 
@@ -1165,9 +924,7 @@ type Routine implements Node {
 A step in a routine. To know which plugin the step belongs to, see `pluginSlug`.
 """
 type RoutineStep {
-  """
-  The slug of the plugin that the step belongs to.
-  """
+  """The slug of the plugin that the step belongs to."""
   pluginSlug: String!
 
   """
@@ -1175,9 +932,7 @@ type RoutineStep {
   """
   shouldSkip: Boolean!
 
-  """
-  The slug of the step.
-  """
+  """The slug of the step."""
   stepSlug: String!
 }
 
@@ -1191,9 +946,7 @@ input RoutineStepInput {
 A key-value store containing settings the user has modified for both Flow and plugins (by convention, the key is prefixed with the plugin's slug), or configs and secrents that plugins have stored such as API keys.
 """
 type Store implements Node {
-  """
-  The date and time of creation of the store item
-  """
+  """The date and time of creation of the store item"""
   createdAt: DateTime!
   id: ID!
 
@@ -1207,24 +960,16 @@ type Store implements Node {
   """
   isServerOnly: Boolean!
 
-  """
-  The key of the store item
-  """
+  """The key of the store item"""
   key: String!
 
-  """
-  The slug of the plugin the store item is linked to.
-  """
+  """The slug of the plugin the store item is linked to."""
   pluginSlug: String!
 
-  """
-  The date and time the store item was last updated
-  """
+  """The date and time the store item was last updated"""
   updatedAt: DateTime!
 
-  """
-  The value of the store item.
-  """
+  """The value of the store item."""
   value: JSON
 }
 
@@ -1234,76 +979,45 @@ type Subscription {
   By default, only items where `isRelevant` is true.
   Pass the `where` argument to override these defaults.
   """
-  items(
-    after: ID
-    before: ID
-    first: Int
-    last: Int
-    orderBy: ItemOrderBy
-    where: ItemFilter
-  ): QueryItemsConnection!
+  items(after: ID, before: ID, first: Int, last: Int, orderBy: ItemOrderBy, where: ItemFilter): QueryItemsConnection!
 
-  """
-  Get a list by its id or slug.
-  """
+  """Get a list by its id or slug."""
   list(id: ID, slug: String): List
   notifications: Notifications!
 }
 
-"""
-A task that the user or a plugin has created.
-"""
+"""A task that the user or a plugin has created."""
 type Task implements Node {
-  """
-  The date and time the task was completed.
-  """
+  """The date and time the task was completed."""
   completedAt: DateTime
 
-  """
-  The date and time of creation of the task
-  """
+  """The date and time of creation of the task"""
   createdAt: DateTime!
 
-  """
-  The date the task is scheduled for
-  """
+  """The date the task is scheduled for"""
   date: Date!
 
-  """
-  The length of time the task is expected to take.
-  """
+  """The length of time the task is expected to take."""
   durationInMinutes: Int
   id: ID!
 
-  """
-  The item linked to the task
-  """
+  """The item linked to the task"""
   item: Item
   itemId: ID
 
-  """
-  The plugin datas of the task
-  """
+  """The plugin datas of the task"""
   pluginDatas: [TaskPluginData!]!
 
-  """
-  The status of the task
-  """
+  """The status of the task"""
   status: TaskStatus!
 
-  """
-  The subtasks of the task
-  """
+  """The subtasks of the task"""
   subtasks: [Task!]!
 
-  """
-  The tags of the task
-  """
+  """The tags of the task """
   tags: [TaskTag!]!
 
-  """
-  The title of the task in text or HTML.
-  """
+  """The title of the task in text or HTML."""
   title: String!
 }
 
@@ -1324,34 +1038,22 @@ input TaskListFilter {
   some: TaskFilter
 }
 
-"""
-The data required by a plugin to be linked to a task.
-"""
+"""The data required by a plugin to be linked to a task."""
 type TaskPluginData implements Node {
-  """
-  The date and time of creation of the task plugin data
-  """
+  """The date and time of creation of the task plugin data"""
   createdAt: DateTime!
 
-  """
-  The full data required by the plugin to be linked to the task.
-  """
+  """The full data required by the plugin to be linked to the task."""
   full: JSON!
   id: ID!
 
-  """
-  The minimum data required to render the information on task cards.
-  """
+  """The minimum data required to render the information on task cards."""
   min: JSON!
 
-  """
-  The slug of the plugin that created the data
-  """
+  """The slug of the plugin that created the data"""
   pluginSlug: String!
 
-  """
-  The date and time the task plugin data was last updated
-  """
+  """The date and time the task plugin data was last updated"""
   updatedAt: DateTime!
 }
 
@@ -1363,19 +1065,13 @@ input TaskPluginDataInput {
 }
 
 enum TaskStatus {
-  """
-  When the task was decided not to be done anymore.
-  """
+  """When the task was decided not to be done anymore."""
   CANCELED
 
-  """
-  When the task is done.
-  """
+  """When the task is done."""
   DONE
 
-  """
-  When the task is planned or in progress.
-  """
+  """When the task is planned or in progress."""
   TODO
 }
 
@@ -1386,34 +1082,22 @@ input TaskStatusFilter {
   notIn: [TaskStatus!]
 }
 
-"""
-A tag that can be applied to a task.
-"""
+"""A tag that can be applied to a task."""
 type TaskTag implements Node {
-  """
-  The color of the task tag
-  """
+  """The color of the task tag"""
   color: Color!
 
-  """
-  The date and time of creation of the task tag
-  """
+  """The date and time of creation of the task tag"""
   createdAt: DateTime!
   id: ID!
 
-  """
-  Whether tasks with this tag should be private. (default: true)
-  """
+  """Whether tasks with this tag should be private. (default: true)"""
   isPrivate: Boolean!
 
-  """
-  The name of the task tag
-  """
+  """The name of the task tag"""
   name: String!
 
-  """
-  The slug (i.e. the url-safe version) of the task tag name
-  """
+  """The slug (i.e. the url-safe version) of the task tag name"""
   slug: String!
   tasks(after: ID, before: ID, first: Int, last: Int): TaskTagTasksConnection!
 }
@@ -1429,14 +1113,10 @@ type TaskTagTasksConnectionEdge {
 }
 
 input TaskTagWhereInput {
-  """
-  Filter by whether the tag is for private use.
-  """
+  """Filter by whether the tag is for private use."""
   isPrivate: Boolean
 
-  """
-  Filter by name. Case insensitive.
-  """
+  """Filter by name. Case insensitive."""
   nameIsLike: String
 }
 

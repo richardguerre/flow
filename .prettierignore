@@ -46,8 +46,7 @@ apps/server/plugins/*
 !apps/server/plugins/.gitkeep
 
 # ignoring schema.graphql as it's genrated from the server and doesn't need to be formatted
-apps/web/src/relay/schema.graphql
-apps/mobile-pwa/src/relay/schema.graphql
+packages/relay/schema.graphql
 
 # ignoring generated files from relay-compiler (copied from apps/web/.gitignore)
 apps/web/src/relay/__generated__
