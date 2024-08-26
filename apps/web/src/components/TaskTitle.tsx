@@ -1,4 +1,6 @@
-import { MutableRefObject, useCallback, useEffect, useRef, useState } from "react";
+import { MutableRefObject, useCallback, useEffect, useRef, useState, 
+  forwardRef,
+  useImperativeHandle, } from "react";
 import { graphql, useFragment, useMutation } from "@flowdev/relay";
 import {
   useEditor,
@@ -14,6 +16,8 @@ import { TaskTitleUpdateTaskTitleMutation } from "../relay/__generated__/TaskTit
 import "./TaskTitle.scss";
 import { TaskTitleCreateTaskMutation } from "../relay/__generated__/TaskTitleCreateTaskMutation.graphql";
 import { createVirtualTask, deleteVirtualTask } from "./Day";
+import { ReactRenderer } from '@tiptap/react'
+import tippy from 'tippy.js'
 
 type TaskTitleProps = {
   task: TaskTitle_task$key;
@@ -152,6 +156,67 @@ export const TaskTitleInput = (props: TaskTitleInputProps) => {
       Mention.configure({
         suggestion: {
           char: "#",
+          items: ({ query }) => {
+            return [
+              'Lea Thompson', 'Cyndi Lauper', 'Tom Cruise', 'Madonna', 'Jerry Hall', 'Joan Collins', 'Winona Ryder', 'Christina Applegate', 'Alyssa Milano', 'Molly Ringwald', 'Ally Sheedy', 'Debbie Harry', 'Olivia Newton-John', 'Elton John', 'Michael J. Fox', 'Axl Rose', 'Emilio Estevez', 'Ralph Macchio', 'Rob Lowe', 'Jennifer Grey', 'Mickey Rourke', 'John Cusack', 'Matthew Broderick', 'Justine Bateman', 'Lisa Bonet',
+            ].filter(item => item.toLowerCase().startsWith(query.toLowerCase())).slice(0, 5)
+          },
+        
+          render: () => {
+            let reactRenderer: any;
+            let popup: any;
+        
+            return {
+              onStart: props => {
+        
+                if (!props.clientRect) {
+                  return
+                }
+        
+                reactRenderer = new ReactRenderer(MentionList, {
+                  props,
+                  editor: props.editor,
+                })
+        
+                popup = tippy('body', {
+                  getReferenceClientRect: props.clientRect,
+                  appendTo: () => document.body,
+                  content: reactRenderer.element,
+                  showOnCreate: true,
+                  interactive: true,
+                  trigger: 'manual',
+                  placement: 'bottom-start',
+                })
+              },
+        
+              onUpdate(props) {
+                reactRenderer.updateProps(props)
+        
+                if (!props.clientRect) {
+                  return
+                }
+        
+                popup[0].setProps({
+                  getReferenceClientRect: props.clientRect,
+                })
+              },
+        
+              onKeyDown(props) {
+                if (props.event.key === 'Escape') {
+                  popup[0].hide()
+        
+                  return true
+                }
+        
+                return reactRenderer.ref?.onKeyDown(props)
+              },
+        
+              onExit() {
+                popup[0].destroy()
+                reactRenderer.destroy()
+              },
+            }
+          },
         },
       }),
     ],
@@ -182,6 +247,7 @@ export const TaskTitleInput = (props: TaskTitleInputProps) => {
     if (props.initialValue === editorRef.current.getHTML()) return;
     editorRef.current.commands.setContent(props.initialValue);
   }, [editorRef.current, props.initialValue]);
+
   return (
     <EditorContent
       className={props.className ?? "TaskTitleInput w-full cursor-text p-0"}
@@ -190,3 +256,67 @@ export const TaskTitleInput = (props: TaskTitleInputProps) => {
     />
   );
 };
+
+const MentionList = forwardRef((props, ref) => {
+  const [selectedIndex, setSelectedIndex] = useState(0)
+
+  const selectItem = index => {
+    const item = props.items[index]
+
+    if (item) {
+      props.command({ id: item })
+    }
+  }
+
+  const upHandler = () => {
+    setSelectedIndex(((selectedIndex + props.items.length) - 1) % props.items.length)
+  }
+
+  const downHandler = () => {
+    setSelectedIndex((selectedIndex + 1) % props.items.length)
+  }
+
+  const enterHandler = () => {
+    selectItem(selectedIndex)
+  }
+
+  useEffect(() => setSelectedIndex(0), [props.items])
+
+  useImperativeHandle(ref, () => ({
+    onKeyDown: ({ event }) => {
+      if (event.key === 'ArrowUp') {
+        upHandler()
+        return true
+      }
+
+      if (event.key === 'ArrowDown') {
+        downHandler()
+        return true
+      }
+
+      if (event.key === 'Enter') {
+        enterHandler()
+        return true
+      }
+
+      return false
+    },
+  }))
+
+  return (
+    <div className="dropdown-menu">
+      {props.items.length
+        ? props.items.map((item, index) => (
+          <button
+            className={index === selectedIndex ? 'is-selected' : ''}
+            key={index}
+            onClick={() => selectItem(index)}
+          >
+            {item}
+          </button>
+        ))
+        : <div className="item">No result</div>
+      }
+    </div>
+  )
+})
