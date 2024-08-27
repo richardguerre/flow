@@ -1,4 +1,4 @@
-import { Extension } from "@tiptap/core";
+import { Extension, type Range } from "@tiptap/core";
 import { Document } from "@tiptap/extension-document";
 import { useEditor, Editor, EditorContent } from "@tiptap/react";
 import { Blockquote, BlockquoteOptions } from "@tiptap/extension-blockquote";
@@ -47,6 +47,7 @@ export {
   History,
   Mention,
   MarkdownExtension,
+  type Range,
 };
 
 export const Link = $Link.configure({

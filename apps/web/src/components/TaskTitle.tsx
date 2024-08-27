@@ -7,7 +7,7 @@ import {
   forwardRef,
   useImperativeHandle,
 } from "react";
-import { graphql, useFragment, useMutation } from "@flowdev/relay";
+import { fetchQuery, graphql, useFragment, useMutation } from "@flowdev/relay";
 import {
   useEditor,
   EditorContent,
@@ -16,14 +16,19 @@ import {
   CatchNewLines,
   MinimumKit,
   OnEscape,
+  type Range,
 } from "@flowdev/tiptap";
 import { TaskTitle_task$key } from "@flowdev/web/relay/__generated__/TaskTitle_task.graphql";
 import { TaskTitleUpdateTaskTitleMutation } from "../relay/__generated__/TaskTitleUpdateTaskTitleMutation.graphql";
 import "./TaskTitle.scss";
 import { TaskTitleCreateTaskMutation } from "../relay/__generated__/TaskTitleCreateTaskMutation.graphql";
 import { createVirtualTask, deleteVirtualTask } from "./Day";
-import { ReactRenderer } from "@tiptap/react";
-import tippy from "tippy.js";
+import { ReactRenderer, mergeAttributes } from "@tiptap/react";
+import tippy, { Instance } from "tippy.js";
+import { environment } from "@flowdev/web/relay/environment";
+import { dayjs } from "@flowdev/web/dayjs";
+import { TaskTitleInputTaskTagsQuery } from "../relay/__generated__/TaskTitleInputTaskTagsQuery.graphql";
+import { TaskTitleInput_taskTags$data } from "../relay/__generated__/TaskTitleInput_taskTags.graphql";
 
 type TaskTitleProps = {
   task: TaskTitle_task$key;
@@ -127,7 +132,6 @@ type TaskTitleInputProps = {
   readOnly?: boolean;
 };
 
-// used by plugins, so needs to be self contained
 export const TaskTitleInput = (props: TaskTitleInputProps) => {
   const editorRef = useRef<Editor | null>(null);
   const [editable, setEditable] = useState(props.autoFocus ?? false);
@@ -148,6 +152,7 @@ export const TaskTitleInput = (props: TaskTitleInputProps) => {
     if (!editorRef.current.isEditable) return;
 
     const newValue = editorRef.current.getHTML();
+    console.log(newValue, props.initialValue);
     if (newValue === props.initialValue) {
       props.onCancel?.();
       return;
@@ -160,97 +165,7 @@ export const TaskTitleInput = (props: TaskTitleInputProps) => {
       MinimumKit,
       CatchNewLines(() => editorRef.current!.commands.blur()),
       OnEscape(() => editorRef.current!.commands.blur()),
-      Mention.configure({
-        suggestion: {
-          char: "#",
-          items: ({ query }) => {
-            return [
-              "Lea Thompson",
-              "Cyndi Lauper",
-              "Tom Cruise",
-              "Madonna",
-              "Jerry Hall",
-              "Joan Collins",
-              "Winona Ryder",
-              "Christina Applegate",
-              "Alyssa Milano",
-              "Molly Ringwald",
-              "Ally Sheedy",
-              "Debbie Harry",
-              "Olivia Newton-John",
-              "Elton John",
-              "Michael J. Fox",
-              "Axl Rose",
-              "Emilio Estevez",
-              "Ralph Macchio",
-              "Rob Lowe",
-              "Jennifer Grey",
-              "Mickey Rourke",
-              "John Cusack",
-              "Matthew Broderick",
-              "Justine Bateman",
-              "Lisa Bonet",
-            ]
-              .filter((item) => item.toLowerCase().startsWith(query.toLowerCase()))
-              .slice(0, 5);
-          },
-
-          render: () => {
-            let reactRenderer: any;
-            let popup: any;
-
-            return {
-              onStart: (props) => {
-                if (!props.clientRect) {
-                  return;
-                }
-
-                reactRenderer = new ReactRenderer(MentionList, {
-                  props,
-                  editor: props.editor,
-                });
-
-                popup = tippy("body", {
-                  getReferenceClientRect: props.clientRect,
-                  appendTo: () => document.body,
-                  content: reactRenderer.element,
-                  showOnCreate: true,
-                  interactive: true,
-                  trigger: "manual",
-                  placement: "bottom-start",
-                });
-              },
-
-              onUpdate(props) {
-                reactRenderer.updateProps(props);
-
-                if (!props.clientRect) {
-                  return;
-                }
-
-                popup[0].setProps({
-                  getReferenceClientRect: props.clientRect,
-                });
-              },
-
-              onKeyDown(props) {
-                if (props.event.key === "Escape") {
-                  popup[0].hide();
-
-                  return true;
-                }
-
-                return reactRenderer.ref?.onKeyDown(props);
-              },
-
-              onExit() {
-                popup[0].destroy();
-                reactRenderer.destroy();
-              },
-            };
-          },
-        },
-      }),
+      TaskTags,
     ],
     content: props.initialValue ?? "",
     editable: props.readOnly ? false : undefined,
@@ -289,45 +204,148 @@ export const TaskTitleInput = (props: TaskTitleInputProps) => {
   );
 };
 
-const MentionList = forwardRef((props, ref) => {
+const TaskTags = Mention.configure({
+  renderHTML({ options, node }) {
+    const tag = node.attrs as { id: string; label?: string };
+    return [
+      "span",
+      mergeAttributes({ class: "bg-red-100" }, options.HTMLAttributes),
+      `${options.suggestion.char}${tag.label ?? tag.id}`,
+    ];
+  },
+  suggestion: {
+    char: "#",
+    items: async ({ query }) => {
+      const lastTimeQueriedTags = localStorage.getItem("lastTimeQueriedTags");
+      const FIVE_MINUTES = 1000 * 60 * 5;
+      const hasBeenQueriedRecently = lastTimeQueriedTags
+        ? dayjs().diff(dayjs(lastTimeQueriedTags), "millisecond") < FIVE_MINUTES
+        : false;
+
+      const tagsData = await fetchQuery<TaskTitleInputTaskTagsQuery>(
+        environment,
+        graphql`
+          query TaskTitleInputTaskTagsQuery {
+            taskTags {
+              edges {
+                node {
+                  ...TaskTitleInput_taskTags @relay(mask: false)
+                }
+              }
+            }
+          }
+        `,
+        {},
+        { fetchPolicy: "network-only" },
+      ).toPromise();
+
+      if (!hasBeenQueriedRecently) {
+        localStorage.setItem("lastTimeQueriedTags", dayjs().toISOString());
+      }
+
+      return (tagsData?.taskTags.edges.map((edge) => edge.node) ?? [])
+        .filter((tag) => tag.name.toLowerCase().startsWith(query.toLowerCase()))
+        .slice(0, 5);
+    },
+    command: (...args) => console.log(args),
+    render: () => {
+      let reactRenderer: ReactRenderer<any, any>; // TODO: fix types
+      let popup: Instance<any>; // TODO: fix types
+
+      return {
+        onStart: (props) => {
+          if (!props.clientRect) return;
+
+          reactRenderer = new ReactRenderer(TagsList, {
+            props,
+            editor: props.editor,
+          });
+
+          // @ts-ignore next line as tippy.js types are incorrect/overload is too complex it trips on itself
+          [popup] = tippy("body", {
+            getReferenceClientRect: props.clientRect,
+            appendTo: () => document.body,
+            content: reactRenderer.element,
+            showOnCreate: true,
+            interactive: true,
+            trigger: "manual",
+            placement: "bottom-start",
+          });
+        },
+
+        onUpdate(props) {
+          reactRenderer.updateProps(props);
+          if (!props.clientRect) return;
+          popup.setProps({
+            getReferenceClientRect: props.clientRect,
+          });
+        },
+
+        onKeyDown(props) {
+          if (props.event.key === "Escape") {
+            popup.hide();
+            return true;
+          }
+          if (props.event.key === "Enter") {
+            return true; // prevents the editor from losing focus
+          }
+
+          return reactRenderer.ref?.onKeyDown(props);
+        },
+
+        onExit() {
+          popup.destroy();
+          reactRenderer.destroy();
+        },
+      };
+    },
+  },
+});
+
+const TagsList = forwardRef<
+  any,
+  { items: TaskTitleInput_taskTags$data[]; command: any; editor: Editor; range: Range }
+>((props, ref) => {
   const [selectedIndex, setSelectedIndex] = useState(0);
 
-  const selectItem = (index) => {
+  const selectItem = (index: number) => {
     const item = props.items[index];
-
+    // console.log(props);
     if (item) {
-      props.command({ id: item });
+      // props.command(item);
+
+      props.editor
+        .chain()
+        .deleteRange({ from: props.range.from, to: props.range.to })
+        .insertContent({
+          type: "mention",
+          attrs: {
+            id: item.id,
+            label: item.name,
+          },
+        })
+        .insertContent(" ") // add an extra space after the mention
+        .run();
     }
   };
 
-  const upHandler = () => {
-    setSelectedIndex((selectedIndex + props.items.length - 1) % props.items.length);
-  };
-
-  const downHandler = () => {
-    setSelectedIndex((selectedIndex + 1) % props.items.length);
-  };
-
-  const enterHandler = () => {
-    selectItem(selectedIndex);
-  };
-
-  useEffect(() => setSelectedIndex(0), [props.items]);
-
   useImperativeHandle(ref, () => ({
-    onKeyDown: ({ event }) => {
+    onKeyDown: ({ event }: any) => {
       if (event.key === "ArrowUp") {
-        upHandler();
+        console.log("up", selectedIndex);
+        setSelectedIndex((selectedIndex + props.items.length - 1) % props.items.length);
         return true;
       }
 
       if (event.key === "ArrowDown") {
-        downHandler();
+        console.log("down", selectedIndex);
+        setSelectedIndex((selectedIndex + 1) % props.items.length);
         return true;
       }
 
       if (event.key === "Enter") {
-        enterHandler();
+        console.log("enter", selectedIndex);
+        selectItem(selectedIndex);
         return true;
       }
 
@@ -335,21 +353,28 @@ const MentionList = forwardRef((props, ref) => {
     },
   }));
 
+  useEffect(() => setSelectedIndex(0), [props.items]);
+
   return (
     <div className="dropdown-menu">
-      {props.items.length ? (
-        props.items.map((item, index) => (
-          <button
-            className={index === selectedIndex ? "is-selected" : ""}
-            key={index}
-            onClick={() => selectItem(index)}
-          >
-            {item}
-          </button>
-        ))
-      ) : (
-        <div className="item">No result</div>
-      )}
+      {props.items.map((item, i) => (
+        <button
+          key={item.id}
+          onClick={(e) => {
+            e.stopPropagation();
+            selectItem(i);
+          }}
+        >
+          {item.name}
+        </button>
+      ))}
     </div>
   );
 });
+
+graphql`
+  fragment TaskTitleInput_taskTags on TaskTag {
+    id
+    name
+  }
+`;

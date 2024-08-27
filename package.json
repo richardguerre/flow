@@ -18,10 +18,11 @@
   },
   "private": true,
   "resolutions": {
-    "vite": "5.2.4",
     "prettier": "3.0.3",
+    "prosemirror-model": "1.19.4",
     "sharp": "0.33.5",
-    "sharp-ico": "0.1.5"
+    "sharp-ico": "0.1.5",
+    "vite": "5.2.4"
   },
   "scripts": {
     "dev": "bunx --bun turbo run dev",
