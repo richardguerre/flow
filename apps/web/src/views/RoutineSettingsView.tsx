@@ -100,7 +100,10 @@ export default () => {
 
   return (
     <div className="bg-background-50 flex max-h-screen w-full flex-col gap-4 overflow-auto p-8">
-      <h1 className="text-xl font-medium">Routines</h1>
+      <div className="flex flex-col">
+        <h1 className="text-2xl font-semibold">Tasks</h1>
+        <div className="text-foreground-700">Manage your routines</div>
+      </div>
       <div className="grid grid-cols-[minmax(0,_576px)_minmax(0,_1fr)] gap-4">
         <div className="flex flex-col items-start gap-2">
           {data.routines.map((routine) => (

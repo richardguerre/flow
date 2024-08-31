@@ -1,5 +1,6 @@
+import { GraphQLError } from "graphql";
 import { prisma } from "../utils/prisma";
-import { builder } from "./builder";
+import { builder, u } from "./builder";
 import { ColorEnum } from "./Color";
 
 export const TaskTagType = builder.prismaNode("TaskTag", {
@@ -58,3 +59,115 @@ export const TaskTagWhereInput = builder.inputType("TaskTagWhereInput", {
     }),
   }),
 });
+
+// -------------- TaskTag mutation types --------------
+
+builder.mutationField("createTaskTag", (t) =>
+  t.prismaFieldWithInput({
+    type: "TaskTag",
+    description: "Create a new task tag.",
+    input: {
+      name: t.input.string({ required: true, description: "The name of the task tag." }),
+      color: t.input.field({
+        type: ColorEnum,
+        required: true,
+        description: "The color of the task tag.",
+      }),
+      isPrivate: t.input.boolean({
+        required: true,
+        description: "Whether tasks with this tag will be considered private.",
+      }),
+    },
+    resolve: async (query, _, args) => {
+      const slug = args.input.name.toLowerCase().replaceAll(" ", "-");
+      return prisma.taskTag.create({
+        ...query,
+        data: {
+          name: args.input.name,
+          color: args.input.color,
+          isPrivate: args.input.isPrivate,
+          slug,
+        },
+      });
+    },
+  }),
+);
+
+builder.mutationField("updateTaskTag", (t) =>
+  t.prismaFieldWithInput({
+    type: "TaskTag",
+    description: "Update a task tag.",
+    input: {
+      id: t.input.globalID({
+        required: true,
+        description: "The Relay ID of the task tag to update.",
+      }),
+      name: t.input.string({ required: false, description: "The new name of the task tag." }),
+      color: t.input.field({
+        type: ColorEnum,
+        required: false,
+        description: "The new color of the task tag.",
+      }),
+      isPrivate: t.input.boolean({
+        required: false,
+        description: "Whether tasks with this tag will be considered private.",
+      }),
+    },
+    resolve: async (query, _, args) => {
+      const tag = await prisma.taskTag.findUnique({
+        where: { id: parseInt(args.input.id.id) },
+      });
+      if (!tag) {
+        throw new GraphQLError(`Tag with ID ${args.input.id.id} not found.`, {
+          extensions: {
+            code: "TAG_NOT_FOUND",
+            userFriendlyMessage:
+              "The tag was not found. Please try refreshing the page and try again.",
+          },
+        });
+      }
+      const slug = args.input.name?.toLowerCase().replaceAll(" ", "-");
+      return prisma.taskTag.update({
+        ...query,
+        where: { id: parseInt(args.input.id.id) },
+        data: {
+          name: u(args.input.name),
+          color: u(args.input.color),
+          isPrivate: u(args.input.isPrivate),
+          slug: u(slug),
+        },
+      });
+    },
+  }),
+);
+
+builder.mutationField("deleteTaskTag", (t) =>
+  t.prismaFieldWithInput({
+    type: "TaskTag",
+    description: "Delete a task tag.",
+    input: {
+      id: t.input.globalID({
+        required: true,
+        description: "The Relay ID of the task tag to delete.",
+      }),
+    },
+    resolve: async (query, _, args) => {
+      const tag = await prisma.taskTag.findUnique({
+        where: { id: parseInt(args.input.id.id) },
+      });
+      if (!tag) {
+        throw new GraphQLError(`Tag with ID ${args.input.id.id} not found.`, {
+          extensions: {
+            code: "TAG_NOT_FOUND",
+            userFriendlyMessage:
+              "The tag was not found. Please try refreshing the page and try again.",
+          },
+        });
+      }
+      return prisma.taskTag.delete({
+        ...query,
+        where: { id: parseInt(args.input.id.id) },
+      });
+    },
+  }),
+);
