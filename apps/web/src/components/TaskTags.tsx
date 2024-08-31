@@ -1,14 +1,70 @@
 import { forwardRef, useEffect, useImperativeHandle, useState } from "react";
-import { Editor, Mention } from "@flowdev/tiptap";
+import { Editor, Mention, MentionOptions } from "@flowdev/tiptap";
 import { ReactRenderer, mergeAttributes } from "@tiptap/react";
 import tippy, { Instance as TippyInstance } from "tippy.js";
 import { environment } from "@flowdev/web/relay/environment";
 import { dayjs } from "@flowdev/web/dayjs";
 import { TaskTagsQuery } from "@flowdev/web/relay/__generated__/TaskTagsQuery.graphql";
-import { TaskTags_tag$data } from "@flowdev/web/relay/__generated__/TaskTags_tag.graphql";
+import { TaskTagsNode_tag$data } from "@flowdev/web/relay/__generated__/TaskTagsNode_tag.graphql";
+import { TaskTagsAttrs_tag$data } from "@flowdev/web/relay/__generated__/TaskTagsAttrs_tag.graphql";
 import { fetchQuery, graphql } from "@flowdev/relay";
+import { useAsyncEffect } from "../useAsyncEffect";
 
-export const TaskTagsExtension = Mention.extend({
+const taskTagsQuery = graphql`
+  query TaskTagsQuery {
+    taskTags {
+      edges {
+        node {
+          ...TaskTagsNode_tag @relay(mask: false)
+        }
+      }
+    }
+  }
+`;
+
+const getTaskTags = async () => {
+  const lastTimeQueriedTags = localStorage.getItem("lastTimeQueriedTags");
+  const FIVE_MINUTES = 1000 * 60 * 5;
+  const hasBeenQueriedRecently = lastTimeQueriedTags
+    ? dayjs().diff(dayjs(lastTimeQueriedTags), "millisecond") < FIVE_MINUTES
+    : false;
+
+  if (!hasBeenQueriedRecently) {
+    localStorage.setItem("lastTimeQueriedTags", dayjs().toISOString());
+  }
+
+  const taskTagsData = await fetchQuery<TaskTagsQuery>(
+    environment,
+    taskTagsQuery,
+    {},
+    { fetchPolicy: hasBeenQueriedRecently ? "store-or-network" : "network-only" },
+  ).toPromise();
+
+  return taskTagsData?.taskTags.edges.map((edge) => edge.node as TaskTagsNode) ?? [];
+};
+
+export const useTaskTags = (props?: { onLoaded?: (tags: TaskTagsNode[]) => void }) => {
+  const [taskTags, setTaskTags] = useState<TaskTagsNode[]>([]);
+  const [loading, setLoading] = useState(true);
+
+  useAsyncEffect(async () => {
+    setLoading(true);
+    const tags = await getTaskTags().finally(() => setLoading(false));
+    props?.onLoaded?.(tags);
+    setTaskTags(tags);
+  }, []);
+
+  return { taskTags, loading };
+};
+
+export const TaskTagsExtension = Mention.extend<
+  MentionOptions & { tags: TaskTagsNode[] },
+  { tags: TaskTagsNode[] }
+>({
+  name: "taskTags",
+  addOptions() {
+    return { ...this.parent?.(), tags: [] };
+  },
   addAttributes: () => ({
     id: {
       default: "something",
@@ -26,56 +82,26 @@ export const TaskTagsExtension = Mention.extend({
         return { "data-name": attrs.name };
       },
     },
-    color: {
-      default: null,
-      parseHTML: (element) => element.getAttribute("data-color") ?? null,
-      renderHTML: (attrs) => {
-        if (!attrs.color) return {};
-        return { "data-color": attrs.color };
-      },
-    },
   }),
   parseHTML: () => [{ tag: "span[data-tasktag-id]" }],
   renderHTML({ node, HTMLAttributes }) {
-    const taskTag = node.attrs as TaskTagAttrs;
+    const taskTagAttrs = node.attrs as TaskTagsAttrs;
+    const taskTag = this.options.tags.find((tag) => tag.id === taskTagAttrs.id);
     return [
       "span",
-      mergeAttributes(this.options.HTMLAttributes, HTMLAttributes),
-      `${this.options.suggestion.char}${taskTag.name}`,
+      mergeAttributes(this.options.HTMLAttributes, HTMLAttributes, {
+        class: `text-${taskTag?.color ?? "gray"}-700 rounded-md px-1 py-0.5`,
+      }),
+      `${this.options.suggestion.char}${taskTag?.name ?? taskTagAttrs.name}`,
     ];
   },
 }).configure({
   suggestion: {
     char: "#",
     items: async ({ query }) => {
-      const lastTimeQueriedTags = localStorage.getItem("lastTimeQueriedTags");
-      const FIVE_MINUTES = 1000 * 60 * 5;
-      const hasBeenQueriedRecently = lastTimeQueriedTags
-        ? dayjs().diff(dayjs(lastTimeQueriedTags), "millisecond") < FIVE_MINUTES
-        : false;
+      const taskTagsData = await getTaskTags();
 
-      const tagsData = await fetchQuery<TaskTagsQuery>(
-        environment,
-        graphql`
-          query TaskTagsQuery {
-            taskTags {
-              edges {
-                node {
-                  ...TaskTags_tag @relay(mask: false)
-                }
-              }
-            }
-          }
-        `,
-        {},
-        { fetchPolicy: "network-only" },
-      ).toPromise();
-
-      if (!hasBeenQueriedRecently) {
-        localStorage.setItem("lastTimeQueriedTags", dayjs().toISOString());
-      }
-
-      return (tagsData?.taskTags.edges.map((edge) => edge.node) ?? [])
+      return taskTagsData
         .filter((tag) => tag.name.toLowerCase().startsWith(query.toLowerCase()))
         .slice(0, 5);
     },
@@ -141,7 +167,7 @@ export const TaskTagsExtension = Mention.extend({
 const TaskTagsList = forwardRef(
   (
     props: {
-      items: TaskTags_tag$data[];
+      items: TaskTagsNode_tag$data[];
       range: { from: number; to: number };
       editor: Editor;
     },
@@ -156,15 +182,7 @@ const TaskTagsList = forwardRef(
         props.editor
           .chain()
           .deleteRange({ from: props.range.from, to: props.range.to })
-          .insertContent({
-            type: "mention",
-            attrs: {
-              id: item.id,
-              name: item.name,
-              color: item.color,
-            } as TaskTagAttrs,
-          })
-          .insertContent(" ") // add an extra space after the mention
+          .insertContent({ type: "taskTags", attrs: item })
           .run();
       }
     };
@@ -207,12 +225,20 @@ const TaskTagsList = forwardRef(
   },
 );
 
-type TaskTagAttrs = TaskTags_tag$data;
-
+type TaskTagsNode = TaskTagsNode_tag$data;
 graphql`
-  fragment TaskTags_tag on TaskTag {
+  fragment TaskTagsNode_tag on TaskTag {
     id
     name
     color
+    ...TaskTagsAttrs_tag @relay(mask: false)
+  }
+`;
+
+type TaskTagsAttrs = TaskTagsAttrs_tag$data;
+graphql`
+  fragment TaskTagsAttrs_tag on TaskTag {
+    id
+    name
   }
 `;

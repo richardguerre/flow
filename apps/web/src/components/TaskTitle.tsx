@@ -13,7 +13,7 @@ import { TaskTitleUpdateTaskTitleMutation } from "../relay/__generated__/TaskTit
 import "./TaskTitle.scss";
 import { TaskTitleCreateTaskMutation } from "../relay/__generated__/TaskTitleCreateTaskMutation.graphql";
 import { createVirtualTask, deleteVirtualTask } from "./Day";
-import { TaskTagsExtension } from "./TaskTags";
+import { TaskTagsExtension, useTaskTags } from "./TaskTags";
 
 type TaskTitleProps = {
   task: TaskTitle_task$key;
@@ -120,6 +120,7 @@ type TaskTitleInputProps = {
 export const TaskTitleInput = (props: TaskTitleInputProps) => {
   const editorRef = useRef<Editor | null>(null);
   const [editable, setEditable] = useState(props.autoFocus ?? false);
+  const { taskTags } = useTaskTags();
 
   const handleSave = useCallback(() => {
     setEditable(false);
@@ -137,7 +138,6 @@ export const TaskTitleInput = (props: TaskTitleInputProps) => {
     if (!editorRef.current.isEditable) return;
 
     const newValue = editorRef.current.getHTML();
-    console.log(newValue);
     if (newValue === props.initialValue) {
       props.onCancel?.();
       return;
@@ -145,24 +145,20 @@ export const TaskTitleInput = (props: TaskTitleInputProps) => {
     props.onSave?.(newValue);
   }, [editorRef.current]);
 
-  editorRef.current = useEditor({
-    extensions: [
-      MinimumKit,
-      CatchNewLines(() => editorRef.current!.commands.blur()),
-      OnEscape(() => editorRef.current!.commands.blur()),
-      TaskTagsExtension,
-    ],
-    content: props.initialValue ?? "",
-    editable: props.readOnly ? false : undefined,
-    onBlur: handleSave,
-    onUpdate: (props) => {
-      // console.log(JSON.stringify(props.editor.getJSON(), null, 2));
-      const html = props.editor.getHTML();
-      if (html.includes("#")) {
-        console.log(html);
-      }
+  editorRef.current = useEditor(
+    {
+      extensions: [
+        MinimumKit,
+        CatchNewLines(() => editorRef.current!.commands.blur()),
+        OnEscape(() => editorRef.current!.commands.blur()),
+        TaskTagsExtension.configure({ tags: taskTags }),
+      ],
+      content: props.initialValue ?? "",
+      editable: props.readOnly ? false : undefined,
+      onBlur: handleSave,
     },
-  });
+    [taskTags],
+  );
 
   const handleClick = () => {
     console.log(props.initialValue);
