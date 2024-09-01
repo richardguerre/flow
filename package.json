@@ -18,7 +18,7 @@
     "bun-types": "1.0.4",
     "decompress-response": "^9.0.0",
     "patch-package": "^6.0.2",
-    "prettier": "3.0.3",
+    "prettier": "3.3.3",
     "prettier-plugin-tailwindcss": "0.2.8",
     "relay-compiler": "^17.0.0",
     "turbo": "^1.10.4",
@@ -29,7 +29,7 @@
     "printWidth": 100
   },
   "resolutions": {
-    "prettier": "3.0.3",
+    "prettier": "3.3.3",
     "prettier-plugin-tailwindcss": "0.2.8",
     "prosemirror-model": "1.19.4",
     "sharp": "0.33.5",
