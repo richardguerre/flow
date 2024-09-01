@@ -1,5 +1,5 @@
 /**
- * @generated SignedSource<<17a86c6d1f9f86726d5050656c78ab4f>>
+ * @generated SignedSource<<d93fd4fbb695e55e74c5a309d1d290a9>>
  * @lightSyntaxTransform
  * @nogrep
  */
@@ -30,10 +30,10 @@ export type TaskPluginDataInput = {
   originalId?: string | null | undefined;
   pluginSlug: string;
 };
-export type IndexViewCreateTaskMutation$variables = {
+export type IndexView2CreateTaskMutation$variables = {
   input: MutationCreateTaskInput;
 };
-export type IndexViewCreateTaskMutation$data = {
+export type IndexView2CreateTaskMutation$data = {
   readonly createTask: {
     readonly date: string;
     readonly durationInMinutes: number | null | undefined;
@@ -42,9 +42,9 @@ export type IndexViewCreateTaskMutation$data = {
     readonly title: string;
   };
 };
-export type IndexViewCreateTaskMutation = {
-  response: IndexViewCreateTaskMutation$data;
-  variables: IndexViewCreateTaskMutation$variables;
+export type IndexView2CreateTaskMutation = {
+  response: IndexView2CreateTaskMutation$data;
+  variables: IndexView2CreateTaskMutation$variables;
 };
 
 const node: ConcreteRequest = (function(){
@@ -114,7 +114,7 @@ return {
     "argumentDefinitions": (v0/*: any*/),
     "kind": "Fragment",
     "metadata": null,
-    "name": "IndexViewCreateTaskMutation",
+    "name": "IndexView2CreateTaskMutation",
     "selections": (v1/*: any*/),
     "type": "Mutation",
     "abstractKey": null
@@ -123,20 +123,20 @@ return {
   "operation": {
     "argumentDefinitions": (v0/*: any*/),
     "kind": "Operation",
-    "name": "IndexViewCreateTaskMutation",
+    "name": "IndexView2CreateTaskMutation",
     "selections": (v1/*: any*/)
   },
   "params": {
-    "cacheID": "b8c190ff310903af35ba1f92fea10451",
+    "cacheID": "e742fbdec44e4935eda839336ac04eaa",
     "id": null,
     "metadata": {},
-    "name": "IndexViewCreateTaskMutation",
+    "name": "IndexView2CreateTaskMutation",
     "operationKind": "mutation",
-    "text": "mutation IndexViewCreateTaskMutation(\n  $input: MutationCreateTaskInput!\n) {\n  createTask(input: $input) {\n    id\n    title\n    durationInMinutes\n    date\n    status\n  }\n}\n"
+    "text": "mutation IndexView2CreateTaskMutation(\n  $input: MutationCreateTaskInput!\n) {\n  createTask(input: $input) {\n    id\n    title\n    durationInMinutes\n    date\n    status\n  }\n}\n"
   }
 };
 })();
 
-(node as any).hash = "59c1891794de3a5cde8477c152931ee1";
+(node as any).hash = "29fa9fa44d7664f07cf13be95131ccea";
 
 export default node;

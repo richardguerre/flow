@@ -1,5 +1,5 @@
 /**
- * @generated SignedSource<<5d6bdecdcc8a386ee9f65d588552bea5>>
+ * @generated SignedSource<<174f8d6f411e91a22441ebe493fb16c0>>
  * @lightSyntaxTransform
  * @nogrep
  */
@@ -11,10 +11,10 @@
 import { ConcreteRequest, Query } from 'relay-runtime';
 import { FragmentRefs } from "relay-runtime";
 export type TaskStatus = "CANCELED" | "DONE" | "TODO";
-export type IndexViewQuery$variables = {
+export type IndexView2Query$variables = {
   afterDay: string;
 };
-export type IndexViewQuery$data = {
+export type IndexView2Query$data = {
   readonly days: {
     readonly edges: ReadonlyArray<{
       readonly node: {
@@ -27,9 +27,9 @@ export type IndexViewQuery$data = {
     }>;
   };
 };
-export type IndexViewQuery = {
-  response: IndexViewQuery$data;
-  variables: IndexViewQuery$variables;
+export type IndexView2Query = {
+  response: IndexView2Query$data;
+  variables: IndexView2Query$variables;
 };
 
 const node: ConcreteRequest = (function(){
@@ -85,7 +85,7 @@ return {
     "argumentDefinitions": (v0/*: any*/),
     "kind": "Fragment",
     "metadata": null,
-    "name": "IndexViewQuery",
+    "name": "IndexView2Query",
     "selections": [
       {
         "alias": null,
@@ -146,7 +146,7 @@ return {
   "operation": {
     "argumentDefinitions": (v0/*: any*/),
     "kind": "Operation",
-    "name": "IndexViewQuery",
+    "name": "IndexView2Query",
     "selections": [
       {
         "alias": null,
@@ -229,16 +229,16 @@ return {
     ]
   },
   "params": {
-    "cacheID": "7a25a7e3f688a21229edb2874dbeceae",
+    "cacheID": "8abdb2d89e28d9eb670f08fcb3b5f5ce",
     "id": null,
     "metadata": {},
-    "name": "IndexViewQuery",
+    "name": "IndexView2Query",
     "operationKind": "query",
-    "text": "query IndexViewQuery(\n  $afterDay: ID!\n) {\n  days(after: $afterDay, first: 1) {\n    edges {\n      node {\n        tasks {\n          id\n          status\n        }\n        ...Day_day\n        id\n      }\n    }\n  }\n}\n\nfragment DayContent_day on Day {\n  date\n  tasks {\n    __typename\n    id\n    ...TaskCard_task\n  }\n}\n\nfragment Day_day on Day {\n  date\n  ...DayContent_day\n}\n\nfragment TaskCardStatusButton_task on Task {\n  status\n  id\n}\n\nfragment TaskCardSubtask_task on Task {\n  id\n  status\n  ...TaskCardStatusButton_task\n  ...TaskCardTitle_task\n}\n\nfragment TaskCardTitle_task on Task {\n  id\n  title\n}\n\nfragment TaskCard_task on Task {\n  id\n  date\n  title\n  status\n  completedAt\n  subtasks {\n    id\n    ...TaskCardSubtask_task\n  }\n  ...TaskCardStatusButton_task\n  ...TaskCardTitle_task\n}\n"
+    "text": "query IndexView2Query(\n  $afterDay: ID!\n) {\n  days(after: $afterDay, first: 1) {\n    edges {\n      node {\n        tasks {\n          id\n          status\n        }\n        ...Day_day\n        id\n      }\n    }\n  }\n}\n\nfragment DayContent_day on Day {\n  date\n  tasks {\n    __typename\n    id\n    ...TaskCard_task\n  }\n}\n\nfragment Day_day on Day {\n  date\n  ...DayContent_day\n}\n\nfragment TaskCardStatusButton_task on Task {\n  status\n  id\n}\n\nfragment TaskCardSubtask_task on Task {\n  id\n  status\n  ...TaskCardStatusButton_task\n  ...TaskCardTitle_task\n}\n\nfragment TaskCardTitle_task on Task {\n  id\n  title\n}\n\nfragment TaskCard_task on Task {\n  id\n  date\n  title\n  status\n  completedAt\n  subtasks {\n    id\n    ...TaskCardSubtask_task\n  }\n  ...TaskCardStatusButton_task\n  ...TaskCardTitle_task\n}\n"
   }
 };
 })();
 
-(node as any).hash = "7bc5e123f20731976091756cec8a3936";
+(node as any).hash = "62a2344623c272189fa1b9c92bd505c8";
 
 export default node;

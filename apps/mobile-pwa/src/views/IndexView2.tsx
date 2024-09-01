@@ -33,7 +33,7 @@ export const getStartOfToday = () => {
 };
 
 const indexViewQuery = graphql`
-  query IndexViewQuery($afterDay: ID!) {
+  query IndexView2Query($afterDay: ID!) {
     days(after: $afterDay, first: 1) {
       edges {
         node {
@@ -125,7 +125,7 @@ const CreateTaskDrawer = (props: {
   });
 
   const [$createTask, creatingTask] = useMutation<IndexViewCreateTaskMutation>(graphql`
-    mutation IndexViewCreateTaskMutation($input: MutationCreateTaskInput!) {
+    mutation IndexView2CreateTaskMutation($input: MutationCreateTaskInput!) {
       createTask(input: $input) {
         id
         title

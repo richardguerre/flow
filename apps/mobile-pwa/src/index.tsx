@@ -13,7 +13,7 @@ initUnocssRuntime({
   defaults: unocssConfig,
 });
 
-const IndexView = React.lazy(() => import("./views/IndexView"));
+const IndexView = React.lazy(() => import("./views/IndexView2"));
 const LoginView = React.lazy(() => import("./views/LoginView"));
 const TestView = React.lazy(() => import("./views/TestView"));
 const NotFoundView = React.lazy(() => import("./views/NotFoundView"));
