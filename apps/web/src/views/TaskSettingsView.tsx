@@ -14,15 +14,15 @@ import { Popover, PopoverContent, PopoverTrigger } from "@flowdev/ui/Popover";
 import { SelectContent, SelectItem, SelectTrigger, SelectValue } from "@flowdev/ui/Select";
 import { Tooltip, TooltipContent, TooltipTrigger } from "@flowdev/ui/Tooltip";
 import { tw } from "@flowdev/ui/tw";
-import { TaskSettingsViewQuery } from "@flowdev/web/relay/__generated__/TaskSettingsViewQuery.graphql";
+import { TaskSettingsViewQuery } from "@flowdev/web/relay/__gen__/TaskSettingsViewQuery.graphql";
 import {
   Color,
   TaskSettingsView_tag$key,
-} from "@flowdev/web/relay/__generated__/TaskSettingsView_tag.graphql";
-import { TaskSettingsViewCreateTagMutation } from "@flowdev/web/relay/__generated__/TaskSettingsViewCreateTagMutation.graphql";
-import { TaskSettingsViewUpdateTagMutation } from "@flowdev/web/relay/__generated__/TaskSettingsViewUpdateTagMutation.graphql";
-import { TaskSettingsViewDeleteTagMutation } from "@flowdev/web/relay/__generated__/TaskSettingsViewDeleteTagMutation.graphql";
-import { TaskSettingsViewDeleteTagButton_tag$key } from "@flowdev/web/relay/__generated__/TaskSettingsViewDeleteTagButton_tag.graphql";
+} from "@flowdev/web/relay/__gen__/TaskSettingsView_tag.graphql";
+import { TaskSettingsViewCreateTagMutation } from "@flowdev/web/relay/__gen__/TaskSettingsViewCreateTagMutation.graphql";
+import { TaskSettingsViewUpdateTagMutation } from "@flowdev/web/relay/__gen__/TaskSettingsViewUpdateTagMutation.graphql";
+import { TaskSettingsViewDeleteTagMutation } from "@flowdev/web/relay/__gen__/TaskSettingsViewDeleteTagMutation.graphql";
+import { TaskSettingsViewDeleteTagButton_tag$key } from "@flowdev/web/relay/__gen__/TaskSettingsViewDeleteTagButton_tag.graphql";
 import { useMemo, useState } from "react";
 import { Controller, useForm } from "react-hook-form";
 import {

@@ -2,7 +2,7 @@ import { graphql, useFragment } from "@flowdev/relay";
 import {
   RenderCalendarActions_item$data,
   RenderCalendarActions_item$key,
-} from "../relay/__generated__/RenderCalendarActions_item.graphql";
+} from "../relay/__gen__/RenderCalendarActions_item.graphql";
 import { ComponentType, Suspense, useState } from "react";
 import { useAsyncEffect } from "../useAsyncEffect";
 import { usePlugins } from "../getPlugin";

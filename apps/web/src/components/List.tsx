@@ -1,9 +1,9 @@
 import { useMemo } from "react";
 import { graphql, useFragment, useSmartSubscription } from "@flowdev/relay";
-import { ListItems_list$key } from "@flowdev/web/relay/__generated__/ListItems_list.graphql";
+import { ListItems_list$key } from "@flowdev/web/relay/__gen__/ListItems_list.graphql";
 import { ItemCard } from "./ItemCard";
 import { ReactSortable } from "react-sortablejs";
-import { ListSubscription } from "../relay/__generated__/ListSubscription.graphql";
+import { ListSubscription } from "../relay/__gen__/ListSubscription.graphql";
 
 type ListProps = {
   listId: string;

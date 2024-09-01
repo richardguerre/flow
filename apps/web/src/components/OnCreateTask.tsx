@@ -3,9 +3,9 @@ import { Button, ButtonProps } from "@flowdev/ui/Button";
 import { Dialog, DialogContent, DialogLoading } from "@flowdev/ui/Dialog";
 import { toast } from "@flowdev/ui/Toast";
 import { ComponentType, useRef, useState } from "react";
-import { OnCreateTaskCreateTaskFromItemMutation } from "@flowdev/web/relay/__generated__/OnCreateTaskCreateTaskFromItemMutation.graphql";
-import { OnCreateTaskDismissItemFromInboxMutation } from "@flowdev/web/relay/__generated__/OnCreateTaskDismissItemFromInboxMutation.graphql";
-import { TaskStatus } from "@flowdev/web/relay/__generated__/getDaysDaysQuery.graphql";
+import { OnCreateTaskCreateTaskFromItemMutation } from "@flowdev/web/relay/__gen__/OnCreateTaskCreateTaskFromItemMutation.graphql";
+import { OnCreateTaskDismissItemFromInboxMutation } from "@flowdev/web/relay/__gen__/OnCreateTaskDismissItemFromInboxMutation.graphql";
+import { TaskStatus } from "@flowdev/web/relay/__gen__/getDaysDaysQuery.graphql";
 import { useAsyncEffect } from "@flowdev/web/useAsyncEffect";
 
 graphql`

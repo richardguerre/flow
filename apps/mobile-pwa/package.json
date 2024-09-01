@@ -4,7 +4,7 @@
   "version": "0.0.0",
   "type": "module",
   "scripts": {
-    "setup:relay": "mkdir -p src/relay/__generated__",
+    "setup:relay": "mkdir -p src/relay/__gen__",
     "relay": "cd ../.. && relay-compiler && echo '✅ Relay compiled!'",
     "relay:watch": "cd ../.. && relay-compiler --watch",
     "dev": "bun run relay && bunx --bun vite --port 5173",

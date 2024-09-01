@@ -5,19 +5,19 @@ import {
   useFragment,
   useMutation,
 } from "@flowdev/relay";
-import { ItemCard_item$key } from "@flowdev/web/relay/__generated__/ItemCard_item.graphql";
-import { ItemCardActions_item$key } from "@flowdev/web/relay/__generated__/ItemCardActions_item.graphql";
+import { ItemCard_item$key } from "@flowdev/web/relay/__gen__/ItemCard_item.graphql";
+import { ItemCardActions_item$key } from "@flowdev/web/relay/__gen__/ItemCardActions_item.graphql";
 import { ItemTitle } from "./ItemTitle";
 import { BsArchive, BsCheckAll } from "@flowdev/icons";
 import { Tooltip, TooltipContent, TooltipTrigger } from "@flowdev/ui/Tooltip";
-import { ItemCardUpdateItemMutation } from "../relay/__generated__/ItemCardUpdateItemMutation.graphql";
-import { ItemCardDismissFromInboxMutation } from "../relay/__generated__/ItemCardDismissFromInboxMutation.graphql";
+import { ItemCardUpdateItemMutation } from "../relay/__gen__/ItemCardUpdateItemMutation.graphql";
+import { ItemCardDismissFromInboxMutation } from "../relay/__gen__/ItemCardDismissFromInboxMutation.graphql";
 import { RenderItemCardDetails } from "./RenderItemCardDetails";
 import { RenderItemCardActions } from "./RenderItemCardActions";
 import { useEffect, useRef } from "react";
 import { isTempItemId } from "./InboxList";
-import { ItemCardContextMenu_item$key } from "../relay/__generated__/ItemCardContextMenu_item.graphql";
-import { ItemCardDeleteItemMutation } from "../relay/__generated__/ItemCardDeleteItemMutation.graphql";
+import { ItemCardContextMenu_item$key } from "../relay/__gen__/ItemCardContextMenu_item.graphql";
+import { ItemCardDeleteItemMutation } from "../relay/__gen__/ItemCardDeleteItemMutation.graphql";
 import {
   ContextMenu,
   ContextMenuContent,

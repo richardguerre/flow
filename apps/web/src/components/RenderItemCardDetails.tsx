@@ -3,7 +3,7 @@ import { ComponentType, Suspense, useState } from "react";
 import {
   RenderItemCardDetails_item$data,
   RenderItemCardDetails_item$key,
-} from "../relay/__generated__/RenderItemCardDetails_item.graphql";
+} from "../relay/__gen__/RenderItemCardDetails_item.graphql";
 import { usePlugins } from "../getPlugin";
 import { useAsyncEffect } from "../useAsyncEffect";
 import { DurationBadge } from "./Badges";

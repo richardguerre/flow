@@ -4,9 +4,9 @@ import { ReactRenderer, mergeAttributes } from "@tiptap/react";
 import tippy, { Instance as TippyInstance } from "tippy.js";
 import { environment } from "@flowdev/web/relay/environment";
 import { dayjs } from "@flowdev/web/dayjs";
-import { TaskTagsQuery } from "@flowdev/web/relay/__generated__/TaskTagsQuery.graphql";
-import { TaskTagsNode_tag$data } from "@flowdev/web/relay/__generated__/TaskTagsNode_tag.graphql";
-import { TaskTagsAttrs_tag$data } from "@flowdev/web/relay/__generated__/TaskTagsAttrs_tag.graphql";
+import { TaskTagsQuery } from "@flowdev/web/relay/__gen__/TaskTagsQuery.graphql";
+import { TaskTagsNode_tag$data } from "@flowdev/web/relay/__gen__/TaskTagsNode_tag.graphql";
+import { TaskTagsAttrs_tag$data } from "@flowdev/web/relay/__gen__/TaskTagsAttrs_tag.graphql";
 import { fetchQuery, graphql } from "@flowdev/relay";
 import { useAsyncEffect } from "../useAsyncEffect";
 

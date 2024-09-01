@@ -1,29 +1,29 @@
 import { useLazyLoadQuery, graphql, useFragment, useMutationPromise } from "@flowdev/relay";
-import { RoutineSettingsViewQuery } from "../relay/__generated__/RoutineSettingsViewQuery.graphql";
+import { RoutineSettingsViewQuery } from "../relay/__gen__/RoutineSettingsViewQuery.graphql";
 import { Checkbox } from "@flowdev/ui/Checkbox";
 import { Badge } from "@flowdev/ui/Badge";
 import { tw } from "@flowdev/ui/tw";
 import {
   RepetitionPattern,
   RoutineSettingsViewRepeats_routine$key,
-} from "../relay/__generated__/RoutineSettingsViewRepeats_routine.graphql";
+} from "../relay/__gen__/RoutineSettingsViewRepeats_routine.graphql";
 import { toast } from "@flowdev/ui/Toast";
-import { RoutineSettingsViewUpdateRepeatsMutation } from "../relay/__generated__/RoutineSettingsViewUpdateRepeatsMutation.graphql";
-import { RoutineSettingsViewUpdateActiveMutation } from "../relay/__generated__/RoutineSettingsViewUpdateActiveMutation.graphql";
+import { RoutineSettingsViewUpdateRepeatsMutation } from "../relay/__gen__/RoutineSettingsViewUpdateRepeatsMutation.graphql";
+import { RoutineSettingsViewUpdateActiveMutation } from "../relay/__gen__/RoutineSettingsViewUpdateActiveMutation.graphql";
 import { useEffect, useMemo, useState } from "react";
 import { BsArrowRightShort, BsSkipForward, BsTrash } from "@flowdev/icons";
 import { Tooltip, TooltipContent, TooltipTrigger } from "@flowdev/ui/Tooltip";
 import { Button } from "@flowdev/ui/Button";
-import { RoutineSettingsViewCreateRoutineMutation } from "../relay/__generated__/RoutineSettingsViewCreateRoutineMutation.graphql";
-import { RoutineSettingsViewDetailed_routine$key } from "../relay/__generated__/RoutineSettingsViewDetailed_routine.graphql";
+import { RoutineSettingsViewCreateRoutineMutation } from "../relay/__gen__/RoutineSettingsViewCreateRoutineMutation.graphql";
+import { RoutineSettingsViewDetailed_routine$key } from "../relay/__gen__/RoutineSettingsViewDetailed_routine.graphql";
 import { FormInput } from "@flowdev/ui/FormInput";
 import { Controller, useForm } from "react-hook-form";
 import { useDebounce } from "../useDebounce";
-import { RoutineSettingsViewActiveCheckbox_routine$key } from "../relay/__generated__/RoutineSettingsViewActiveCheckbox_routine.graphql";
+import { RoutineSettingsViewActiveCheckbox_routine$key } from "../relay/__gen__/RoutineSettingsViewActiveCheckbox_routine.graphql";
 import {
   RoutineSettingsViewUpdateRoutineMutation,
   RoutineStepInput,
-} from "../relay/__generated__/RoutineSettingsViewUpdateRoutineMutation.graphql";
+} from "../relay/__gen__/RoutineSettingsViewUpdateRoutineMutation.graphql";
 import { PluginsRecord, usePlugins } from "../getPlugin";
 import { ReactSortable } from "react-sortablejs";
 

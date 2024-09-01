@@ -5,7 +5,7 @@ import { usePlugins } from "../getPlugin";
 import {
   RenderTaskCardActions_task$data,
   RenderTaskCardActions_task$key,
-} from "../relay/__generated__/RenderTaskCardActions_task.graphql";
+} from "../relay/__gen__/RenderTaskCardActions_task.graphql";
 
 type Props = {
   /** The details provided by Flow. */

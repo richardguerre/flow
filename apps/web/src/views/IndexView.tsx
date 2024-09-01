@@ -1,5 +1,5 @@
 import { useQueryLoader, graphql, PreloadedQuery, usePreloadedQuery } from "@flowdev/relay";
-import { IndexViewQuery } from "@flowdev/web/relay/__generated__/IndexViewQuery.graphql";
+import { IndexViewQuery } from "@flowdev/web/relay/__gen__/IndexViewQuery.graphql";
 import { Days } from "../components/Days";
 import { Lists } from "../components/Lists";
 import { dayjs } from "@flowdev/web/dayjs";

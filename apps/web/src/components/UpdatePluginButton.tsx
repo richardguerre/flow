@@ -1,8 +1,8 @@
 import { graphql, useFragment, useMutation } from "@flowdev/relay";
-import { UpdatePluginButtonUpdatePluginMutation } from "../relay/__generated__/UpdatePluginButtonUpdatePluginMutation.graphql";
+import { UpdatePluginButtonUpdatePluginMutation } from "../relay/__gen__/UpdatePluginButtonUpdatePluginMutation.graphql";
 import { Button } from "@flowdev/ui/Button";
 import { useAsyncLoader } from "../useAsyncLoader";
-import { UpdatePluginButton_pluginInstallation$key } from "../relay/__generated__/UpdatePluginButton_pluginInstallation.graphql";
+import { UpdatePluginButton_pluginInstallation$key } from "../relay/__gen__/UpdatePluginButton_pluginInstallation.graphql";
 
 type UpdatePluginButtonProps = {
   pluginInstallation: UpdatePluginButton_pluginInstallation$key;

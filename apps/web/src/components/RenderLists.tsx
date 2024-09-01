@@ -20,7 +20,7 @@ import {
   BsTrash,
   BsCalendarCheck,
 } from "@flowdev/icons";
-import { Color } from "../relay/__generated__/CalendarList_item.graphql";
+import { Color } from "../relay/__gen__/CalendarList_item.graphql";
 import { Suspense, useState } from "react";
 import { usePlugins } from "../getPlugin";
 import { useAsyncEffect } from "../useAsyncEffect";

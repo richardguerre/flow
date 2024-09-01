@@ -1,6 +1,6 @@
 import { PreloadedQuery, graphql, usePreloadedQuery, useQueryLoader } from "@flowdev/relay";
 import { getPlugin } from "@flowdev/web/getPlugin";
-import { SettingsViewQuery } from "../relay/__generated__/SettingsViewQuery.graphql";
+import { SettingsViewQuery } from "../relay/__gen__/SettingsViewQuery.graphql";
 import { useAsyncLoader } from "../useAsyncLoader";
 import { Link, Outlet } from "react-router-dom";
 import { tw } from "@flowdev/ui/tw";

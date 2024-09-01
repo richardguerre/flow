@@ -1,6 +1,6 @@
 import { commitMutationPromise, graphql } from "@flowdev/relay";
 import { environment } from "../relay/environment";
-import { createItemMutation } from "../relay/__generated__/createItemMutation.graphql";
+import { createItemMutation } from "../relay/__gen__/createItemMutation.graphql";
 
 export const createItem = async (input: createItemMutation["variables"]["input"]) => {
   const { createItem } = await commitMutationPromise<createItemMutation>(environment, {

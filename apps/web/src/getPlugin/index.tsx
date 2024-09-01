@@ -1,13 +1,13 @@
 import { DefineWebPluginReturn, WebPlugin } from "@flowdev/plugin/web";
 import { graphql, useLazyLoadQuery } from "@flowdev/relay";
 import { fetchQuery } from "@flowdev/relay";
-import { getPluginsQuery } from "@flowdev/web/relay/__generated__/getPluginsQuery.graphql";
+import { getPluginsQuery } from "@flowdev/web/relay/__gen__/getPluginsQuery.graphql";
 import { environment } from "@flowdev/web/relay/environment";
 import { getPluginOptions } from "./getPluginOptions";
 import { devImportMap } from "./plugin.dev";
 import { useState } from "react";
 import { useAsyncEffect } from "../useAsyncEffect";
-import { getPluginsUsePluginsQuery } from "../relay/__generated__/getPluginsUsePluginsQuery.graphql";
+import { getPluginsUsePluginsQuery } from "../relay/__gen__/getPluginsUsePluginsQuery.graphql";
 
 type Input = {
   pluginSlug: string;

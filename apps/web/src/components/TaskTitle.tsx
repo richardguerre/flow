@@ -8,10 +8,10 @@ import {
   MinimumKit,
   OnEscape,
 } from "@flowdev/tiptap";
-import { TaskTitle_task$key } from "@flowdev/web/relay/__generated__/TaskTitle_task.graphql";
-import { TaskTitleUpdateTaskTitleMutation } from "../relay/__generated__/TaskTitleUpdateTaskTitleMutation.graphql";
+import { TaskTitle_task$key } from "@flowdev/web/relay/__gen__/TaskTitle_task.graphql";
+import { TaskTitleUpdateTaskTitleMutation } from "../relay/__gen__/TaskTitleUpdateTaskTitleMutation.graphql";
 import "./TaskTitle.scss";
-import { TaskTitleCreateTaskMutation } from "../relay/__generated__/TaskTitleCreateTaskMutation.graphql";
+import { TaskTitleCreateTaskMutation } from "../relay/__gen__/TaskTitleCreateTaskMutation.graphql";
 import { createVirtualTask, deleteVirtualTask } from "./Day";
 import { TaskTagsExtension, useTaskTags } from "./TaskTags";
 

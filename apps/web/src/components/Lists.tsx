@@ -1,4 +1,4 @@
-import { Lists_data$key } from "@flowdev/web/relay/__generated__/Lists_data.graphql";
+import { Lists_data$key } from "@flowdev/web/relay/__gen__/Lists_data.graphql";
 import { useState } from "react";
 import { graphql, useFragment } from "@flowdev/relay";
 import { List } from "./List";
@@ -10,7 +10,7 @@ import { InboxList } from "./InboxList";
 import { useDragContext } from "../useDragContext";
 import { RenderLists } from "./RenderLists";
 import { RenderList } from "./RenderList";
-import { Color } from "../relay/__generated__/CalendarList_item.graphql";
+import { Color } from "../relay/__gen__/CalendarList_item.graphql";
 
 type ListsProps = {
   data: Lists_data$key;

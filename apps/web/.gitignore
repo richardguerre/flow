@@ -22,4 +22,4 @@ dist-ssr
 *.sln
 *.sw?
 
-src/relay/__generated__
+src/relay/__gen__

@@ -8,9 +8,9 @@ import {
 } from "@flowdev/relay";
 import { Button } from "@flowdev/ui/Button";
 import { FormInput } from "@flowdev/ui/FormInput";
-import { LoginViewQuery } from "@flowdev/web/relay/__generated__/LoginViewQuery.graphql";
+import { LoginViewQuery } from "@flowdev/web/relay/__gen__/LoginViewQuery.graphql";
 import { useForm } from "react-hook-form";
-import { LoginViewLoginMutation } from "../relay/__generated__/LoginViewLoginMutation.graphql";
+import { LoginViewLoginMutation } from "../relay/__gen__/LoginViewLoginMutation.graphql";
 import { LOCAL_STORAGE_USER_TOKEN_KEY } from "../relay/environment";
 import { useNavigate } from "react-router-dom";
 import { SetupView } from "./SetupView";

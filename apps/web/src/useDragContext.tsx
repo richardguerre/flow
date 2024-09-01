@@ -1,5 +1,5 @@
 import { createContext, useContext, useState } from "react";
-import { CalendarListTaskCardDraggedIn_task$key } from "./relay/__generated__/CalendarListTaskCardDraggedIn_task.graphql";
+import { CalendarListTaskCardDraggedIn_task$key } from "./relay/__gen__/CalendarListTaskCardDraggedIn_task.graphql";
 
 type DraggedInTask = CalendarListTaskCardDraggedIn_task$key & { titleAsText: string };
 
