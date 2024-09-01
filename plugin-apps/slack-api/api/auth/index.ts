@@ -17,7 +17,7 @@ export default (request: Request) => {
   const searchParams = new URLSearchParams({
     client_id: process.env.CLIENT_ID!,
     redirect_uri: `${process.env.REDIRECT_URL_ORIGIN ?? requestUrl.origin}/api/auth/callback`,
-    user_scope: "chat:write,channels:read,groups:read,im:read,mpim:read",
+    user_scope: "team:read,chat:write,channels:read,groups:read,im:read,mpim:read",
     state,
   });
 
