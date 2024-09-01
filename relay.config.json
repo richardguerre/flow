@@ -24,7 +24,7 @@
     },
     "mobile-pwa": {
       "schema": "packages/relay/schema.graphql",
-      "output": "apps/mobile-pwa/src/relay/__generated__",
+      "output": "apps/mobile-pwa/src/relay/__gen__",
       "language": "typescript",
       "eagerEsModules": true,
       "noFutureProofEnums": true,

@@ -8,7 +8,7 @@ import {
 import { dayjs } from "../dayjs";
 import { useEffect, useRef, useState } from "react";
 import { Day } from "../components/Day";
-import { IndexViewQuery } from "../relay/__gen__/IndexViewQuery.graphql";
+import { IndexViewQuery } from "@flowdev/mobile-pwa/relay/__gen__/IndexViewQuery.graphql";
 import { BsCalendar, BsClock, BsPlusLg } from "@flowdev/icons";
 import { Drawer, DrawerContent, DrawerTrigger } from "@flowdev/ui/Drawer";
 import {
@@ -23,7 +23,7 @@ import "./IndexView.scss";
 import { Button } from "@flowdev/ui/Button";
 import { Controller, useForm } from "react-hook-form";
 import { durationOptions } from "../components/TaskCard";
-import { IndexViewCreateTaskMutation } from "../relay/__gen__/IndexViewCreateTaskMutation.graphql";
+import { IndexViewCreateTaskMutation } from "@flowdev/mobile-pwa/relay/__gen__/IndexViewCreateTaskMutation.graphql";
 import { TaskTagsExtension, useTaskTags } from "../components/TaskTags";
 
 export const START_HOUR = 4;
@@ -33,7 +33,7 @@ export const getStartOfToday = () => {
 };
 
 const indexViewQuery = graphql`
-  query IndexView2Query($afterDay: ID!) {
+  query IndexViewQuery($afterDay: ID!) {
     days(after: $afterDay, first: 1) {
       edges {
         node {
@@ -121,11 +121,10 @@ const CreateTaskDrawer = (props: {
     date: dayjs().format("YYYY-MM-DD"),
     durationInMinutes: null,
   };
-  const { handleSubmit, control, reset } = useForm<FormValues>({defaultValues
-  });
+  const { handleSubmit, control, reset } = useForm<FormValues>({ defaultValues });
 
   const [$createTask, creatingTask] = useMutation<IndexViewCreateTaskMutation>(graphql`
-    mutation IndexView2CreateTaskMutation($input: MutationCreateTaskInput!) {
+    mutation IndexViewCreateTaskMutation($input: MutationCreateTaskInput!) {
       createTask(input: $input) {
         id
         title
@@ -162,7 +161,7 @@ const CreateTaskDrawer = (props: {
   const handleClose = (open: boolean) => {
     if (!open) reset();
     setOpenDrawer(open);
-  }
+  };
 
   return (
     <Drawer open={openDrawer} onOpenChange={handleClose}>
