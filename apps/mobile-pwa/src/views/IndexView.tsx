@@ -178,7 +178,7 @@ const CreateTaskDrawer = (props: {
             )}
           />
           <div className="flex gap-2 items-center justify-between">
-            <div className="flex gap-2 items-center w-30 overflow-hidden">
+            <div className="overflow-hidden flex gap-2 items-center w-30">
               <BsCalendar size={16} stroke="2px" className="shrink-0" />
               {/* Had to use Controller here as the default value wasn't being set properly when using register(). */}
               <Controller
