@@ -2,12 +2,23 @@
   "name": "flow",
   "version": "0.1.0",
   "author": "@richardguerre",
+  "private": true,
+  "dependencies": {
+    "@unocss/runtime": "0.60.3",
+    "dayjs": "1.11.7",
+    "framer-motion": "10.12.10",
+    "graphql-sse": "2.3.0",
+    "react-hook-form": "^7.52.1",
+    "react-router-dom": "6.6.2",
+    "react-sortablejs": "6.1.4",
+    "sharp": "0.33.5",
+    "sortablejs": "1.15.0"
+  },
   "devDependencies": {
     "bun-types": "1.0.4",
     "decompress-response": "^9.0.0",
     "patch-package": "^6.0.2",
-    "prettier": "3.0.3",
-    "prettier-plugin-tailwindcss": "^0.2.8",
+    "prettier": "3.3.3",
     "relay-compiler": "^17.0.0",
     "turbo": "^1.10.4",
     "typescript": "5.2.2"
@@ -16,12 +27,12 @@
   "prettier": {
     "printWidth": 100
   },
-  "private": true,
   "resolutions": {
-    "vite": "5.2.4",
-    "prettier": "3.0.3",
+    "prettier": "3.3.3",
+    "prosemirror-model": "1.19.4",
     "sharp": "0.33.5",
-    "sharp-ico": "0.1.5"
+    "sharp-ico": "0.1.5",
+    "vite": "5.2.4"
   },
   "scripts": {
     "dev": "bunx --bun turbo run dev",
@@ -52,16 +63,5 @@
     "packages/*",
     "plugins/*",
     "plugin-apps/*"
-  ],
-  "dependencies": {
-    "@unocss/runtime": "0.60.3",
-    "dayjs": "1.11.7",
-    "framer-motion": "10.12.10",
-    "graphql-sse": "2.3.0",
-    "react-hook-form": "^7.52.1",
-    "react-router-dom": "6.6.2",
-    "react-sortablejs": "6.1.4",
-    "sharp": "0.33.5",
-    "sortablejs": "1.15.0"
-  }
+  ]
 }

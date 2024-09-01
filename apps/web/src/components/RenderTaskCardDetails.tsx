@@ -5,7 +5,7 @@ import { usePlugins } from "../getPlugin";
 import {
   RenderTaskCardDetails_task$data,
   RenderTaskCardDetails_task$key,
-} from "../relay/__generated__/RenderTaskCardDetails_task.graphql";
+} from "../relay/__gen__/RenderTaskCardDetails_task.graphql";
 import { DurationBadge, TimeBadge } from "./Badges";
 import { Skeleton } from "@flowdev/ui/Skeleton";
 

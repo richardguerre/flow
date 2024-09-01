@@ -1,14 +1,14 @@
 import { graphql, useFragment, useMutation } from "@flowdev/relay";
 import { Controller, useForm } from "react-hook-form";
-import { SetupViewSetPasswordMutation } from "../relay/__generated__/SetupViewSetPasswordMutation.graphql";
+import { SetupViewSetPasswordMutation } from "../relay/__gen__/SetupViewSetPasswordMutation.graphql";
 import { LOCAL_STORAGE_USER_TOKEN_KEY } from "../relay/environment";
 import { FormInput } from "@flowdev/ui/FormInput";
 import { BsInfoCircle, BsLock } from "@flowdev/icons";
 import { Button } from "@flowdev/ui/Button";
-import { SetupView_data$key } from "../relay/__generated__/SetupView_data.graphql";
+import { SetupView_data$key } from "../relay/__gen__/SetupView_data.graphql";
 import { AnimatePresence, motion } from "framer-motion";
 import { Loading } from "@flowdev/ui/Loading";
-import { SetupViewSetTimezoneMutation } from "../relay/__generated__/SetupViewSetTimezoneMutation.graphql";
+import { SetupViewSetTimezoneMutation } from "../relay/__gen__/SetupViewSetTimezoneMutation.graphql";
 import { TimezoneSelect } from "@flowdev/ui/TimezoneSelect";
 import { dayjs } from "../dayjs";
 import { useNavigate } from "react-router-dom";

@@ -9,17 +9,18 @@ import {
   DropdownMenuTrigger,
 } from "@flowdev/ui/DropdownMenu";
 import { BsCheck, BsClock, BsX } from "@flowdev/icons";
-import { TaskCard_task$key } from "@flowdev/mobile-pwa/relay/__generated__/TaskCard_task.graphql";
+import { TaskCard_task$key } from "@flowdev/mobile-pwa/relay/__gen__/TaskCard_task.graphql";
 import {
   TaskCardUpdateTaskStatusMutation,
   TaskStatus,
-} from "@flowdev/mobile-pwa/relay/__generated__/TaskCardUpdateTaskStatusMutation.graphql";
-import { TaskCardDeleteTaskMutation } from "../relay/__generated__/TaskCardDeleteTaskMutation.graphql";
-import { TaskCardSubtask_task$key } from "../relay/__generated__/TaskCardSubtask_task.graphql";
+} from "@flowdev/mobile-pwa/relay/__gen__/TaskCardUpdateTaskStatusMutation.graphql";
+import { TaskCardDeleteTaskMutation } from "../relay/__gen__/TaskCardDeleteTaskMutation.graphql";
+import { TaskCardSubtask_task$key } from "../relay/__gen__/TaskCardSubtask_task.graphql";
 import { EditorContent, MinimumKit, useEditor } from "@flowdev/tiptap";
-import { TaskCardTitle_task$key } from "../relay/__generated__/TaskCardTitle_task.graphql";
+import { TaskCardTitle_task$key } from "../relay/__gen__/TaskCardTitle_task.graphql";
 import "./TaskCardTitle.scss";
-import { TaskCardStatusButton_task$key } from "../relay/__generated__/TaskCardStatusButton_task.graphql";
+import { TaskCardStatusButton_task$key } from "../relay/__gen__/TaskCardStatusButton_task.graphql";
+import { TaskTagsExtension, useTaskTags } from "./TaskTags";
 
 type TaskCardProps = {
   task: TaskCard_task$key;
@@ -118,6 +119,7 @@ const TaskCardStatusButton = (props: { task: TaskCardStatusButton_task$key; smal
 };
 
 const TaskCardTitle = (props: { task: TaskCardTitle_task$key }) => {
+  const { taskTags } = useTaskTags();
   const task = useFragment(
     graphql`
       fragment TaskCardTitle_task on Task {
@@ -127,11 +129,14 @@ const TaskCardTitle = (props: { task: TaskCardTitle_task$key }) => {
     `,
     props.task,
   );
-  const editor = useEditor({
-    extensions: [MinimumKit],
-    content: task.title,
-    editable: false, // readonly
-  });
+  const editor = useEditor(
+    {
+      extensions: [MinimumKit, TaskTagsExtension.configure({ tags: taskTags })],
+      content: task.title,
+      editable: false, // readonly
+    },
+    [taskTags],
+  );
 
   return <EditorContent editor={editor} className="TaskCardTitleInput w-full cursor-text p-0" />;
 };

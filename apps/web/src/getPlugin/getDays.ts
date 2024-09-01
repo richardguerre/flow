@@ -1,8 +1,8 @@
 import { fetchQuery, graphql } from "@flowdev/relay";
 import { dayjs } from "@flowdev/web/dayjs";
 import { environment } from "@flowdev/web/relay/environment";
-import { getDaysDaysQuery } from "@flowdev/web/relay/__generated__/getDaysDaysQuery.graphql";
-import { getDaysDaysMax10Query } from "@flowdev/web/relay/__generated__/getDaysDaysMax10Query.graphql";
+import { getDaysDaysQuery } from "@flowdev/web/relay/__gen__/getDaysDaysQuery.graphql";
+import { getDaysDaysMax10Query } from "@flowdev/web/relay/__gen__/getDaysDaysMax10Query.graphql";
 
 // frament used in getDays and getDaysMax10
 graphql`

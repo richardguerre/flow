@@ -3,7 +3,7 @@
   "private": true,
   "type": "module",
   "scripts": {
-    "setup:relay": "mkdir -p src/relay/__generated__",
+    "setup:relay": "mkdir -p src/relay/__gen__",
     "relay": "cd ../.. && relay-compiler && echo '✅ Relay compiled!'",
     "relay:watch": "cd ../.. && relay-compiler --watch",
     "dev": "bun run relay && bunx --bun vite --port 3000",
@@ -48,6 +48,6 @@
     "vite-tsconfig-paths": "4.0.5"
   },
   "relay": {
-    "artifactDirectory": "src/relay/__generated__"
+    "artifactDirectory": "src/relay/__gen__"
   }
 }

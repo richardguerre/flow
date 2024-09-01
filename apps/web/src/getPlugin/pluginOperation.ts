@@ -6,8 +6,8 @@ import {
   useLazyLoadQuery,
 } from "@flowdev/relay";
 import { environment } from "@flowdev/web/relay/environment";
-import { pluginOperationQuery } from "@flowdev/web/relay/__generated__/pluginOperationQuery.graphql";
-import { pluginOperationMutation } from "@flowdev/web/relay/__generated__/pluginOperationMutation.graphql";
+import { pluginOperationQuery } from "@flowdev/web/relay/__gen__/pluginOperationQuery.graphql";
+import { pluginOperationMutation } from "@flowdev/web/relay/__gen__/pluginOperationMutation.graphql";
 import { useState } from "react";
 
 const queryDoc = graphql`

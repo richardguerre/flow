@@ -9,19 +9,19 @@ import {
   useMutation,
   useMutationPromise,
 } from "@flowdev/relay";
-import { PluginSettingsView_pluginInstallation$key } from "../relay/__generated__/PluginSettingsView_pluginInstallation.graphql";
+import { PluginSettingsView_pluginInstallation$key } from "../relay/__gen__/PluginSettingsView_pluginInstallation.graphql";
 import { UpdatePluginButton } from "../components/UpdatePluginButton";
-import { PluginSettingsViewUninstallPluginMutation } from "../relay/__generated__/PluginSettingsViewUninstallPluginMutation.graphql";
+import { PluginSettingsViewUninstallPluginMutation } from "../relay/__gen__/PluginSettingsViewUninstallPluginMutation.graphql";
 import { useOutletContext, useParams } from "react-router-dom";
-import { SettingsViewQuery$data } from "../relay/__generated__/SettingsViewQuery.graphql";
+import { SettingsViewQuery$data } from "../relay/__gen__/SettingsViewQuery.graphql";
 import { FormInput, FormInputProps } from "@flowdev/ui/FormInput";
 import { FormTextarea, FormTextareaProps } from "@flowdev/ui/FormTextarea";
 import { FormCheckbox, FormCheckboxProps } from "@flowdev/ui/FormCheckbox";
 import { FieldError, FieldValues, RegisterOptions, useForm } from "react-hook-form";
 import { Markdown } from "@flowdev/tiptap";
 import { useDebounce } from "../useDebounce";
-import { PluginSettingsViewUpdatePluginSettingsMutation } from "../relay/__generated__/PluginSettingsViewUpdatePluginSettingsMutation.graphql";
-import { PluginSettingsViewQuery } from "../relay/__generated__/PluginSettingsViewQuery.graphql";
+import { PluginSettingsViewUpdatePluginSettingsMutation } from "../relay/__gen__/PluginSettingsViewUpdatePluginSettingsMutation.graphql";
+import { PluginSettingsViewQuery } from "../relay/__gen__/PluginSettingsViewQuery.graphql";
 import { dayjs } from "../dayjs";
 import { FormSelect, FormSelectProps } from "@flowdev/ui/FormSelect";
 import { SelectContent, SelectItem, SelectTrigger } from "@flowdev/ui/Select";

@@ -1,10 +1,10 @@
 import { graphql, useLazyLoadQuery, useMutationPromise } from "@flowdev/relay";
 import { StarterKit, useEditor, EditorContent } from "@flowdev/tiptap";
 import { Suspense, useEffect, useRef } from "react";
-import { NoteEditorQuery } from "@flowdev/web/relay/__generated__/NoteEditorQuery.graphql";
-import { NoteEditorUpsertNoteMutation } from "@flowdev/web/relay/__generated__/NoteEditorUpsertNoteMutation.graphql";
+import { NoteEditorQuery } from "@flowdev/web/relay/__gen__/NoteEditorQuery.graphql";
+import { NoteEditorUpsertNoteMutation } from "@flowdev/web/relay/__gen__/NoteEditorUpsertNoteMutation.graphql";
 import { dayjs } from "@flowdev/web/dayjs";
-// import { CreateNoteTagInput } from "@flowdev/web/relay/__generated__/RoutineStepSaveNoteMutation.graphql";
+// import { CreateNoteTagInput } from "@flowdev/web/relay/__gen__/RoutineStepSaveNoteMutation.graphql";
 
 type NoteEditorProps = {
   /** The slug of the note. The note will either be created or updated using that slug. */

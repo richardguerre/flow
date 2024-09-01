@@ -6,11 +6,16 @@ import {
   type GraphQLSubscriptionConfig,
   type SelectorStoreUpdater,
   type StoreUpdater,
+  type PreloadableConcreteRequest,
+  type VariablesOf,
+  type FetchPolicy,
+  type CacheConfig,
+  type RenderPolicy,
 } from "relay-runtime";
 import {
   GraphQLTaggedNode,
-  PreloadableConcreteRequest,
   PreloadedQuery,
+  useLazyLoadQuery,
   useQueryLoader as useRelayQueryLoader,
   UseQueryLoaderLoadQueryOptions,
   useMutation as useRelayMutation,
@@ -46,13 +51,32 @@ export {
   useFragment,
   usePaginationFragment,
   useRefetchableFragment,
-  useLazyLoadQuery,
   ConnectionHandler,
   useClientQuery,
 } from "react-relay";
 export { type RecordSourceSelectorProxy, type SelectorStoreUpdater } from "relay-runtime";
 
+export { useLazyLoadQuery };
+
 // ----------------- wrapped exports of react-relay -----------------
+
+export function useConditionalLazyLoadQuery<TQuery extends OperationType>(
+  gqlQuery: GraphQLTaggedNode,
+  variables: VariablesOf<TQuery>,
+  condition: boolean,
+  options?: {
+    fetchKey?: string | number | undefined;
+    fetchPolicy?: FetchPolicy | undefined;
+    networkCacheConfig?: CacheConfig | undefined;
+    UNSTABLE_renderPolicy?: RenderPolicy | undefined;
+  },
+): TQuery["response"] | null {
+  let data: TQuery["response"] = null;
+  if (condition) {
+    data = useLazyLoadQuery(gqlQuery, variables, options);
+  }
+  return data;
+}
 
 export function useQueryLoader<TQuery extends OperationType>(
   preloadableRequest: GraphQLTaggedNode | PreloadableConcreteRequest<TQuery>,

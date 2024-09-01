@@ -6,12 +6,12 @@ import {
   useQueryLoader,
 } from "@flowdev/relay";
 import { useNavigate, useParams } from "react-router-dom";
-import { RoutineViewQuery } from "@flowdev/web/relay/__generated__/RoutineViewQuery.graphql";
+import { RoutineViewQuery } from "@flowdev/web/relay/__gen__/RoutineViewQuery.graphql";
 import { useMemo, useState } from "react";
 import { dayjs } from "@flowdev/web/dayjs";
 import { RoutineStep } from "@flowdev/web/components/RoutineStep";
 import { environment } from "@flowdev/web/relay/environment";
-import { RoutineViewLatestQuery } from "@flowdev/web/relay/__generated__/RoutineViewLatestQuery.graphql";
+import { RoutineViewLatestQuery } from "@flowdev/web/relay/__gen__/RoutineViewLatestQuery.graphql";
 import { decodeGlobalId } from "@flowdev/web/relay/utils";
 
 const routineViewQuery = graphql`

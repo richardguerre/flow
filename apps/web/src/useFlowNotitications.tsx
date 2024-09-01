@@ -1,5 +1,5 @@
 import { graphql, useSubscription } from "@flowdev/relay";
-import { useFlowNotiticationsSubscription } from "./relay/__generated__/useFlowNotiticationsSubscription.graphql";
+import { useFlowNotiticationsSubscription } from "./relay/__gen__/useFlowNotiticationsSubscription.graphql";
 
 /** This hook will establish the `notifications` subscription and will update the Relay store with any updates that it receives. */
 export const useFlowNotitications = () => {

@@ -23,21 +23,21 @@ import {
   ContextMenuTrigger,
 } from "@flowdev/ui/ContextMenu";
 import { BsCheck, BsCheckAll, BsClock, BsX } from "@flowdev/icons";
-import { TaskCard_task$key } from "@flowdev/web/relay/__generated__/TaskCard_task.graphql";
-import { TaskCardActions_task$key } from "@flowdev/web/relay/__generated__/TaskCardActions_task.graphql";
+import { TaskCard_task$key } from "@flowdev/web/relay/__gen__/TaskCard_task.graphql";
+import { TaskCardActions_task$key } from "@flowdev/web/relay/__gen__/TaskCardActions_task.graphql";
 import {
   TaskCardUpdateTaskStatusMutation,
   TaskStatus,
-} from "@flowdev/web/relay/__generated__/TaskCardUpdateTaskStatusMutation.graphql";
-import { TaskCardUpdateTaskDurationMutation } from "../relay/__generated__/TaskCardUpdateTaskDurationMutation.graphql";
-import { TaskCardUpdateItemStatusMutation } from "../relay/__generated__/TaskCardUpdateItemStatusMutation.graphql";
-import { TaskCardDurationButton_task$key } from "../relay/__generated__/TaskCardDurationButton_task.graphql";
-import { TaskCardDeleteTaskMutation } from "../relay/__generated__/TaskCardDeleteTaskMutation.graphql";
+} from "@flowdev/web/relay/__gen__/TaskCardUpdateTaskStatusMutation.graphql";
+import { TaskCardUpdateTaskDurationMutation } from "../relay/__gen__/TaskCardUpdateTaskDurationMutation.graphql";
+import { TaskCardUpdateItemStatusMutation } from "../relay/__gen__/TaskCardUpdateItemStatusMutation.graphql";
+import { TaskCardDurationButton_task$key } from "../relay/__gen__/TaskCardDurationButton_task.graphql";
+import { TaskCardDeleteTaskMutation } from "../relay/__gen__/TaskCardDeleteTaskMutation.graphql";
 import { toast } from "@flowdev/ui/Toast";
 import { RenderTaskCardDetails } from "./RenderTaskCardDetails";
 import { RenderTaskCardActions } from "./RenderTaskCardActions";
-import { TaskCardSubtask_task$key } from "../relay/__generated__/TaskCardSubtask_task.graphql";
-import { TaskCardContextMenu_task$key } from "../relay/__generated__/TaskCardContextMenu_task.graphql";
+import { TaskCardSubtask_task$key } from "../relay/__gen__/TaskCardSubtask_task.graphql";
+import { TaskCardContextMenu_task$key } from "../relay/__gen__/TaskCardContextMenu_task.graphql";
 import { useDragContext } from "../useDragContext";
 import { Editor } from "@flowdev/tiptap";
 

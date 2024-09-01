@@ -3,12 +3,12 @@ import { ItemCard } from "./ItemCard";
 import { ReactSortable } from "react-sortablejs";
 import { useEffect, useState } from "react";
 import { Button } from "@flowdev/ui/Button";
-import { InboxListSubscription } from "../relay/__generated__/InboxListSubscription.graphql";
+import { InboxListSubscription } from "../relay/__gen__/InboxListSubscription.graphql";
 import { environment } from "../relay/environment";
 import {
   InboxListItems_itemsConnection$data,
   InboxListItems_itemsConnection$key,
-} from "../relay/__generated__/InboxListItems_itemsConnection.graphql";
+} from "../relay/__gen__/InboxListItems_itemsConnection.graphql";
 import { useDragContext } from "../useDragContext";
 import { useConvertTaskToItem } from "./OnCreateItem";
 

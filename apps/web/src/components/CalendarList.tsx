@@ -7,19 +7,19 @@ import {
   useRefetchableFragment,
   useSmartSubscription,
 } from "@flowdev/relay";
-import { CalendarList_data$key } from "@flowdev/web/relay/__generated__/CalendarList_data.graphql";
+import { CalendarList_data$key } from "@flowdev/web/relay/__gen__/CalendarList_data.graphql";
 import { DayTimeGrid, CalendarEvent, CalendarArtifact } from "@flowdev/calendar";
 import { tailwindColors } from "@flowdev/unocss";
-import { CalendarListRefetchableQuery } from "../relay/__generated__/CalendarListRefetchableQuery.graphql";
-import { CalendarListSubscription } from "../relay/__generated__/CalendarListSubscription.graphql";
+import { CalendarListRefetchableQuery } from "../relay/__gen__/CalendarListRefetchableQuery.graphql";
+import { CalendarListSubscription } from "../relay/__gen__/CalendarListSubscription.graphql";
 import { dayjs } from "../dayjs";
 import { useDragContext } from "../useDragContext";
 import { RenderCalendarActions, RenderCalendarInlineActions } from "./RenderCalendarActions";
 import { Button } from "@flowdev/ui/Button";
 import { BsArrowClockwise, BsCheck } from "@flowdev/icons";
-import { CalendarListRefreshMutation } from "../relay/__generated__/CalendarListRefreshMutation.graphql";
-import { CalendarListCreateItemMutation } from "../relay/__generated__/CalendarListCreateItemMutation.graphql";
-import { CalendarList_eventsConnection$key } from "../relay/__generated__/CalendarList_eventsConnection.graphql";
+import { CalendarListRefreshMutation } from "../relay/__gen__/CalendarListRefreshMutation.graphql";
+import { CalendarListCreateItemMutation } from "../relay/__gen__/CalendarListCreateItemMutation.graphql";
+import { CalendarList_eventsConnection$key } from "../relay/__gen__/CalendarList_eventsConnection.graphql";
 import { tw } from "@flowdev/ui/tw";
 
 export const START_HOUR = 4;

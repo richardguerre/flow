@@ -5,7 +5,7 @@ import { usePlugins } from "../getPlugin";
 import {
   RenderItemCardActions_item$data,
   RenderItemCardActions_item$key,
-} from "../relay/__generated__/RenderItemCardActions_item.graphql";
+} from "../relay/__gen__/RenderItemCardActions_item.graphql";
 
 type Props = {
   /** The details provided by Flow. */

@@ -1,6 +1,6 @@
 {
   "root": ".",
-  "excludes": ["**/node_modules/**", "**/__mocks__/**", "**/__generated__/**"],
+  "excludes": ["**/node_modules/**", "**/__mocks__/**", "**/__gen__/**"],
   "sources": {
     "apps/web/src": "web",
     "apps/mobile-pwa/src": "mobile-pwa"
@@ -8,7 +8,7 @@
   "projects": {
     "web": {
       "schema": "packages/relay/schema.graphql",
-      "output": "apps/web/src/relay/__generated__",
+      "output": "apps/web/src/relay/__gen__",
       "language": "typescript",
       "schemaExtensions": ["apps/web/src/relay/local"],
       "eagerEsModules": true,
@@ -24,7 +24,7 @@
     },
     "mobile-pwa": {
       "schema": "packages/relay/schema.graphql",
-      "output": "apps/mobile-pwa/src/relay/__generated__",
+      "output": "apps/mobile-pwa/src/relay/__gen__",
       "language": "typescript",
       "eagerEsModules": true,
       "noFutureProofEnums": true,

@@ -7,7 +7,7 @@ import { ItemsConnection } from "./InboxList";
 import {
   ItemFilter,
   RenderListPluginItemsSubscription,
-} from "../relay/__generated__/RenderListPluginItemsSubscription.graphql";
+} from "../relay/__gen__/RenderListPluginItemsSubscription.graphql";
 
 type Props = { listId: string; plugin: NonNullable<SelectedList["plugin"]> };
 export const RenderList = (props: Props) => {

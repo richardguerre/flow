@@ -1,7 +1,7 @@
 import { fetchQuery, graphql } from "@flowdev/relay";
 import { useAsyncLoader } from "../useAsyncLoader";
 import { environment } from "../relay/environment";
-import { getStoreUtilsGetQuery } from "../relay/__generated__/getStoreUtilsGetQuery.graphql";
+import { getStoreUtilsGetQuery } from "../relay/__gen__/getStoreUtilsGetQuery.graphql";
 
 export const getStoreUtils = (defaultSlug: string) => {
   const get = async (keys?: string[], pluginSlug?: string | null) => {

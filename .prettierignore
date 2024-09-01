@@ -49,8 +49,8 @@ apps/server/plugins/*
 packages/relay/schema.graphql
 
 # ignoring generated files from relay-compiler (copied from apps/web/.gitignore)
-apps/web/src/relay/__generated__
-apps/mobile-pwa/src/relay/__generated__
+apps/web/src/relay/__gen__
+apps/mobile-pwa/src/relay/__gen__
 
 # ignoring uno.css to keep the bundle size small
 apps/web/uno.css

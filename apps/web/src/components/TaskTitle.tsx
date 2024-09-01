@@ -4,16 +4,16 @@ import {
   useEditor,
   EditorContent,
   Editor,
-  Mention,
   CatchNewLines,
   MinimumKit,
   OnEscape,
 } from "@flowdev/tiptap";
-import { TaskTitle_task$key } from "@flowdev/web/relay/__generated__/TaskTitle_task.graphql";
-import { TaskTitleUpdateTaskTitleMutation } from "../relay/__generated__/TaskTitleUpdateTaskTitleMutation.graphql";
+import { TaskTitle_task$key } from "@flowdev/web/relay/__gen__/TaskTitle_task.graphql";
+import { TaskTitleUpdateTaskTitleMutation } from "../relay/__gen__/TaskTitleUpdateTaskTitleMutation.graphql";
 import "./TaskTitle.scss";
-import { TaskTitleCreateTaskMutation } from "../relay/__generated__/TaskTitleCreateTaskMutation.graphql";
+import { TaskTitleCreateTaskMutation } from "../relay/__gen__/TaskTitleCreateTaskMutation.graphql";
 import { createVirtualTask, deleteVirtualTask } from "./Day";
+import { TaskTagsExtension, useTaskTags } from "./TaskTags";
 
 type TaskTitleProps = {
   task: TaskTitle_task$key;
@@ -120,6 +120,7 @@ type TaskTitleInputProps = {
 export const TaskTitleInput = (props: TaskTitleInputProps) => {
   const editorRef = useRef<Editor | null>(null);
   const [editable, setEditable] = useState(props.autoFocus ?? false);
+  const { taskTags } = useTaskTags();
 
   const handleSave = useCallback(() => {
     setEditable(false);
@@ -144,23 +145,23 @@ export const TaskTitleInput = (props: TaskTitleInputProps) => {
     props.onSave?.(newValue);
   }, [editorRef.current]);
 
-  editorRef.current = useEditor({
-    extensions: [
-      MinimumKit,
-      CatchNewLines(() => editorRef.current!.commands.blur()),
-      OnEscape(() => editorRef.current!.commands.blur()),
-      Mention.configure({
-        suggestion: {
-          char: "#",
-        },
-      }),
-    ],
-    content: props.initialValue ?? "",
-    editable: props.readOnly ? false : undefined,
-    onBlur: handleSave,
-  });
+  editorRef.current = useEditor(
+    {
+      extensions: [
+        MinimumKit.configure({ placeholder: { placeholder: "What needs to be done?" } }),
+        CatchNewLines(() => editorRef.current!.commands.blur()),
+        OnEscape(() => editorRef.current!.commands.blur()),
+        TaskTagsExtension.configure({ tags: taskTags }),
+      ],
+      content: props.initialValue ?? "",
+      editable: props.readOnly ? false : undefined,
+      onBlur: handleSave,
+    },
+    [taskTags],
+  );
 
   const handleClick = () => {
+    console.log(props.initialValue);
     // the following setTimeout allows the user to click on links within the editor
     // without first having to make the editor editable (i.e. no need to double click)
     setTimeout(() => {
@@ -182,6 +183,7 @@ export const TaskTitleInput = (props: TaskTitleInputProps) => {
     if (props.initialValue === editorRef.current.getHTML()) return;
     editorRef.current.commands.setContent(props.initialValue);
   }, [editorRef.current, props.initialValue]);
+
   return (
     <EditorContent
       className={props.className ?? "TaskTitleInput w-full cursor-text p-0"}

@@ -1,5 +1,5 @@
 import { graphql, usePaginationFragment } from "@flowdev/relay";
-import { Days_data$key } from "@flowdev/web/relay/__generated__/Days_data.graphql";
+import { Days_data$key } from "@flowdev/web/relay/__gen__/Days_data.graphql";
 import { useEffect, useRef, useState } from "react";
 import { Day } from "./Day";
 

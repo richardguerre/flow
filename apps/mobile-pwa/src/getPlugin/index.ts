@@ -1,13 +1,13 @@
 import { DefineMobilePluginReturn, MobilePlugin } from "@flowdev/plugin/mobile";
 import { graphql, useLazyLoadQuery } from "@flowdev/relay";
 import { fetchQuery } from "@flowdev/relay";
-import { getPluginsQuery } from "@flowdev/mobile-pwa/relay/__generated__/getPluginsQuery.graphql";
+import { getPluginsQuery } from "@flowdev/mobile-pwa/relay/__gen__/getPluginsQuery.graphql";
 import { environment } from "@flowdev/mobile-pwa/relay/environment";
 import { getPluginOptions } from "./getPluginOptions";
 import { devImportMap } from "./plugin.dev";
 import { useState } from "react";
 import { useAsyncEffect } from "../useAsyncEffect";
-import { getPluginsUsePluginsQuery } from "../relay/__generated__/getPluginsUsePluginsQuery.graphql";
+import { getPluginsUsePluginsQuery } from "../relay/__gen__/getPluginsUsePluginsQuery.graphql";
 
 type Input = {
   pluginSlug: string;

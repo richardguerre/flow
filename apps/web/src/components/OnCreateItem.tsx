@@ -1,10 +1,10 @@
 import { ConnectionHandler, graphql, useMutation, useMutationPromise } from "@flowdev/relay";
 import { environment } from "../relay/environment";
-import { OnCreateItemTaskRecordToCreateItemFrom_task$data } from "../relay/__generated__/OnCreateItemTaskRecordToCreateItemFrom_task.graphql";
-import { OnCreateItemItemRelatedToTask_task$data } from "../relay/__generated__/OnCreateItemItemRelatedToTask_task.graphql";
-import { OnCreateItemCreateItemFromTaskMutation } from "../relay/__generated__/OnCreateItemCreateItemFromTaskMutation.graphql";
+import { OnCreateItemTaskRecordToCreateItemFrom_task$data } from "../relay/__gen__/OnCreateItemTaskRecordToCreateItemFrom_task.graphql";
+import { OnCreateItemItemRelatedToTask_task$data } from "../relay/__gen__/OnCreateItemItemRelatedToTask_task.graphql";
+import { OnCreateItemCreateItemFromTaskMutation } from "../relay/__gen__/OnCreateItemCreateItemFromTaskMutation.graphql";
 import { deleteTaskMutation, deleteTaskUpdater } from "./TaskCard";
-import { TaskCardDeleteTaskMutation } from "../relay/__generated__/TaskCardDeleteTaskMutation.graphql";
+import { TaskCardDeleteTaskMutation } from "../relay/__gen__/TaskCardDeleteTaskMutation.graphql";
 
 graphql`
   fragment OnCreateItemTaskRecordToCreateItemFrom_task on Task {

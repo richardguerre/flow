@@ -8,14 +8,13 @@ import {
 import { dayjs } from "../dayjs";
 import { useEffect, useRef, useState } from "react";
 import { Day } from "../components/Day";
-import { IndexViewQuery } from "../relay/__generated__/IndexViewQuery.graphql";
+import { IndexViewQuery } from "@flowdev/mobile-pwa/relay/__gen__/IndexViewQuery.graphql";
 import { BsCalendar, BsClock, BsPlusLg } from "@flowdev/icons";
 import { Drawer, DrawerContent, DrawerTrigger } from "@flowdev/ui/Drawer";
 import {
   CatchNewLines,
   Editor,
   EditorContent,
-  Mention,
   MinimumKit,
   OnEscape,
   useEditor,
@@ -24,7 +23,8 @@ import "./IndexView.scss";
 import { Button } from "@flowdev/ui/Button";
 import { Controller, useForm } from "react-hook-form";
 import { durationOptions } from "../components/TaskCard";
-import { IndexViewCreateTaskMutation } from "../relay/__generated__/IndexViewCreateTaskMutation.graphql";
+import { IndexViewCreateTaskMutation } from "@flowdev/mobile-pwa/relay/__gen__/IndexViewCreateTaskMutation.graphql";
+import { TaskTagsExtension, useTaskTags } from "../components/TaskTags";
 
 export const START_HOUR = 4;
 export const getStartOfToday = () => {
@@ -121,8 +121,7 @@ const CreateTaskDrawer = (props: {
     date: dayjs().format("YYYY-MM-DD"),
     durationInMinutes: null,
   };
-  const { handleSubmit, control, reset } = useForm<FormValues>({defaultValues
-  });
+  const { handleSubmit, control, reset } = useForm<FormValues>({ defaultValues });
 
   const [$createTask, creatingTask] = useMutation<IndexViewCreateTaskMutation>(graphql`
     mutation IndexViewCreateTaskMutation($input: MutationCreateTaskInput!) {
@@ -162,7 +161,7 @@ const CreateTaskDrawer = (props: {
   const handleClose = (open: boolean) => {
     if (!open) reset();
     setOpenDrawer(open);
-  }
+  };
 
   return (
     <Drawer open={openDrawer} onOpenChange={handleClose}>
@@ -184,7 +183,7 @@ const CreateTaskDrawer = (props: {
             )}
           />
           <div className="flex gap-2 items-center justify-between">
-            <div className="flex gap-2 items-center w-30 overflow-hidden">
+            <div className="overflow-hidden flex gap-2 items-center w-30">
               <BsCalendar size={16} stroke="2px" className="shrink-0" />
               {/* Had to use Controller here as the default value wasn't being set properly when using register(). */}
               <Controller
@@ -243,33 +242,27 @@ const TaskTitleInput = (props: {
   onSave: () => void;
 }) => {
   const editorRef = useRef<Editor | null>(null);
-  editorRef.current = useEditor({
-    content: props.value,
-    onBlur: ({ editor }) => {
-      props.onChange(editor.getHTML());
-      props.onBlur();
+  const { taskTags } = useTaskTags();
+  editorRef.current = useEditor(
+    {
+      content: props.value,
+      onBlur: ({ editor }) => {
+        props.onChange(editor.getHTML());
+        props.onBlur();
+      },
+      onUpdate: ({ editor }) => props.onChange(editor.getHTML()),
+      extensions: [
+        MinimumKit.configure({ placeholder: { placeholder: "What needs to be done?" } }),
+        CatchNewLines(() => {
+          editorRef.current!.commands.blur();
+          props.onSave();
+        }),
+        OnEscape(() => editorRef.current!.commands.blur()),
+        TaskTagsExtension.configure({ tags: taskTags }),
+      ],
     },
-    onUpdate: ({ editor }) => {
-      props.onChange(editor.getHTML());
-    },
-    extensions: [
-      MinimumKit.configure({
-        placeholder: {
-          placeholder: "Add a task",
-        },
-      }),
-      CatchNewLines(() => {
-        editorRef.current!.commands.blur();
-        props.onSave();
-      }),
-      OnEscape(() => editorRef.current!.commands.blur()),
-      Mention.configure({
-        suggestion: {
-          char: "#",
-        },
-      }),
-    ],
-  });
+    [taskTags],
+  );
 
   useEffect(() => {
     setTimeout(() => {

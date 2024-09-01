@@ -1,6 +1,6 @@
 import { PreloadedQuery, graphql, usePreloadedQuery, useQueryLoader } from "@flowdev/relay";
 import { getPlugin } from "@flowdev/web/getPlugin";
-import { SettingsViewQuery } from "../relay/__generated__/SettingsViewQuery.graphql";
+import { SettingsViewQuery } from "../relay/__gen__/SettingsViewQuery.graphql";
 import { useAsyncLoader } from "../useAsyncLoader";
 import { Link, Outlet } from "react-router-dom";
 import { tw } from "@flowdev/ui/tw";
@@ -46,7 +46,7 @@ const SettingsViewContent = (props: SettingsViewProps) => {
         <div className="text-base font-semibold">Settings</div>
         <div className="flex flex-col gap-2">
           <SettingTab to="/settings/general">General</SettingTab>
-          {/* <SettingTab to="/settings/tasks">Tasks</SettingTab> */}
+          <SettingTab to="/settings/tasks">Tasks</SettingTab>
           <SettingTab to="/settings/routines">Routines</SettingTab>
           <SettingTab to="/settings/browse-plugins">Browse plugins</SettingTab>
         </div>

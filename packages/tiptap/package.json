@@ -30,8 +30,5 @@
     "@tiptap/react": "2.2.4",
     "@tiptap/suggestion": "2.2.4",
     "tiptap-markdown": "0.8.9"
-  },
-  "resolutions": {
-    "prosemirror-model": "1.19.4"
   }
 }

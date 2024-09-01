@@ -1,4 +1,4 @@
-import { Extension } from "@tiptap/core";
+import { Extension, type Range } from "@tiptap/core";
 import { Document } from "@tiptap/extension-document";
 import { useEditor, Editor, EditorContent } from "@tiptap/react";
 import { Blockquote, BlockquoteOptions } from "@tiptap/extension-blockquote";
@@ -19,7 +19,7 @@ import { Strike, StrikeOptions } from "@tiptap/extension-strike";
 import { Dropcursor, DropcursorOptions } from "@tiptap/extension-dropcursor";
 import { Gapcursor } from "@tiptap/extension-gapcursor";
 import { History, HistoryOptions } from "@tiptap/extension-history";
-import { Mention } from "@tiptap/extension-mention";
+import { Mention, MentionOptions } from "@tiptap/extension-mention";
 import { Markdown as MarkdownExtension } from "tiptap-markdown";
 import { Placeholder as $Placholder, PlaceholderOptions } from "@tiptap/extension-placeholder";
 import { Plugin, PluginKey } from "prosemirror-state";
@@ -46,7 +46,9 @@ export {
   Gapcursor,
   History,
   Mention,
+  type MentionOptions,
   MarkdownExtension,
+  type Range,
 };
 
 export const Link = $Link.configure({

@@ -6,7 +6,7 @@ import { useNavigate } from "react-router-dom";
 import { useForm } from "react-hook-form";
 import { FormInput } from "@flowdev/ui/FormInput";
 import { toast } from "@flowdev/ui/Toast";
-import { GeneralSettingsViewChangePasswordMutation } from "../relay/__generated__/GeneralSettingsViewChangePasswordMutation.graphql";
+import { GeneralSettingsViewChangePasswordMutation } from "../relay/__gen__/GeneralSettingsViewChangePasswordMutation.graphql";
 
 export default () => {
   return (
