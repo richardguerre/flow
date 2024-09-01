@@ -148,7 +148,7 @@ export const TaskTitleInput = (props: TaskTitleInputProps) => {
   editorRef.current = useEditor(
     {
       extensions: [
-        MinimumKit,
+        MinimumKit.configure({ placeholder: { placeholder: "What needs to be done?" } }),
         CatchNewLines(() => editorRef.current!.commands.blur()),
         OnEscape(() => editorRef.current!.commands.blur()),
         TaskTagsExtension.configure({ tags: taskTags }),

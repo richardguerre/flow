@@ -69,7 +69,6 @@ import { ErrorBoundary } from "@flowdev/error-boundary";
 import { toast } from "@flowdev/ui/Toast";
 import { Textarea } from "@flowdev/ui/Textarea";
 import { FormTextarea } from "@flowdev/ui/FormTextarea";
-import { TaskTitleInput } from "../components/TaskTitle";
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@flowdev/ui/Tooltip";
 import {
   Dialog,
@@ -134,7 +133,6 @@ export const getPluginOptions = (slug: string) => ({
      */
     DayContent,
     TaskCard,
-    TaskTitleInput,
     TaskDurationButtonDropdown,
 
     // UI components

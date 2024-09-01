@@ -20,6 +20,7 @@ import { EditorContent, MinimumKit, useEditor } from "@flowdev/tiptap";
 import { TaskCardTitle_task$key } from "../relay/__generated__/TaskCardTitle_task.graphql";
 import "./TaskCardTitle.scss";
 import { TaskCardStatusButton_task$key } from "../relay/__generated__/TaskCardStatusButton_task.graphql";
+import { TaskTagsExtension, useTaskTags } from "./TaskTags";
 
 type TaskCardProps = {
   task: TaskCard_task$key;
@@ -118,6 +119,7 @@ const TaskCardStatusButton = (props: { task: TaskCardStatusButton_task$key; smal
 };
 
 const TaskCardTitle = (props: { task: TaskCardTitle_task$key }) => {
+  const { taskTags } = useTaskTags();
   const task = useFragment(
     graphql`
       fragment TaskCardTitle_task on Task {
@@ -127,11 +129,14 @@ const TaskCardTitle = (props: { task: TaskCardTitle_task$key }) => {
     `,
     props.task,
   );
-  const editor = useEditor({
-    extensions: [MinimumKit],
-    content: task.title,
-    editable: false, // readonly
-  });
+  const editor = useEditor(
+    {
+      extensions: [MinimumKit, TaskTagsExtension.configure({ tags: taskTags })],
+      content: task.title,
+      editable: false, // readonly
+    },
+    [taskTags],
+  );
 
   return <EditorContent editor={editor} className="TaskCardTitleInput w-full cursor-text p-0" />;
 };

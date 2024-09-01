@@ -15,7 +15,6 @@ import {
   CatchNewLines,
   Editor,
   EditorContent,
-  Mention,
   MinimumKit,
   OnEscape,
   useEditor,
@@ -25,6 +24,7 @@ import { Button } from "@flowdev/ui/Button";
 import { Controller, useForm } from "react-hook-form";
 import { durationOptions } from "../components/TaskCard";
 import { IndexViewCreateTaskMutation } from "../relay/__generated__/IndexViewCreateTaskMutation.graphql";
+import { TaskTagsExtension, useTaskTags } from "../components/TaskTags";
 
 export const START_HOUR = 4;
 export const getStartOfToday = () => {
@@ -237,33 +237,27 @@ const TaskTitleInput = (props: {
   onSave: () => void;
 }) => {
   const editorRef = useRef<Editor | null>(null);
-  editorRef.current = useEditor({
-    content: props.value,
-    onBlur: ({ editor }) => {
-      props.onChange(editor.getHTML());
-      props.onBlur();
+  const { taskTags } = useTaskTags();
+  editorRef.current = useEditor(
+    {
+      content: props.value,
+      onBlur: ({ editor }) => {
+        props.onChange(editor.getHTML());
+        props.onBlur();
+      },
+      onUpdate: ({ editor }) => props.onChange(editor.getHTML()),
+      extensions: [
+        MinimumKit.configure({ placeholder: { placeholder: "What needs to be done?" } }),
+        CatchNewLines(() => {
+          editorRef.current!.commands.blur();
+          props.onSave();
+        }),
+        OnEscape(() => editorRef.current!.commands.blur()),
+        TaskTagsExtension.configure({ tags: taskTags }),
+      ],
     },
-    onUpdate: ({ editor }) => {
-      props.onChange(editor.getHTML());
-    },
-    extensions: [
-      MinimumKit.configure({
-        placeholder: {
-          placeholder: "Add a task",
-        },
-      }),
-      CatchNewLines(() => {
-        editorRef.current!.commands.blur();
-        props.onSave();
-      }),
-      OnEscape(() => editorRef.current!.commands.blur()),
-      Mention.configure({
-        suggestion: {
-          char: "#",
-        },
-      }),
-    ],
-  });
+    [taskTags],
+  );
 
   useEffect(() => {
     setTimeout(() => {
