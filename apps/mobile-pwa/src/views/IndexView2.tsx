@@ -116,12 +116,12 @@ const CreateTaskDrawer = (props: {
   onCreatedTask?: (task: IndexViewCreateTaskMutation["response"]["createTask"]) => void;
 }) => {
   const [openDrawer, setOpenDrawer] = useState(true);
-  const { handleSubmit, control } = useForm<FormValues>({
-    defaultValues: {
-      title: "",
-      date: dayjs().format("YYYY-MM-DD"),
-      durationInMinutes: null,
-    },
+  const defaultValues: FormValues = {
+    title: "",
+    date: dayjs().format("YYYY-MM-DD"),
+    durationInMinutes: null,
+  };
+  const { handleSubmit, control, reset } = useForm<FormValues>({defaultValues
   });
 
   const [$createTask, creatingTask] = useMutation<IndexViewCreateTaskMutation>(graphql`
@@ -153,13 +153,19 @@ const CreateTaskDrawer = (props: {
       },
       onCompleted: (res) => {
         props.onCreatedTask?.(res.createTask);
+        reset();
         setOpenDrawer(false);
       },
     });
   };
 
+  const handleClose = (open: boolean) => {
+    if (!open) reset();
+    setOpenDrawer(open);
+  }
+
   return (
-    <Drawer open={openDrawer} onOpenChange={setOpenDrawer}>
+    <Drawer open={openDrawer} onOpenChange={handleClose}>
       <DrawerTrigger className="absolute rounded-full bottom-4 right-4 bg-primary-500 h-16 w-16 flex items-center justify-center z-1 shadow-2xl focus:outline-none">
         <BsPlusLg className="text-primary-50" size={24} />
       </DrawerTrigger>
