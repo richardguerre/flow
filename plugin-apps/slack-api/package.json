@@ -1,0 +1,5 @@
+{
+  "name": "@flowdev/plugin-slack-api",
+  "description": "API for the Slack plugin for Flow. See plugins/slack for more information.",
+  "private": true
+}
