@@ -1,11 +1,11 @@
 import { useEffect, useState } from "react";
 import { graphql, useFragment, useMutation } from "@flowdev/relay";
-import { Day_day$key } from "@flowdev/mobile-pwa/relay/__generated__/Day_day.graphql";
+import { Day_day$key } from "@flowdev/mobile-pwa/relay/__gen__/Day_day.graphql";
 import { TaskCard } from "./TaskCard";
 import { dayjs } from "@flowdev/mobile-pwa/dayjs";
 import { ReactSortable, Sortable } from "react-sortablejs";
-import { DayContent_day$key } from "@flowdev/mobile-pwa/relay/__generated__/DayContent_day.graphql";
-import { DayUpdateTaskDateMutation } from "@flowdev/mobile-pwa/relay/__generated__/DayUpdateTaskDateMutation.graphql";
+import { DayContent_day$key } from "@flowdev/mobile-pwa/relay/__gen__/DayContent_day.graphql";
+import { DayUpdateTaskDateMutation } from "@flowdev/mobile-pwa/relay/__gen__/DayUpdateTaskDateMutation.graphql";
 
 type DayProps = {
   day: Day_day$key;
