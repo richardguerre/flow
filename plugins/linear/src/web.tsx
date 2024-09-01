@@ -5,9 +5,9 @@ import {
   BsReception1,
   BsReception2,
   BsReception4,
+  BsChevronDown,
 } from "@flowdev/icons";
 import { definePlugin } from "@flowdev/plugin/web";
-import { BsChevronDown } from "react-icons/bs";
 
 export default definePlugin((opts) => {
   // @ts-ignore as React is used during compilation and is required to make sure the plugin works with the host's React version

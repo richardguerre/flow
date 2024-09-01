@@ -40,12 +40,29 @@ export default async (request: Request) => {
 
   const data = await tokenResponse.json();
 
+  console.log(data);
+
   if (data.error) {
     return new Response(`Err: ${data.error}`, { status: 400 });
   }
-  if (!data.access_token) {
+  if (!data.ok) {
     return new Response("Failed to get access token", { status: 500 });
   }
+
+  /* example {
+    ok: true,
+    app_id: 'A07K8FUUDGE',
+    authed_user: {
+      id: 'U07KF1ETGFM',
+      scope: 'channels:read,groups:read,im:read,mpim:read,chat:write',
+      access_token: 'some access token',
+      token_type: 'user'
+    },
+    team: { id: 'T07KTQ7M30R', name: 'Flow' },
+    enterprise: null,
+    is_enterprise_install: false
+  }
+  */
 
   const storeTokenResponse = await fetch(apiEndpoint, {
     method: "POST",

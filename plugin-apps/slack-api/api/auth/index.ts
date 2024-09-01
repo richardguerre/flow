@@ -21,5 +21,5 @@ export default (request: Request) => {
     state,
   });
 
-  return Response.redirect(`https://linear.app/oauth/authorize?${searchParams.toString()}`);
+  return Response.redirect(`https://slack.com/oauth/v2/authorize?${searchParams.toString()}`);
 };
