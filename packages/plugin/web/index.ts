@@ -25,9 +25,13 @@ export type WebPluginRoutineStep = {
   component: React.ComponentType<PluginRoutineStepProps>;
 };
 
+type WaysToContact = { email: string };
+
 export type WebPlugin = (options: WebPluginOptions) => {
   /** The name of the plugin. */
   name: string;
+  /** Who and how to contact for support. You can add as many ways as you want, but the first one will be the default way to contact. */
+  contact: WaysToContact[];
   /** Routine steps the user can choose to add to their routines. */
   routineSteps?: {
     [stepSlug: string]: WebPluginRoutineStep;
