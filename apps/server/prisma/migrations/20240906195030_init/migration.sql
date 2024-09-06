@@ -51,6 +51,7 @@ CREATE TABLE "Task" (
     "completedAt" TIMESTAMPTZ,
     "date" DATE NOT NULL,
     "durationInMinutes" INTEGER,
+    "subtasksOrder" INTEGER[],
     "itemId" INTEGER,
     "parentTaskId" INTEGER,
 
@@ -153,9 +154,21 @@ CREATE TABLE "Routine" (
     "firstDay" DATE NOT NULL DEFAULT CURRENT_TIMESTAMP,
     "lastDay" DATE,
     "isActive" BOOLEAN NOT NULL DEFAULT true,
-    "steps" TEXT[],
+    "stepsOrder" INTEGER[],
 
     CONSTRAINT "Routine_pkey" PRIMARY KEY ("id")
+);
+
+-- CreateTable
+CREATE TABLE "RoutineStep" (
+    "id" SERIAL NOT NULL,
+    "pluginSlug" TEXT NOT NULL,
+    "stepSlug" TEXT NOT NULL,
+    "shouldSkip" BOOLEAN NOT NULL,
+    "config" JSONB,
+    "routineId" INTEGER NOT NULL,
+
+    CONSTRAINT "RoutineStep_pkey" PRIMARY KEY ("id")
 );
 
 -- CreateTable
@@ -229,6 +242,9 @@ ALTER TABLE "ItemPluginData" ADD CONSTRAINT "ItemPluginData_itemId_fkey" FOREIGN
 
 -- AddForeignKey
 ALTER TABLE "Item" ADD CONSTRAINT "Item_listId_fkey" FOREIGN KEY ("listId") REFERENCES "List"("id") ON DELETE SET NULL ON UPDATE CASCADE;
+
+-- AddForeignKey
+ALTER TABLE "RoutineStep" ADD CONSTRAINT "RoutineStep_routineId_fkey" FOREIGN KEY ("routineId") REFERENCES "Routine"("id") ON DELETE RESTRICT ON UPDATE CASCADE;
 
 -- AddForeignKey
 ALTER TABLE "_DayToRoutine" ADD CONSTRAINT "_DayToRoutine_A_fkey" FOREIGN KEY ("A") REFERENCES "Day"("date") ON DELETE CASCADE ON UPDATE CASCADE;

@@ -170,16 +170,42 @@ await prisma.routine.create({
     repeats: ["MONDAY", "TUESDAY", "WEDNESDAY", "THURSDAY", "FRIDAY", "SATURDAY", "SUNDAY"],
     isActive: true,
     firstDay: new Date(),
+    stepsOrder: [0, 1, 2, 3, 4, 5, 6],
     steps: {
-      set: [
-        "essentials_intro-to-yesterday_true",
-        "essentials_retro-on-yesterday_true",
-        "essentials_intro-to-today_false",
-        "essentials_plan-for-today_false",
-        "essentials_today-tomorrow-next-week_false",
-        // "essentials_decide-shutdown-time_false", // TODO: add this step when it's ready in plugins/essentials/src/web.tsx
-        "essentials_todays-plan_false",
-      ],
+      createMany: {
+        data: [
+          {
+            pluginSlug: "essentials",
+            stepSlug: "intro-to-yesterday",
+            shouldSkip: true,
+          },
+          {
+            pluginSlug: "essentials",
+            stepSlug: "retro-on-yesterday",
+            shouldSkip: true,
+          },
+          {
+            pluginSlug: "essentials",
+            stepSlug: "intro-to-today",
+            shouldSkip: false,
+          },
+          {
+            pluginSlug: "essentials",
+            stepSlug: "plan-for-today",
+            shouldSkip: false,
+          },
+          {
+            pluginSlug: "essentials",
+            stepSlug: "today-tomorrow-next-week",
+            shouldSkip: false,
+          },
+          {
+            pluginSlug: "essentials",
+            stepSlug: "todays-plan",
+            shouldSkip: false,
+          },
+        ],
+      },
     },
   },
 });
