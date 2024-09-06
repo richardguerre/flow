@@ -942,7 +942,7 @@ type Routine implements Node {
   """
   Returns the first step in the routine. If there are no steps in the routine, it returns `null`.
   """
-  firstStep: String
+  firstStep: RoutineStep
   id: ID!
 
   """Whether the routine is active. This can be used to pause a routine."""
@@ -953,29 +953,46 @@ type Routine implements Node {
 
   """The pattern(s) the routine repeats on"""
   repeats: [RepetitionPattern!]!
+
+  """The steps of the routine."""
   steps: [RoutineStep!]!
 
   """The time the routine takes place"""
   time: Time!
 }
 
-"""
-A step in a routine. To know which plugin the step belongs to, see `pluginSlug`.
-"""
-type RoutineStep {
-  """The slug of the plugin that the step belongs to."""
+type RoutineStep implements Node {
+  """Extra data to configure the step"""
+  config: JSON
+
+  """The ID of the step"""
+  id: ID!
+
+  """The plugin slug of the step"""
   pluginSlug: String!
 
+  """The routine the step is in"""
+  routine: Routine!
+
+  """The id of routine the step is in"""
+  routineId: ID!
+
   """
-  Whether the step should be skipped if the previous routine was done (i.e. routine.done = true).
+  Whether the step should be skipped if it has already been completed in the previous routine
   """
   shouldSkip: Boolean!
 
-  """The slug of the step."""
+  """The step slug of the step"""
   stepSlug: String!
 }
 
 input RoutineStepInput {
+  config: JSON
+
+  """
+  The ID of the step if it exists. Leave empty or null to create a new step.
+  """
+  id: ID
   pluginSlug: String!
   shouldSkip: Boolean!
   stepSlug: String!

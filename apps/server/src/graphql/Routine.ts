@@ -2,6 +2,7 @@ import { GraphQLError } from "graphql";
 import { prisma } from "../utils/prisma";
 import { builder, u } from "./builder";
 import { RepetitionPatternEnum } from "./RepetitionPattern";
+import { RoutineStepInput } from "./RoutineStep";
 
 // -------------- Routine types --------------
 
@@ -46,24 +47,32 @@ export const RoutineType = builder.prismaNode("Routine", {
     actionName: t.exposeString("actionName"),
     time: t.expose("time", { type: "Time" }),
     repeats: t.expose("repeats", { type: [RepetitionPatternEnum] }),
-    steps: t.field({
-      type: [RoutineStepType],
-      resolve: (routine) =>
-        routine.steps.map((step) => {
-          const [pluginSlug, stepSlug, shouldSkip] = step.split("_");
-          return {
-            pluginSlug: pluginSlug!,
-            stepSlug: stepSlug!,
-            shouldSkip: shouldSkip === "true",
-          };
-        }),
+    steps: t.relation("steps", {
+      resolve: async (query, routine) => {
+        const order = routine.stepsOrder ?? [];
+        const steps = await prisma.routineStep.findMany({
+          ...query,
+          where: { routineId: routine.id },
+        });
+        const stepsOrdered = steps.sort((a, b) => order.indexOf(a.id) - order.indexOf(b.id));
+        return stepsOrdered;
+      },
     }),
     isActive: t.exposeBoolean("isActive"),
-    firstStep: t.string({
-      resolve: (routine) => routine.steps[0] ?? null,
+    firstStep: t.prismaField({
+      type: "RoutineStep",
       nullable: true,
       description:
         "Returns the first step in the routine. If there are no steps in the routine, it returns `null`.",
+      resolve: async (query, routine) => {
+        const order = routine.stepsOrder ?? [];
+        const steps = await prisma.routineStep.findMany({
+          ...query,
+          where: { routineId: routine.id },
+        });
+        const stepsOrdered = steps.sort((a, b) => order.indexOf(a.id) - order.indexOf(b.id));
+        return stepsOrdered[0] ?? null;
+      },
     }),
     done: t.boolean({
       description:
@@ -76,33 +85,6 @@ export const RoutineType = builder.prismaNode("Routine", {
     }),
   }),
 });
-
-export const RoutineStepType = builder.simpleObject("RoutineStep", {
-  description: "A step in a routine. To know which plugin the step belongs to, see `pluginSlug`.",
-  fields: (t) => ({
-    pluginSlug: t.string({ description: "The slug of the plugin that the step belongs to." }),
-    stepSlug: t.string({ description: "The slug of the step." }),
-    shouldSkip: t.boolean({
-      description:
-        "Whether the step should be skipped if the previous routine was done (i.e. routine.done = true).",
-    }),
-  }),
-});
-
-const RoutineStepInput = builder.inputType(
-  builder.inputRef<{
-    pluginSlug: string;
-    stepSlug: string;
-    shouldSkip: boolean;
-  }>("RoutineStepInput"),
-  {
-    fields: (t) => ({
-      pluginSlug: t.string({ required: true }),
-      stepSlug: t.string({ required: true }),
-      shouldSkip: t.boolean({ required: true }),
-    }),
-  },
-);
 
 // --------------- Routine query types ---------------
 
@@ -127,8 +109,8 @@ builder.mutationField("createRoutine", (t) =>
       steps: t.input.field({ type: [RoutineStepInput], required: true }),
     },
     resolve: async (query, _, args) => {
-      return prisma.routine.create({
-        ...query,
+      const routine = await prisma.routine.create({
+        select: { id: true },
         data: {
           name: args.input.name,
           actionName: args.input.actionName,
@@ -136,10 +118,25 @@ builder.mutationField("createRoutine", (t) =>
           repeats: args.input.repeats,
           firstDay: new Date(), // FIXME: refactor this to have the correct date according to the user's timezone
           isActive: true,
-          steps: args.input.steps.map(
-            (step) => `${step.pluginSlug}_${step.stepSlug}_${step.shouldSkip}`,
-          ),
         },
+      });
+      const stepsOrder: number[] = [];
+      for (const step of args.input.steps) {
+        const routineStep = await prisma.routineStep.create({
+          select: { id: true },
+          data: {
+            pluginSlug: step.pluginSlug,
+            stepSlug: step.stepSlug,
+            shouldSkip: step.shouldSkip,
+            routineId: routine.id,
+          },
+        });
+        stepsOrder.push(routineStep.id);
+      }
+      return prisma.routine.update({
+        ...query,
+        where: { id: routine.id },
+        data: { stepsOrder: { set: stepsOrder } },
       });
     },
   }),
@@ -182,6 +179,37 @@ builder.mutationField("updateRoutine", (t) =>
       }),
     },
     resolve: async (query, _, args) => {
+      const stepsOrder: number[] = [];
+      for (const step of args.input.steps ?? []) {
+        if (step.id) {
+          // the step exists, so we update it
+          const routineStep = await prisma.routineStep.update({
+            where: { id: parseInt(step.id.id) },
+            select: { id: true },
+            data: {
+              pluginSlug: step.pluginSlug,
+              stepSlug: step.stepSlug,
+              shouldSkip: step.shouldSkip,
+              config: u(step.config),
+            },
+          });
+          stepsOrder.push(routineStep.id);
+        } else {
+          // the step doesn't exist, so we create it
+          const routineStep = await prisma.routineStep.create({
+            select: { id: true },
+            data: {
+              pluginSlug: step.pluginSlug,
+              stepSlug: step.stepSlug,
+              shouldSkip: step.shouldSkip,
+              config: u(step.config),
+              routine: { connect: { id: parseInt(args.input.routineId.id) } },
+            },
+          });
+          stepsOrder.push(routineStep.id);
+        }
+      }
+
       return prisma.routine.update({
         ...query,
         where: { id: parseInt(args.input.routineId.id) },
@@ -191,10 +219,7 @@ builder.mutationField("updateRoutine", (t) =>
           actionName: u(args.input.actionName),
           time: u(args.input.time),
           repeats: u(args.input.repeats),
-          steps:
-            args.input.steps?.map(
-              (step) => `${step.pluginSlug}_${step.stepSlug}_${step.shouldSkip}`,
-            ) ?? undefined,
+          ...(args.input.steps ? { stepsOrder: { set: stepsOrder } } : {}),
         },
       });
     },

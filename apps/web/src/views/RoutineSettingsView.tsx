@@ -254,12 +254,12 @@ const Repeats = (props: { routine: RoutineSettingsViewRepeats_routine$key }) => 
   );
 };
 
-type RoutineStep = RoutineStepInput & { id: string };
+type RoutineStepType = RoutineStepInput & { id: string };
 type FormValues = {
   name: string;
   time: string;
   actionName: string;
-  steps: Array<RoutineStep>;
+  steps: Array<RoutineStepType>;
 };
 type RoutineDetailedSettingsProps = {
   routine: RoutineSettingsViewDetailed_routine$key;
@@ -317,6 +317,7 @@ const RoutineDetailedSettings = (props: RoutineDetailedSettingsProps) => {
             time: values.time,
             actionName: values.actionName,
             steps: values.steps.map((step) => ({
+              id: step.id,
               pluginSlug: step.pluginSlug,
               stepSlug: step.stepSlug,
               shouldSkip: step.shouldSkip,
@@ -332,7 +333,7 @@ const RoutineDetailedSettings = (props: RoutineDetailedSettingsProps) => {
     );
   };
 
-  const pluginSteps: RoutineStep[] = useMemo(() => {
+  const pluginSteps: RoutineStepType[] = useMemo(() => {
     return Object.entries(props.plugins).flatMap(([pluginSlug, plugin]) =>
       Object.keys(plugin.routineSteps ?? {}).map((stepSlug) => ({
         id: `${pluginSlug}_${stepSlug}_${Math.random()}`,
@@ -451,7 +452,7 @@ const RoutineDetailedSettings = (props: RoutineDetailedSettingsProps) => {
 };
 
 const RoutineStep = (props: {
-  step: RoutineStep;
+  step: RoutineStepType;
   plugins: PluginsRecord;
   withActions?: boolean;
   onSkipChange?: (stepId: string, shouldSkip: boolean) => void;
