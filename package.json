@@ -4,10 +4,12 @@
   "author": "@richardguerre",
   "private": true,
   "dependencies": {
+    "@types/pg": "^8.11.9",
     "@unocss/runtime": "0.60.3",
     "dayjs": "1.11.7",
     "framer-motion": "10.12.10",
     "graphql-sse": "2.3.0",
+    "pg": "^8.12.0",
     "react-hook-form": "^7.52.1",
     "react-router-dom": "6.6.2",
     "react-sortablejs": "6.1.4",
@@ -17,7 +19,7 @@
   "devDependencies": {
     "bun-types": "1.0.4",
     "decompress-response": "^9.0.0",
-    "patch-package": "^6.0.2",
+    "patch-package": "6.0.2",
     "prettier": "3.3.3",
     "relay-compiler": "^17.0.0",
     "turbo": "^1.10.4",

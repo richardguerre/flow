@@ -120,3 +120,11 @@ export const pgBossWorkers = async () => {
   await pgBoss.work(CALENDAR_ITEM_CREATED_JOB_NAME, createExternalCalendarItem);
   console.log("Started worker to create calendar events");
 };
+
+export const getUsersTimezone = async () => {
+  // TODO: optimize this to only get the timezone once
+  const timezoneItem = await prisma.store.findFirst({
+    where: { key: StoreKeys.TIMEZONE, pluginSlug: FlowPluginSlug },
+  });
+  return (timezoneItem?.value ?? null) as string | null;
+};

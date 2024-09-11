@@ -838,6 +838,11 @@ type Query {
   ): QueryNoteTagsConnection!
   pluginOperation(input: QueryPluginOperationInput!): PluginOperation
 
+  """
+  Render a template string with the given data. Plugin helpers and partials can be used in the template.
+  """
+  renderTemplate(input: QueryRenderTemplateInput!): String!
+
   """Get all routines."""
   routines: [Routine!]!
 
@@ -899,6 +904,11 @@ input QueryPluginOperationInput {
   data: JSON
   operationName: String!
   pluginSlug: String!
+}
+
+input QueryRenderTemplateInput {
+  data: JSON!
+  template: String!
 }
 
 input QueryStoreItemsInput {

@@ -8,6 +8,7 @@ import {
 import { environment } from "@flowdev/web/relay/environment";
 import { pluginOperationQuery } from "@flowdev/web/relay/__gen__/pluginOperationQuery.graphql";
 import { pluginOperationMutation } from "@flowdev/web/relay/__gen__/pluginOperationMutation.graphql";
+import { pluginOperationRenderTemplateQuery } from "@flowdev/web/relay/__gen__/pluginOperationRenderTemplateQuery.graphql";
 import { useState } from "react";
 
 const queryDoc = graphql`
@@ -16,6 +17,12 @@ const queryDoc = graphql`
       id
       data
     }
+  }
+`;
+
+const renderTemplateQuery = graphql`
+  query pluginOperationRenderTemplateQuery($input: QueryRenderTemplateInput!) {
+    renderTemplate(input: $input)
   }
 `;
 
@@ -134,6 +141,20 @@ export const getPluginOperationUtils = (pluginSlug: string) => ({
       },
       loading,
     ] as const;
+  },
+  renderTemplate: async (template: string, data: Record<string, any>) => {
+    const query = await fetchQuery<pluginOperationRenderTemplateQuery>(
+      environment,
+      renderTemplateQuery,
+      { input: { template, data } },
+    ).toPromise();
+    return query?.renderTemplate ?? "";
+  },
+  useRenderTemplate: async (template: string, data: Record<string, any>) => {
+    const res = useLazyLoadQuery<pluginOperationRenderTemplateQuery>(renderTemplateQuery, {
+      input: { template, data },
+    });
+    return res.renderTemplate ?? "";
   },
 });
 

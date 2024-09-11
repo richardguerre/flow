@@ -206,7 +206,7 @@ const TaskTagsList = forwardRef(
     }));
 
     return (
-      <div className="flex flex-col gap-1 rounded-md border border-gray-200 bg-white p-1">
+      <div className="flex flex-col gap-1 rounded-md border border-gray-200 bg-background-50 p-1">
         {props.items.length ? (
           props.items.map((item, index) => (
             <button

@@ -3,16 +3,14 @@
   "description": "This is the server of Flow",
   "private": true,
   "scripts": {
-    "postinstall": "bun run gen",
-    "print-schema": "bun run gen && NODE_ENV=development bun run src/graphql/index.ts",
+    "print-schema": "bun run db:gen && NODE_ENV=development bun run src/graphql/index.ts",
     "dev": "NODE_ENV=development bun --watch run src/index.ts",
-    "type-check": "bun run gen && tsc --noEmit && echo '✅ Type checking passed!'",
+    "type-check": "bun run db:gen && tsc --noEmit && echo '✅ Type checking passed!'",
     "build": "bun build ./src/index.ts --outdir dist --target bun && bun run copy-web && bun run copy-mobile-pwa",
     "preview": "cd dist && NODE_ENV=production PORT=4040 DATABASE_URL=postgres://postgres:postgres@localhost:5432/flow ORIGIN=https://lamporchestra.isflow.in PATH_TO_PLUGINS=../plugins BUN_JSC_forceRAMSize=180000000 bun run index.js",
     "copy-web": "rm -rf ./dist/web && cp -r ../web/dist ./dist/web && echo '✅ apps/web/dist copied to apps/server/dist/web'",
     "copy-mobile-pwa": "rm -rf ./dist/mobile-pwa && cp -r ../mobile-pwa/dist ./dist/mobile-pwa && echo '✅ apps/mobile-pwa/dist copied to apps/server/dist/mobile-pwa'",
     "test": "vitest --config .vitest/config.ts",
-    "gen": "bunx prisma generate && echo '✅ Prisma client successfully generated!'",
     "db:dev": "bunx prisma migrate dev",
     "db:migrate": "bunx prisma migrate dev --create-only",
     "db:reset": "bun run prisma/dropOtherSchemas.ts && prisma migrate reset --force",
@@ -57,6 +55,8 @@
     "graphql": "16.6.0",
     "graphql-scalars": "1.18.0",
     "graphql-yoga": "4.0.5",
+    "handlebars": "4.7.8",
+    "handlebars-async-helpers": "^1.0.6",
     "pg-boss": "9.0.3"
   }
 }

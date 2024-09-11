@@ -547,6 +547,14 @@ export default definePlugin((opts) => {
           ) {
             // no need to create item if the event is a OOO or workingLocation.
             continue;
+          } else if (!event.summary || event.summary.trim() === "") {
+            if (!item) {
+              // no need to create item if the event summary is empty
+              continue;
+            } else {
+              // keep the same title, and update other properties of the item
+              event.summary = item.title;
+            }
           }
 
           const task = item?.tasks[0];

@@ -9,6 +9,10 @@ import { PluginOnUpdateItemStatus } from "@flowdev/server/src/graphql/Item";
 import type { Elysia } from "elysia";
 import { PluginOnCreateCalendarItem } from "@flowdev/server/src/utils";
 export type { Prisma, TaskStatus } from "@flowdev/server/src/exportedTypes";
+import {
+  PartialDeclareSpec,
+  type HelperDeclareSpec,
+} from "@flowdev/server/src/utils/renderTemplate";
 
 export type ServerPluginOptions = _ServerPluginOptions;
 
@@ -75,6 +79,23 @@ export type ServerPlugin = (opts: ServerPluginOptions) => {
    * Note: the `work` function is not given in the options because Flow needs to control the order in which things run, including the pg-boss work handlers.
    */
   handlePgBossWork?: (work: PgBossType["work"]) => Promise<string>[];
+  /**
+   * Handlebars helpers and partials that users can use in their templates.
+   */
+  handlebars?: {
+    /**
+     * Handlebars helpers that users can use in their templates.
+     *
+     * Note:
+     * - Unlike standard Handlebars, `options` is the first argument (not the last).
+     * - You can only use the `this` context if the helper is defined as a `function` and not as an arrow function (i.e. not`() => {}`).
+     * - You can use async/await in the helper function as this instance of Handlebars is wrapped with the `handlebars-async-helpers` package.
+     * - Remember to await the `options.fn()` call if you are using the helper as a block helper, as children of your helper can also be async.
+     */
+    helpers?: HelperDeclareSpec;
+    /** Handlebars partials that users can use in their templates. */
+    partials?: PartialDeclareSpec;
+  };
 };
 
 export type ServerPluginReturn = ReturnType<ServerPlugin>;

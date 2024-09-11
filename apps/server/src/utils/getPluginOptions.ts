@@ -6,7 +6,8 @@ import { nearestTailwindColor } from "@flowdev/nearest-color";
 import type { Color, Store } from "@prisma/client";
 import { env } from "../env";
 import { GraphQLError } from "graphql";
-import { FlowPluginSlug, StoreKeys } from "../graphql/Store";
+import { renderTemplate } from "./renderTemplate";
+import { getUsersTimezone } from "./index";
 
 type PrismaJsonInput = string | number | boolean | Prisma.JsonObject | Prisma.JsonArray;
 
@@ -195,12 +196,7 @@ export const getPluginOptions = (pluginSlug: string) => ({
    * @returns [dayjs timezone string](https://day.js.org/docs/en/plugin/timezone)
    * @example "America/New_York"
    */
-  getUsersTimezone: async () => {
-    const timezoneItem = await prisma.store.findFirst({
-      where: { key: StoreKeys.TIMEZONE, pluginSlug: FlowPluginSlug },
-    });
-    return (timezoneItem?.value ?? null) as string | null;
-  },
+  getUsersTimezone,
   /** Get the nearest valid Item.color to the specified Hex. */
   getNearestItemColor: (hex: string) => nearestTailwindColor(hex) as Color,
   /**
@@ -218,6 +214,14 @@ export const getPluginOptions = (pluginSlug: string) => ({
    * ```
    */
   GraphQLError,
+  /**
+   * Render handlebars templates with Flow's default context. All plugin helpers and partials have already been registered.
+   *
+   * To register helpers and partials, your server plugin should return the `handlebars` object from `definePlugin`.
+   *
+   * You can override the default data by passing it in the second argument. For example, if you want to override the `todaysTasks` key, you can pass in `{ todaysTasks: [...yourTasks] }`.
+   */
+  renderTemplate,
 });
 
 export type ServerPluginOptions = ReturnType<typeof getPluginOptions>;

@@ -1,6 +1,8 @@
 import { definePlugin } from "@flowdev/plugin/server";
 
 const ACCOUNT_TOKENS_STORE_KEY = "account-tokens";
+const SLACK_MAPPINGS_STORE_KEY = "slack-mappings";
+const TEMPLATES_STORE_KEY = "templates";
 
 export default definePlugin((opts) => {
   const getTokensFromStore = async () => {
@@ -70,17 +72,119 @@ export default definePlugin((opts) => {
         if (!tokenItem) {
           return { data: [] };
         }
-        return {
-          data: Object.entries(tokenItem).map(([teamId, tokens]) => ({
-            connectedAt: tokens.created_at,
+        const slackMappingsItem = await opts.store
+          .getPluginItem<SlackMappings>(SLACK_MAPPINGS_STORE_KEY)
+          .then((item) => item?.value ?? {})
+          .catch(() => null);
+
+        const toReturn: Workspace[] = [];
+        for (const teamId in tokenItem) {
+          const channelIds = slackMappingsItem?.[teamId].channelIds;
+          const channels: Channel[] = [];
+          for (const channelId of channelIds ?? []) {
+            const channel = await fetch(
+              `https://slack.com/api/conversations.info?token=${tokenItem[teamId].access_token}&channel=${channelId}`,
+              { headers: { Authorization: `Bearer ${tokenItem[teamId].access_token}` } },
+            )
+              .then(async (req) => (await req.json()) as ChannelsReq)
+              .catch(() => null);
+            if (!channel) continue;
+            channels.push(channel.channels[0]);
+          }
+          toReturn.push({
+            connectedAt: tokenItem[teamId].created_at,
             teamId,
-            teamName: tokens.team.name,
+            teamName: tokenItem[teamId].team.name,
+            teamIcon: tokenItem[teamId].team.icon.image_44,
+            teamAvatar: tokenItem[teamId].team.avatar_base_url,
+            channels,
+          });
+        }
+        return { data: toReturn };
+      },
+      getChannels: async (input) => {
+        const tokenItem = await getTokensFromStore().catch(() => null);
+
+        const workspaceToken = tokenItem?.[input.teamId];
+        if (!workspaceToken) {
+          throw new opts.GraphQLError("Slack workspace not found.", {
+            extensions: {
+              code: "WORKSPACE_NOT_FOUND",
+              userFriendlyMessage:
+                "No Slack workspace was found to retrieve channels. Please try connecting your Slack account again.",
+            },
+          });
+        }
+
+        const channels = await fetch(
+          `https://slack.com/api/conversations.list?token=${workspaceToken.access_token}`,
+          {
+            headers: {
+              Authorization: `Bearer ${workspaceToken.access_token}`,
+            },
+          },
+        )
+          .then(async (req) => (await req.json()) as ChannelsReq)
+          .catch(() => null);
+        if (!channels) {
+          throw new opts.GraphQLError("Couldn't get channels.", {
+            extensions: {
+              code: "COULDNT_GET_CHANNELS",
+              userFriendlyMessage:
+                "Couldn't get channels. Please try connecting your Slack account again.",
+            },
+          });
+        }
+
+        return {
+          data: channels.channels.map((channel) => ({
+            id: channel.id,
+            name: channel.name,
+            isPrivate: channel.is_private,
+            isMember: channel.is_member,
+            isArchived: channel.is_archived,
+            isGeneral: channel.is_general,
+            numMembers: channel.num_members,
           })),
         };
+      },
+      postMessage: async (input) => {
+        const tokenItem = await getTokensFromStore().catch(() => null);
+        if (!tokenItem) {
+          throw new opts.GraphQLError("User not authenticated.", {
+            extensions: {
+              code: "NOT_AUTHENTICATED",
+              userFriendlyMessage:
+                "You are not authenticated and will need to connect your Slack account(s) first.",
+            },
+          });
+        }
+        return {
+          data: null, // TODO: this is not implemented yet
+        };
+      },
+      getRoutineStepInfo: async (input) => {
+        const {} = input as GetRoutineStepInfoInput;
+        const templates = await opts.store
+          .getPluginItem<Templates>(TEMPLATES_STORE_KEY)
+          .then((res) => res?.value ?? {});
+        const template = templates[input.routineStepId]?.template ?? DEFAULT_TEMPLATE;
+        const renderedTemplate = await opts.renderTemplate(template, {
+          jfdksl: null,
+        });
+
+        return { data: { renderedTemplate } } as GetRoutineStepInfoOutput;
       },
     },
   };
 });
+
+const DEFAULT_TEMPLATE = `Plan for today
+
+{{#each tasks as [task]}}
+- {{task.title}}
+{{/each}}
+`;
 
 type AccountsTokens = {
   [teamId: string]: Tokens;
@@ -153,5 +257,70 @@ type TeamInfoReq = {
     avatar_base_url: string;
     is_verified: boolean;
     lob_sales_home_enabled: boolean;
+  };
+};
+
+type Workspace = {
+  connectedAt: string;
+  teamId: string;
+  teamName: string;
+  teamIcon: string;
+  teamAvatar: string;
+  channels: Channel[];
+};
+
+type Channel = ChannelsReq["channels"][0];
+
+type ChannelsReq = {
+  ok: boolean;
+  channels: {
+    id: string;
+    name: string;
+    is_channel: boolean;
+    is_group: boolean;
+    is_im: boolean;
+    created: number;
+    creator: string;
+    is_archived: boolean;
+    is_general: boolean;
+    unlinked: number;
+    name_normalized: string;
+    is_shared: boolean;
+    is_ext_shared: boolean;
+    is_org_shared: boolean;
+    pending_shared: string[];
+    is_pending_ext_shared: boolean;
+    is_member: boolean;
+    is_private: boolean;
+    is_mpim: boolean;
+    updated: number;
+    topic: {
+      value: string;
+      creator: string;
+      last_set: number;
+    };
+    purpose: {
+      value: string;
+      creator: string;
+      last_set: number;
+    };
+    previous_names: string[];
+    num_members?: number;
+    locale?: string;
+  }[];
+  response_metadata: {
+    next_cursor: string;
+  };
+};
+
+type SlackMappings = {
+  [teamId: string]: {
+    channelIds: string[];
+  };
+};
+
+type Templates = {
+  [routineStepId: string]: {
+    template: string;
   };
 };

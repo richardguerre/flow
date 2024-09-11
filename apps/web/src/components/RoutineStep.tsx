@@ -43,6 +43,8 @@ export type PluginRoutineStepProps = {
   firstStep?: boolean;
   /** Whether this is the last step. Useful to render a custom `NextButton` (e.g. label "Done" or "Let's go!") a */
   lastStep?: boolean;
+  /** Config that was set in the settings for the step. */
+  stepConfig?: Record<string, any>;
 };
 
 const LoadingStep = () => <LoadingView />;
