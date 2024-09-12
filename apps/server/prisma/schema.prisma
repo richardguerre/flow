@@ -319,6 +319,27 @@ model RoutineStep {
   routine   Routine @relation(fields: [routineId], references: [id])
   /// The id of routine the step is in
   routineId Int
+
+  /// The templates the step uses
+  templates Template[]
+}
+
+model Template {
+  /// The slug and id of the template
+  slug      String   @id
+  /// The date and time of creation of the template
+  createdAt DateTime @default(now()) @db.Timestamptz()
+  /// The date and time the template was last updated
+  updatedAt DateTime @updatedAt @db.Timestamptz()
+  /// The Handlebars template -- https://handlebarsjs.com/guide
+  template  String
+  /// Extra data attached to the template. This column may not be used yet.
+  metadata  Json?
+
+  /// The routineStep (if any) the template is used in
+  routineStep   RoutineStep? @relation(fields: [routineStepId], references: [id])
+  /// The id of the routineStep (if any) the template is used in
+  routineStepId Int?
 }
 
 enum RepetitionPattern {

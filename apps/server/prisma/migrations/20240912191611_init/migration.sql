@@ -172,6 +172,18 @@ CREATE TABLE "RoutineStep" (
 );
 
 -- CreateTable
+CREATE TABLE "Template" (
+    "slug" TEXT NOT NULL,
+    "createdAt" TIMESTAMPTZ NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    "updatedAt" TIMESTAMPTZ NOT NULL,
+    "template" TEXT NOT NULL,
+    "metadata" JSONB,
+    "routineStepId" INTEGER,
+
+    CONSTRAINT "Template_pkey" PRIMARY KEY ("slug")
+);
+
+-- CreateTable
 CREATE TABLE "_DayToRoutine" (
     "A" DATE NOT NULL,
     "B" INTEGER NOT NULL
@@ -245,6 +257,9 @@ ALTER TABLE "Item" ADD CONSTRAINT "Item_listId_fkey" FOREIGN KEY ("listId") REFE
 
 -- AddForeignKey
 ALTER TABLE "RoutineStep" ADD CONSTRAINT "RoutineStep_routineId_fkey" FOREIGN KEY ("routineId") REFERENCES "Routine"("id") ON DELETE RESTRICT ON UPDATE CASCADE;
+
+-- AddForeignKey
+ALTER TABLE "Template" ADD CONSTRAINT "Template_routineStepId_fkey" FOREIGN KEY ("routineStepId") REFERENCES "RoutineStep"("id") ON DELETE SET NULL ON UPDATE CASCADE;
 
 -- AddForeignKey
 ALTER TABLE "_DayToRoutine" ADD CONSTRAINT "_DayToRoutine_A_fkey" FOREIGN KEY ("A") REFERENCES "Day"("date") ON DELETE CASCADE ON UPDATE CASCADE;
