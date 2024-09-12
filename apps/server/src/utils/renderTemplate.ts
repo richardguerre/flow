@@ -1,7 +1,6 @@
 import $Handlebars, { type HelperOptions } from "handlebars";
 import asyncHelpersWrapper from "handlebars-async-helpers";
 import { getPlugins } from "@flowdev/server/src/utils/getPlugins";
-import { Task } from "@prisma/client";
 import { prisma } from "./prisma";
 import { getUsersTimezone } from "./index";
 import { dayjs } from "./dayjs";
@@ -13,7 +12,6 @@ const Handlebars = asyncHelpersWrapper($Handlebars) as typeof $Handlebars;
 export const renderTemplate = async (template: string, data: TemplateData) => {
   const plugins = await getPlugins();
   const helpers: TrueHelperDeclareSpec = {};
-  const partials: PartialDeclareSpec = {};
   for (const [pluginSlug, plugin] of Object.entries(plugins)) {
     if (plugin.handlebars?.helpers) {
       for (const [helperName, helper] of Object.entries(plugin.handlebars.helpers)) {
@@ -21,16 +19,17 @@ export const renderTemplate = async (template: string, data: TemplateData) => {
           helper(args.at(-1), context, ...args);
       }
     }
-    if (plugin.handlebars?.partials) {
-      for (const [partialName, partial] of Object.entries(plugin.handlebars.partials)) {
-        partials[`${pluginSlug}-${partialName}`] = partial;
-      }
-    }
   }
   Handlebars.registerHelper(helpers);
-  Handlebars.registerPartial(partials);
-  console.log("-- handlebars helpers", Object.keys(helpers));
-  console.log("-- handlebars partials", Object.keys(partials));
+  const usersTimezone = (await getUsersTimezone()) ?? undefined;
+  await registerFlowsDefaultHelpers({
+    usersTimezone,
+    include: {
+      tasks: template.includes("tasks"),
+      today: template.includes("today"),
+    },
+  });
+  console.log("-- Handlebars.helpers", Handlebars.helpers);
 
   const defaultData = await getFlowsDefaultData({
     include: {
@@ -48,80 +47,26 @@ export const renderTemplate = async (template: string, data: TemplateData) => {
   return result;
 };
 
-type FlowDefaultData = {
-  // yesterday stuff
-  yesterdayDayOfWeek: string;
-  yesterdaysDate: string;
-  yesterdaysDateYYYYMMDD: string;
-  yesterdaysTasks: Task[];
+type FlowDefaultData = {};
 
-  // today stuff
-  todayDayOfWeek: string;
-  todaysDate: string;
-  todaysDateYYYYMMDD: string;
-  todaysTasks: Task[];
-
-  // tomorrow stuff
-  tomorrowDayOfWeek: string;
-  tomorrowsDate: string;
-  tomorrowsDateYYYYMMDD: string;
-  tomorrowsTasks: Task[];
-};
-
-const getFlowsDefaultData = async (opts?: {
+const getFlowsDefaultData = async (_opts?: {
   usersTimezone?: string;
   include?: { [key in keyof FlowDefaultData]?: boolean };
 }): Promise<FlowDefaultData> => {
-  const usersTimezone = opts?.usersTimezone ?? (await getUsersTimezone());
-  const today = dayjs()
-    .tz(usersTimezone ?? undefined)
-    .utc(true)
-    .startOf("day");
-  const todaysTasks = opts?.include?.todaysTasks
-    ? await prisma.task.findMany({
-        where: { date: today.format("YYYY-MM-DD") },
-      })
-    : [];
-
-  const yesterday = today.subtract(1, "day");
-  const yesterdaysTasks = opts?.include?.yesterdaysTasks
-    ? await prisma.task.findMany({
-        where: { date: yesterday.format("YYYY-MM-DD") },
-      })
-    : [];
-
-  const tomorrow = today.add(1, "day");
-  const tomorrowsTasks = opts?.include?.tomorrowsTasks
-    ? await prisma.task.findMany({
-        where: { date: tomorrow.format("YYYY-MM-DD") },
-      })
-    : [];
-
-  return {
-    yesterdayDayOfWeek: yesterday.format("dddd"),
-    yesterdaysDate: yesterday.format("MMMM D, YYYY"),
-    yesterdaysDateYYYYMMDD: yesterday.format("YYYY-MM-DD"),
-    yesterdaysTasks,
-
-    todayDayOfWeek: today.format("dddd"),
-    todaysDate: today.format("MMMM D, YYYY"),
-    todaysDateYYYYMMDD: today.format("YYYY-MM-DD"),
-    todaysTasks,
-
-    tomorrowDayOfWeek: tomorrow.format("dddd"),
-    tomorrowsDate: tomorrow.format("MMMM D, YYYY"),
-    tomorrowsDateYYYYMMDD: tomorrow.format("YYYY-MM-DD"),
-    tomorrowsTasks,
-  };
+  // this is empty as I moved a lot of to the registerFlowsDefaultHelpers function instead
+  return {};
 };
 
 type FlowDefaultRegisters = {
   tasks: boolean;
+  yesterday: boolean;
+  today: boolean;
+  tomorrow: boolean;
 };
 
-const getFlowsDefaultRegisters = async (opts?: {
+const registerFlowsDefaultHelpers = async (opts?: {
   usersTimezone?: string;
-  include?: FlowDefaultRegisters;
+  include?: Partial<FlowDefaultRegisters>;
 }): Promise<void> => {
   const usersTimezone = opts?.usersTimezone ?? (await getUsersTimezone());
   const today = dayjs()
@@ -133,13 +78,14 @@ const getFlowsDefaultRegisters = async (opts?: {
       const options = args.at(-1) as Handlebars.HelperOptions | undefined;
       const prismaArgs = (args.at(0) as Parameters<typeof prisma.task.findMany>[0]) ?? {};
 
-      const tasks = await prisma.task.findMany({
-        where: {
-          date: today.format("YYYY-MM-DD"),
-          ...prismaArgs.where,
-        },
-        ...prismaArgs,
-      });
+      const tasks = await prisma.task
+        .findMany({
+          where: { date: today.format("YYYY-MM-DD"), ...prismaArgs.where },
+          ...prismaArgs,
+        })
+        .then((tasks) =>
+          tasks.map((task) => ({ ...task, title: new Handlebars.SafeString(task.title) })),
+        );
 
       if (!options) {
         if (!tasks.length) return `No tasks.`;
@@ -158,6 +104,30 @@ const getFlowsDefaultRegisters = async (opts?: {
         res += await options.fn(task); // have to await the options.fn() call as children can have async helpers as well
       }
       return res;
+    });
+  }
+
+  if (opts?.include?.yesterday) {
+    // helper to render yesterday's date with the given format in args[0]
+    Handlebars.registerHelper("yesterday", async function (this: any, ...args) {
+      const format = args.at(0) ?? "MMMM D, YYYY";
+      return today.subtract(1, "day").format(format ?? "MMMM D, YYYY");
+    });
+  }
+
+  if (opts?.include?.today) {
+    // helper to render today's date with the given format in args[0]
+    Handlebars.registerHelper("today", async function (this: any, ...args) {
+      const format = args.at(0) ?? "MMMM D, YYYY";
+      return today.format(format ?? "MMMM D, YYYY");
+    });
+  }
+
+  if (opts?.include?.tomorrow) {
+    // helper to render tomorrow's date with the given format in args[0]
+    Handlebars.registerHelper("tomorrow", async function (this: any, ...args) {
+      const format = args.at(0) ?? "MMMM D, YYYY";
+      return today.add(1, "day").format(format);
     });
   }
 };

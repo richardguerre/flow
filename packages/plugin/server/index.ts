@@ -93,8 +93,6 @@ export type ServerPlugin = (opts: ServerPluginOptions) => {
      * - Remember to await the `options.fn()` call if you are using the helper as a block helper, as children of your helper can also be async.
      */
     helpers?: HelperDeclareSpec;
-    /** Handlebars partials that users can use in their templates. */
-    partials?: PartialDeclareSpec;
   };
 };
 
