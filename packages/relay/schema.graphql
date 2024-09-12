@@ -170,6 +170,11 @@ The `JSON` scalar type represents JSON values as specified by [ECMA-404](http://
 """
 scalar JSON
 
+"""
+The `JSONObject` scalar type represents JSON objects as specified by [ECMA-404](http://www.ecma-international.org/publications/files/ECMA-ST/ECMA-404.pdf).
+"""
+scalar JSONObject
+
 """List of items"""
 type List implements Node {
   """The date and time of creation of the list"""
@@ -227,6 +232,9 @@ type Mutation {
   """Create a new task tag."""
   createTaskTag(input: MutationCreateTaskTagInput!): TaskTag!
 
+  """Create a new template and link it to a routine step."""
+  createTemplate(input: MutationCreateTemplateInput!): Template!
+
   """Delete an item."""
   deleteItem(id: ID!): Item!
 
@@ -238,6 +246,12 @@ type Mutation {
 
   """Delete a task tag."""
   deleteTaskTag(input: MutationDeleteTaskTagInput!): TaskTag!
+
+  """Delete a template."""
+  deleteTemplate(
+    """The Relay ID of the template to delete."""
+    id: ID!
+  ): Template!
 
   """
   Dismiss an item from the inbox. This effectively sets `inboxPoints = null` for the item.
@@ -312,6 +326,9 @@ type Mutation {
 
   """Update a task tag."""
   updateTaskTag(input: MutationUpdateTaskTagInput!): TaskTag!
+
+  """Update a template."""
+  updateTemplate(input: MutationUpdateTemplateInput!): Template!
 
   """
   Creates a store item. If a store item with the same key exists, only its value will be updated (`isSecret` and `isServerOnly` will not be updated).
@@ -453,6 +470,15 @@ input MutationCreateTaskTagInput {
 
   """The name of the task tag."""
   name: String!
+}
+
+input MutationCreateTemplateInput {
+  metadata: JSON
+
+  """The Relay ID of the routine step to link the template to."""
+  routineStepId: ID
+  slug: String!
+  templateRaw: String!
 }
 
 input MutationDeleteTaskTagInput {
@@ -599,6 +625,17 @@ input MutationUpdateTaskTagInput {
 
   """The new name of the task tag."""
   name: String
+}
+
+input MutationUpdateTemplateInput {
+  """The Relay ID of the template to update."""
+  id: ID!
+  metadata: JSON
+  newSlug: String
+
+  """The Relay ID of the routine step to link the template to."""
+  routineStepId: ID
+  templateRaw: String
 }
 
 input MutationUpsertStoreItemInput {
@@ -866,6 +903,12 @@ type Query {
     where: TaskTagWhereInput
   ): QueryTaskTagsConnection!
 
+  """Get a template by its slug."""
+  template(
+    """The slug of the template."""
+    slug: String!
+  ): Template
+
   """The timezone set for the Flow instance. `null` if no timezone is set."""
   timezoneSet: String
 }
@@ -994,6 +1037,9 @@ type RoutineStep implements Node {
 
   """The step slug of the step"""
   stepSlug: String!
+
+  """The templates the step uses"""
+  templates: [Template!]!
 }
 
 input RoutineStepInput {
@@ -1184,6 +1230,36 @@ input TaskTagWhereInput {
 
   """Filter by name. Case insensitive."""
   nameIsLike: String
+}
+
+type Template implements Node {
+  """The date and time of creation of the template"""
+  createdAt: DateTime!
+  id: ID!
+
+  """Extra data attached to the template. This column may not be used yet."""
+  metadata: JSON
+
+  """The routineStep (if any) the template is used in"""
+  routineStep: RoutineStep!
+
+  """The id of the routineStep (if any) the template is used in"""
+  routineStepId: ID
+
+  """The Handlebars template -- https://handlebarsjs.com/guide"""
+  templateRaw: String!
+
+  """
+  The rendered template given the data as input. If no data is given, the template will be rendered with the default data.
+  """
+  templateRendered(input: TemplateTemplateRenderedInput!): String!
+
+  """The date and time the template was last updated"""
+  updatedAt: DateTime!
+}
+
+input TemplateTemplateRenderedInput {
+  data: JSONObject
 }
 
 """

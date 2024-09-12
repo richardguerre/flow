@@ -68,6 +68,8 @@ export const getPluginOptions = (pluginSlug: string) => ({
     itemPluginData: prisma.itemPluginData,
     list: prisma.list,
     routine: prisma.routine,
+    routineStep: prisma.routineStep,
+    template: prisma.template,
   },
   /**
    * A key-value store plugins can use to store data, user preferences, settings, configurations, etc.

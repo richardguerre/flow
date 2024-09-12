@@ -11,6 +11,7 @@ import "./Notifications";
 import "./PluginOperation";
 import "./PrismaFilters";
 import "./RepetitionPattern";
+import "./Template.ts";
 import "./RoutineStep";
 import "./Routine";
 import "./Store";

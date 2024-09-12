@@ -9,10 +9,7 @@ import { PluginOnUpdateItemStatus } from "@flowdev/server/src/graphql/Item";
 import type { Elysia } from "elysia";
 import { PluginOnCreateCalendarItem } from "@flowdev/server/src/utils";
 export type { Prisma, TaskStatus } from "@flowdev/server/src/exportedTypes";
-import {
-  PartialDeclareSpec,
-  type HelperDeclareSpec,
-} from "@flowdev/server/src/utils/renderTemplate";
+import { type HelperDeclareSpec } from "@flowdev/server/src/utils/renderTemplate";
 
 export type ServerPluginOptions = _ServerPluginOptions;
 

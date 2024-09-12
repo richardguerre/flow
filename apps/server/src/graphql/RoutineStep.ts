@@ -10,6 +10,7 @@ export const RoutineStepType = builder.prismaNode("RoutineStep", {
     config: t.expose("config", { type: "JSON", nullable: true }),
     routine: t.relation("routine"),
     routineId: t.exposeID("routineId"),
+    templates: t.relation("templates"),
   }),
 });
 

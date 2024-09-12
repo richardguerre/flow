@@ -6,7 +6,13 @@ import PrismaPlugin from "@pothos/plugin-prisma";
 import PrismaUtils from "@pothos/plugin-prisma-utils";
 import WithInputPlugin from "@pothos/plugin-with-input";
 import type PrismaTypes from "@pothos/plugin-prisma/generated";
-import { DateResolver, DateTimeResolver, PositiveIntResolver, JSONResolver } from "graphql-scalars";
+import {
+  DateResolver,
+  DateTimeResolver,
+  PositiveIntResolver,
+  JSONResolver,
+  JSONObjectResolver,
+} from "graphql-scalars";
 import { dayjs } from "../utils/dayjs";
 import { GraphQLError } from "graphql";
 import ScopeAuthPlugin from "@pothos/plugin-scope-auth";
@@ -30,6 +36,7 @@ export const builder = new SchemaBuilder<{
     DateTime: { Input: Date; Output: Date };
     PositiveInt: { Input: number; Output: number };
     JSON: { Input: Prisma.InputJsonValue; Output: Prisma.JsonValue };
+    JSONObject: { Input: Record<string, any>; Output: Record<string, any> };
     Time: { Input: Date; Output: Date };
   };
   Context: {
@@ -117,6 +124,7 @@ builder.addScalarType("Date", DateResolver, {});
 builder.addScalarType("DateTime", DateTimeResolver, {});
 builder.addScalarType("PositiveInt", PositiveIntResolver, {}); // only used in input types
 builder.addScalarType("JSON", JSONResolver, {});
+builder.addScalarType("JSONObject", JSONObjectResolver, {});
 builder.scalarType("Time", {
   description:
     "A time of day, represented as a string in the format `HH:mm`. For example, `16:20`.",
