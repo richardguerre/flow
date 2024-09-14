@@ -16,6 +16,7 @@
   },
   "dependencies": {
     "@flowdev/calendar": "workspace:*",
+    "@flowdev/common": "workspace:*",
     "@flowdev/error-boundary": "workspace:*",
     "@flowdev/icons": "workspace:*",
     "@flowdev/jotai": "workspace:*",

@@ -7,21 +7,25 @@ import { urlSafe, verifyUrlSafe } from "../utils/urlSafe";
 export const TemplateType = builder.prismaNode("Template", {
   id: { field: "slug" },
   fields: (t) => ({
+    slug: t.exposeString("slug"),
     createdAt: t.expose("createdAt", { type: "DateTime" }),
     updatedAt: t.expose("updatedAt", { type: "DateTime" }),
     metadata: t.expose("metadata", { type: "JSON", nullable: true }),
     routineStep: t.relation("routineStep"),
     routineStepId: t.exposeID("routineStepId", { nullable: true }),
-    templateRaw: t.exposeString("template"),
-    templateRendered: t.fieldWithInput({
+    raw: t.exposeString("template"),
+    rendered: t.fieldWithInput({
       type: "String",
       description:
         "The rendered template given the data as input. If no data is given, the template will be rendered with the default data.",
+      argOptions: {
+        required: false,
+      },
       input: {
         data: t.input.field({ type: "JSONObject", required: false }),
       },
       resolve: async (template, args) => {
-        const result = await renderTemplate(template.template, args.input.data ?? {});
+        const result = await renderTemplate(template.template, args.input?.data ?? {});
         return result;
       },
     }),
@@ -50,7 +54,7 @@ builder.mutationField("createTemplate", (t) =>
     description: `Create a new template and link it to a routine step.`,
     input: {
       slug: t.input.string({ required: true }),
-      templateRaw: t.input.string({ required: true }),
+      raw: t.input.string({ required: true }),
       metadata: t.input.field({ type: "JSON", required: false }),
       routineStepId: t.input.globalID({
         required: false,
@@ -88,7 +92,7 @@ builder.mutationField("createTemplate", (t) =>
       }
 
       // verify template is valid
-      await renderTemplate(args.input.templateRaw, {}).catch((err) => {
+      await renderTemplate(args.input.raw, {}).catch((err) => {
         throw new GraphQLError(err.message, {
           extensions: {
             code: "INVALID_TEMPLATE",
@@ -101,7 +105,7 @@ builder.mutationField("createTemplate", (t) =>
       return prisma.template.create({
         data: {
           slug,
-          template: args.input.templateRaw,
+          template: args.input.raw,
           metadata: u(args.input.metadata),
           routineStepId: routineStep?.id,
         },
@@ -120,7 +124,7 @@ builder.mutationField("updateTemplate", (t) =>
         description: "The Relay ID of the template to update.",
       }),
       newSlug: t.input.string({ required: false }),
-      templateRaw: t.input.string({ required: false }),
+      raw: t.input.string({ required: false }),
       metadata: t.input.field({ type: "JSON", required: false }),
       routineStepId: t.input.globalID({
         required: false,
@@ -158,8 +162,8 @@ builder.mutationField("updateTemplate", (t) =>
       }
 
       // verify template is valid
-      if (args.input.templateRaw) {
-        await renderTemplate(args.input.templateRaw, {}).catch((err) => {
+      if (args.input.raw) {
+        await renderTemplate(args.input.raw, {}).catch((err) => {
           throw new GraphQLError(err.message, {
             extensions: {
               code: "INVALID_TEMPLATE",

@@ -1,10 +1,12 @@
-import { definePlugin } from "@flowdev/plugin/server";
+import { definePlugin, PrismaTypes } from "@flowdev/plugin/server";
 
 const ACCOUNT_TOKENS_STORE_KEY = "account-tokens";
 const SLACK_MAPPINGS_STORE_KEY = "slack-mappings";
 const TEMPLATES_STORE_KEY = "templates";
 
 export default definePlugin((opts) => {
+  const UPDATE_TASK_STATUS_JOB_NAME = "update-task-status";
+
   const getTokensFromStore = async () => {
     const accountsTokensItem =
       await opts.store.getPluginItem<AccountsTokens>(ACCOUNT_TOKENS_STORE_KEY);
@@ -19,6 +21,8 @@ export default definePlugin((opts) => {
     }
     return accountsTokensItem.value;
   };
+
+  const statusMap = { TODO: "", DONE: "✅", CANCELED: "❌" };
 
   return {
     onRequest: async (req) => {
@@ -176,14 +180,104 @@ export default definePlugin((opts) => {
         return { data: { renderedTemplate } } as GetRoutineStepInfoOutput;
       },
     },
+    onUpdateTaskStatusEnd: async (_input) => {
+      const today = opts.dayjs();
+      await opts.pgBoss.send(UPDATE_TASK_STATUS_JOB_NAME, { date: today.toISOString() });
+    },
+    handlebars: {
+      helpers: {
+        status: function (this: PrismaTypes.Task) {
+          return new opts.Handlebars.SafeString(
+            `<slack-status data-taskId=\"Task_${this.id}\">${statusMap[this.status]}</slack-status>`,
+          );
+        },
+      },
+    },
+    handlePgBossWork: (work) => [
+      work(UPDATE_TASK_STATUS_JOB_NAME, async (job) => {
+        const jobData = job.data as { date: string };
+
+        // find the day's note
+        const note = await opts.prisma.note.findFirst({
+          where: { date: jobData.date },
+        });
+        if (!note) return;
+
+        /**  find all <slack-message> tags:
+         * <slack-message
+         *   data-workspaceId="<worksapceId>"
+         *   data-channelId="<channelId>"
+         *   data-messageId="messageId"
+         * >channelName</slack-message>
+         */
+        const messages = opts
+          .parseHtml(note.content)
+          .querySelectorAll("slack-message")
+          .map((tag) => ({
+            teamId: tag.attributes["data-workspaceId"],
+            channelId: tag.attributes["data-channelId"],
+            ts: tag.attributes["data-messagId"],
+          }));
+        if (!messages.length) return;
+
+        const tokenItem = await getTokensFromStore().catch(() => null);
+        if (!tokenItem) return;
+
+        // replace <slack-status> tags with the status of the task
+        const taskIds = opts
+          .parseHtml(note.content)
+          .querySelectorAll("slack-status")
+          .map((tag) => {
+            const id = opts.decodeGlobalId(tag.attributes["data-taskId"])?.id;
+            if (!id) return null;
+            return parseInt(id);
+          })
+          .filter((id) => id !== null);
+        const tasks = await opts.prisma.task
+          .findMany({
+            where: { id: { in: taskIds } },
+          })
+          .then((tasks) => new Map(tasks.map((task) => [task.id, task])));
+
+        const noteParsed = opts.parseHtml(note.content);
+        noteParsed.querySelectorAll("slack-status").forEach((tag) => {
+          const taskIdRaw = opts.decodeGlobalId(tag.attributes["data-taskId"])?.id;
+          if (!taskIdRaw) return;
+          const taskId = parseInt(taskIdRaw);
+          if (!taskId) return;
+          const task = tasks.get(taskId);
+          if (!task) return;
+          tag.replaceWith(statusMap[task.status]);
+        });
+        const noteTransformed = noteParsed.toString();
+
+        for (const message of messages) {
+          const tokenInfo = tokenItem[message.teamId];
+          // api/chat.update
+          const res = await fetch(
+            `https://slack.com/api/chat.update?token=${tokenInfo.access_token}&channel=${message.channelId}&ts=${message.ts}&text=${noteTransformed}`,
+            { headers: { Authorization: `Bearer ${tokenItem[message.teamId].access_token}` } },
+          );
+          if (!res.ok) {
+            console.log(
+              "❌ Slack channel update failed - res.ok is false",
+              res.status,
+              res.statusText,
+            );
+            continue;
+          }
+          console.log("✅ Slack message update successful");
+        }
+      }),
+    ],
   };
 });
 
 const DEFAULT_TEMPLATE = `Plan for today
 
-{{#each tasks as [task]}}
-- {{task.title}}
-{{/each}}
+{{#tasks}}<ul>
+<li><p>{{slack-status}} {{title}}</p></li>
+</ul>{{/tasks}}
 `;
 
 type AccountsTokens = {

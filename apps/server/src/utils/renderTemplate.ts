@@ -7,7 +7,7 @@ import { dayjs } from "./dayjs";
 
 type TemplateData = Partial<FlowDefaultData> & Record<string, any>;
 
-const Handlebars = asyncHelpersWrapper($Handlebars) as typeof $Handlebars;
+export const Handlebars = asyncHelpersWrapper($Handlebars) as typeof $Handlebars;
 
 export const renderTemplate = async (template: string, data: TemplateData) => {
   const plugins = await getPlugins();
@@ -73,15 +73,49 @@ const registerFlowsDefaultHelpers = async (opts?: {
     .tz(usersTimezone ?? undefined)
     .utc(true)
     .startOf("day");
+  if (opts?.include?.yesterday) {
+    // helper to render yesterday's date with the given format in args[0]
+    Handlebars.registerHelper("yesterday", async function (this: any, ...args) {
+      const format = args.at(0) ?? "MMMM D, YYYY";
+      const yesterday = today.subtract(1, "day");
+      if (format === "ISO") return yesterday.toISOString();
+      return yesterday.format(format ?? "MMMM D, YYYY");
+    });
+  }
+
+  if (opts?.include?.today) {
+    // helper to render today's date with the given format in args[0]
+    Handlebars.registerHelper("today", async function (this: any, ...args) {
+      const format = args.at(0) ?? "MMMM D, YYYY";
+      if (format === "ISO") return today.toISOString();
+      return today.format(format ?? "MMMM D, YYYY");
+    });
+  }
+
+  if (opts?.include?.tomorrow) {
+    // helper to render tomorrow's date with the given format in args[0]
+    Handlebars.registerHelper("tomorrow", async function (this: any, ...args) {
+      const format = args.at(0) ?? "MMMM D, YYYY";
+      const tomorrow = today.add(1, "day");
+      if (format === "ISO") return tomorrow.toISOString();
+      return tomorrow.format(format);
+    });
+  }
+
   if (opts?.include?.tasks) {
     Handlebars.registerHelper("tasks", async function (this: any, ...args) {
       const options = args.at(-1) as Handlebars.HelperOptions | undefined;
-      const prismaArgs = (args.at(0) as Parameters<typeof prisma.task.findMany>[0]) ?? {};
+      // possible the passed args are also templates that need to be rendered. Example: {{today 'ISO}}
+      const prismaArgsRendered = await Handlebars.compile(JSON.stringify(args.at(0) ?? {}))(
+        options?.data?.root ?? this,
+      );
+      const prismaArgs =
+        (JSON.parse(prismaArgsRendered) as Parameters<typeof prisma.task.findMany>[0]) ?? {};
 
       const tasks = await prisma.task
         .findMany({
-          where: { date: today.format("YYYY-MM-DD"), ...prismaArgs.where },
           ...prismaArgs,
+          where: { date: today.toISOString(), ...prismaArgs.where },
         })
         .then((tasks) =>
           tasks.map((task) => ({ ...task, title: new Handlebars.SafeString(task.title) })),
@@ -104,30 +138,6 @@ const registerFlowsDefaultHelpers = async (opts?: {
         res += await options.fn(task); // have to await the options.fn() call as children can have async helpers as well
       }
       return res;
-    });
-  }
-
-  if (opts?.include?.yesterday) {
-    // helper to render yesterday's date with the given format in args[0]
-    Handlebars.registerHelper("yesterday", async function (this: any, ...args) {
-      const format = args.at(0) ?? "MMMM D, YYYY";
-      return today.subtract(1, "day").format(format ?? "MMMM D, YYYY");
-    });
-  }
-
-  if (opts?.include?.today) {
-    // helper to render today's date with the given format in args[0]
-    Handlebars.registerHelper("today", async function (this: any, ...args) {
-      const format = args.at(0) ?? "MMMM D, YYYY";
-      return today.format(format ?? "MMMM D, YYYY");
-    });
-  }
-
-  if (opts?.include?.tomorrow) {
-    // helper to render tomorrow's date with the given format in args[0]
-    Handlebars.registerHelper("tomorrow", async function (this: any, ...args) {
-      const format = args.at(0) ?? "MMMM D, YYYY";
-      return today.add(1, "day").format(format);
     });
   }
 };

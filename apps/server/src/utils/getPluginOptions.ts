@@ -6,8 +6,10 @@ import { nearestTailwindColor } from "@flowdev/nearest-color";
 import type { Color, Store } from "@prisma/client";
 import { env } from "../env";
 import { GraphQLError } from "graphql";
-import { renderTemplate } from "./renderTemplate";
+import { renderTemplate, Handlebars } from "./renderTemplate";
 import { getUsersTimezone } from "./index";
+import htmlParser from "node-html-parser";
+import { decodeGlobalId, encodeGlobalId } from "@flowdev/common";
 
 type PrismaJsonInput = string | number | boolean | Prisma.JsonObject | Prisma.JsonArray;
 
@@ -224,6 +226,14 @@ export const getPluginOptions = (pluginSlug: string) => ({
    * You can override the default data by passing it in the second argument. For example, if you want to override the `todaysTasks` key, you can pass in `{ todaysTasks: [...yourTasks] }`.
    */
   renderTemplate,
+  /** Instance of Handlebars wrapped with the `handlebars-async-helpers` package. */
+  Handlebars: { SafeString: Handlebars.SafeString },
+  /** Parse HTML to a DOM tree. */
+  parseHtml: htmlParser.parse,
+  /** Decode a (GraphQL Relay) global ID. */
+  decodeGlobalId,
+  /** Encode a (GraphQL Relay) global ID. */
+  encodeGlobalId,
 });
 
 export type ServerPluginOptions = ReturnType<typeof getPluginOptions>;

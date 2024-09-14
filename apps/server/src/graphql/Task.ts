@@ -7,6 +7,7 @@ import { dayjs } from "@flowdev/server/src/utils/dayjs";
 import { getPlugins } from "@flowdev/server/src/utils/getPlugins";
 import { DateFilter, DateTimeFilter } from "./PrismaFilters";
 import { GraphQLError } from "graphql";
+import { CreateTaskTagInput, createTaskTagSlug } from "./TaskTag";
 
 // -------------- Task types --------------
 
@@ -149,6 +150,16 @@ builder.mutationField("createTask", (t) =>
           "Additional data separate from the pluginDatas to be passed to the plugins when creating the task.",
         type: [TaskActionDataInput],
       }),
+      tags: t.input.globalIDList({
+        required: false,
+        description:
+          "The IDs of exsiting tags to be linked to the task. If you want to create a new tag, use the `newTags` input.",
+      }),
+      newTags: t.input.field({
+        type: [CreateTaskTagInput],
+        required: false,
+        description: "Create new tags and link them to the task.",
+      }),
     },
     resolve: async (query, _, args) => {
       const date = args.input.date ?? startOfDay(new Date());
@@ -201,6 +212,15 @@ builder.mutationField("createTask", (t) =>
         }
       }
       return prisma.$transaction(async (tx) => {
+        const tags = {
+          connect: args.input.tags?.map((globalId) => ({ id: parseInt(globalId.id) })) ?? [],
+          create: args.input.newTags?.map((tag) => ({
+            name: tag.name,
+            slug: createTaskTagSlug(tag.name),
+            color: tag.color,
+            isPrivate: tag.isPrivate,
+          })),
+        } as Prisma.TaskTagUncheckedCreateNestedManyWithoutTasksInput;
         const task = await tx.task.create({
           ...query,
           data: {
@@ -212,6 +232,7 @@ builder.mutationField("createTask", (t) =>
               ? { item: { connect: { id: parseInt(args.input.itemId.id) } } }
               : {}),
             pluginDatas: { createMany: { data: pluginDatas } },
+            tags,
           },
         });
         const day = await tx.day.findUnique({ where: { date }, select: { tasksOrder: true } });
@@ -254,6 +275,21 @@ builder.mutationField("updateTask", (t) =>
         type: "PositiveInt",
         description: "The length of time (in minutes) the task is expected to take.",
       }),
+      tags: t.input.globalIDList({
+        required: false,
+        description:
+          "The IDs of exsiting tags to be linked to the task. If you want to create a new tag, use the `newTags` input.",
+      }),
+      newTags: t.input.field({
+        type: [CreateTaskTagInput],
+        required: false,
+        description: "Create new tags and link them to the task.",
+      }),
+      removeTags: t.input.globalIDList({
+        required: false,
+        description:
+          "The IDs of tags to be unlinked from the task. If you want to create a new tag, use the `newTags` input.",
+      }),
     },
     resolve: (query, _, args) => {
       return prisma.task.update({
@@ -262,6 +298,17 @@ builder.mutationField("updateTask", (t) =>
         data: {
           title: u(args.input.title),
           durationInMinutes: args.input.durationInMinutes,
+          tags: {
+            connect: args.input.tags?.map((globalId) => ({ id: parseInt(globalId.id) })) ?? [],
+            create: args.input.newTags?.map((tag) => ({
+              name: tag.name,
+              slug: createTaskTagSlug(tag.name),
+              color: tag.color,
+              isPrivate: tag.isPrivate,
+            })),
+            disconnect:
+              args.input.removeTags?.map((globalId) => ({ id: parseInt(globalId.id) })) ?? [],
+          },
         },
       });
     },
@@ -332,8 +379,8 @@ Any other scenario is not possible by nature of the app, where tasks:
           // errors from plugins should interrupt the transaction and be thrown as GraphQL errors
           await plugin.onUpdateTaskStatus?.({
             actionData: args.input.actionData,
-            newStatus,
             task,
+            newStatus,
           });
         }
         const originalDay = task.day;
@@ -477,6 +524,11 @@ Any other scenario is not possible by nature of the app, where tasks:
             days.push(task.date);
           }
         }
+        for (const pluginSlug in plugins) {
+          const plugin = plugins[pluginSlug]!;
+          // errors from plugins should not interrupt. just log them.
+          await plugin.onUpdateTaskStatusEnd?.({ task, newStatus }).catch(console.error);
+        }
       });
       return prisma.day.findMany({
         ...query,
@@ -592,6 +644,14 @@ When the task is:
               : {}),
           },
         });
+
+        if (newStatus) {
+          for (const pluginSlug in plugins) {
+            const plugin = plugins[pluginSlug]!;
+            // errors from plugins should not interrupt. just log them.
+            await plugin.onUpdateTaskStatusEnd?.({ task, newStatus }).catch(console.error);
+          }
+        }
 
         if (isSameDay) {
           // update just one day as they are the same

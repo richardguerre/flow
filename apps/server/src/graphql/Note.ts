@@ -1,4 +1,4 @@
-import { Color } from "@prisma/client";
+import { Color, Prisma } from "@prisma/client";
 import { prisma } from "../utils/prisma";
 import { builder } from "./builder";
 import { CreateNoteTagInputType } from "./NoteTag";
@@ -72,12 +72,12 @@ builder.mutationField("createOrUpdateNote", (t) =>
             slug: tag.slug ?? tag.name.toLowerCase().replace(/ /g, "-"),
             color: tag.color as Color,
           })) ?? [],
-      };
+      } as Prisma.NoteTagUncheckedCreateNestedManyWithoutNotesInput;
       return prisma.note.upsert({
         ...query,
         where: { slug: args.input.slug },
         update: {
-          day: { connectOrCreate: { where: { date }, create: { date } } },
+          // don't update the day when updating the note
           title: args.input.title,
           content: args.input.content,
           tags: {

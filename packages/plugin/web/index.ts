@@ -13,6 +13,7 @@ import type {
 } from "@flowdev/web/src/components/RenderCalendarActions";
 import type { PluginRenderLists as RenderLists } from "@flowdev/web/src/components/RenderLists";
 import type { PluginRenderList as RenderList } from "@flowdev/web/src/components/RenderList";
+import type { Extensions } from "@tiptap/core";
 
 export type { WebPluginOptions, PluginRoutineStepProps, OnCreateTask };
 
@@ -98,6 +99,10 @@ export type WebPlugin = (options: WebPluginOptions) => {
    * Render a list in the Lists component (i.e. the right sidebar).
    */
   renderList?: RenderList;
+  /**
+   * TipTap extensions to use in the NoteEditor component.
+   */
+  noteEditorTipTapExtensions?: Extensions;
 };
 
 export const definePlugin = (plugin: WebPlugin) => ({ plugin });

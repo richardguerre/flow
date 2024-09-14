@@ -1,4 +1,4 @@
-import { Prisma, definePlugin } from "@flowdev/plugin/server";
+import { PrismaTypes, definePlugin } from "@flowdev/plugin/server";
 
 const ACCOUNT_TOKENS_STORE_KEY = "account-tokens";
 const SYNCED_VIEWS_STORE_KEY = "synced-views";
@@ -530,7 +530,7 @@ export default definePlugin((opts) => {
             title: issue.title,
             isRelevant,
             inboxPoints: 10, // TODO: make it configurable by the user.
-          } satisfies Prisma.ItemUpdateInput;
+          } satisfies PrismaTypes.Prisma.ItemUpdateInput;
 
           const min = {
             ...((existinPluginData?.min as LinearIssueItemMin) ?? {}),

@@ -1,4 +1,4 @@
-import { definePlugin, type Prisma } from "@flowdev/plugin/server";
+import { definePlugin, type PrismaTypes } from "@flowdev/plugin/server";
 import type { calendar_v3 } from "@googleapis/calendar"; // import type only to avoid bundling the library in the plugin which contains unsafe code (process.env access, etc.)
 
 const ACCOUNT_TOKENS_STORE_KEY = "account-tokens";
@@ -164,7 +164,7 @@ export default definePlugin((opts) => {
         : Math.abs(opts.dayjs(scheduledStart).diff(scheduledEnd, "minute")),
       isRelevant,
       inboxPoints: input.event.status === "tentative" ? 10 : null,
-    } satisfies Prisma.ItemUpdateInput;
+    } satisfies PrismaTypes.Prisma.ItemUpdateInput;
 
     const min = {
       eventType: input.event.eventType as PluginDataFull["eventType"],
@@ -189,7 +189,7 @@ export default definePlugin((opts) => {
           create: { date: scheduledAtDate, tasksOrder: input.taskId ? [input.taskId] : [] },
         },
       },
-    } satisfies Prisma.TaskUpdateInput;
+    } satisfies PrismaTypes.Prisma.TaskUpdateInput;
 
     return {
       itemInfo: {

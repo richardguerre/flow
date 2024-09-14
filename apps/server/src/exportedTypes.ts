@@ -1,1 +1,1 @@
-export type { TaskStatus, Prisma } from "@prisma/client";
+export type * as PrismaTypes from "@prisma/client";

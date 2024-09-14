@@ -19,15 +19,12 @@ import ScopeAuthPlugin from "@pothos/plugin-scope-auth";
 import SmartSubscriptionsPlugin from "@pothos/plugin-smart-subscriptions";
 import SimpleObjectsPlugin from "@pothos/plugin-simple-objects";
 import { pubsub } from "../pubsub";
+import { decodeGlobalId as $decodeGlobalId, encodeGlobalId } from "@flowdev/common";
 
-export const encodeGlobalID = (typename: string, id: string | number | bigint) => {
-  return `${typename}_${id}`;
-};
-export const decodeGlobalID = (globalId: string) => {
-  const [typename, ...idElements] = globalId.split("_");
-  const id = idElements.join("_"); // For dates, the ID is a string with colons
-  if (!typename || !id) throw new Error("Invalid Relay ID");
-  return { typename, id };
+const decodeGlobalId = (globalId: string) => {
+  const id = $decodeGlobalId(globalId);
+  if (!id) throw new Error("Invalid Relay ID");
+  return id;
 };
 export const builder = new SchemaBuilder<{
   PrismaTypes: PrismaTypes;
@@ -70,8 +67,8 @@ export const builder = new SchemaBuilder<{
     nodeFieldOptions: {
       nullable: false,
     },
-    encodeGlobalID,
-    decodeGlobalID,
+    encodeGlobalID: encodeGlobalId,
+    decodeGlobalID: decodeGlobalId,
   },
   prisma: {
     client: prisma,

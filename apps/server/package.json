@@ -37,9 +37,10 @@
     "vitest": "0.23.4"
   },
   "dependencies": {
+    "@flowdev/common": "workspace:*",
+    "@flowdev/nearest-color": "workspace:*",
     "@elysiajs/cors": "^0.7.1",
     "@elysiajs/static": "0.7.1",
-    "@flowdev/nearest-color": "workspace:*",
     "@pothos/core": "3.30.0",
     "@pothos/plugin-prisma": "3.61.0",
     "@pothos/plugin-prisma-utils": "0.11.0",
@@ -57,6 +58,7 @@
     "graphql-yoga": "4.0.5",
     "handlebars": "4.7.8",
     "handlebars-async-helpers": "^1.0.6",
+    "node-html-parser": "^6.1.13",
     "pg-boss": "9.0.3"
   }
 }

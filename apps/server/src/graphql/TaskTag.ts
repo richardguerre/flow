@@ -62,6 +62,21 @@ export const TaskTagWhereInput = builder.inputType("TaskTagWhereInput", {
 
 // -------------- TaskTag mutation types --------------
 
+export const CreateTaskTagInput = builder.inputType("CreateTaskTagInput", {
+  fields: (t) => ({
+    name: t.string({ required: true, description: "The name of the task tag." }),
+    color: t.field({
+      type: ColorEnum,
+      required: true,
+      description: "The color of the task tag.",
+    }),
+    isPrivate: t.boolean({
+      required: true,
+      description: "Whether tasks with this tag will be considered private.",
+    }),
+  }),
+});
+
 builder.mutationField("createTaskTag", (t) =>
   t.prismaFieldWithInput({
     type: "TaskTag",
@@ -79,7 +94,7 @@ builder.mutationField("createTaskTag", (t) =>
       }),
     },
     resolve: async (query, _, args) => {
-      const slug = args.input.name.toLowerCase().replaceAll(" ", "-");
+      const slug = createTaskTagSlug(args.input.name);
       return prisma.taskTag.create({
         ...query,
         data: {
@@ -92,6 +107,8 @@ builder.mutationField("createTaskTag", (t) =>
     },
   }),
 );
+
+export const createTaskTagSlug = (name: string) => name.toLowerCase().replaceAll(" ", "-");
 
 builder.mutationField("updateTaskTag", (t) =>
   t.prismaFieldWithInput({
