@@ -11,7 +11,8 @@
     "dev:server": "bun --bun run vite build -c vite.server.dev.ts --watch"
   },
   "dependencies": {
-    "@flowdev/plugin": "workspace:*"
+    "@flowdev/plugin": "workspace:*",
+    "html-to-slack": "^0.2.2"
   },
   "devDependencies": {
     "@vitejs/plugin-react": "4.1.0",

@@ -11,4 +11,11 @@ declare global {
       renderedTemplate: string;
     };
   };
+  type PostMessageInput = {
+    message: string;
+    channels: {
+      teamId: string;
+      channelId: string;
+    }[];
+  };
 }

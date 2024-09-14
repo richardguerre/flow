@@ -1,4 +1,5 @@
 import { definePlugin, PrismaTypes } from "@flowdev/plugin/server";
+import htmlToSlack from "html-to-slack";
 
 const ACCOUNT_TOKENS_STORE_KEY = "account-tokens";
 const SLACK_MAPPINGS_STORE_KEY = "slack-mappings";
@@ -22,7 +23,30 @@ export default definePlugin((opts) => {
     return accountsTokensItem.value;
   };
 
-  const statusMap = { TODO: "", DONE: "✅", CANCELED: "❌" };
+  const statusMap = { TODO: "", DONE: "✅", CANCELED: "❌" } as const;
+
+  const getTasksFromMessage = async (message: string) => {
+    const taskIds = opts
+      .parseHtml(message)
+      .querySelectorAll("slack-status")
+      .map((tag) => {
+        const id = opts.decodeGlobalId(tag.attributes["data-taskId"])?.id;
+        if (!id) return null;
+        return parseInt(id);
+      })
+      .filter((id) => id !== null);
+    const tasks = await opts.prisma.task
+      .findMany({
+        where: { id: { in: taskIds } },
+      })
+      .then((tasks) => new Map(tasks.map((task) => [task.id, task])));
+
+    return tasks;
+  };
+
+  const convertHtmlToSlackMessage = (html: string) => {
+    return htmlToSlack(html);
+  };
 
   return {
     onRequest: async (req) => {
@@ -152,7 +176,14 @@ export default definePlugin((opts) => {
           })),
         };
       },
-      postMessage: async (input) => {
+      postMessage: async (input: PostMessageInput) => {
+        if (!input.channels.length)
+          throw new opts.GraphQLError("No channels provided.", {
+            extensions: {
+              code: "NO_CHANNELS_PROVIDED",
+              userFriendlyMessage: "No channels selected. Please select at least one channel.",
+            },
+          });
         const tokenItem = await getTokensFromStore().catch(() => null);
         if (!tokenItem) {
           throw new opts.GraphQLError("User not authenticated.", {
@@ -162,6 +193,40 @@ export default definePlugin((opts) => {
                 "You are not authenticated and will need to connect your Slack account(s) first.",
             },
           });
+        }
+
+        const tasks = await getTasksFromMessage(input.message);
+        const msgParsed = opts.parseHtml(input.message);
+        msgParsed.querySelectorAll("slack-status").forEach((tag) => {
+          const taskIdRaw = opts.decodeGlobalId(tag.attributes["data-taskId"])?.id;
+          if (!taskIdRaw) return;
+          const taskId = parseInt(taskIdRaw);
+          if (!taskId) return;
+          const task = tasks.get(taskId);
+          if (!task) return;
+          tag.replaceWith(statusMap[task.status]);
+        });
+        const slackMessage = convertHtmlToSlackMessage(msgParsed.toString());
+
+        for (const channel of input.channels) {
+          const res = await fetch(
+            `https://slack.com/api/chat.postMessage?token=${tokenItem[channel.teamId].access_token}&channel=${channel.channelId}&text=${slackMessage}`,
+            { headers: { Authorization: `Bearer ${tokenItem[channel.teamId].access_token}` } },
+          );
+          if (!res.ok) {
+            const channelInfo = await fetch(
+              `https://slack.com/api/conversations.info?token=${tokenItem[channel.teamId].access_token}&channel=${channel.channelId}`,
+              { headers: { Authorization: `Bearer ${tokenItem[channel.teamId].access_token}` } },
+            )
+              .then(async (req) => (await req.json()) as ChannelsReq)
+              .catch(() => null);
+            throw new opts.GraphQLError("Couldn't post message.", {
+              extensions: {
+                code: "COULDNT_POST_MESSAGE",
+                userFriendlyMessage: `Couldn't post message to channel ${channelInfo?.channels[0].name ?? "Unknonwn"}. Please try connecting your Slack account again.`,
+              },
+            });
+          }
         }
         return {
           data: null, // TODO: this is not implemented yet
@@ -224,20 +289,7 @@ export default definePlugin((opts) => {
         if (!tokenItem) return;
 
         // replace <slack-status> tags with the status of the task
-        const taskIds = opts
-          .parseHtml(note.content)
-          .querySelectorAll("slack-status")
-          .map((tag) => {
-            const id = opts.decodeGlobalId(tag.attributes["data-taskId"])?.id;
-            if (!id) return null;
-            return parseInt(id);
-          })
-          .filter((id) => id !== null);
-        const tasks = await opts.prisma.task
-          .findMany({
-            where: { id: { in: taskIds } },
-          })
-          .then((tasks) => new Map(tasks.map((task) => [task.id, task])));
+        const tasks = await getTasksFromMessage(note.content);
 
         const noteParsed = opts.parseHtml(note.content);
         noteParsed.querySelectorAll("slack-status").forEach((tag) => {
@@ -249,13 +301,13 @@ export default definePlugin((opts) => {
           if (!task) return;
           tag.replaceWith(statusMap[task.status]);
         });
-        const noteTransformed = noteParsed.toString();
+        const slackMessage = convertHtmlToSlackMessage(noteParsed.toString());
 
         for (const message of messages) {
           const tokenInfo = tokenItem[message.teamId];
           // api/chat.update
           const res = await fetch(
-            `https://slack.com/api/chat.update?token=${tokenInfo.access_token}&channel=${message.channelId}&ts=${message.ts}&text=${noteTransformed}`,
+            `https://slack.com/api/chat.update?token=${tokenInfo.access_token}&channel=${message.channelId}&ts=${message.ts}&text=${slackMessage}`,
             { headers: { Authorization: `Bearer ${tokenItem[message.teamId].access_token}` } },
           );
           if (!res.ok) {
