@@ -51,6 +51,10 @@ const WriteTemplate = (props: { value: Template; onChange: (template: Template) 
         value={props.value.template}
         onChange={(e) => props.onChange({ ...props.value, template: e.target.value })}
       />
+      <Textarea
+        value={JSON.stringify(props.value.data, null, 2)}
+        onChange={(e) => props.onChange({ ...props.value, data: JSON.parse(e.target.value) })}
+      />
     </div>
   );
 };

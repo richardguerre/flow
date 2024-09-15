@@ -13,6 +13,7 @@ import type {
 } from "@flowdev/web/src/components/RenderCalendarActions";
 import type { PluginRenderLists as RenderLists } from "@flowdev/web/src/components/RenderLists";
 import type { PluginRenderList as RenderList } from "@flowdev/web/src/components/RenderList";
+import type { PluginRenderRoutineStepSettings as RenderRoutineStepSettings } from "@flowdev/web/src/components/RenderRoutineStepSettings";
 import type { Extensions } from "@tiptap/core";
 
 export type { WebPluginOptions, PluginRoutineStepProps, OnCreateTask };
@@ -103,6 +104,13 @@ export type WebPlugin = (options: WebPluginOptions) => {
    * TipTap extensions to use in the NoteEditor component.
    */
   noteEditorTipTapExtensions?: Extensions;
+  /**f
+   * Render the settings of a Routine Step.
+   * This is called when the user clicks on the settings icon on a routine step in the Routine Settings view.
+   *
+   * This is an object where the keys are the step slugs and the values are the components to render (which can be rendered asynchronously).
+   */
+  renderRoutineStepsSettings: Record<string, RenderRoutineStepSettings>;
 };
 
 export const definePlugin = (plugin: WebPlugin) => ({ plugin });
