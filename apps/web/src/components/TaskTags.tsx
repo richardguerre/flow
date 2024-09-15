@@ -46,15 +46,18 @@ const getTaskTags = async () => {
 export const useTaskTags = (props?: { onLoaded?: (tags: TaskTagsNode[]) => void }) => {
   const [taskTags, setTaskTags] = useState<TaskTagsNode[]>([]);
   const [loading, setLoading] = useState(true);
+  const [loaded, setLoaded] = useState(false);
 
   useAsyncEffect(async () => {
     setLoading(true);
     const tags = await getTaskTags().finally(() => setLoading(false));
     props?.onLoaded?.(tags);
     setTaskTags(tags);
+    setLoaded(true);
+    setLoading(false);
   }, []);
 
-  return { taskTags, loading };
+  return { taskTags, loading, loaded };
 };
 
 export const TaskTagsExtension = Mention.extend<
@@ -87,6 +90,7 @@ export const TaskTagsExtension = Mention.extend<
   renderHTML({ node, HTMLAttributes }) {
     const taskTagAttrs = node.attrs as TaskTagsAttrs;
     const taskTag = this.options.tags.find((tag) => tag.id === taskTagAttrs.id);
+    console.log(taskTag);
     return [
       "span",
       mergeAttributes(this.options.HTMLAttributes, HTMLAttributes, {

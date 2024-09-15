@@ -137,7 +137,7 @@ type TaskTitleInputProps = {
 export const TaskTitleInput = (props: TaskTitleInputProps) => {
   const editorRef = useRef<Editor | null>(props.editorRef?.current ?? null);
   const [editable, setEditable] = useState(props.autoFocus ?? false);
-  const { taskTags } = useTaskTags();
+  const { taskTags, loaded: tagsLoaded } = useTaskTags();
 
   const handleSave = useCallback(async () => {
     setEditable(false);
@@ -174,7 +174,8 @@ export const TaskTitleInput = (props: TaskTitleInputProps) => {
       editable: props.readOnly ? false : undefined,
       onBlur: handleSave,
     },
-    [...taskTags.map((tag) => tag.id)],
+    // only depend on tagsLoaded if it's not a new task (i.e. when autoFocus is false)
+    [...(props.autoFocus ? [] : [tagsLoaded])],
   );
 
   const handleClick = () => {
