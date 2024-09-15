@@ -157,7 +157,7 @@ export const TaskTitleInput = (props: TaskTitleInputProps) => {
       editable: props.readOnly ? false : undefined,
       onBlur: handleSave,
     },
-    [taskTags],
+    [taskTags.length],
   );
 
   const handleClick = () => {

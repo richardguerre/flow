@@ -135,7 +135,7 @@ const TaskCardTitle = (props: { task: TaskCardTitle_task$key }) => {
       content: task.title,
       editable: false, // readonly
     },
-    [taskTags],
+    [taskTags.length],
   );
 
   return <EditorContent editor={editor} className="TaskCardTitleInput w-full cursor-text p-0" />;
