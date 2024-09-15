@@ -61,13 +61,13 @@ export const TaskTagsExtension = Mention.extend<
   MentionOptions & { tags: TaskTagsNode[] },
   { tags: TaskTagsNode[] }
 >({
-  name: "taskTags",
+  name: "taskTag",
   addOptions() {
     return { ...this.parent?.(), tags: [] };
   },
   addAttributes: () => ({
     id: {
-      default: "something",
+      default: null,
       parseHTML: (element) => element.getAttribute("data-tasktag-id") ?? null,
       renderHTML: (attrs) => {
         if (!attrs.id) return {};

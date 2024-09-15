@@ -35,6 +35,17 @@ input CreateNoteTagInput {
   slug: String
 }
 
+input CreateTaskTagInput {
+  """The color of the task tag."""
+  color: Color!
+
+  """Whether tasks with this tag will be considered private."""
+  isPrivate: Boolean!
+
+  """The name of the task tag."""
+  name: String!
+}
+
 """
 A date string, such as 2007-12-03, compliant with the `full-date` format outlined in section 5.6 of the RFC 3339 profile of the ISO 8601 standard for representation of dates and times using the Gregorian calendar.
 """
@@ -451,11 +462,19 @@ input MutationCreateTaskInput {
   """The Relay ID of the Item that should be linked to the task."""
   itemId: ID
 
+  """Create new tags and link them to the task."""
+  newTags: [CreateTaskTagInput!]
+
   """The plugin data to be linked to the task."""
   pluginDatas: [TaskPluginDataInput!]
 
   """The initial status of the task. Defaults to `TODO`."""
   status: TaskStatus = TODO
+
+  """
+  The IDs of exsiting tags to be linked to the task. If you want to create a new tag, use the `newTags` input.
+  """
+  tags: [ID!]
 
   """The title of the task."""
   title: String!
@@ -597,6 +616,19 @@ input MutationUpdateTaskInput {
 
   """The Relay ID of the task to update."""
   id: ID!
+
+  """Create new tags and link them to the task."""
+  newTags: [CreateTaskTagInput!]
+
+  """
+  The IDs of tags to be unlinked from the task. If you want to create a new tag, use the `newTags` input.
+  """
+  removeTags: [ID!]
+
+  """
+  The IDs of exsiting tags to be linked to the task. If you want to create a new tag, use the `newTags` input.
+  """
+  tags: [ID!]
 
   """The title of the task."""
   title: String

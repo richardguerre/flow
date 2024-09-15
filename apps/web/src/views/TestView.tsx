@@ -3,37 +3,46 @@ import { Tooltip, TooltipContent, TooltipTrigger } from "@flowdev/ui/Tooltip";
 import { tw } from "@flowdev/ui/tw";
 import { Node, mergeAttributes } from "@tiptap/core";
 import { ReactNodeViewRenderer, NodeViewWrapper } from "@tiptap/react";
+import { TaskTagsExtension } from "../components/TaskTags";
+import { Suspense, useRef } from "react";
 
 export default function TestView() {
-  return <TestViewContent />;
+  return (
+    <Suspense fallback="loading...">
+      <TestViewContent />
+    </Suspense>
+  );
 }
 
 export const TestViewContent = () => {
+  const ref = useRef<HTMLDivElement>(null);
   const editor = useEditor({
     extensions: [
       StarterKit,
+      TaskTagsExtension.configure({ tags: [] }),
       Node.create({
         name: "slack-status",
         inline: true,
         group: "inline",
         atom: true,
-
         parseHTML() {
           return [{ tag: "slack-status" }];
         },
-
         renderHTML({ HTMLAttributes }) {
           return ["slack-status", mergeAttributes(HTMLAttributes)];
         },
-
         addNodeView() {
           return ReactNodeViewRenderer(Component);
         },
       }),
     ],
-    content: `<ul><li><p><slack-status>test</slack-status></p></li></ul><slack-workspace-channel data-workspace-id="someId" data-channel-id="someId"></slack-workspace-channel>`,
+    content: `<ul><li><p><slack-status>test</slack-status> task title 1 <span data-tasktag-id="Task_1" data-name="Test">#Test</span></p></li></ul><slack-workspace-channel data-workspace-id="someId" data-channel-id="someId"></slack-workspace-channel>`,
     onUpdate: (props) => {
-      console.log("onUpdate", props.editor.getHTML());
+      props.editor.state.doc.descendants((node) => {
+        if (node.type.name === "taskTag") {
+          console.log(node);
+        }
+      });
     },
     editorProps: {
       attributes: {
@@ -44,8 +53,8 @@ export const TestViewContent = () => {
   });
   return (
     <div className="flex h-screen items-center justify-center">
-      <div className="h-2/3 w-2/3 bg-background-50 flex items-center justify-center gap-2 rounded-lg shadow-md p-4">
-        <EditorContent editor={editor} className="h-full w-full" autoFocus />
+      <div className="h-2/3 w-2/3 bg-background-50 gap-2 rounded-lg shadow-md p-4">
+        <EditorContent editor={editor} className="h-full w-full" autoFocus ref={ref} />
       </div>
     </div>
   );
@@ -55,13 +64,15 @@ const Component = (props: any) => {
   return (
     <NodeViewWrapper as="span">
       <Tooltip>
-        <TooltipTrigger
-          className={tw(
-            "p-0.5 mr-1 rounded-sm hover:bg-background-200 translate-y-0.75 h-5 w-5 inline-flex items-center justify-center",
-            props.selected && "bg-primary-200",
-          )}
-        >
-          <SlackMark />
+        <TooltipTrigger asChild>
+          <span
+            className={tw(
+              "p-0.5 mr-1 rounded-sm hover:bg-background-200 translate-y-0.75 h-5 w-5 inline-flex items-center justify-center",
+              props.selected && "bg-primary-200",
+            )}
+          >
+            <SlackMark />
+          </span>
         </TooltipTrigger>
         <TooltipContent className="max-w-xs">
           This is a placeholder for where the Slack plugin will add and automatically update the

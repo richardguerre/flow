@@ -14,6 +14,7 @@ import "./TaskTitle.scss";
 import { TaskTitleCreateTaskMutation } from "../relay/__gen__/TaskTitleCreateTaskMutation.graphql";
 import { createVirtualTask, deleteVirtualTask } from "./Day";
 import { TaskTagsExtension, useTaskTags } from "./TaskTags";
+import { wait } from "@flowdev/common";
 
 type TaskTitleProps = {
   task: TaskTitle_task$key;
@@ -53,6 +54,13 @@ export const TaskTitle = (props: TaskTitleProps) => {
   `);
 
   const handleSave = (title: string) => {
+    const tags: string[] = [];
+    // props.editorRef?.current?.state.doc.descendants((node) => {
+    //   if (node.type.name === "taskTag") {
+    //     tags.push(node.attrs.id);
+    //   }
+    // });
+    console.log(tags);
     if (isTemp) {
       createTask({
         variables: {
@@ -118,14 +126,15 @@ type TaskTitleInputProps = {
 };
 
 export const TaskTitleInput = (props: TaskTitleInputProps) => {
-  const editorRef = useRef<Editor | null>(null);
+  const editorRef = useRef<Editor | null>(props.editorRef?.current ?? null);
   const [editable, setEditable] = useState(props.autoFocus ?? false);
   const { taskTags } = useTaskTags();
 
-  const handleSave = useCallback(() => {
+  const handleSave = useCallback(async () => {
     setEditable(false);
     if (!editorRef.current) return;
     if (editorRef.current.isEmpty) {
+      console.log("empty");
       props.onCancel?.();
       return;
     }
@@ -155,6 +164,7 @@ export const TaskTitleInput = (props: TaskTitleInputProps) => {
       ],
       content: props.initialValue ?? "",
       editable: props.readOnly ? false : undefined,
+      autofocus: true,
       onBlur: handleSave,
     },
     [taskTags],

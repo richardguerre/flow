@@ -2,7 +2,6 @@ import { definePlugin, PrismaTypes } from "@flowdev/plugin/server";
 import htmlToSlack from "html-to-slack";
 
 const ACCOUNT_TOKENS_STORE_KEY = "account-tokens";
-const SLACK_MAPPINGS_STORE_KEY = "slack-mappings";
 const TEMPLATES_STORE_KEY = "templates";
 
 export default definePlugin((opts) => {
@@ -78,10 +77,7 @@ export default definePlugin((opts) => {
         const tokensData = {
           ...body,
           created_at: new Date().toISOString(),
-          team: {
-            ...body.team,
-            ...teamInfo.team,
-          },
+          team: { ...body.team, ...teamInfo.team },
         } as Tokens;
 
         await opts.store.setSecretItem<AccountsTokens>(ACCOUNT_TOKENS_STORE_KEY, {
@@ -100,80 +96,49 @@ export default definePlugin((opts) => {
         if (!tokenItem) {
           return { data: [] };
         }
-        const slackMappingsItem = await opts.store
-          .getPluginItem<SlackMappings>(SLACK_MAPPINGS_STORE_KEY)
-          .then((item) => item?.value ?? {})
-          .catch(() => null);
 
-        const toReturn: Workspace[] = [];
-        for (const teamId in tokenItem) {
-          const channelIds = slackMappingsItem?.[teamId].channelIds;
-          const channels: Channel[] = [];
-          for (const channelId of channelIds ?? []) {
-            const channel = await fetch(
-              `https://slack.com/api/conversations.info?token=${tokenItem[teamId].access_token}&channel=${channelId}`,
-              { headers: { Authorization: `Bearer ${tokenItem[teamId].access_token}` } },
-            )
-              .then(async (req) => (await req.json()) as ChannelsReq)
-              .catch(() => null);
-            if (!channel) continue;
-            channels.push(channel.channels[0]);
-          }
-          toReturn.push({
-            connectedAt: tokenItem[teamId].created_at,
-            teamId,
-            teamName: tokenItem[teamId].team.name,
-            teamIcon: tokenItem[teamId].team.icon.image_44,
-            teamAvatar: tokenItem[teamId].team.avatar_base_url,
-            channels,
-          });
-        }
-        return { data: toReturn };
+        return {
+          data: {
+            workspaces: Object.entries(tokenItem).map(([teamId, tokenInfo]) => ({
+              connectedAt: tokenInfo.created_at,
+              teamId,
+              teamName: tokenInfo.team.name,
+              teamIcon: tokenInfo.team.icon.image_44,
+              teamAvatar: tokenInfo.team.avatar_base_url,
+            })),
+          } as WorkspacesData,
+        };
       },
-      getChannels: async (input) => {
+      getChannels: async (_input: GetChannelsInput) => {
         const tokenItem = await getTokensFromStore().catch(() => null);
 
-        const workspaceToken = tokenItem?.[input.teamId];
-        if (!workspaceToken) {
-          throw new opts.GraphQLError("Slack workspace not found.", {
-            extensions: {
-              code: "WORKSPACE_NOT_FOUND",
-              userFriendlyMessage:
-                "No Slack workspace was found to retrieve channels. Please try connecting your Slack account again.",
-            },
-          });
-        }
+        const channels: GetChannelsData["channels"] = [];
+        for (const teamId in tokenItem) {
+          const tokenInfo = tokenItem[teamId];
 
-        const channels = await fetch(
-          `https://slack.com/api/conversations.list?token=${workspaceToken.access_token}`,
-          {
-            headers: {
-              Authorization: `Bearer ${workspaceToken.access_token}`,
-            },
-          },
-        )
-          .then(async (req) => (await req.json()) as ChannelsReq)
-          .catch(() => null);
-        if (!channels) {
-          throw new opts.GraphQLError("Couldn't get channels.", {
-            extensions: {
-              code: "COULDNT_GET_CHANNELS",
-              userFriendlyMessage:
-                "Couldn't get channels. Please try connecting your Slack account again.",
-            },
-          });
+          const channelsReq = await fetch(
+            `https://slack.com/api/conversations.list?token=${tokenInfo.access_token}`,
+            { headers: { Authorization: `Bearer ${tokenInfo.access_token}` } },
+          )
+            .then(async (res) => (await res.json()) as ChannelsReq)
+            .catch(() => null);
+          if (!channelsReq) continue;
+          channels.push(
+            ...(channelsReq.channels.map((channel) => ({
+              id: channel.id,
+              name: channel.name,
+              team: {
+                id: tokenInfo.team.id,
+                name: tokenInfo.team.name,
+                icon: tokenInfo.team.icon.image_44,
+                avatar: tokenInfo.team.avatar_base_url,
+              },
+            })) as GetChannelsData["channels"]),
+          );
         }
 
         return {
-          data: channels.channels.map((channel) => ({
-            id: channel.id,
-            name: channel.name,
-            isPrivate: channel.is_private,
-            isMember: channel.is_member,
-            isArchived: channel.is_archived,
-            isGeneral: channel.is_general,
-            numMembers: channel.num_members,
-          })),
+          data: { channels } as GetChannelsData,
         };
       },
       postMessage: async (input: PostMessageInput) => {
@@ -404,15 +369,6 @@ type TeamInfoReq = {
     is_verified: boolean;
     lob_sales_home_enabled: boolean;
   };
-};
-
-type Workspace = {
-  connectedAt: string;
-  teamId: string;
-  teamName: string;
-  teamIcon: string;
-  teamAvatar: string;
-  channels: Channel[];
 };
 
 type Channel = ChannelsReq["channels"][0];

@@ -7,6 +7,32 @@ export default definePlugin((opts) => {
   const React = opts.React; // required so that the Slack plugin uses the same React version as the web app
   const Flow = opts.components;
 
+  const Workspaces = () => {
+    const workspacesQuery = opts.operations.useLazyQuery<WorkspacesData>({
+      operationName: "workspaces",
+    });
+
+    if (!workspacesQuery?.data?.workspaces.length) {
+      return (
+        <div className="flex">
+          No workspaces connected. Please connect an account to use the Slack plugin.
+        </div>
+      );
+    }
+
+    return (
+      <div className="flex flex-col gap-2">
+        {workspacesQuery?.data?.workspaces.map((workspace) => (
+          <div className="flex items-center gap-2 rounded max-w-2xl bg-background-50 shadow px-4 py-2">
+            <img src={workspace.teamAvatar} />
+            <img src={workspace.teamIcon} />
+            <span>{workspace.teamName}</span>
+          </div>
+        ))}
+      </div>
+    );
+  };
+
   const SlackStatusNode = Node.create({
     name: "slack-status",
     inline: true,
@@ -41,6 +67,32 @@ export default definePlugin((opts) => {
   return {
     name: "Slack",
     noteEditorTipTapExtensions: [SlackStatusNode],
+    settings: {
+      "connect-accounts": {
+        type: "custom",
+        render: () => {
+          return (
+            <div className="flex flex-col gap-2">
+              <a href={`${opts.serverOrigin}/api/plugin/${opts.pluginSlug}/auth`}>
+                <Flow.Button>Connect an account</Flow.Button>
+              </a>
+              <Flow.ErrorBoundary
+                fallbackRender={({ error }) => {
+                  if (error.cause?.[0]?.extensions?.code === "NOT_AUTHENTICATED") {
+                    return <></>;
+                  }
+                  return <p className="text-sm text-negative-600">{error.message}</p>;
+                }}
+              >
+                <React.Suspense fallback="Loading connected accounts...">
+                  <Workspaces />
+                </React.Suspense>
+              </Flow.ErrorBoundary>
+            </div>
+          );
+        },
+      },
+    },
     routineSteps: {
       "post-your-plan": {
         name: "Post your plan",

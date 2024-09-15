@@ -11,6 +11,30 @@ declare global {
       renderedTemplate: string;
     };
   };
+  type Workspace = {
+    connectedAt: string;
+    teamId: string;
+    teamName: string;
+    teamIcon: string;
+    teamAvatar: string;
+  };
+  type WorkspacesData = {
+    workspaces: Workspace[];
+  };
+  type GetChannelsInput = {};
+  type GetChannelsData = {
+    channels: {
+      id: string;
+      name: string;
+      team: {
+        id: string;
+        connectedAt: string;
+        name: string;
+        icon: string;
+        avatar: string;
+      };
+    }[];
+  };
   type PostMessageInput = {
     message: string;
     channels: {
