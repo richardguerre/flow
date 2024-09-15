@@ -182,7 +182,7 @@ const TaskTagsList = forwardRef(
         props.editor
           .chain()
           .deleteRange({ from: props.range.from, to: props.range.to })
-          .insertContent({ type: "taskTags", attrs: item })
+          .insertContent({ type: "taskTag", attrs: item })
           .run();
       }
     };

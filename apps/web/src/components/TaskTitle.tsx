@@ -14,7 +14,6 @@ import "./TaskTitle.scss";
 import { TaskTitleCreateTaskMutation } from "../relay/__gen__/TaskTitleCreateTaskMutation.graphql";
 import { createVirtualTask, deleteVirtualTask } from "./Day";
 import { TaskTagsExtension, useTaskTags } from "./TaskTags";
-import { wait } from "@flowdev/common";
 
 type TaskTitleProps = {
   task: TaskTitle_task$key;
@@ -30,6 +29,9 @@ export const TaskTitle = (props: TaskTitleProps) => {
         date # added to be spread in TaskTitleCreateTaskMutation
         status # added to be spread in TaskTitleCreateTaskMutation
         durationInMinutes # added to be spread in TaskTitleCreateTaskMutation
+        tags {
+          id
+        }
       }
     `,
     props.task,
@@ -55,12 +57,11 @@ export const TaskTitle = (props: TaskTitleProps) => {
 
   const handleSave = (title: string) => {
     const tags: string[] = [];
-    // props.editorRef?.current?.state.doc.descendants((node) => {
-    //   if (node.type.name === "taskTag") {
-    //     tags.push(node.attrs.id);
-    //   }
-    // });
-    console.log(tags);
+    props.editorRef?.current?.state.doc.descendants((node) => {
+      if (node.type.name === "taskTag") {
+        tags.push(node.attrs.id);
+      }
+    });
     if (isTemp) {
       createTask({
         variables: {
@@ -69,6 +70,7 @@ export const TaskTitle = (props: TaskTitleProps) => {
             date: task.date,
             status: task.status,
             durationInMinutes: task.durationInMinutes,
+            tags,
           },
         },
         updater: (store, data) => {
@@ -86,7 +88,14 @@ export const TaskTitle = (props: TaskTitleProps) => {
       createVirtualTask({ date: task.date });
     } else {
       updateTask({
-        variables: { input: { id: task.id, title: title } },
+        variables: {
+          input: {
+            id: task.id,
+            title: title,
+            tags,
+            removeTags: task.tags.filter((tag) => !tags.includes(tag.id)).map((tag) => tag.id),
+          },
+        },
         optimisticResponse: { updateTask: { id: task.id, title } },
       });
     }
@@ -134,7 +143,6 @@ export const TaskTitleInput = (props: TaskTitleInputProps) => {
     setEditable(false);
     if (!editorRef.current) return;
     if (editorRef.current.isEmpty) {
-      console.log("empty");
       props.onCancel?.();
       return;
     }
@@ -164,10 +172,9 @@ export const TaskTitleInput = (props: TaskTitleInputProps) => {
       ],
       content: props.initialValue ?? "",
       editable: props.readOnly ? false : undefined,
-      autofocus: true,
       onBlur: handleSave,
     },
-    [taskTags.length],
+    [...taskTags.map((tag) => tag.id)],
   );
 
   const handleClick = () => {
