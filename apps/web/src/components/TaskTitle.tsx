@@ -167,7 +167,7 @@ export const TaskTitleInput = (props: TaskTitleInputProps) => {
       autofocus: true,
       onBlur: handleSave,
     },
-    [taskTags],
+    [taskTags.length],
   );
 
   const handleClick = () => {
