@@ -2,6 +2,7 @@ import { definePlugin } from "@flowdev/plugin/web";
 import { Node, mergeAttributes } from "@tiptap/core";
 import { ReactNodeViewRenderer, NodeViewWrapper } from "@tiptap/react";
 import type { Editor } from "@tiptap/core";
+import { POST_YOUR_PLAN } from "./common";
 
 export default definePlugin((opts) => {
   const React = opts.React; // required so that the Slack plugin uses the same React version as the web app
@@ -94,7 +95,7 @@ export default definePlugin((opts) => {
       },
     },
     routineSteps: {
-      "post-your-plan": {
+      [POST_YOUR_PLAN]: {
         name: "Post your plan",
         description: "Post your plan for the day in Slack channels.",
         component: (props) => {
@@ -118,6 +119,24 @@ export default definePlugin((opts) => {
               <props.NextButton />
             </div>
           );
+        },
+        renderSettings: async (props) => {
+          return {
+            component: () => {
+              return (
+                <div>
+                  {props.templates.map((template) => (
+                    <Flow.TemplateEditor
+                      initialTemplate={{
+                        content: template.raw,
+                        data: {},
+                      }}
+                    />
+                  ))}
+                </div>
+              );
+            },
+          };
         },
       },
     },

@@ -93,6 +93,7 @@ import { ItemsList } from "../components/RenderList";
 import { nearestTailwindColor } from "@flowdev/nearest-color";
 import { Spinner } from "@flowdev/ui/Spinner";
 import { Loading } from "@flowdev/ui/Loading";
+import { TemplateEditor } from "../components/TemplateEditor";
 
 export const getPluginOptions = (slug: string) => ({
   /**
@@ -209,6 +210,7 @@ export const getPluginOptions = (slug: string) => ({
     TooltipContent,
     Spinner,
     Loading,
+    TemplateEditor,
   },
   hooks: {
     /**

@@ -10,6 +10,7 @@ import type { Elysia } from "elysia";
 import { PluginOnCreateCalendarItem } from "@flowdev/server/src/utils";
 export type { PrismaTypes } from "@flowdev/server/src/exportedTypes";
 import { type HelperDeclareSpec } from "@flowdev/server/src/utils/renderTemplate";
+import type { PluginOnAddRoutineStepEnd } from "@flowdev/server/src/graphql/Routine";
 
 export type ServerPluginOptions = _ServerPluginOptions;
 
@@ -32,6 +33,8 @@ export type ServerPlugin = (opts: ServerPluginOptions) => {
   onCreateCalendarItem?: PluginOnCreateCalendarItem;
   /** Hook called when the user refreshes the calendar items. */
   onRefreshCalendarItems?: () => Promise<void>;
+  /** Hook called after the user adds a routine step to a routine. */
+  onAddRoutineStepEnd?: PluginOnAddRoutineStepEnd;
   /**
    * Hook called when a request is made at `/api/plugin/:pluginSlug`.
    *

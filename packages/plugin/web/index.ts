@@ -13,11 +13,13 @@ import type {
 } from "@flowdev/web/src/components/RenderCalendarActions";
 import type { PluginRenderLists as RenderLists } from "@flowdev/web/src/components/RenderLists";
 import type { PluginRenderList as RenderList } from "@flowdev/web/src/components/RenderList";
-import type { PluginRenderRoutineStepSettings as RenderRoutineStepSettings } from "@flowdev/web/src/components/RenderRoutineStepSettings";
+import type { RenderRoutineStepSettings_routineStep$data } from "@flowdev/web/src/relay/__gen__/RenderRoutineStepSettings_routineStep.graphql";
 import type { Extensions } from "@tiptap/core";
+import { ComponentType } from "react";
 
 export type { WebPluginOptions, PluginRoutineStepProps, OnCreateTask };
 
+type ToRender = { component: ComponentType };
 export type WebPluginRoutineStep = {
   /** The name of the step. */
   name: string;
@@ -25,6 +27,13 @@ export type WebPluginRoutineStep = {
   description: string;
   /** The component to render for the step. */
   component: React.ComponentType<PluginRoutineStepProps>;
+  /**
+   * The component to render for the settings of the step.
+   * This is called when the user clicks on the settings icon on a routine step in the Routine Settings view.
+   *
+   * The component can be rendered asynchronously or return null if no settings are needed.
+   */
+  renderSettings?: (props: RenderRoutineStepSettings_routineStep$data) => Promise<null | ToRender>; // had to compose this type here directly instead of @flowdev/web/src/components/RenderRoutineStepSettings as it's too complex for TypeScript to handle.
 };
 
 type WaysToContact = { email: string };
@@ -104,13 +113,6 @@ export type WebPlugin = (options: WebPluginOptions) => {
    * TipTap extensions to use in the NoteEditor component.
    */
   noteEditorTipTapExtensions?: Extensions;
-  /**f
-   * Render the settings of a Routine Step.
-   * This is called when the user clicks on the settings icon on a routine step in the Routine Settings view.
-   *
-   * This is an object where the keys are the step slugs and the values are the components to render (which can be rendered asynchronously).
-   */
-  renderRoutineStepsSettings: Record<string, RenderRoutineStepSettings>;
 };
 
 export const definePlugin = (plugin: WebPlugin) => ({ plugin });

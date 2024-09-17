@@ -1,5 +1,6 @@
 import { definePlugin, PrismaTypes } from "@flowdev/plugin/server";
 import htmlToSlack from "html-to-slack";
+import { POST_YOUR_PLAN } from "./common";
 
 const ACCOUNT_TOKENS_STORE_KEY = "account-tokens";
 const TEMPLATES_STORE_KEY = "templates";
@@ -202,7 +203,7 @@ export default definePlugin((opts) => {
         const templates = await opts.store
           .getPluginItem<Templates>(TEMPLATES_STORE_KEY)
           .then((res) => res?.value ?? {});
-        const template = templates[input.routineStepId]?.template ?? DEFAULT_TEMPLATE;
+        const template = templates[input.routineStepId]?.template ?? DEFAULT_PLAN_YOUR_DAY;
         const renderedTemplate = await opts.renderTemplate(template, {
           jfdksl: null,
         });
@@ -214,8 +215,23 @@ export default definePlugin((opts) => {
       const today = opts.dayjs();
       await opts.pgBoss.send(UPDATE_TASK_STATUS_JOB_NAME, { date: today.toISOString() });
     },
+    onAddRoutineStepEnd: async (input) => {
+      if (input.step.stepSlug === POST_YOUR_PLAN) {
+        // add default template
+        await opts.prisma.template.upsert({
+          where: { slug: `${opts.pluginSlug}-${input.step.stepSlug}` },
+          create: {
+            slug: `${opts.pluginSlug}-${input.step.stepSlug}`,
+            template: DEFAULT_PLAN_YOUR_DAY,
+            routineStepId: input.step.id,
+          },
+          update: { routineStepId: input.step.id }, // don't update the template if it already exists, just update the routineStepId
+        });
+      }
+    },
     handlebars: {
       helpers: {
+        // reminder: handlebars helpers are prefixed with the plugin's slug. Example: if the plugin slug is `slack`, then the helper name should be `slack-helperName`.
         status: function (this: PrismaTypes.Task) {
           return new opts.Handlebars.SafeString(
             `<slack-status data-taskId=\"Task_${this.id}\">${statusMap[this.status]}</slack-status>`,
@@ -290,7 +306,7 @@ export default definePlugin((opts) => {
   };
 });
 
-const DEFAULT_TEMPLATE = `Plan for today
+const DEFAULT_PLAN_YOUR_DAY = `Plan for today
 
 {{#tasks}}<ul>
 <li><p>{{slack-status}} {{title}}</p></li>

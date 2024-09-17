@@ -16,6 +16,7 @@ import { Tooltip, TooltipContent, TooltipTrigger } from "@flowdev/ui/Tooltip";
 import { Button } from "@flowdev/ui/Button";
 import { RoutineSettingsViewCreateRoutineMutation } from "../relay/__gen__/RoutineSettingsViewCreateRoutineMutation.graphql";
 import { RoutineSettingsViewDetailed_routine$key } from "../relay/__gen__/RoutineSettingsViewDetailed_routine.graphql";
+import { RoutineSettingsView_routineStep$key } from "../relay/__gen__/RoutineSettingsView_routineStep.graphql";
 import { FormInput } from "@flowdev/ui/FormInput";
 import { Controller, useForm } from "react-hook-form";
 import { useDebounce } from "../useDebounce";
@@ -26,6 +27,7 @@ import {
 } from "../relay/__gen__/RoutineSettingsViewUpdateRoutineMutation.graphql";
 import { PluginsRecord, usePlugins } from "../getPlugin";
 import { ReactSortable } from "react-sortablejs";
+import { RoutineStepSettings } from "../components/RenderRoutineStepSettings";
 
 graphql`
   fragment RoutineSettingsView_routine on Routine {
@@ -274,9 +276,11 @@ const RoutineDetailedSettings = (props: RoutineDetailedSettingsProps) => {
         time
         actionName
         steps {
+          id
           pluginSlug
           stepSlug
           shouldSkip
+          ...RoutineSettingsView_routineStep
         }
         ...RoutineSettingsViewActiveCheckbox_routine
         ...RoutineSettingsViewRepeats_routine
@@ -345,17 +349,15 @@ const RoutineDetailedSettings = (props: RoutineDetailedSettingsProps) => {
   }, [props.plugins]);
 
   useEffect(() => {
-    const routineSteps = routine.steps.map((step) => ({
-      id: `${step.pluginSlug}_${step.stepSlug}_${Math.random()}`,
-      ...step,
-    }));
     reset({
       name: routine.name,
       time: routine.time,
       actionName: routine.actionName,
-      steps: routineSteps,
+      steps: Array.from(routine.steps),
     });
   }, [routine.name, routine.actionName, routine.time, routine.steps]);
+
+  const routineSteps = Object.fromEntries(routine.steps.map((step) => [step.id, step]));
 
   return (
     <form
@@ -406,6 +408,7 @@ const RoutineDetailedSettings = (props: RoutineDetailedSettingsProps) => {
                   key={step.id}
                   step={step}
                   plugins={props.plugins}
+                  routineStep={routineSteps[step.id]}
                   withActions
                   onSkipChange={(stepId, shouldSkip) => {
                     const stepIndex = field.value.findIndex((s) => s.id === stepId);
@@ -452,12 +455,21 @@ const RoutineDetailedSettings = (props: RoutineDetailedSettingsProps) => {
 };
 
 const RoutineStep = (props: {
+  routineStep?: RoutineSettingsView_routineStep$key;
   step: RoutineStepType;
   plugins: PluginsRecord;
   withActions?: boolean;
   onSkipChange?: (stepId: string, shouldSkip: boolean) => void;
   onRemove?: (stepId: string) => void;
 }) => {
+  const routineStepRelay = useFragment(
+    graphql`
+      fragment RoutineSettingsView_routineStep on RoutineStep {
+        ...RenderRoutineStepSettings_routineStep
+      }
+    `,
+    props.routineStep,
+  );
   const actions = (
     <div className="bg-background-50 absolute right-0 flex items-center justify-end gap-4 px-4">
       <Tooltip>
@@ -475,12 +487,14 @@ const RoutineStep = (props: {
           </button>
         </TooltipTrigger>
         <TooltipContent className="max-w-sm p-3">
-          Whether to skip the step if the routine preceding this routine was done.
+          Whether to skip the step if the routine preceding this routine was done (i.e. the user
+          completed the step in the previous routine.)
           <br />
           <br />
           For example, skip retroing on yesterday if you already did a retro yesterday.
         </TooltipContent>
       </Tooltip>
+      {routineStepRelay && <RoutineStepSettings routineStep={routineStepRelay} />}
       <Tooltip>
         <TooltipTrigger asChild>
           <button

@@ -91,10 +91,13 @@ export const suspend = <
   Keys extends Tuple<unknown>,
   Fn extends (...keys: Keys) => Promise<unknown>,
 >(
-  fn: Fn | Promise<unknown>,
+  fn: Fn | Promise<unknown> | undefined,
   keys?: Keys,
   config?: Config,
-) => query(fn, keys, false, config);
+) => {
+  if (!fn) return null;
+  return query(fn, keys, false, config);
+};
 
 export const preload = <
   Keys extends Tuple<unknown>,

@@ -1,27 +1,63 @@
-import { ComponentType, Suspense, useState } from "react";
+import { ComponentType, useState } from "react";
 import { usePlugins } from "../getPlugin";
 import { useAsyncEffect } from "../useAsyncEffect";
+import { suspend } from "@flowdev/ui/suspend";
+import { graphql, useFragment } from "@flowdev/relay";
+import {
+  RenderRoutineStepSettings_routineStep$data,
+  RenderRoutineStepSettings_routineStep$key,
+} from "@flowdev/web/relay/__gen__/RenderRoutineStepSettings_routineStep.graphql";
+import { Suspense } from "react";
+import { BsGear } from "@flowdev/icons";
+import { Dialog, DialogContent, DialogTrigger } from "@flowdev/ui/Dialog";
+import { LoadingDialog } from "@flowdev/ui/Loading";
 
-type Props = { plugin: { slug: string }; stepSlug: string };
-export const RenderRoutineStepSettings = (props: Props) => {
+export const RoutineStepSettings = (props: Props) => {
   return (
-    <Suspense>
-      <RenderRoutineStepSettingsFromPlugin {...props} />
-    </Suspense>
+    <Dialog>
+      <DialogTrigger type="button">
+        <BsGear />
+      </DialogTrigger>
+      <DialogContent>
+        <Suspense fallback={<LoadingDialog />}>
+          <RenderRoutineStepSettings {...props} />
+        </Suspense>
+      </DialogContent>
+    </Dialog>
   );
 };
 
-const RenderRoutineStepSettingsFromPlugin = (props: Props) => {
+export type Props = {
+  routineStep: RenderRoutineStepSettings_routineStep$key;
+};
+export const RenderRoutineStepSettings = (props: Props) => {
+  const step = useFragment(
+    graphql`
+      fragment RenderRoutineStepSettings_routineStep on RoutineStep {
+        pluginSlug
+        stepSlug
+        config
+        templates {
+          id
+          raw
+        }
+      }
+    `,
+    props.routineStep,
+  );
   const { plugins } = usePlugins();
   const [toRender, setToRender] = useState<ToRender | null>(null);
 
   useAsyncEffect(async () => {
-    const plugin = plugins[props.plugin.slug];
+    const plugin = plugins[step.pluginSlug];
     if (!plugin) return;
-    const result = await plugin.renderRoutineStepsSettings?.[props.stepSlug]?.({});
-    if (!result) return;
-    setToRender(result);
-  }, [plugins, props.stepSlug]);
+    suspend(
+      plugin.routineSteps?.[step.stepSlug].renderSettings?.(step).then((result) => {
+        if (!result) return;
+        setToRender(result);
+      }),
+    );
+  }, [step.pluginSlug, step.stepSlug]);
 
   if (!toRender) return null;
 
@@ -29,6 +65,7 @@ const RenderRoutineStepSettingsFromPlugin = (props: Props) => {
   return <ComponentToRender />;
 };
 
-type PluginProps = {};
-export type PluginRenderRoutineStepSettings = (input: PluginProps) => Promise<null | ToRender>;
+export type PluginRenderRoutineStepSettings = (
+  props: RenderRoutineStepSettings_routineStep$data,
+) => Promise<null | ToRender>;
 type ToRender = { component: ComponentType };
