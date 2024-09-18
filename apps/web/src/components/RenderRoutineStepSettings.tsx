@@ -34,12 +34,16 @@ export const RenderRoutineStepSettings = (props: Props) => {
   const step = useFragment(
     graphql`
       fragment RenderRoutineStepSettings_routineStep on RoutineStep {
+        id
         pluginSlug
         stepSlug
         config
         templates {
           id
+          slug
           raw
+          metadata
+          routineStepId
         }
       }
     `,

@@ -3,7 +3,8 @@
   "excludes": ["**/node_modules/**", "**/__mocks__/**", "**/__gen__/**"],
   "sources": {
     "apps/web/src": "web",
-    "apps/mobile-pwa/src": "mobile-pwa"
+    "apps/mobile-pwa/src": "mobile-pwa",
+    "plugins/slack/src": "plugin-slack"
   },
   "projects": {
     "web": {
@@ -19,6 +20,7 @@
         "DateTime": "string",
         "PositiveInt": "number",
         "JSON": "JsonValue",
+        "JSONObject": "Record<string, any>",
         "Time": "string"
       }
     },
@@ -34,6 +36,23 @@
         "DateTime": "string",
         "PositiveInt": "number",
         "JSON": "JsonValue",
+        "JSONObject": "Record<string, any>",
+        "Time": "string"
+      }
+    },
+    "plugin-slack": {
+      "schema": "packages/relay/schema.graphql",
+      "output": "plugins/slack/src/relay/__gen__",
+      "language": "typescript",
+      "eagerEsModules": true,
+      "noFutureProofEnums": true,
+      "requireCustomScalarTypes": true,
+      "customScalarTypes": {
+        "Date": "string",
+        "DateTime": "string",
+        "PositiveInt": "number",
+        "JSON": "JsonValue",
+        "JSONObject": "Record<string, any>",
         "Time": "string"
       }
     }

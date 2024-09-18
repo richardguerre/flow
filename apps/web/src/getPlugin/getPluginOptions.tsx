@@ -94,6 +94,7 @@ import { nearestTailwindColor } from "@flowdev/nearest-color";
 import { Spinner } from "@flowdev/ui/Spinner";
 import { Loading } from "@flowdev/ui/Loading";
 import { TemplateEditor } from "../components/TemplateEditor";
+import { graphql, useMutation, useMutationPromise } from "@flowdev/relay";
 
 export const getPluginOptions = (slug: string) => ({
   /**
@@ -283,6 +284,11 @@ export const getPluginOptions = (slug: string) => ({
    * @link https://react-hot-toast.com/
    */
   toast,
+  relay: {
+    graphql,
+    useMutation,
+    useMutationPromise,
+  },
 });
 
 export type WebPluginOptions = ReturnType<typeof getPluginOptions>;

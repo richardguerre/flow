@@ -1,6 +1,6 @@
 import { definePlugin, PrismaTypes } from "@flowdev/plugin/server";
 import htmlToSlack from "html-to-slack";
-import { POST_YOUR_PLAN } from "./common";
+import { POST_YOUR_PLAN, DEFAULT_PLAN_YOUR_DAY } from "./common";
 
 const ACCOUNT_TOKENS_STORE_KEY = "account-tokens";
 const TEMPLATES_STORE_KEY = "templates";
@@ -305,13 +305,6 @@ export default definePlugin((opts) => {
     ],
   };
 });
-
-const DEFAULT_PLAN_YOUR_DAY = `Plan for today
-
-{{#tasks}}<ul>
-<li><p>{{slack-status}} {{title}}</p></li>
-</ul>{{/tasks}}
-`;
 
 type AccountsTokens = {
   [teamId: string]: Tokens;

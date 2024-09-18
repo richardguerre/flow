@@ -33,7 +33,10 @@ export type WebPluginRoutineStep = {
    *
    * The component can be rendered asynchronously or return null if no settings are needed.
    */
-  renderSettings?: (props: RenderRoutineStepSettings_routineStep$data) => Promise<null | ToRender>; // had to compose this type here directly instead of @flowdev/web/src/components/RenderRoutineStepSettings as it's too complex for TypeScript to handle.
+  renderSettings?: (props: {
+    routineStep: RenderRoutineStepSettings_routineStep$data;
+    onCancel?: () => void;
+  }) => Promise<null | ToRender>; // had to compose this type here directly instead of @flowdev/web/src/components/RenderRoutineStepSettings as it's too complex for TypeScript to handle.
 };
 
 type WaysToContact = { email: string };

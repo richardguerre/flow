@@ -2,11 +2,13 @@ import { definePlugin } from "@flowdev/plugin/web";
 import { Node, mergeAttributes } from "@tiptap/core";
 import { ReactNodeViewRenderer, NodeViewWrapper } from "@tiptap/react";
 import type { Editor } from "@tiptap/core";
-import { POST_YOUR_PLAN } from "./common";
+import { DEFAULT_PLAN_YOUR_DAY, POST_YOUR_PLAN } from "./common";
+import type { webUpsertTemplateMutation } from "./relay/__gen__/webUpsertTemplateMutation.graphql";
 
 export default definePlugin((opts) => {
   const React = opts.React; // required so that the Slack plugin uses the same React version as the web app
   const Flow = opts.components;
+  const graphql = opts.relay.graphql;
 
   const Workspaces = () => {
     const workspacesQuery = opts.operations.useLazyQuery<WorkspacesData>({
@@ -102,7 +104,6 @@ export default definePlugin((opts) => {
           const [template] = props.templates;
           const editorRef = React.useRef<Editor>(null);
           const [todaysPlan, setTodaysPlan] = React.useState<string>(template.rendered ?? "");
-          const [saveNow, setSaveNow] = React.useState(false);
           const today = opts.dayjs();
 
           return (
@@ -113,7 +114,6 @@ export default definePlugin((opts) => {
                 title={`Plan for ${today.format("MMMM D")}`}
                 initialValue={todaysPlan}
                 onChange={({ html }) => setTodaysPlan(html)}
-                saveNow={saveNow}
               />
               <props.BackButton />
               <props.NextButton />
@@ -123,17 +123,63 @@ export default definePlugin((opts) => {
         renderSettings: async (props) => {
           return {
             component: () => {
+              const template = props.routineStep.templates[0] as
+                | (typeof props.routineStep.templates)[0]
+                | undefined;
+              const { control, handleSubmit } = opts.reactHookForm.useForm<PostPlanSettings>({
+                defaultValues: {
+                  template: {
+                    content: template?.raw ?? DEFAULT_PLAN_YOUR_DAY,
+                    data: template?.metadata ?? {},
+                  },
+                },
+              });
+
+              const [updateTemplate, savingTemplate] =
+                opts.relay.useMutation<webUpsertTemplateMutation>(graphql`
+                  mutation webUpsertTemplateMutation($input: MutationCreateOrUpdateTemplateInput!) {
+                    createOrUpdateTemplate(input: $input) {
+                      id
+                      slug
+                      raw
+                      metadata
+                    }
+                  }
+                `);
+
+              const onSubmit = async (values: PostPlanSettings) => {
+                updateTemplate({
+                  variables: {
+                    input: {
+                      slug: template?.slug ?? `slack-${POST_YOUR_PLAN}-${props.routineStep.id}`,
+                      raw: values.template.content,
+                      metadata: values.template.data ?? {},
+                    },
+                  },
+                });
+              };
+
               return (
-                <div>
-                  {props.templates.map((template) => (
-                    <Flow.TemplateEditor
-                      initialTemplate={{
-                        content: template.raw,
-                        data: {},
-                      }}
-                    />
-                  ))}
-                </div>
+                <form onSubmit={handleSubmit(onSubmit)} className="flex flex-col gap-4">
+                  <opts.reactHookForm.Controller
+                    name="template"
+                    control={control}
+                    render={({ field }) => (
+                      <Flow.TemplateEditor
+                        initialTemplate={field.value}
+                        onChange={field.onChange}
+                      />
+                    )}
+                  />
+                  <div className="flex items-center gap-2 self-end">
+                    <Flow.Button type="button" onClick={props.onCancel}>
+                      Cancel
+                    </Flow.Button>
+                    <Flow.Button type="submit" loading={savingTemplate}>
+                      Save
+                    </Flow.Button>
+                  </div>
+                </form>
               );
             },
           };
@@ -142,6 +188,13 @@ export default definePlugin((opts) => {
     },
   };
 });
+
+type PostPlanSettings = {
+  template: {
+    content: string;
+    data: Record<string, any>;
+  };
+};
 
 const SlackMark = () => (
   <svg width="16" height="16" viewBox="0 0 123 123" fill="none" xmlns="http://www.w3.org/2000/svg">

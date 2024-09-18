@@ -232,6 +232,9 @@ type Mutation {
   Updates a note if one exists with the passed in `slug`, otherwise creates a new note.
   """
   createOrUpdateNote(input: MutationCreateOrUpdateNoteInput!): Note!
+
+  """Create or update a template."""
+  createOrUpdateTemplate(input: MutationCreateOrUpdateTemplateInput!): Template!
   createRoutine(input: MutationCreateRoutineInput!): Routine!
 
   """Create a new subtask."""
@@ -244,7 +247,7 @@ type Mutation {
   createTaskTag(input: MutationCreateTaskTagInput!): TaskTag!
 
   """Create a new template and link it to a routine step."""
-  createTemplate(input: MutationCreateTemplateInput!): Template!
+  createTemplate(input: TemplateInput!): Template!
 
   """Delete an item."""
   deleteItem(id: ID!): Item!
@@ -310,6 +313,7 @@ type Mutation {
   """
   updateItemStatus(input: MutationUpdateItemStatusInput!): Item!
   updateRoutine(input: MutationUpdateRoutineInput!): Routine!
+  updateRoutineStep(input: MutationUpdateRoutineStepInput!): RoutineStep!
 
   """Update a task."""
   updateTask(input: MutationUpdateTaskInput!): Task!
@@ -426,6 +430,15 @@ input MutationCreateOrUpdateNoteInput {
   title: String!
 }
 
+input MutationCreateOrUpdateTemplateInput {
+  metadata: JSON
+  raw: String!
+
+  """The Relay ID of the routine step to link the template to."""
+  routineStepId: ID
+  slug: String!
+}
+
 input MutationCreateRoutineInput {
   actionName: String!
   name: String!
@@ -489,15 +502,6 @@ input MutationCreateTaskTagInput {
 
   """The name of the task tag."""
   name: String!
-}
-
-input MutationCreateTemplateInput {
-  metadata: JSON
-  raw: String!
-
-  """The Relay ID of the routine step to link the template to."""
-  routineStepId: ID
-  slug: String!
 }
 
 input MutationDeleteTaskTagInput {
@@ -597,6 +601,20 @@ input MutationUpdateRoutineInput {
 
   """The time to update the routine with."""
   time: Time
+}
+
+input MutationUpdateRoutineStepInput {
+  """The config of the step. This can be any JSONObject"""
+  config: JSONObject
+
+  """The ID of the routine step. It must exist."""
+  id: ID!
+
+  """Whether the step should be skipped or not."""
+  shouldSkip: Boolean
+
+  """The templates linked to the step."""
+  templates: [TemplateInput!]
 }
 
 input MutationUpdateTaskDateInput {
@@ -1075,7 +1093,7 @@ type RoutineStep implements Node {
 }
 
 input RoutineStepInput {
-  config: JSON
+  config: JSONObject
 
   """
   The ID of the step if it exists. Leave empty or null to create a new step.
@@ -1291,6 +1309,19 @@ type Template implements Node {
 
   """The date and time the template was last updated"""
   updatedAt: DateTime!
+}
+
+input TemplateInput {
+  """
+  The ID of the template to update. Not required when creating a new template.
+  """
+  id: ID
+  metadata: JSONObject
+
+  """The ID of the routine step to link the template to."""
+  routineStepId: ID
+  slug: String!
+  template: String!
 }
 
 input TemplateRenderedInput {

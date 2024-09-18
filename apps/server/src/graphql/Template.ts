@@ -3,6 +3,7 @@ import { prisma } from "../utils/prisma";
 import { renderTemplate } from "../utils/renderTemplate";
 import { builder, u } from "./builder";
 import { urlSafe, verifyUrlSafe } from "../utils/urlSafe";
+import { Prisma } from "@prisma/client";
 
 export const TemplateType = builder.prismaNode("Template", {
   id: { field: "slug" },
@@ -48,18 +49,35 @@ builder.queryField("template", (t) =>
 
 // -------------------- mutation fields ------------------------
 
+export const TemplateInput = builder.inputType(
+  builder.inputRef<
+    Omit<Prisma.TemplateCreateInput, "routineStep" | "template"> & {
+      id: { typename: string; id: string } | undefined;
+    }
+  >("TemplateInput"),
+  {
+    fields: (t) => ({
+      id: t.globalID({
+        required: false,
+        description: "The ID of the template to update. Not required when creating a new template.",
+      }),
+      slug: t.string({ required: true }),
+      template: t.string({ required: true }),
+      metadata: t.field({ type: "JSONObject", required: false }),
+      routineStepId: t.globalID({
+        required: false,
+        description: "The ID of the routine step to link the template to.",
+      }),
+    }),
+  },
+);
+
 builder.mutationField("createTemplate", (t) =>
-  t.prismaFieldWithInput({
+  t.prismaField({
     type: "Template",
     description: `Create a new template and link it to a routine step.`,
-    input: {
-      slug: t.input.string({ required: true }),
-      raw: t.input.string({ required: true }),
-      metadata: t.input.field({ type: "JSON", required: false }),
-      routineStepId: t.input.globalID({
-        required: false,
-        description: "The Relay ID of the routine step to link the template to.",
-      }),
+    args: {
+      input: t.arg({ type: TemplateInput, required: true }),
     },
     resolve: async (_, __, args) => {
       const routineStep =
@@ -92,7 +110,7 @@ builder.mutationField("createTemplate", (t) =>
       }
 
       // verify template is valid
-      await renderTemplate(args.input.raw, {}).catch((err) => {
+      await renderTemplate(args.input.template, {}).catch((err) => {
         throw new GraphQLError(err.message, {
           extensions: {
             code: "INVALID_TEMPLATE",
@@ -105,7 +123,7 @@ builder.mutationField("createTemplate", (t) =>
       return prisma.template.create({
         data: {
           slug,
-          template: args.input.raw,
+          template: args.input.template,
           metadata: u(args.input.metadata),
           routineStepId: routineStep?.id,
         },
@@ -178,7 +196,79 @@ builder.mutationField("updateTemplate", (t) =>
         where: { slug: args.input.id.id },
         data: {
           slug,
-          template: u(args.input.templateRaw),
+          template: u(args.input.raw),
+          metadata: u(args.input.metadata),
+          routineStepId: routineStep?.id,
+        },
+      });
+    },
+  }),
+);
+
+builder.mutationField("createOrUpdateTemplate", (t) =>
+  t.prismaFieldWithInput({
+    type: "Template",
+    description: `Create or update a template.`,
+    input: {
+      slug: t.input.string({ required: true }),
+      raw: t.input.string({ required: true }),
+      metadata: t.input.field({ type: "JSON", required: false }),
+      routineStepId: t.input.globalID({
+        required: false,
+        description: "The Relay ID of the routine step to link the template to.",
+      }),
+    },
+    resolve: async (_, __, args) => {
+      const routineStep =
+        args.input.routineStepId?.id && !Number.isNaN(parseInt(args.input.routineStepId.id))
+          ? await prisma.routineStep.findUnique({
+              where: { id: parseInt(args.input.routineStepId.id) },
+              include: { routine: true },
+            })
+          : null;
+      if (!routineStep && args.input.routineStepId?.id) {
+        throw new GraphQLError("Routine step not found.", {
+          extensions: {
+            code: "ROUTINE_STEP_NOT_FOUND",
+            userFriendlyMessage:
+              "No routine step was found to link the template to. Please try refreshing the page and try again.",
+          },
+        });
+      }
+
+      // verify slug is URL safe.
+      const slug = urlSafe(args.input.slug);
+      if (!verifyUrlSafe(slug)) {
+        throw new GraphQLError("Slug is not URL safe.", {
+          extensions: {
+            code: "SLUG_NOT_URL_SAFE",
+            userFriendlyMessage:
+              "The slug is not URL safe. Please try again with a different slug.",
+          },
+        });
+      }
+
+      // verify template is valid
+      await renderTemplate(args.input.raw, {}).catch((err) => {
+        throw new GraphQLError(err.message, {
+          extensions: {
+            code: "INVALID_TEMPLATE",
+            userFriendlyMessage:
+              "The template is not valid. Please try again with a different template.",
+          },
+        });
+      });
+
+      return prisma.template.upsert({
+        where: { slug: args.input.slug },
+        create: {
+          slug,
+          template: args.input.raw,
+          metadata: u(args.input.metadata),
+          routineStepId: routineStep?.id,
+        },
+        update: {
+          template: args.input.raw,
           metadata: u(args.input.metadata),
           routineStepId: routineStep?.id,
         },

@@ -11,12 +11,22 @@ export const TemplateEditor = (props: {
   initialTemplate?: Template;
   /** The tab to show by default. */
   defaultTab?: Tab;
+  /** The value of the template if it needs to be controlled externally. */
+  value?: Template;
   /** Triggers when the template changes. */
   onChange?: (template: Template) => void;
   /** autofocus the editor. */
   autofocus?: boolean;
 }) => {
-  const [template, setTemplate] = useState<Template>({ content: "", data: {} });
+  const [templateState, setTemplate] = useState<Template>(
+    props.initialTemplate ?? { content: "", data: {} },
+  );
+  const template = props.value ?? templateState;
+
+  const handleChange = (template: Template) => {
+    setTemplate(template);
+    props.onChange?.(template);
+  };
 
   return (
     <Tabs defaultValue={props.defaultTab ?? "write"}>
@@ -29,7 +39,7 @@ export const TemplateEditor = (props: {
         </TabsTrigger>
       </TabsList>
       <TabsContent value={"write" as Tab}>
-        <WriteTemplate value={template} onChange={setTemplate} />
+        <WriteTemplate value={template} onChange={handleChange} />
       </TabsContent>
       <TabsContent value={"preview" as Tab}>
         <Suspense>

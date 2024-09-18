@@ -16,7 +16,11 @@
     "noEmit": true,
     "noUnusedLocals": true /* Enable error reporting when local variables aren't read. */,
     "jsx": "react-jsx",
-    "disableSourceOfProjectReferenceRedirect": false
+    "disableSourceOfProjectReferenceRedirect": false,
+    "baseUrl": ".",
+    "paths": {
+      "@flowdev/plugin-slack/*": ["src/*"]
+    }
   },
   "include": ["src"]
 }
