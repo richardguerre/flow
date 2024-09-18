@@ -174,11 +174,12 @@ export default definePlugin((opts) => {
         });
         const slackMessage = convertHtmlToSlackMessage(msgParsed.toString());
 
+        const messages: PostMessageData["messages"] = [];
         for (const channel of input.channels) {
           const res = await fetch(
             `https://slack.com/api/chat.postMessage?token=${tokenItem[channel.teamId].access_token}&channel=${channel.channelId}&text=${slackMessage}`,
             { headers: { Authorization: `Bearer ${tokenItem[channel.teamId].access_token}` } },
-          );
+          ).then(async (req) => (await req.json()) as PostMessageReq);
           if (!res.ok) {
             const channelInfo = await fetch(
               `https://slack.com/api/conversations.info?token=${tokenItem[channel.teamId].access_token}&channel=${channel.channelId}`,
@@ -186,16 +187,20 @@ export default definePlugin((opts) => {
             )
               .then(async (req) => (await req.json()) as ChannelsReq)
               .catch(() => null);
-            throw new opts.GraphQLError("Couldn't post message.", {
+            throw new opts.GraphQLError(`Couldn't post message.`, {
               extensions: {
                 code: "COULDNT_POST_MESSAGE",
                 userFriendlyMessage: `Couldn't post message to channel ${channelInfo?.channels[0].name ?? "Unknonwn"}. Please try connecting your Slack account again.`,
               },
             });
           }
+          messages.push({ teamId: channel.teamId, channelId: channel.channelId, ts: res.ts });
         }
         return {
-          data: null, // TODO: this is not implemented yet
+          data: {
+            ok: true,
+            messages,
+          } as PostMessageData,
         };
       },
       getRoutineStepInfo: async (input) => {
@@ -251,7 +256,7 @@ export default definePlugin((opts) => {
 
         /**  find all <slack-message> tags:
          * <slack-message
-         *   data-workspaceId="<worksapceId>"
+         *   data-teamId="<teamId>"
          *   data-channelId="<channelId>"
          *   data-messageId="messageId"
          * >channelName</slack-message>
@@ -260,9 +265,9 @@ export default definePlugin((opts) => {
           .parseHtml(note.content)
           .querySelectorAll("slack-message")
           .map((tag) => ({
-            teamId: tag.attributes["data-workspaceId"],
+            teamId: tag.attributes["data-teamId"],
             channelId: tag.attributes["data-channelId"],
-            ts: tag.attributes["data-messagId"],
+            ts: tag.attributes["data-ts"],
           }));
         if (!messages.length) return;
 
@@ -380,8 +385,6 @@ type TeamInfoReq = {
   };
 };
 
-type Channel = ChannelsReq["channels"][0];
-
 type ChannelsReq = {
   ok: boolean;
   channels: {
@@ -424,9 +427,22 @@ type ChannelsReq = {
   };
 };
 
-type SlackMappings = {
-  [teamId: string]: {
-    channelIds: string[];
+type PostMessageReq = {
+  ok: boolean;
+  channel: string;
+  ts: string;
+  message: {
+    text: string;
+    username: string;
+    bot_id: string;
+    attachments: {
+      text: string;
+      id: number;
+      fallback: string;
+    }[];
+    type: string;
+    subtype: string;
+    ts: string;
   };
 };
 

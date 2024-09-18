@@ -3,7 +3,8 @@ import { Node, mergeAttributes } from "@tiptap/core";
 import { ReactNodeViewRenderer, NodeViewWrapper } from "@tiptap/react";
 import type { Editor } from "@tiptap/core";
 import { DEFAULT_PLAN_YOUR_DAY, POST_YOUR_PLAN } from "./common";
-import type { webUpsertTemplateMutation } from "./relay/__gen__/webUpsertTemplateMutation.graphql";
+import type { webUpdateRoutineStepMutation } from "./relay/__gen__/webUpdateRoutineStepMutation.graphql";
+import { BsCheck } from "react-icons/bs";
 
 export default definePlugin((opts) => {
   const React = opts.React; // required so that the Slack plugin uses the same React version as the web app
@@ -67,9 +68,20 @@ export default definePlugin((opts) => {
     );
   };
 
+  // invisible node to store the posted message metadata in the note itself
+  const SlackMessageNode = Node.create({
+    name: "slack-message",
+    group: "block",
+    atom: true,
+    selectable: false,
+    draggable: false,
+    parseHTML: () => [{ tag: "slack-message" }],
+    renderHTML: (props) => ["slack-message", mergeAttributes(props.HTMLAttributes)],
+  });
+
   return {
     name: "Slack",
-    noteEditorTipTapExtensions: [SlackStatusNode],
+    noteEditorTipTapExtensions: [SlackStatusNode, SlackMessageNode],
     settings: {
       "connect-accounts": {
         type: "custom",
@@ -101,23 +113,130 @@ export default definePlugin((opts) => {
         name: "Post your plan",
         description: "Post your plan for the day in Slack channels.",
         component: (props) => {
-          const [template] = props.templates;
+          const template = props.templates[0] as (typeof props.templates)[0] | undefined;
           const editorRef = React.useRef<Editor>(null);
-          const [todaysPlan, setTodaysPlan] = React.useState<string>(template.rendered ?? "");
           const today = opts.dayjs();
+          const [saveNow, setSaveNow] = React.useState(false);
+          const [channels, setChannels] = React.useState<GetChannelsData["channels"]>(
+            props.stepConfig?.defaultChannels ?? [],
+          );
+          const { control, handleSubmit, formState, setError } =
+            opts.reactHookForm.useForm<PostPlan>({
+              defaultValues: {
+                message: template,
+                channels: channels.map((channel) => channel.id),
+              },
+            });
+          const [postMessages, postingMessages] = opts.operations.useMutation<
+            PostMessageInput,
+            PostMessageData
+          >("postMessage");
+
+          const onSubmit = async (values: PostPlan) => {
+            const channelsToPost = channels.filter((channel) =>
+              values.channels.includes(channel.id),
+            );
+            if (!channelsToPost.length) {
+              setError("root", { message: "Please select at least one channel." });
+              return;
+            }
+            const res = await postMessages({
+              message: values.message,
+              channels: channelsToPost.map((channel) => ({
+                teamId: channel.team.id,
+                channelId: channel.id,
+              })),
+            });
+            if (!res?.data?.ok) {
+              setError("root", { message: "Couldn't post message to Slack channels." });
+              return;
+            }
+            const chain = editorRef.current?.chain();
+            for (const message of res.data.messages) {
+              // add the messages to the end of the
+              chain?.insertContentAt(-1, {
+                type: "slack-message",
+                attrs: {
+                  teamId: message.teamId,
+                  channelId: message.channelId,
+                  ts: message.ts,
+                },
+              });
+            }
+            chain?.run();
+            setSaveNow(true);
+          };
+
+          const handleNoteSaved = () => {
+            if (!saveNow) return; // ignore if saveNow is still false
+            setSaveNow(false);
+            props.onNext();
+          };
+
+          opts.hooks.useAsyncEffect(async () => {
+            const res = await opts.operations.query<GetChannelsData>({
+              operationName: "channels",
+            });
+            setChannels((prev) => res?.data?.channels ?? prev);
+          }, []);
 
           return (
-            <div>
-              <Flow.NoteEditor
-                editorRef={editorRef}
-                slug={`slack_post-plan-${today.format("YYYY-MM-DD")}`}
-                title={`Plan for ${today.format("MMMM D")}`}
-                initialValue={todaysPlan}
-                onChange={({ html }) => setTodaysPlan(html)}
+            <form onSubmit={handleSubmit(onSubmit)} className="flex flex-col gap-4">
+              <opts.reactHookForm.Controller
+                name="message"
+                control={control}
+                render={({ field }) => (
+                  <Flow.NoteEditor
+                    editorRef={editorRef}
+                    slug={`slack_post-plan-${today.format("YYYY-MM-DD")}`}
+                    title={`Plan for ${today.format("MMMM D")}`}
+                    initialValue={field.value}
+                    onChange={({ html }) => field.onChange(html)}
+                    onBlur={field.onBlur}
+                    saveNow={saveNow}
+                    onSaveEnd={handleNoteSaved}
+                  />
+                )}
               />
-              <props.BackButton />
-              <props.NextButton />
-            </div>
+              {formState.errors.root && (
+                <div className="text-negative-600 text-sm">{formState.errors.root.message}</div>
+              )}
+              <div className="flex justify-between items-center">
+                <Flow.FormCombobox name="channels" control={control} multiselect>
+                  <Flow.ComboboxTrigger>
+                    <Flow.ComboboxValue />
+                  </Flow.ComboboxTrigger>
+                  <Flow.ComboboxContent>
+                    <Flow.ComboboxInput placeholder="Search channels..." />
+                    <Flow.ComboboxEmpty>No channel found.</Flow.ComboboxEmpty>
+                    <Flow.ComboboxGroup>
+                      {channels.map((channel) => (
+                        <Flow.ComboboxItem key={channel.id} value={channel.id}>
+                          <Flow.ComboboxSelected
+                            className="mr-2 h-4 w-4 opacity-0"
+                            selectedClassName="opacity-100"
+                          >
+                            <BsCheck size={20} />
+                          </Flow.ComboboxSelected>
+                          <img src={channel.team.icon} className="h-5 w-5 shrink-0 mr-2" />
+                          {channel.name}
+                        </Flow.ComboboxItem>
+                      ))}
+                    </Flow.ComboboxGroup>
+                  </Flow.ComboboxContent>
+                </Flow.FormCombobox>
+                <div className="flex items-center gap-2">
+                  <props.BackButton type="button" />
+                  <props.NextButton
+                    type="submit"
+                    loading={postingMessages}
+                    onClick={() => {
+                      // override the default onClick to prevent from going to the next step until the form is submitted
+                    }}
+                  />
+                </div>
+              </div>
+            </form>
           );
         },
         renderSettings: async (props) => {
@@ -134,11 +253,21 @@ export default definePlugin((opts) => {
                   },
                 },
               });
+              const [channels, setChannels] = React.useState<GetChannelsData["channels"]>(
+                props.routineStep?.config?.defaultChannels ?? [],
+              );
 
-              const [updateTemplate, savingTemplate] =
-                opts.relay.useMutation<webUpsertTemplateMutation>(graphql`
-                  mutation webUpsertTemplateMutation($input: MutationCreateOrUpdateTemplateInput!) {
-                    createOrUpdateTemplate(input: $input) {
+              const [updateRoutineStep, savingTemplate] =
+                opts.relay.useMutation<webUpdateRoutineStepMutation>(graphql`
+                  mutation webUpdateRoutineStepMutation(
+                    $routineStep: MutationUpdateRoutineStepInput!
+                    $template: MutationCreateOrUpdateTemplateInput!
+                  ) {
+                    updateRoutineStep(input: $routineStep) {
+                      id
+                      config
+                    }
+                    createOrUpdateTemplate(input: $template) {
                       id
                       slug
                       raw
@@ -148,9 +277,16 @@ export default definePlugin((opts) => {
                 `);
 
               const onSubmit = async (values: PostPlanSettings) => {
-                updateTemplate({
+                const defaultChannels = channels.filter((channel) =>
+                  values.defaultChannels.includes(channel.id),
+                );
+                updateRoutineStep({
                   variables: {
-                    input: {
+                    routineStep: {
+                      id: props.routineStep.id,
+                      config: { defaultChannels },
+                    },
+                    template: {
                       slug: template?.slug ?? `slack-${POST_YOUR_PLAN}-${props.routineStep.id}`,
                       raw: values.template.content,
                       metadata: values.template.data ?? {},
@@ -158,6 +294,13 @@ export default definePlugin((opts) => {
                   },
                 });
               };
+
+              opts.hooks.useAsyncEffect(async () => {
+                const res = await opts.operations.query<GetChannelsData>({
+                  operationName: "channels",
+                });
+                setChannels((prev) => res?.data?.channels ?? prev);
+              }, []);
 
               return (
                 <form onSubmit={handleSubmit(onSubmit)} className="flex flex-col gap-4">
@@ -171,6 +314,29 @@ export default definePlugin((opts) => {
                       />
                     )}
                   />
+                  <Flow.FormCombobox name="defaultChannels" control={control} multiselect>
+                    <Flow.ComboboxTrigger>
+                      <Flow.ComboboxValue />
+                    </Flow.ComboboxTrigger>
+                    <Flow.ComboboxContent>
+                      <Flow.ComboboxInput placeholder="Search channels..." />
+                      <Flow.ComboboxEmpty>No channel found.</Flow.ComboboxEmpty>
+                      <Flow.ComboboxGroup>
+                        {channels.map((channel) => (
+                          <Flow.ComboboxItem key={channel.id} value={channel.id}>
+                            <Flow.ComboboxSelected
+                              className="mr-2 h-4 w-4 opacity-0"
+                              selectedClassName="opacity-100"
+                            >
+                              <BsCheck size={20} />
+                            </Flow.ComboboxSelected>
+                            <img src={channel.team.icon} className="h-5 w-5 shrink-0 mr-2" />
+                            {channel.name}
+                          </Flow.ComboboxItem>
+                        ))}
+                      </Flow.ComboboxGroup>
+                    </Flow.ComboboxContent>
+                  </Flow.FormCombobox>
                   <div className="flex items-center gap-2 self-end">
                     <Flow.Button type="button" onClick={props.onCancel}>
                       Cancel
@@ -189,11 +355,17 @@ export default definePlugin((opts) => {
   };
 });
 
+type PostPlan = {
+  message: string;
+  channels: string[];
+};
+
 type PostPlanSettings = {
   template: {
     content: string;
     data: Record<string, any>;
   };
+  defaultChannels: string[];
 };
 
 const SlackMark = () => (

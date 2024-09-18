@@ -26,6 +26,8 @@ type NoteEditorProps = {
    * Note: the tags and newTags will always be empty arrays for now as the NoteEditor is not fully implemented yet.
    * */
   onChange?: (values: NoteEditorOnChangeValue) => void;
+  /** Triggers when the user clicks outside of the editor. */
+  onBlur?: () => void;
   /** If true, the note will be saved immediately without waiting for the user to stop typing. */
   saveNow?: boolean;
   /** Triggers at the beginging of each time the values are being saved to the server. */
@@ -153,6 +155,7 @@ const NoteEditorContent = (props: NoteEditorProps) => {
           });
         }
       },
+      onBlur: props.onBlur,
     },
     [pluginExtensions.length],
   );

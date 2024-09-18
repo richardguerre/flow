@@ -79,34 +79,34 @@ export const RoutineStep = (props: RoutineStepProps) => {
         onBack={props.onBack}
         NextButton={(p) => (
           <Button
-            {...p}
             secondary
             onClick={() => handleNext(p.onClick)}
             children={props.hasNext ? "Next" : "Done"}
+            {...p}
           />
         )}
         BackButton={(p) => (
           <Button
-            {...p}
             secondary
             onClick={() => handleBack(p.onClick)}
             children={props.hasPrevious ? "Back" : "Cancel"}
+            {...p}
           />
         )}
         ArrowNextButton={(p) => (
           <Button
-            {...p}
             secondary
             onClick={() => handleNext(p.onClick)}
             children={<BsArrowRight />}
+            {...p}
           />
         )}
         ArrowBackButton={(p) => (
           <Button
-            {...p}
             secondary
             onClick={() => handleBack(p.onClick)}
             children={<BsArrowLeft />}
+            {...p}
           />
         )}
       />

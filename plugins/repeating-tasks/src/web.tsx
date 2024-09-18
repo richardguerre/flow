@@ -27,10 +27,12 @@ export default definePlugin((opts) => {
   };
 
   const RepeatingTask = (props: { template: RepeatingTask }) => {
-    const [remove, isRemoving] =
-      opts.operations.useMutation<RemoveRepeatingTaskInput>("removeRepeatingTask");
-    const [edit, isEditing] =
-      opts.operations.useMutation<EditRepeatingTaskInput>("editRepeatingTask");
+    const [remove, isRemoving] = opts.operations.useMutation<RemoveRepeatingTaskInput, {}>(
+      "removeRepeatingTask",
+    );
+    const [edit, isEditing] = opts.operations.useMutation<EditRepeatingTaskInput, {}>(
+      "editRepeatingTask",
+    );
 
     const handleRemove = () => remove({ id: props.template.id });
     const handleEnable = () => edit({ id: props.template.id, enabled: true });
@@ -114,8 +116,9 @@ export default definePlugin((opts) => {
 
   const AddRepeatingTask = () => {
     const [showDialog, setShowDialog] = React.useState(false);
-    const [addRepeatingTask, isAdding] =
-      opts.operations.useMutation<AddRepeatingTaskInput>("addRepeatingTask");
+    const [addRepeatingTask, isAdding] = opts.operations.useMutation<AddRepeatingTaskInput, {}>(
+      "addRepeatingTask",
+    );
 
     const onSubmit = async (values: AddOrEditRepeatingTaskFormValues) => {
       let cron = values.cron;
@@ -171,8 +174,9 @@ export default definePlugin((opts) => {
 
   const EditRepeatingTask = (props: { template: RepeatingTask }) => {
     const [showDialog, setShowDialog] = React.useState(false);
-    const [editRepeatingTask, isEditing] =
-      opts.operations.useMutation<EditRepeatingTaskInput>("editRepeatingTask");
+    const [editRepeatingTask, isEditing] = opts.operations.useMutation<EditRepeatingTaskInput, {}>(
+      "editRepeatingTask",
+    );
 
     const onSubmit = async (values: AddOrEditRepeatingTaskFormValues) => {
       const durationInMinutes = values.durationInMinutes

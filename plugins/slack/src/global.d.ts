@@ -42,4 +42,12 @@ declare global {
       channelId: string;
     }[];
   };
+  type PostMessageData = {
+    ok: boolean;
+    messages: {
+      ts: string;
+      teamId: string;
+      channelId: string;
+    }[];
+  };
 }

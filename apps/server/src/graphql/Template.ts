@@ -18,15 +18,15 @@ export const TemplateType = builder.prismaNode("Template", {
     rendered: t.fieldWithInput({
       type: "String",
       description:
-        "The rendered template given the data as input. If no data is given, the template will be rendered with the default data.",
-      argOptions: {
-        required: false,
-      },
+        "The rendered template given the data as input. If no data is given, the template will be rendered with the default metadata.",
+      argOptions: { required: false },
       input: {
         data: t.input.field({ type: "JSONObject", required: false }),
       },
       resolve: async (template, args) => {
-        const result = await renderTemplate(template.template, args.input?.data ?? {});
+        const data =
+          template.metadata && typeof template.metadata === "object" ? template.metadata : {};
+        const result = await renderTemplate(template.template, args.input?.data ?? data);
         return result;
       },
     }),

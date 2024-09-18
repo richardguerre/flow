@@ -129,15 +129,18 @@ export const getPluginOperationUtils = (pluginSlug: string) => ({
    * If you need to fetch data, use `query` instead.
    */
   mutation: mutation(pluginSlug),
-  useMutation: <T extends JsonValue>(operationName: string, opts?: MutationOpts) => {
+  useMutation: <TInput extends JsonValue, TData extends JsonValue>(
+    operationName: string,
+    opts?: MutationOpts,
+  ) => {
     const [loading, setLoading] = useState(false);
 
     return [
-      async (input?: T) => {
+      async (input?: TInput) => {
         setLoading(true);
         const res = await mutation(pluginSlug)({ operationName, input }, opts);
         setLoading(false);
-        return res as PluginOperationsReturn<T>;
+        return res as PluginOperationsReturn<TData>;
       },
       loading,
     ] as const;
