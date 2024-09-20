@@ -1294,7 +1294,7 @@ type Template implements Node {
   raw: String!
 
   """
-  The rendered template given the data as input. If no data is given, the template will be rendered with the default data.
+  The rendered template given the data as input. If no data is given, the template will be rendered with the default metadata.
   """
   rendered(input: TemplateRenderedInput): String!
 

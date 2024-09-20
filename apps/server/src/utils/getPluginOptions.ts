@@ -10,6 +10,7 @@ import { renderTemplate, Handlebars } from "./renderTemplate";
 import { getUsersTimezone } from "./index";
 import htmlParser from "node-html-parser";
 import { decodeGlobalId, encodeGlobalId } from "@flowdev/common";
+import htmlToSlack from "html-to-slack";
 
 type PrismaJsonInput = string | number | boolean | Prisma.JsonObject | Prisma.JsonArray;
 
@@ -228,8 +229,11 @@ export const getPluginOptions = (pluginSlug: string) => ({
   renderTemplate,
   /** Instance of Handlebars wrapped with the `handlebars-async-helpers` package. */
   Handlebars: { SafeString: Handlebars.SafeString },
+  // TODO replace with htmlparser2 so there is only 1 html parser (html-to-slack also uses it)
   /** Parse HTML to a DOM tree. */
   parseHtml: htmlParser.parse,
+  /** Convert HTML to Slack blocks. */
+  htmlToSlack,
   /** Decode a (GraphQL Relay) global ID. */
   decodeGlobalId,
   /** Encode a (GraphQL Relay) global ID. */

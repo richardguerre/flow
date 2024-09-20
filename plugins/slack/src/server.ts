@@ -1,5 +1,4 @@
 import { definePlugin, PrismaTypes } from "@flowdev/plugin/server";
-import htmlToSlack from "html-to-slack";
 import { POST_YOUR_PLAN, DEFAULT_PLAN_YOUR_DAY } from "./common";
 
 const ACCOUNT_TOKENS_STORE_KEY = "account-tokens";
@@ -45,14 +44,14 @@ export default definePlugin((opts) => {
   };
 
   const convertHtmlToSlackMessage = (html: string) => {
-    return htmlToSlack(html);
+    return opts.htmlToSlack(html);
   };
 
   return {
     onRequest: async (req) => {
       if (req.path === "/auth") {
         return Response.redirect(
-          `https://linear-api-flow-dev.vercel.app/api/auth?api_endpoint=${opts.serverOrigin}/api/plugin/${opts.pluginSlug}/auth/callback`,
+          `https://slack-api-flow-dev.vercel.app/api/auth?api_endpoint=${opts.serverOrigin}/api/plugin/${opts.pluginSlug}/auth/callback`,
         );
       } else if (req.path === "/auth/callback") {
         const accountsTokensItem =
@@ -95,7 +94,7 @@ export default definePlugin((opts) => {
       workspaces: async () => {
         const tokenItem = await getTokensFromStore().catch(() => null);
         if (!tokenItem) {
-          return { data: [] };
+          return { data: { workspaces: [] } };
         }
 
         return {
