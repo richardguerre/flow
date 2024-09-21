@@ -13,7 +13,6 @@
 //   github: import("../../../../plugins/github/src/web"),
 //   gitstart: import("../../../../plugins/gitstart/src/web"),
 //   "google-calendar": import("../../../../plugins/google-calendar/src/web"),
-//   slack: import("../../../../plugins/slack/src/web"),
 // } as const;
 
 // (2) uncomment the following line when doing a production build

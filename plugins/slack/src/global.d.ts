@@ -16,7 +16,6 @@ declare global {
     teamId: string;
     teamName: string;
     teamIcon: string;
-    teamAvatar: string;
   };
   type WorkspacesData = {
     workspaces: Workspace[];
@@ -31,7 +30,6 @@ declare global {
         connectedAt: string;
         name: string;
         icon: string;
-        avatar: string;
       };
     }[];
   };

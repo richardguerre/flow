@@ -10610,23 +10610,23 @@ const pg = gd((t) => {
       fileName: T,
       lineNumber: 28,
       columnNumber: 7
-    } }, (a = s == null ? void 0 : s.data) == null ? void 0 : a.workspaces.map((c) => /* @__PURE__ */ e.createElement("div", { className: "flex items-center gap-2 rounded max-w-2xl bg-background-50 shadow px-4 py-2", __self: void 0, __source: {
+    } }, (a = s == null ? void 0 : s.data) == null ? void 0 : a.workspaces.map((c) => /* @__PURE__ */ e.createElement("div", { className: "flex items-center gap-2 rounded max-w-2xl bg-background-50 shadow px-4 py-4", __self: void 0, __source: {
       fileName: T,
       lineNumber: 30,
       columnNumber: 11
-    } }, /* @__PURE__ */ e.createElement("img", { src: c.teamAvatar, __self: void 0, __source: {
+    } }, /* @__PURE__ */ e.createElement("img", { src: c.teamIcon, className: "h-5 w-5 shrink-0", __self: void 0, __source: {
       fileName: T,
       lineNumber: 31,
       columnNumber: 13
-    } }), /* @__PURE__ */ e.createElement("img", { src: c.teamIcon, __self: void 0, __source: {
+    } }), /* @__PURE__ */ e.createElement("span", { className: "font-semibold", __self: void 0, __source: {
       fileName: T,
       lineNumber: 32,
       columnNumber: 13
-    } }), /* @__PURE__ */ e.createElement("span", { __self: void 0, __source: {
+    } }, c.teamName), /* @__PURE__ */ e.createElement("span", { className: "text-sm text-foreground-700", __self: void 0, __source: {
       fileName: T,
       lineNumber: 33,
       columnNumber: 13
-    } }, c.teamName)))) : /* @__PURE__ */ e.createElement("div", { className: "flex", __self: void 0, __source: {
+    } }, "Connected ", t.dayjs(c.connectedAt).fromNow())))) : /* @__PURE__ */ e.createElement("div", { className: "flex", __self: void 0, __source: {
       fileName: T,
       lineNumber: 21,
       columnNumber: 9
@@ -10643,23 +10643,23 @@ const pg = gd((t) => {
     addNodeView: () => sg(o)
   }), o = (s) => /* @__PURE__ */ e.createElement(ng, { as: "span", __self: void 0, __source: {
     fileName: T,
-    lineNumber: 52,
+    lineNumber: 54,
     columnNumber: 7
   } }, /* @__PURE__ */ e.createElement(n.Tooltip, { __self: void 0, __source: {
     fileName: T,
-    lineNumber: 53,
+    lineNumber: 55,
     columnNumber: 9
   } }, /* @__PURE__ */ e.createElement(n.TooltipTrigger, { className: t.cn("p-0.5 mr-1 rounded-sm bg-background-200 hover:bg-background-300 transform translate-y-1 h-5 w-5 inline-flex items-center justify-center", s.selected && "bg-background-300"), __self: void 0, __source: {
     fileName: T,
-    lineNumber: 54,
+    lineNumber: 56,
     columnNumber: 11
   } }, /* @__PURE__ */ e.createElement(dg, { __self: void 0, __source: {
     fileName: T,
-    lineNumber: 60,
+    lineNumber: 62,
     columnNumber: 13
   } })), /* @__PURE__ */ e.createElement(n.TooltipContent, { className: "max-w-xs", __self: void 0, __source: {
     fileName: T,
-    lineNumber: 62,
+    lineNumber: 64,
     columnNumber: 11
   } }, "This is a placeholder for where the Slack plugin will add and automatically update the status of the task (✅ when done, ❌ when canceled.)"))), l = dr.create({
     name: "slack-message",
@@ -10680,15 +10680,15 @@ const pg = gd((t) => {
         type: "custom",
         render: () => /* @__PURE__ */ e.createElement("div", { className: "flex flex-col gap-2", __self: void 0, __source: {
           fileName: T,
-          lineNumber: 90,
+          lineNumber: 92,
           columnNumber: 13
         } }, /* @__PURE__ */ e.createElement("a", { href: `${t.serverOrigin}/api/plugin/${t.pluginSlug}/auth`, __self: void 0, __source: {
           fileName: T,
-          lineNumber: 91,
+          lineNumber: 93,
           columnNumber: 15
         } }, /* @__PURE__ */ e.createElement(n.Button, { __self: void 0, __source: {
           fileName: T,
-          lineNumber: 92,
+          lineNumber: 94,
           columnNumber: 17
         } }, "Connect an account")), /* @__PURE__ */ e.createElement(n.ErrorBoundary, { fallbackRender: ({
           error: s
@@ -10696,20 +10696,20 @@ const pg = gd((t) => {
           var u, a, c;
           return ((c = (a = (u = s.cause) == null ? void 0 : u[0]) == null ? void 0 : a.extensions) == null ? void 0 : c.code) === "NOT_AUTHENTICATED" ? /* @__PURE__ */ e.createElement(e.Fragment, null) : /* @__PURE__ */ e.createElement("p", { className: "text-sm text-negative-600", __self: void 0, __source: {
             fileName: T,
-            lineNumber: 99,
+            lineNumber: 101,
             columnNumber: 26
           } }, s.message);
         }, __self: void 0, __source: {
           fileName: T,
-          lineNumber: 94,
+          lineNumber: 96,
           columnNumber: 15
         } }, /* @__PURE__ */ e.createElement(e.Suspense, { fallback: "Loading connected accounts...", __self: void 0, __source: {
           fileName: T,
-          lineNumber: 102,
+          lineNumber: 104,
           columnNumber: 17
         } }, /* @__PURE__ */ e.createElement(r, { __self: void 0, __source: {
           fileName: T,
-          lineNumber: 103,
+          lineNumber: 105,
           columnNumber: 19
         } }))))
       }
@@ -10776,7 +10776,7 @@ const pg = gd((t) => {
             });
           }, []), /* @__PURE__ */ e.createElement("form", { onSubmit: E(S), className: "flex flex-col gap-4", __self: void 0, __source: {
             fileName: T,
-            lineNumber: 184,
+            lineNumber: 186,
             columnNumber: 13
           } }, /* @__PURE__ */ e.createElement(t.reactHookForm.Controller, { name: "message", control: v, render: ({
             field: x
@@ -10784,76 +10784,76 @@ const pg = gd((t) => {
             html: D
           }) => x.onChange(D), onBlur: x.onBlur, saveNow: f, onSaveEnd: N, __self: void 0, __source: {
             fileName: T,
-            lineNumber: 189,
+            lineNumber: 191,
             columnNumber: 19
           } }), __self: void 0, __source: {
             fileName: T,
-            lineNumber: 185,
+            lineNumber: 187,
             columnNumber: 15
           } }), h.errors.root && /* @__PURE__ */ e.createElement("div", { className: "text-negative-600 text-sm", __self: void 0, __source: {
             fileName: T,
-            lineNumber: 202,
+            lineNumber: 204,
             columnNumber: 17
           } }, h.errors.root.message), /* @__PURE__ */ e.createElement("div", { className: "flex justify-between items-center", __self: void 0, __source: {
             fileName: T,
-            lineNumber: 204,
+            lineNumber: 206,
             columnNumber: 15
           } }, /* @__PURE__ */ e.createElement(n.FormCombobox, { name: "channels", control: v, multiselect: !0, __self: void 0, __source: {
             fileName: T,
-            lineNumber: 205,
+            lineNumber: 207,
             columnNumber: 17
           } }, /* @__PURE__ */ e.createElement(n.ComboboxTrigger, { __self: void 0, __source: {
             fileName: T,
-            lineNumber: 206,
+            lineNumber: 208,
             columnNumber: 19
           } }, /* @__PURE__ */ e.createElement(n.ComboboxValue, { __self: void 0, __source: {
             fileName: T,
-            lineNumber: 207,
+            lineNumber: 209,
             columnNumber: 21
           } })), /* @__PURE__ */ e.createElement(n.ComboboxContent, { __self: void 0, __source: {
             fileName: T,
-            lineNumber: 209,
+            lineNumber: 211,
             columnNumber: 19
           } }, /* @__PURE__ */ e.createElement(n.ComboboxInput, { placeholder: "Search channels...", __self: void 0, __source: {
             fileName: T,
-            lineNumber: 210,
+            lineNumber: 212,
             columnNumber: 21
           } }), /* @__PURE__ */ e.createElement(n.ComboboxEmpty, { __self: void 0, __source: {
             fileName: T,
-            lineNumber: 211,
+            lineNumber: 213,
             columnNumber: 21
           } }, "No channel found."), /* @__PURE__ */ e.createElement(n.ComboboxGroup, { __self: void 0, __source: {
             fileName: T,
-            lineNumber: 212,
+            lineNumber: 214,
             columnNumber: 21
           } }, g.map((x) => /* @__PURE__ */ e.createElement(n.ComboboxItem, { key: x.id, value: x.id, __self: void 0, __source: {
             fileName: T,
-            lineNumber: 214,
+            lineNumber: 216,
             columnNumber: 25
           } }, /* @__PURE__ */ e.createElement(n.ComboboxSelected, { className: "mr-2 h-4 w-4 opacity-0", selectedClassName: "opacity-100", __self: void 0, __source: {
             fileName: T,
-            lineNumber: 215,
+            lineNumber: 217,
             columnNumber: 27
           } }, /* @__PURE__ */ e.createElement(Ea, { size: 20, __self: void 0, __source: {
             fileName: T,
-            lineNumber: 219,
+            lineNumber: 221,
             columnNumber: 29
           } })), /* @__PURE__ */ e.createElement("img", { src: x.team.icon, className: "h-5 w-5 shrink-0 mr-2", __self: void 0, __source: {
             fileName: T,
-            lineNumber: 221,
+            lineNumber: 223,
             columnNumber: 27
           } }), x.name))))), /* @__PURE__ */ e.createElement("div", { className: "flex items-center gap-2", __self: void 0, __source: {
             fileName: T,
-            lineNumber: 228,
+            lineNumber: 230,
             columnNumber: 17
           } }, /* @__PURE__ */ e.createElement(s.BackButton, { type: "button", __self: void 0, __source: {
             fileName: T,
-            lineNumber: 229,
+            lineNumber: 231,
             columnNumber: 19
           } }), /* @__PURE__ */ e.createElement(s.NextButton, { type: "submit", loading: w, onClick: () => {
           }, __self: void 0, __source: {
             fileName: T,
-            lineNumber: 230,
+            lineNumber: 232,
             columnNumber: 19
           } }))));
         },
@@ -10898,73 +10898,73 @@ const pg = gd((t) => {
               });
             }, []), /* @__PURE__ */ e.createElement("form", { onSubmit: c(v), className: "flex flex-col gap-4", __self: void 0, __source: {
               fileName: T,
-              lineNumber: 306,
+              lineNumber: 308,
               columnNumber: 17
             } }, /* @__PURE__ */ e.createElement(t.reactHookForm.Controller, { name: "template", control: a, render: ({
               field: d
             }) => /* @__PURE__ */ e.createElement(n.TemplateEditor, { initialTemplate: d.value, onChange: d.onChange, __self: void 0, __source: {
               fileName: T,
-              lineNumber: 311,
+              lineNumber: 313,
               columnNumber: 23
             } }), __self: void 0, __source: {
               fileName: T,
-              lineNumber: 307,
+              lineNumber: 309,
               columnNumber: 19
             } }), /* @__PURE__ */ e.createElement(n.FormCombobox, { name: "defaultChannels", control: a, multiselect: !0, __self: void 0, __source: {
               fileName: T,
-              lineNumber: 317,
+              lineNumber: 319,
               columnNumber: 19
             } }, /* @__PURE__ */ e.createElement(n.ComboboxTrigger, { __self: void 0, __source: {
               fileName: T,
-              lineNumber: 318,
+              lineNumber: 320,
               columnNumber: 21
             } }, /* @__PURE__ */ e.createElement(n.ComboboxValue, { __self: void 0, __source: {
               fileName: T,
-              lineNumber: 319,
+              lineNumber: 321,
               columnNumber: 23
             } })), /* @__PURE__ */ e.createElement(n.ComboboxContent, { __self: void 0, __source: {
               fileName: T,
-              lineNumber: 321,
+              lineNumber: 323,
               columnNumber: 21
             } }, /* @__PURE__ */ e.createElement(n.ComboboxInput, { placeholder: "Search channels...", __self: void 0, __source: {
               fileName: T,
-              lineNumber: 322,
+              lineNumber: 324,
               columnNumber: 23
             } }), /* @__PURE__ */ e.createElement(n.ComboboxEmpty, { __self: void 0, __source: {
               fileName: T,
-              lineNumber: 323,
+              lineNumber: 325,
               columnNumber: 23
             } }, "No channel found."), /* @__PURE__ */ e.createElement(n.ComboboxGroup, { __self: void 0, __source: {
               fileName: T,
-              lineNumber: 324,
+              lineNumber: 326,
               columnNumber: 23
             } }, f.map((d) => /* @__PURE__ */ e.createElement(n.ComboboxItem, { key: d.id, value: d.id, __self: void 0, __source: {
               fileName: T,
-              lineNumber: 326,
+              lineNumber: 328,
               columnNumber: 27
             } }, /* @__PURE__ */ e.createElement(n.ComboboxSelected, { className: "mr-2 h-4 w-4 opacity-0", selectedClassName: "opacity-100", __self: void 0, __source: {
               fileName: T,
-              lineNumber: 327,
+              lineNumber: 329,
               columnNumber: 29
             } }, /* @__PURE__ */ e.createElement(Ea, { size: 20, __self: void 0, __source: {
               fileName: T,
-              lineNumber: 331,
+              lineNumber: 333,
               columnNumber: 31
             } })), /* @__PURE__ */ e.createElement("img", { src: d.team.icon, className: "h-5 w-5 shrink-0 mr-2", __self: void 0, __source: {
               fileName: T,
-              lineNumber: 333,
+              lineNumber: 335,
               columnNumber: 29
             } }), d.name))))), /* @__PURE__ */ e.createElement("div", { className: "flex items-center gap-2 self-end", __self: void 0, __source: {
               fileName: T,
-              lineNumber: 340,
+              lineNumber: 342,
               columnNumber: 19
             } }, /* @__PURE__ */ e.createElement(n.Button, { type: "button", onClick: s.onCancel, __self: void 0, __source: {
               fileName: T,
-              lineNumber: 341,
+              lineNumber: 343,
               columnNumber: 21
             } }, "Cancel"), /* @__PURE__ */ e.createElement(n.Button, { type: "submit", loading: y, __self: void 0, __source: {
               fileName: T,
-              lineNumber: 344,
+              lineNumber: 346,
               columnNumber: 21
             } }, "Save")));
           }
@@ -10974,39 +10974,39 @@ const pg = gd((t) => {
   };
 }), dg = () => /* @__PURE__ */ React.createElement("svg", { width: "16", height: "16", viewBox: "0 0 123 123", fill: "none", xmlns: "http://www.w3.org/2000/svg", __self: void 0, __source: {
   fileName: T,
-  lineNumber: 372,
+  lineNumber: 374,
   columnNumber: 3
 } }, /* @__PURE__ */ React.createElement("path", { d: "M25.8 77.6C25.8 84.7 20 90.5 12.9 90.5C5.8 90.5 0 84.7 0 77.6C0 70.5 5.8 64.7 12.9 64.7H25.8V77.6Z", fill: "#E01E5A", __self: void 0, __source: {
   fileName: T,
-  lineNumber: 373,
+  lineNumber: 375,
   columnNumber: 5
 } }), /* @__PURE__ */ React.createElement("path", { d: "M32.3 77.6C32.3 70.5 38.1001 64.7 45.2001 64.7C52.3001 64.7 58.1 70.5 58.1 77.6V109.9C58.1 117 52.3001 122.8 45.2001 122.8C38.1001 122.8 32.3 117 32.3 109.9V77.6Z", fill: "#E01E5A", __self: void 0, __source: {
   fileName: T,
-  lineNumber: 377,
+  lineNumber: 379,
   columnNumber: 5
 } }), /* @__PURE__ */ React.createElement("path", { d: "M45.2001 25.8C38.1001 25.8 32.3 20 32.3 12.9C32.3 5.8 38.1001 0 45.2001 0C52.3001 0 58.1 5.8 58.1 12.9V25.8H45.2001Z", fill: "#36C5F0", __self: void 0, __source: {
   fileName: T,
-  lineNumber: 381,
+  lineNumber: 383,
   columnNumber: 5
 } }), /* @__PURE__ */ React.createElement("path", { d: "M45.2 32.3C52.3 32.3 58.1 38.1 58.1 45.2C58.1 52.3 52.3 58.1 45.2 58.1H12.9C5.8 58.1 0 52.3 0 45.2C0 38.1 5.8 32.3 12.9 32.3H45.2Z", fill: "#36C5F0", __self: void 0, __source: {
   fileName: T,
-  lineNumber: 385,
+  lineNumber: 387,
   columnNumber: 5
 } }), /* @__PURE__ */ React.createElement("path", { d: "M97 45.2C97 38.1 102.8 32.3 109.9 32.3C117 32.3 122.8 38.1 122.8 45.2C122.8 52.3 117 58.1 109.9 58.1H97V45.2Z", fill: "#2EB67D", __self: void 0, __source: {
   fileName: T,
-  lineNumber: 389,
+  lineNumber: 391,
   columnNumber: 5
 } }), /* @__PURE__ */ React.createElement("path", { d: "M90.5 45.2C90.5 52.3 84.6999 58.1 77.5999 58.1C70.4999 58.1 64.7 52.3 64.7 45.2V12.9C64.7 5.8 70.4999 0 77.5999 0C84.6999 0 90.5 5.8 90.5 12.9V45.2Z", fill: "#2EB67D", __self: void 0, __source: {
   fileName: T,
-  lineNumber: 393,
+  lineNumber: 395,
   columnNumber: 5
 } }), /* @__PURE__ */ React.createElement("path", { d: "M77.5999 97C84.6999 97 90.5 102.8 90.5 109.9C90.5 117 84.6999 122.8 77.5999 122.8C70.4999 122.8 64.7 117 64.7 109.9V97H77.5999Z", fill: "#ECB22E", __self: void 0, __source: {
   fileName: T,
-  lineNumber: 397,
+  lineNumber: 399,
   columnNumber: 5
 } }), /* @__PURE__ */ React.createElement("path", { d: "M77.5999 90.5C70.4999 90.5 64.7 84.7 64.7 77.6C64.7 70.5 70.4999 64.7 77.5999 64.7H109.9C117 64.7 122.8 70.5 122.8 77.6C122.8 84.7 117 90.5 109.9 90.5H77.5999Z", fill: "#ECB22E", __self: void 0, __source: {
   fileName: T,
-  lineNumber: 401,
+  lineNumber: 403,
   columnNumber: 5
 } }));
 export {

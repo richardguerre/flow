@@ -43,10 +43,6 @@ export default definePlugin((opts) => {
     return tasks;
   };
 
-  const convertHtmlToSlackMessage = (html: string) => {
-    return opts.htmlToSlack(html);
-  };
-
   return {
     onRequest: async (req) => {
       if (req.path === "/auth") {
@@ -104,7 +100,6 @@ export default definePlugin((opts) => {
               teamId,
               teamName: tokenInfo.team.name,
               teamIcon: tokenInfo.team.icon.image_44,
-              teamAvatar: tokenInfo.team.avatar_base_url,
             })),
           } as WorkspacesData,
         };
@@ -116,13 +111,12 @@ export default definePlugin((opts) => {
         for (const teamId in tokenItem) {
           const tokenInfo = tokenItem[teamId];
 
-          const channelsReq = await fetch(
-            `https://slack.com/api/conversations.list?token=${tokenInfo.access_token}`,
-            { headers: { Authorization: `Bearer ${tokenInfo.access_token}` } },
-          )
+          const channelsReq = await fetch(`https://slack.com/api/conversations.list`, {
+            headers: { Authorization: `Bearer ${tokenInfo.authed_user.access_token}` },
+          })
             .then(async (res) => (await res.json()) as ChannelsReq)
             .catch(() => null);
-          if (!channelsReq) continue;
+          if (!channelsReq?.ok) continue;
           channels.push(
             ...(channelsReq.channels.map((channel) => ({
               id: channel.id,
@@ -131,7 +125,6 @@ export default definePlugin((opts) => {
                 id: tokenInfo.team.id,
                 name: tokenInfo.team.name,
                 icon: tokenInfo.team.icon.image_44,
-                avatar: tokenInfo.team.avatar_base_url,
               },
             })) as GetChannelsData["channels"]),
           );
@@ -171,7 +164,7 @@ export default definePlugin((opts) => {
           if (!task) return;
           tag.replaceWith(statusMap[task.status]);
         });
-        const slackMessage = convertHtmlToSlackMessage(msgParsed.toString());
+        const slackMessage = opts.htmlToSlack(msgParsed.toString());
 
         const messages: PostMessageData["messages"] = [];
         for (const channel of input.channels) {
@@ -286,7 +279,7 @@ export default definePlugin((opts) => {
           if (!task) return;
           tag.replaceWith(statusMap[task.status]);
         });
-        const slackMessage = convertHtmlToSlackMessage(noteParsed.toString());
+        const slackMessage = opts.htmlToSlack(noteParsed.toString());
 
         for (const message of messages) {
           const tokenInfo = tokenItem[message.teamId];
@@ -359,6 +352,42 @@ type AuthCallbackData = {
   scope?: string;
   bot_user_id?: string;
 };
+/*
+{
+  "T07KTQ7M30R": {
+    "team": {
+      "id": "T07KTQ7M30R",
+      "url": "https://flow-mz35357.slack.com/",
+      "icon": {
+        "image_34": "https://a.slack-edge.com/80588/img/avatars-teams/ava_0013-34.png",
+        "image_44": "https://a.slack-edge.com/80588/img/avatars-teams/ava_0013-44.png",
+        "image_68": "https://a.slack-edge.com/80588/img/avatars-teams/ava_0013-68.png",
+        "image_88": "https://a.slack-edge.com/80588/img/avatars-teams/ava_0013-88.png",
+        "image_102": "https://a.slack-edge.com/80588/img/avatars-teams/ava_0013-102.png",
+        "image_132": "https://a.slack-edge.com/80588/img/avatars-teams/ava_0013-132.png",
+        "image_230": "https://a.slack-edge.com/80588/img/avatars-teams/ava_0013-230.png",
+        "image_default": true
+      },
+      "name": "Flow",
+      "domain": "flow-mz35357",
+      "is_verified": false,
+      "email_domain": "",
+      "avatar_base_url": "https://ca.slack-edge.com/",
+      "lob_sales_home_enabled": false
+    },
+    "app_id": "A07K8FUUDGE",
+    "created_at": "2024-09-20T23:53:44.308Z",
+    "enterprise": null,
+    "authed_user": {
+      "id": "U07KF1ETGFM",
+      "scope": "channels:read,groups:read,im:read,mpim:read,team:read,chat:write",
+      "token_type": "user",
+      "access_token": ""
+    },
+    "is_enterprise_install": false
+  }
+}
+*/
 
 type TeamInfoReq = {
   ok: boolean;
