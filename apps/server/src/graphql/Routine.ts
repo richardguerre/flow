@@ -16,7 +16,9 @@ export const RoutineType = builder.prismaNode("Routine", {
     actionName: t.exposeString("actionName"),
     time: t.expose("time", { type: "Time" }),
     repeats: t.expose("repeats", { type: [RepetitionPatternEnum] }),
-    steps: t.relation("steps", {
+    steps: t.prismaField({
+      type: ["RoutineStep"],
+      description: "The steps of the routine.",
       resolve: async (query, routine) => {
         const order = routine.stepsOrder ?? [];
         const steps = await prisma.routineStep.findMany({
@@ -61,7 +63,9 @@ builder.queryField("routines", (t) =>
   t.prismaField({
     type: ["Routine"],
     description: "Get all routines.",
-    resolve: prisma.routine.findMany,
+    resolve: (query) => {
+      return prisma.routine.findMany(query);
+    },
   }),
 );
 
@@ -150,7 +154,7 @@ builder.mutationField("updateRoutine", (t) =>
       }),
       time: t.input.field({
         type: "Time",
-        description: "The time to update the routine with.",
+        description: "The time to use the routine with.",
         required: false,
       }),
       steps: t.input.field({
@@ -166,10 +170,34 @@ builder.mutationField("updateRoutine", (t) =>
     },
     resolve: async (query, _, args) => {
       const { routine, newSteps } = await prisma.$transaction(async (tx) => {
+        const { count: deletedStepsCount } = await tx.routineStep.deleteMany({
+          where: {
+            routineId: parseInt(args.input.routineId.id),
+            id: {
+              notIn: args.input.steps
+                ?.filter((s) => s.id?.typename === "RoutineStep")
+                .map((s) => parseInt(s.id!.id)),
+            },
+          },
+        });
+        console.log("deletedStepsCount", deletedStepsCount);
         const stepsOrdered: number[] = [];
         const newSteps: RoutineStep[] = [];
         for (const step of args.input.steps ?? []) {
-          if (step.id) {
+          if (step.id?.typename === "NewStep") {
+            // the step doesn't exist, so we create it
+            const routineStep = await tx.routineStep.create({
+              data: {
+                pluginSlug: step.pluginSlug,
+                stepSlug: step.stepSlug,
+                shouldSkip: step.shouldSkip,
+                config: u(step.config),
+                routine: { connect: { id: parseInt(args.input.routineId.id) } },
+              },
+            });
+            stepsOrdered.push(routineStep.id);
+            newSteps.push(routineStep);
+          } else if (step.id?.typename === "RoutineStep") {
             // the step exists, so we update it
             const routineStep = await tx.routineStep.update({
               select: { id: true },
@@ -183,18 +211,13 @@ builder.mutationField("updateRoutine", (t) =>
             });
             stepsOrdered.push(routineStep.id);
           } else {
-            // the step doesn't exist, so we create it
-            const routineStep = await tx.routineStep.create({
-              data: {
-                pluginSlug: step.pluginSlug,
-                stepSlug: step.stepSlug,
-                shouldSkip: step.shouldSkip,
-                config: u(step.config),
-                routine: { connect: { id: parseInt(args.input.routineId.id) } },
+            throw new GraphQLError("Invalid step ID type.", {
+              extensions: {
+                code: "INVALID_STEP_ID_TYPE",
+                userFriendlyMessage:
+                  "The step ID type is invalid. Please try again with a different step.",
               },
             });
-            stepsOrdered.push(routineStep.id);
-            newSteps.push(routineStep);
           }
         }
 

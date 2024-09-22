@@ -1,7 +1,6 @@
 import { ComponentType, useState } from "react";
 import { usePlugins } from "../getPlugin";
 import { useAsyncEffect } from "../useAsyncEffect";
-import { suspend } from "@flowdev/ui/suspend";
 import { graphql, useFragment } from "@flowdev/relay";
 import {
   RenderRoutineStepSettings_routineStep$data,
@@ -13,14 +12,16 @@ import { Dialog, DialogContent, DialogTrigger } from "@flowdev/ui/Dialog";
 import { LoadingDialog } from "@flowdev/ui/Loading";
 
 export const RoutineStepSettings = (props: Props) => {
+  const [open, setOpen] = useState(false);
   return (
-    <Dialog>
-      <DialogTrigger type="button">
+    <Dialog open={open} onOpenChange={setOpen}>
+      <DialogTrigger type="button" onClick={(e) => e.stopPropagation()}>
         <BsGear />
       </DialogTrigger>
-      <DialogContent>
+      <DialogContent className="max-w-xl">
+        <div className="text-foreground-900 text-lg font-medium">Settings for {props.stepName}</div>
         <Suspense fallback={<LoadingDialog />}>
-          <RenderRoutineStepSettings {...props} />
+          <RenderRoutineStepSettings {...props} onClose={() => setOpen(false)} />
         </Suspense>
       </DialogContent>
     </Dialog>
@@ -28,9 +29,10 @@ export const RoutineStepSettings = (props: Props) => {
 };
 
 export type Props = {
+  stepName: string;
   routineStep: RenderRoutineStepSettings_routineStep$key;
 };
-export const RenderRoutineStepSettings = (props: Props) => {
+const RenderRoutineStepSettings = (props: Props & { onClose: () => void }) => {
   const step = useFragment(
     graphql`
       fragment RenderRoutineStepSettings_routineStep on RoutineStep {
@@ -55,15 +57,22 @@ export const RenderRoutineStepSettings = (props: Props) => {
   useAsyncEffect(async () => {
     const plugin = plugins[step.pluginSlug];
     if (!plugin) return;
-    suspend(
-      plugin.routineSteps?.[step.stepSlug].renderSettings?.(step).then((result) => {
-        if (!result) return;
-        setToRender(result);
-      }),
-    );
-  }, [step.pluginSlug, step.stepSlug]);
+    const result = await plugin.routineSteps?.[step.stepSlug].renderSettings?.({
+      routineStep: step,
+      onCancel: props.onClose,
+      onClose: props.onClose,
+    });
+    if (!result) return;
+    setToRender(result);
+  }, [Object.keys(plugins).length, step.pluginSlug, step.stepSlug]);
 
-  if (!toRender) return null;
+  if (!toRender) {
+    return (
+      <div className="flex flex-col gap-4 items-center justify-center h-xs">
+        <div className="text-foreground-700">No settings available for this step.</div>
+      </div>
+    );
+  }
 
   const ComponentToRender = toRender.component;
   return <ComponentToRender />;

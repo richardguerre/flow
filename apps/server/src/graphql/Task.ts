@@ -34,7 +34,9 @@ export const TaskType = builder.prismaNode("Task", {
     }),
     tags: t.relation("tags"),
     pluginDatas: t.relation("pluginDatas"),
-    subtasks: t.relation("subtasks", {
+    subtasks: t.prismaField({
+      type: ["Task"],
+      description: "The subtasks of the task.",
       resolve: async (query, task) => {
         const order = task.subtasksOrder ?? [];
         const subtasks = await prisma.task.findMany({ ...query, where: { parentTaskId: task.id } });

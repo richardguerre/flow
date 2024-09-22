@@ -5,6 +5,8 @@ import { usePlugins } from "../getPlugin";
 import { graphql, useLazyLoadQuery } from "@flowdev/relay";
 import { EditorContent, StarterKit, useEditor } from "@flowdev/tiptap";
 import { TemplateEditorQuery } from "../relay/__gen__/TemplateEditorQuery.graphql";
+import { Skeleton } from "@flowdev/ui/Skeleton";
+import { ErrorBoundary } from "@flowdev/error-boundary";
 
 export const TemplateEditor = (props: {
   /** The initial template to render. */
@@ -42,9 +44,11 @@ export const TemplateEditor = (props: {
         <WriteTemplate value={template} onChange={handleChange} />
       </TabsContent>
       <TabsContent value={"preview" as Tab}>
-        <Suspense>
-          <PreviewTemplate template={template} />
-        </Suspense>
+        <ErrorBoundary fallbackRender={TemplateError}>
+          <Suspense fallback={<TemplateLoading />}>
+            <PreviewTemplate template={template} />
+          </Suspense>
+        </ErrorBoundary>
       </TabsContent>
     </Tabs>
   );
@@ -58,16 +62,37 @@ type Template = {
 };
 
 const WriteTemplate = (props: { value: Template; onChange: (template: Template) => void }) => {
+  const [data, setData] = useState(JSON.stringify(props.value.data));
+  const [invalidData, setInvalidData] = useState(false);
+
+  const handleDataChange = (data: string) => {
+    setData(data);
+    try {
+      const parsedData = JSON.parse(data);
+      props.onChange({ ...props.value, data: parsedData });
+      setInvalidData(false);
+    } catch {
+      setInvalidData(true);
+    }
+  };
   return (
-    <div>
+    <div className="flex flex-col gap-2">
       <Textarea
         value={props.value.content}
         onChange={(e) => props.onChange({ ...props.value, content: e.target.value })}
+        rows={10}
       />
-      <Textarea
-        value={JSON.stringify(props.value.data, null, 2)}
-        onChange={(e) => props.onChange({ ...props.value, data: JSON.parse(e.target.value) })}
-      />
+      <div className="flex flex-col gap-2">
+        <div className="text-foreground-700 text-xs">
+          Add additional data like filters to the template. This also accepts handlebars
+          expressions. Example:{" "}
+          {JSON.stringify({ tasksFilter: { where: { date: "{{today 'ISO'}}" } } })}
+        </div>
+        <Textarea value={data} onChange={(e) => handleDataChange(e.target.value)} rows={3} />
+        {invalidData && (
+          <div className="text-negative-600 text-xs">Invalid JSON. Please check the syntax.</div>
+        )}
+      </div>
     </div>
   );
 };
@@ -98,5 +123,28 @@ const PreviewTemplate = (props: { template: Template }) => {
     [pluginExtensions.length],
   );
 
-  return <EditorContent editor={editor} />;
+  return (
+    <EditorContent editor={editor} className="min-h-85 border border-primary-200 rounded px-4" />
+  );
+};
+
+const TemplateLoading = () => {
+  return (
+    <div className="flex flex-col gap-2 h-85 pt-2">
+      <Skeleton className="h-4" />
+      <Skeleton className="h-4 w-3/4" />
+      <Skeleton className="h-4" />
+      <Skeleton className="h-4 w-2/3" />
+    </div>
+  );
+};
+
+const errorEmojis = ["🙈", "🫠", "🙀", "😔", "🙃", "😮", "😞"];
+export const TemplateError = (props: { error: any }) => {
+  return (
+    <div className="flex flex-col items-center justify-center gap-2 min-h-85 rounded px-4 border border-primary-200">
+      <div className="text-5xl">{errorEmojis[Math.floor(Math.random() * errorEmojis.length)]}</div>
+      <div className="text-foreground-700 text-sm">{props.error.message}</div>
+    </div>
+  );
 };

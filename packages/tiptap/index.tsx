@@ -1,6 +1,12 @@
-import { Extension, type Range } from "@tiptap/core";
+import { Extension, type Range, Node, mergeAttributes } from "@tiptap/core";
 import { Document } from "@tiptap/extension-document";
-import { useEditor, Editor, EditorContent } from "@tiptap/react";
+import {
+  useEditor,
+  Editor,
+  EditorContent,
+  ReactNodeViewRenderer,
+  NodeViewWrapper,
+} from "@tiptap/react";
 import { Blockquote, BlockquoteOptions } from "@tiptap/extension-blockquote";
 import { BulletList, BulletListOptions } from "@tiptap/extension-bullet-list";
 import { CodeBlock as $CodeBlock, CodeBlockOptions } from "@tiptap/extension-code-block";
@@ -49,6 +55,10 @@ export {
   type MentionOptions,
   MarkdownExtension,
   type Range,
+  Node,
+  mergeAttributes,
+  ReactNodeViewRenderer,
+  NodeViewWrapper,
 };
 
 export const Link = $Link.configure({

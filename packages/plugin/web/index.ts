@@ -36,6 +36,7 @@ export type WebPluginRoutineStep = {
   renderSettings?: (props: {
     routineStep: RenderRoutineStepSettings_routineStep$data;
     onCancel?: () => void;
+    onClose?: () => void;
   }) => Promise<null | ToRender>; // had to compose this type here directly instead of @flowdev/web/src/components/RenderRoutineStepSettings as it's too complex for TypeScript to handle.
 };
 

@@ -1,10 +1,8 @@
 import { definePlugin } from "@flowdev/plugin/web";
-import { Node, mergeAttributes } from "@tiptap/core";
-import { ReactNodeViewRenderer, NodeViewWrapper } from "@tiptap/react";
 import type { Editor } from "@tiptap/core";
 import { DEFAULT_PLAN_YOUR_DAY, POST_YOUR_PLAN } from "./common";
 import type { webUpdateRoutineStepMutation } from "./relay/__gen__/webUpdateRoutineStepMutation.graphql";
-import { BsCheck } from "react-icons/bs";
+import { BsCheck, BsChevronDown } from "@flowdev/icons";
 
 export default definePlugin((opts) => {
   const React = opts.React; // required so that the Slack plugin uses the same React version as the web app
@@ -39,23 +37,23 @@ export default definePlugin((opts) => {
     );
   };
 
-  const SlackStatusNode = Node.create({
+  const SlackStatusNode = opts.tiptap.Node.create({
     name: "slack-status",
     inline: true,
     group: "inline",
     atom: true,
     parseHTML: () => [{ tag: "slack-status" }],
-    renderHTML: (props) => ["slack-status", mergeAttributes(props.HTMLAttributes)],
-    addNodeView: () => ReactNodeViewRenderer(SlackStatusNodeView),
+    renderHTML: (props) => ["slack-status", opts.tiptap.mergeAttributes(props.HTMLAttributes)],
+    addNodeView: () => opts.tiptap.ReactNodeViewRenderer(SlackStatusNodeView),
   });
 
   const SlackStatusNodeView = (props: { selected: boolean }) => {
     return (
-      <NodeViewWrapper as="span">
+      <opts.tiptap.NodeViewWrapper as="span">
         <Flow.Tooltip>
           <Flow.TooltipTrigger
             className={opts.cn(
-              "p-0.5 mr-1 rounded-sm bg-background-200 hover:bg-background-300 transform translate-y-1 h-5 w-5 inline-flex items-center justify-center",
+              "p-0.5 mr-1 rounded-sm bg-background-200 hover:bg-background-300 transform translate-y-0.5 h-5 w-5 inline-flex items-center justify-center",
               props.selected && "bg-background-300",
             )}
           >
@@ -66,19 +64,62 @@ export default definePlugin((opts) => {
             status of the task (✅ when done, ❌ when canceled.)
           </Flow.TooltipContent>
         </Flow.Tooltip>
-      </NodeViewWrapper>
+      </opts.tiptap.NodeViewWrapper>
     );
   };
 
+  const SlackMark = () => (
+    <svg
+      width="16"
+      height="16"
+      viewBox="0 0 123 123"
+      fill="none"
+      xmlns="http://www.w3.org/2000/svg"
+    >
+      <path
+        d="M25.8 77.6C25.8 84.7 20 90.5 12.9 90.5C5.8 90.5 0 84.7 0 77.6C0 70.5 5.8 64.7 12.9 64.7H25.8V77.6Z"
+        fill="#E01E5A"
+      />
+      <path
+        d="M32.3 77.6C32.3 70.5 38.1001 64.7 45.2001 64.7C52.3001 64.7 58.1 70.5 58.1 77.6V109.9C58.1 117 52.3001 122.8 45.2001 122.8C38.1001 122.8 32.3 117 32.3 109.9V77.6Z"
+        fill="#E01E5A"
+      />
+      <path
+        d="M45.2001 25.8C38.1001 25.8 32.3 20 32.3 12.9C32.3 5.8 38.1001 0 45.2001 0C52.3001 0 58.1 5.8 58.1 12.9V25.8H45.2001Z"
+        fill="#36C5F0"
+      />
+      <path
+        d="M45.2 32.3C52.3 32.3 58.1 38.1 58.1 45.2C58.1 52.3 52.3 58.1 45.2 58.1H12.9C5.8 58.1 0 52.3 0 45.2C0 38.1 5.8 32.3 12.9 32.3H45.2Z"
+        fill="#36C5F0"
+      />
+      <path
+        d="M97 45.2C97 38.1 102.8 32.3 109.9 32.3C117 32.3 122.8 38.1 122.8 45.2C122.8 52.3 117 58.1 109.9 58.1H97V45.2Z"
+        fill="#2EB67D"
+      />
+      <path
+        d="M90.5 45.2C90.5 52.3 84.6999 58.1 77.5999 58.1C70.4999 58.1 64.7 52.3 64.7 45.2V12.9C64.7 5.8 70.4999 0 77.5999 0C84.6999 0 90.5 5.8 90.5 12.9V45.2Z"
+        fill="#2EB67D"
+      />
+      <path
+        d="M77.5999 97C84.6999 97 90.5 102.8 90.5 109.9C90.5 117 84.6999 122.8 77.5999 122.8C70.4999 122.8 64.7 117 64.7 109.9V97H77.5999Z"
+        fill="#ECB22E"
+      />
+      <path
+        d="M77.5999 90.5C70.4999 90.5 64.7 84.7 64.7 77.6C64.7 70.5 70.4999 64.7 77.5999 64.7H109.9C117 64.7 122.8 70.5 122.8 77.6C122.8 84.7 117 90.5 109.9 90.5H77.5999Z"
+        fill="#ECB22E"
+      />
+    </svg>
+  );
+
   // invisible node to store the posted message metadata in the note itself
-  const SlackMessageNode = Node.create({
+  const SlackMessageNode = opts.tiptap.Node.create({
     name: "slack-message",
     group: "block",
     atom: true,
     selectable: false,
     draggable: false,
     parseHTML: () => [{ tag: "slack-message" }],
-    renderHTML: (props) => ["slack-message", mergeAttributes(props.HTMLAttributes)],
+    renderHTML: (props) => ["slack-message", opts.tiptap.mergeAttributes(props.HTMLAttributes)],
   });
 
   return {
@@ -112,7 +153,7 @@ export default definePlugin((opts) => {
     },
     routineSteps: {
       [POST_YOUR_PLAN]: {
-        name: "Post your plan",
+        name: "Post your plan to Slack",
         description: "Post your plan for the day in Slack channels.",
         component: (props) => {
           const template = props.templates[0] as (typeof props.templates)[0] | undefined;
@@ -253,6 +294,10 @@ export default definePlugin((opts) => {
                     content: template?.raw ?? DEFAULT_PLAN_YOUR_DAY,
                     data: template?.metadata ?? {},
                   },
+                  defaultChannels:
+                    props.routineStep?.config?.defaultChannels?.map(
+                      (c: GetChannelsData["channels"][0]) => c.id,
+                    ) ?? [],
                 },
               });
               const [channels, setChannels] = React.useState<GetChannelsData["channels"]>(
@@ -294,53 +339,96 @@ export default definePlugin((opts) => {
                       metadata: values.template.data ?? {},
                     },
                   },
+                  onCompleted: () => props.onClose?.(),
                 });
               };
 
               opts.hooks.useAsyncEffect(async () => {
                 const res = await opts.operations.query<GetChannelsData>({
-                  operationName: "channels",
+                  operationName: "getChannels",
                 });
                 setChannels((prev) => res?.data?.channels ?? prev);
               }, []);
 
+              const channelsMap = React.useMemo(() => {
+                return new Map(channels.map((channel) => [channel.id, channel]));
+              }, [channels.length]);
+
               return (
                 <form onSubmit={handleSubmit(onSubmit)} className="flex flex-col gap-4">
-                  <opts.reactHookForm.Controller
-                    name="template"
+                  <div className="flex flex-col gap-1">
+                    <div className="text-foreground-900 text-base font-medium">Template</div>
+                    <div className="text-foreground-700 text-sm">
+                      Write the template message for the routine in HTML. You can preview it before
+                      saving.
+                      <br />
+                      Don't worry, you can edit the message each time you do the routine.
+                    </div>
+                    <opts.reactHookForm.Controller
+                      name="template"
+                      control={control}
+                      render={({ field }) => (
+                        <Flow.TemplateEditor
+                          initialTemplate={field.value}
+                          onChange={field.onChange}
+                        />
+                      )}
+                    />
+                  </div>
+                  <Flow.FormCombobox
+                    name="defaultChannels"
                     control={control}
-                    render={({ field }) => (
-                      <Flow.TemplateEditor
-                        initialTemplate={field.value}
-                        onChange={field.onChange}
+                    multiselect
+                    label="Default channels"
+                  >
+                    <Flow.ComboboxTrigger className="flex items-center gap-2 self-start px-3 py-2 rounded-md bg-background-50 ring-primary-200 text-foreground-900 hover:ring-primary-300 disabled:bg-background-300/50 focus:ring-primary-500 focus:outline-none ring-2">
+                      <Flow.ComboboxValue
+                        placeholder="Select channels..."
+                        renderValues={(ids) =>
+                          channels
+                            .filter((channel) => ids.includes(channel.id))
+                            .map((c) => `#${c.name}`)
+                            .join(", ")
+                        }
                       />
-                    )}
-                  />
-                  <Flow.FormCombobox name="defaultChannels" control={control} multiselect>
-                    <Flow.ComboboxTrigger>
-                      <Flow.ComboboxValue />
+                      <BsChevronDown size={14} className="text-foreground-700" />
                     </Flow.ComboboxTrigger>
-                    <Flow.ComboboxContent>
+                    <Flow.ComboboxContent
+                      align="start"
+                      side="bottom"
+                      commandProps={{
+                        filter: (channelId, search) => {
+                          // return 1 if the channel matches the search, 0 otherwise
+                          return channelsMap.get(channelId)?.name.includes(search) ? 1 : 0;
+                        },
+                      }}
+                    >
                       <Flow.ComboboxInput placeholder="Search channels..." />
                       <Flow.ComboboxEmpty>No channel found.</Flow.ComboboxEmpty>
                       <Flow.ComboboxGroup>
                         {channels.map((channel) => (
-                          <Flow.ComboboxItem key={channel.id} value={channel.id}>
+                          <Flow.ComboboxItem
+                            key={channel.id}
+                            value={channel.id}
+                            className="flex items-center justify-between gap-2"
+                          >
+                            <div className="flex items-center gap-2">
+                              <img src={channel.team.icon} className="h-5 w-5 shrink-0" />
+                              <span className="max-w-48 truncate">#{channel.name}</span>
+                            </div>
                             <Flow.ComboboxSelected
-                              className="mr-2 h-4 w-4 opacity-0"
+                              className="ml-2 h-4 w-4 opacity-0"
                               selectedClassName="opacity-100"
                             >
                               <BsCheck size={20} />
                             </Flow.ComboboxSelected>
-                            <img src={channel.team.icon} className="h-5 w-5 shrink-0 mr-2" />
-                            {channel.name}
                           </Flow.ComboboxItem>
                         ))}
                       </Flow.ComboboxGroup>
                     </Flow.ComboboxContent>
                   </Flow.FormCombobox>
                   <div className="flex items-center gap-2 self-end">
-                    <Flow.Button type="button" onClick={props.onCancel}>
+                    <Flow.Button type="button" secondary onClick={props.onCancel}>
                       Cancel
                     </Flow.Button>
                     <Flow.Button type="submit" loading={savingTemplate}>
@@ -369,40 +457,3 @@ type PostPlanSettings = {
   };
   defaultChannels: string[];
 };
-
-const SlackMark = () => (
-  <svg width="16" height="16" viewBox="0 0 123 123" fill="none" xmlns="http://www.w3.org/2000/svg">
-    <path
-      d="M25.8 77.6C25.8 84.7 20 90.5 12.9 90.5C5.8 90.5 0 84.7 0 77.6C0 70.5 5.8 64.7 12.9 64.7H25.8V77.6Z"
-      fill="#E01E5A"
-    />
-    <path
-      d="M32.3 77.6C32.3 70.5 38.1001 64.7 45.2001 64.7C52.3001 64.7 58.1 70.5 58.1 77.6V109.9C58.1 117 52.3001 122.8 45.2001 122.8C38.1001 122.8 32.3 117 32.3 109.9V77.6Z"
-      fill="#E01E5A"
-    />
-    <path
-      d="M45.2001 25.8C38.1001 25.8 32.3 20 32.3 12.9C32.3 5.8 38.1001 0 45.2001 0C52.3001 0 58.1 5.8 58.1 12.9V25.8H45.2001Z"
-      fill="#36C5F0"
-    />
-    <path
-      d="M45.2 32.3C52.3 32.3 58.1 38.1 58.1 45.2C58.1 52.3 52.3 58.1 45.2 58.1H12.9C5.8 58.1 0 52.3 0 45.2C0 38.1 5.8 32.3 12.9 32.3H45.2Z"
-      fill="#36C5F0"
-    />
-    <path
-      d="M97 45.2C97 38.1 102.8 32.3 109.9 32.3C117 32.3 122.8 38.1 122.8 45.2C122.8 52.3 117 58.1 109.9 58.1H97V45.2Z"
-      fill="#2EB67D"
-    />
-    <path
-      d="M90.5 45.2C90.5 52.3 84.6999 58.1 77.5999 58.1C70.4999 58.1 64.7 52.3 64.7 45.2V12.9C64.7 5.8 70.4999 0 77.5999 0C84.6999 0 90.5 5.8 90.5 12.9V45.2Z"
-      fill="#2EB67D"
-    />
-    <path
-      d="M77.5999 97C84.6999 97 90.5 102.8 90.5 109.9C90.5 117 84.6999 122.8 77.5999 122.8C70.4999 122.8 64.7 117 64.7 109.9V97H77.5999Z"
-      fill="#ECB22E"
-    />
-    <path
-      d="M77.5999 90.5C70.4999 90.5 64.7 84.7 64.7 77.6C64.7 70.5 70.4999 64.7 77.5999 64.7H109.9C117 64.7 122.8 70.5 122.8 77.6C122.8 84.7 117 90.5 109.9 90.5H77.5999Z"
-      fill="#ECB22E"
-    />
-  </svg>
-);

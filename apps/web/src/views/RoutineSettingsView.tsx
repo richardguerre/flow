@@ -312,35 +312,28 @@ const RoutineDetailedSettings = (props: RoutineDetailedSettingsProps) => {
 
   const onSubmit = (values: FormValues) => {
     cancelDebounce();
-    toast.promise(
-      updateRoutine({
-        variables: {
-          input: {
-            routineId: routine.id,
-            name: values.name,
-            time: values.time,
-            actionName: values.actionName,
-            steps: values.steps.map((step) => ({
-              id: step.id,
-              pluginSlug: step.pluginSlug,
-              stepSlug: step.stepSlug,
-              shouldSkip: step.shouldSkip,
-            })),
-          },
+    updateRoutine({
+      variables: {
+        input: {
+          routineId: routine.id,
+          name: values.name,
+          time: values.time,
+          actionName: values.actionName,
+          steps: values.steps.map((step) => ({
+            id: step.id,
+            pluginSlug: step.pluginSlug,
+            stepSlug: step.stepSlug,
+            shouldSkip: step.shouldSkip,
+          })),
         },
-      }),
-      {
-        loading: "Updating routine...",
-        success: "Routine updated!",
-        error: "Failed to update routine. Please try again.",
       },
-    );
+    });
   };
 
   const pluginSteps: RoutineStepType[] = useMemo(() => {
     return Object.entries(props.plugins).flatMap(([pluginSlug, plugin]) =>
       Object.keys(plugin.routineSteps ?? {}).map((stepSlug) => ({
-        id: `${pluginSlug}_${stepSlug}_${Math.random()}`,
+        id: `NewStep_${pluginSlug}_${stepSlug}_${Math.random()}`,
         pluginSlug,
         stepSlug,
         shouldSkip: false,
@@ -470,6 +463,7 @@ const RoutineStep = (props: {
     `,
     props.routineStep,
   );
+  const plugin = props.plugins[props.step.pluginSlug];
   const actions = (
     <div className="bg-background-50 absolute right-0 flex items-center justify-end gap-4 px-4">
       <Tooltip>
@@ -494,7 +488,12 @@ const RoutineStep = (props: {
           For example, skip retroing on yesterday if you already did a retro yesterday.
         </TooltipContent>
       </Tooltip>
-      {routineStepRelay && <RoutineStepSettings routineStep={routineStepRelay} />}
+      {routineStepRelay && (
+        <RoutineStepSettings
+          routineStep={routineStepRelay}
+          stepName={plugin?.routineSteps?.[props.step.stepSlug].name ?? "Unknown"}
+        />
+      )}
       <Tooltip>
         <TooltipTrigger asChild>
           <button
@@ -509,7 +508,6 @@ const RoutineStep = (props: {
     </div>
   );
 
-  const plugin = props.plugins[props.step.pluginSlug];
   if (!plugin?.routineSteps?.[props.step.stepSlug]) {
     return (
       <div id={props.step.id} className="relative">

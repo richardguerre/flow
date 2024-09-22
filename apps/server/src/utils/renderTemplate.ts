@@ -15,8 +15,9 @@ export const renderTemplate = async (template: string, data: TemplateData) => {
   for (const [pluginSlug, plugin] of Object.entries(plugins)) {
     if (plugin.handlebars?.helpers) {
       for (const [helperName, helper] of Object.entries(plugin.handlebars.helpers)) {
-        helpers[`${pluginSlug}-${helperName}`] = (context, ...args) =>
-          helper(args.at(-1), context, ...args);
+        helpers[`${pluginSlug}-${helperName}`] = function (this, context, ...args) {
+          return helper.bind(this)(args.at(-1), context, ...args);
+        };
       }
     }
   }
@@ -43,6 +44,8 @@ export const renderTemplate = async (template: string, data: TemplateData) => {
     ...defaultData,
     ...data,
   });
+
+  console.log(result);
 
   return result;
 };
@@ -106,9 +109,10 @@ const registerFlowsDefaultHelpers = async (opts?: {
     Handlebars.registerHelper("tasks", async function (this: any, ...args) {
       const options = args.at(-1) as Handlebars.HelperOptions | undefined;
       // possible the passed args are also templates that need to be rendered. Example: {{today 'ISO}}
-      const prismaArgsRendered = await Handlebars.compile(JSON.stringify(args.at(0) ?? {}))(
-        options?.data?.root ?? this,
-      );
+      const arg0 = args.at(0);
+      const prismaArgsRendered = !isHandlebarsCtx(arg0)
+        ? await Handlebars.compile(JSON.stringify(arg0))(options?.data?.root ?? this ?? {})
+        : "{}";
       const prismaArgs =
         (JSON.parse(prismaArgsRendered) as Parameters<typeof prisma.task.findMany>[0]) ?? {};
 
@@ -118,7 +122,11 @@ const registerFlowsDefaultHelpers = async (opts?: {
           where: { date: today.toISOString(), ...prismaArgs.where },
         })
         .then((tasks) =>
-          tasks.map((task) => ({ ...task, title: new Handlebars.SafeString(task.title) })),
+          tasks.map((task) => {
+            // remove wrapping <p> tags from the title
+            const title = task.title.replace(/<p>(.*)<\/p>/, "$1");
+            return { ...task, title: new Handlebars.SafeString(title) };
+          }),
         );
 
       if (!options) {
@@ -140,6 +148,10 @@ const registerFlowsDefaultHelpers = async (opts?: {
       return res;
     });
   }
+};
+
+const isHandlebarsCtx = (arg: any) => {
+  return arg && typeof arg === "object" && "lookupProperty" in arg;
 };
 
 export type PartialDeclareSpec = { [name: string]: HandlebarsTemplateDelegate };

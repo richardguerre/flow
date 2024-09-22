@@ -599,7 +599,7 @@ input MutationUpdateRoutineInput {
   """The steps to update the routine with."""
   steps: [RoutineStepInput!]
 
-  """The time to update the routine with."""
+  """The time to use the routine with."""
   time: Time
 }
 
@@ -1173,7 +1173,7 @@ type Task implements Node {
   """The status of the task"""
   status: TaskStatus!
 
-  """The subtasks of the task"""
+  """The subtasks of the task."""
   subtasks: [Task!]!
 
   """The tags of the task """
