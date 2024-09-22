@@ -3,6 +3,7 @@ import type { Editor } from "@tiptap/core";
 import { DEFAULT_PLAN_YOUR_DAY, POST_YOUR_PLAN } from "./common";
 import type { webUpdateRoutineStepMutation } from "./relay/__gen__/webUpdateRoutineStepMutation.graphql";
 import { BsCheck, BsChevronDown } from "@flowdev/icons";
+import { Control } from "react-hook-form";
 
 export default definePlugin((opts) => {
   const React = opts.React; // required so that the Slack plugin uses the same React version as the web app
@@ -42,6 +43,13 @@ export default definePlugin((opts) => {
     inline: true,
     group: "inline",
     atom: true,
+    addAttributes: () => ({
+      taskId: {
+        default: null,
+        parseHTML: (element) => element.getAttribute("data-task-id") ?? null,
+        renderHTML: (attrs) => (!attrs.taskId ? {} : { "data-task-id": attrs.taskId }),
+      },
+    }),
     parseHTML: () => [{ tag: "slack-status" }],
     renderHTML: (props) => ["slack-status", opts.tiptap.mergeAttributes(props.HTMLAttributes)],
     addNodeView: () => opts.tiptap.ReactNodeViewRenderer(SlackStatusNodeView),
@@ -118,9 +126,91 @@ export default definePlugin((opts) => {
     atom: true,
     selectable: false,
     draggable: false,
+    addAttributes: () => ({
+      teamId: {
+        default: null,
+        parseHTML: (element) => element.getAttribute("data-team-id") ?? null,
+        renderHTML: (attrs) => (!attrs.teamId ? {} : { "data-team-id": attrs.teamId }),
+      },
+      channelId: {
+        default: null,
+        parseHTML: (element) => element.getAttribute("data-channel-id") ?? null,
+        renderHTML: (attrs) => (!attrs.channelId ? {} : { "data-channel-id": attrs.channelId }),
+      },
+      ts: {
+        default: null,
+        parseHTML: (element) => element.getAttribute("data-ts") ?? null,
+        renderHTML: (attrs) => (!attrs.ts ? {} : { "data-ts": attrs.ts }),
+      },
+    }),
     parseHTML: () => [{ tag: "slack-message" }],
     renderHTML: (props) => ["slack-message", opts.tiptap.mergeAttributes(props.HTMLAttributes)],
   });
+
+  const ChannelsPicker = (props: {
+    control: Control<{ channels: string[] } & any>;
+    channels: GetChannelsData["channels"];
+    withLabel?: boolean;
+  }) => {
+    const channelsMap = React.useMemo(() => {
+      return new Map(props.channels.map((channel) => [channel.id, channel]));
+    }, [props.channels.length]);
+
+    return (
+      <Flow.FormCombobox
+        name="channels"
+        control={props.control}
+        multiselect
+        label={props.withLabel ? "Default channels" : undefined}
+      >
+        <Flow.ComboboxTrigger className="flex items-center gap-2 self-start px-3 py-2 rounded-md bg-background-50 ring-primary-200 text-foreground-900 hover:ring-primary-300 disabled:bg-background-300/50 focus:ring-primary-500 focus:outline-none ring-2">
+          <Flow.ComboboxValue
+            placeholder="Select channels..."
+            renderValues={(ids) =>
+              props.channels
+                .filter((channel) => ids.includes(channel.id))
+                .map((c) => `#${c.name}`)
+                .join(", ")
+            }
+          />
+          <BsChevronDown size={14} className="text-foreground-700" />
+        </Flow.ComboboxTrigger>
+        <Flow.ComboboxContent
+          align="start"
+          side="bottom"
+          commandProps={{
+            filter: (channelId, search) => {
+              // return 1 if the channel matches the search, 0 otherwise
+              return channelsMap.get(channelId)?.name.includes(search) ? 1 : 0;
+            },
+          }}
+        >
+          <Flow.ComboboxInput placeholder="Search channels..." />
+          <Flow.ComboboxEmpty>No channel found.</Flow.ComboboxEmpty>
+          <Flow.ComboboxGroup>
+            {props.channels.map((channel) => (
+              <Flow.ComboboxItem
+                key={channel.id}
+                value={channel.id}
+                className="flex items-center justify-between gap-2"
+              >
+                <div className="flex items-center gap-2">
+                  <img src={channel.team.icon} className="h-5 w-5 shrink-0" />
+                  <span className="max-w-48 truncate">#{channel.name}</span>
+                </div>
+                <Flow.ComboboxSelected
+                  className="ml-2 h-4 w-4 opacity-0"
+                  selectedClassName="opacity-100"
+                >
+                  <BsCheck size={20} />
+                </Flow.ComboboxSelected>
+              </Flow.ComboboxItem>
+            ))}
+          </Flow.ComboboxGroup>
+        </Flow.ComboboxContent>
+      </Flow.FormCombobox>
+    );
+  };
 
   return {
     name: "Slack",
@@ -163,14 +253,14 @@ export default definePlugin((opts) => {
           const [channels, setChannels] = React.useState<GetChannelsData["channels"]>(
             props.stepConfig?.defaultChannels ?? [],
           );
-          const { control, handleSubmit, formState, setError } =
+          const { control, handleSubmit, formState, setError, setValue } =
             opts.reactHookForm.useForm<PostPlan>({
               defaultValues: {
-                message: template,
+                message: template?.rendered ?? "",
                 channels: channels.map((channel) => channel.id),
               },
             });
-          const [postMessages, postingMessages] = opts.operations.useMutation<
+          const [postMessage, postingMessages] = opts.operations.useMutation<
             PostMessageInput,
             PostMessageData
           >("postMessage");
@@ -183,7 +273,7 @@ export default definePlugin((opts) => {
               setError("root", { message: "Please select at least one channel." });
               return;
             }
-            const res = await postMessages({
+            const res = await postMessage({
               message: values.message,
               channels: channelsToPost.map((channel) => ({
                 teamId: channel.team.id,
@@ -194,10 +284,11 @@ export default definePlugin((opts) => {
               setError("root", { message: "Couldn't post message to Slack channels." });
               return;
             }
+            let endIdx = editorRef.current?.state.doc.content.size ?? 0;
             const chain = editorRef.current?.chain();
             for (const message of res.data.messages) {
               // add the messages to the end of the
-              chain?.insertContentAt(-1, {
+              chain?.insertContentAt(endIdx, {
                 type: "slack-message",
                 attrs: {
                   teamId: message.teamId,
@@ -205,6 +296,7 @@ export default definePlugin((opts) => {
                   ts: message.ts,
                 },
               });
+              endIdx++;
             }
             chain?.run();
             setSaveNow(true);
@@ -218,10 +310,17 @@ export default definePlugin((opts) => {
 
           opts.hooks.useAsyncEffect(async () => {
             const res = await opts.operations.query<GetChannelsData>({
-              operationName: "channels",
+              operationName: "getChannels",
             });
             setChannels((prev) => res?.data?.channels ?? prev);
           }, []);
+
+          React.useEffect(() => {
+            if (editorRef.current) {
+              const html = editorRef.current.getHTML();
+              setValue("message", html);
+            }
+          }, [editorRef.current]);
 
           return (
             <form onSubmit={handleSubmit(onSubmit)} className="flex flex-col gap-4">
@@ -232,9 +331,12 @@ export default definePlugin((opts) => {
                   <Flow.NoteEditor
                     editorRef={editorRef}
                     slug={`slack_post-plan-${today.format("YYYY-MM-DD")}`}
-                    title={`Plan for ${today.format("MMMM D")}`}
+                    title={`Plan for ${today.format("MMMM D, YYYY")}`}
                     initialValue={field.value}
-                    onChange={({ html }) => field.onChange(html)}
+                    onChange={({ html }) => {
+                      console.log(html);
+                      field.onChange(html);
+                    }}
                     onBlur={field.onBlur}
                     saveNow={saveNow}
                     onSaveEnd={handleNoteSaved}
@@ -245,29 +347,7 @@ export default definePlugin((opts) => {
                 <div className="text-negative-600 text-sm">{formState.errors.root.message}</div>
               )}
               <div className="flex justify-between items-center">
-                <Flow.FormCombobox name="channels" control={control} multiselect>
-                  <Flow.ComboboxTrigger>
-                    <Flow.ComboboxValue />
-                  </Flow.ComboboxTrigger>
-                  <Flow.ComboboxContent>
-                    <Flow.ComboboxInput placeholder="Search channels..." />
-                    <Flow.ComboboxEmpty>No channel found.</Flow.ComboboxEmpty>
-                    <Flow.ComboboxGroup>
-                      {channels.map((channel) => (
-                        <Flow.ComboboxItem key={channel.id} value={channel.id}>
-                          <Flow.ComboboxSelected
-                            className="mr-2 h-4 w-4 opacity-0"
-                            selectedClassName="opacity-100"
-                          >
-                            <BsCheck size={20} />
-                          </Flow.ComboboxSelected>
-                          <img src={channel.team.icon} className="h-5 w-5 shrink-0 mr-2" />
-                          {channel.name}
-                        </Flow.ComboboxItem>
-                      ))}
-                    </Flow.ComboboxGroup>
-                  </Flow.ComboboxContent>
-                </Flow.FormCombobox>
+                <ChannelsPicker control={control} channels={channels} />
                 <div className="flex items-center gap-2">
                   <props.BackButton type="button" />
                   <props.NextButton
@@ -294,7 +374,7 @@ export default definePlugin((opts) => {
                     content: template?.raw ?? DEFAULT_PLAN_YOUR_DAY,
                     data: template?.metadata ?? {},
                   },
-                  defaultChannels:
+                  channels:
                     props.routineStep?.config?.defaultChannels?.map(
                       (c: GetChannelsData["channels"][0]) => c.id,
                     ) ?? [],
@@ -325,7 +405,7 @@ export default definePlugin((opts) => {
 
               const onSubmit = async (values: PostPlanSettings) => {
                 const defaultChannels = channels.filter((channel) =>
-                  values.defaultChannels.includes(channel.id),
+                  values.channels.includes(channel.id),
                 );
                 updateRoutineStep({
                   variables: {
@@ -350,10 +430,6 @@ export default definePlugin((opts) => {
                 setChannels((prev) => res?.data?.channels ?? prev);
               }, []);
 
-              const channelsMap = React.useMemo(() => {
-                return new Map(channels.map((channel) => [channel.id, channel]));
-              }, [channels.length]);
-
               return (
                 <form onSubmit={handleSubmit(onSubmit)} className="flex flex-col gap-4">
                   <div className="flex flex-col gap-1">
@@ -375,58 +451,7 @@ export default definePlugin((opts) => {
                       )}
                     />
                   </div>
-                  <Flow.FormCombobox
-                    name="defaultChannels"
-                    control={control}
-                    multiselect
-                    label="Default channels"
-                  >
-                    <Flow.ComboboxTrigger className="flex items-center gap-2 self-start px-3 py-2 rounded-md bg-background-50 ring-primary-200 text-foreground-900 hover:ring-primary-300 disabled:bg-background-300/50 focus:ring-primary-500 focus:outline-none ring-2">
-                      <Flow.ComboboxValue
-                        placeholder="Select channels..."
-                        renderValues={(ids) =>
-                          channels
-                            .filter((channel) => ids.includes(channel.id))
-                            .map((c) => `#${c.name}`)
-                            .join(", ")
-                        }
-                      />
-                      <BsChevronDown size={14} className="text-foreground-700" />
-                    </Flow.ComboboxTrigger>
-                    <Flow.ComboboxContent
-                      align="start"
-                      side="bottom"
-                      commandProps={{
-                        filter: (channelId, search) => {
-                          // return 1 if the channel matches the search, 0 otherwise
-                          return channelsMap.get(channelId)?.name.includes(search) ? 1 : 0;
-                        },
-                      }}
-                    >
-                      <Flow.ComboboxInput placeholder="Search channels..." />
-                      <Flow.ComboboxEmpty>No channel found.</Flow.ComboboxEmpty>
-                      <Flow.ComboboxGroup>
-                        {channels.map((channel) => (
-                          <Flow.ComboboxItem
-                            key={channel.id}
-                            value={channel.id}
-                            className="flex items-center justify-between gap-2"
-                          >
-                            <div className="flex items-center gap-2">
-                              <img src={channel.team.icon} className="h-5 w-5 shrink-0" />
-                              <span className="max-w-48 truncate">#{channel.name}</span>
-                            </div>
-                            <Flow.ComboboxSelected
-                              className="ml-2 h-4 w-4 opacity-0"
-                              selectedClassName="opacity-100"
-                            >
-                              <BsCheck size={20} />
-                            </Flow.ComboboxSelected>
-                          </Flow.ComboboxItem>
-                        ))}
-                      </Flow.ComboboxGroup>
-                    </Flow.ComboboxContent>
-                  </Flow.FormCombobox>
+                  <ChannelsPicker control={control} channels={channels} />
                   <div className="flex items-center gap-2 self-end">
                     <Flow.Button type="button" secondary onClick={props.onCancel}>
                       Cancel
@@ -455,5 +480,5 @@ type PostPlanSettings = {
     content: string;
     data: Record<string, any>;
   };
-  defaultChannels: string[];
+  channels: string[];
 };

@@ -159,5 +159,14 @@ export type PluginRoutineStepProps = {
    *
    * Template.rendered is rendered with the default data at the time of rendering.
    */
-  templates: RoutineStep_step$data["templates"];
+  // manually copied the type as TypeScript doesn't seem to be able to infer the type of the templates array
+  templates: ReadonlyArray<{
+    readonly createdAt: string;
+    readonly id: string;
+    readonly metadata: JsonValue | null | undefined;
+    readonly raw: string;
+    readonly rendered: string;
+    readonly slug: string;
+    readonly updatedAt: string;
+  }>;
 };

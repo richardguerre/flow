@@ -8,7 +8,13 @@ import {
 } from "@flowdev/web/relay/__gen__/RenderRoutineStepSettings_routineStep.graphql";
 import { Suspense } from "react";
 import { BsGear } from "@flowdev/icons";
-import { Dialog, DialogContent, DialogTrigger } from "@flowdev/ui/Dialog";
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogTrigger,
+} from "@flowdev/ui/Dialog";
 import { LoadingDialog } from "@flowdev/ui/Loading";
 
 export const RoutineStepSettings = (props: Props) => {
@@ -19,7 +25,9 @@ export const RoutineStepSettings = (props: Props) => {
         <BsGear />
       </DialogTrigger>
       <DialogContent className="max-w-xl">
-        <div className="text-foreground-900 text-lg font-medium">Settings for {props.stepName}</div>
+        <DialogHeader>
+          <DialogTitle>Settings for {props.stepName}</DialogTitle>
+        </DialogHeader>
         <Suspense fallback={<LoadingDialog />}>
           <RenderRoutineStepSettings {...props} onClose={() => setOpen(false)} />
         </Suspense>

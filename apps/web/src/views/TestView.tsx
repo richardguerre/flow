@@ -25,9 +25,17 @@ export const TestViewContent = () => {
         inline: true,
         group: "inline",
         atom: true,
-        parseHTML() {
-          return [{ tag: "slack-status" }];
-        },
+        addAttributes: () => ({
+          taskId: {
+            default: null,
+            parseHTML: (element) => element.getAttribute("data-taskId") ?? null,
+            renderHTML: (attrs) => {
+              if (!attrs.taskId) return {};
+              return { "data-taskId": attrs.taskId };
+            },
+          },
+        }),
+        parseHTML: () => [{ tag: "slack-status" }],
         renderHTML({ HTMLAttributes }) {
           return ["slack-status", mergeAttributes(HTMLAttributes)];
         },
@@ -36,13 +44,14 @@ export const TestViewContent = () => {
         },
       }),
     ],
-    content: `<ul><li><p><slack-status>test</slack-status> task title 1 <span data-tasktag-id="Task_1" data-name="Test">#Test</span></p></li></ul><slack-workspace-channel data-workspace-id="someId" data-channel-id="someId"></slack-workspace-channel>`,
+    content: `<ul><li><p><slack-status data-taskId="Task_1">✅</slack-status> task title 1 <span data-tasktag-id="Task_1" data-name="Test">#Test</span></p></li></ul><slack-workspace-channel data-workspace-id="someId" data-channel-id="someId"></slack-workspace-channel>`,
     onUpdate: (props) => {
-      props.editor.state.doc.descendants((node) => {
-        if (node.type.name === "taskTag") {
-          console.log(node);
-        }
-      });
+      console.log(props.editor.getHTML());
+      // props.editor.state.doc.descendants((node) => {
+      //   if (node.type.name === "taskTag") {
+      //     console.log(node);
+      //   }
+      // });
     },
     editorProps: {
       attributes: {

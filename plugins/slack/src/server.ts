@@ -29,7 +29,8 @@ export default definePlugin((opts) => {
       .parseHtml(message)
       .querySelectorAll("slack-status")
       .map((tag) => {
-        const id = opts.decodeGlobalId(tag.attributes["data-taskId"])?.id;
+        if (!tag.attributes["data-task-id"]) return null;
+        const id = opts.decodeGlobalId(tag.attributes["data-task-id"])?.id;
         if (!id) return null;
         return parseInt(id);
       })
@@ -156,7 +157,8 @@ export default definePlugin((opts) => {
         const tasks = await getTasksFromMessage(input.message);
         const msgParsed = opts.parseHtml(input.message);
         msgParsed.querySelectorAll("slack-status").forEach((tag) => {
-          const taskIdRaw = opts.decodeGlobalId(tag.attributes["data-taskId"])?.id;
+          if (!tag.attributes["data-task-id"]) return;
+          const taskIdRaw = opts.decodeGlobalId(tag.attributes["data-task-id"])?.id;
           if (!taskIdRaw) return;
           const taskId = parseInt(taskIdRaw);
           if (!taskId) return;
@@ -164,25 +166,36 @@ export default definePlugin((opts) => {
           if (!task) return;
           tag.replaceWith(statusMap[task.status]);
         });
+        // remove the <slack-message> tags
+        msgParsed.querySelectorAll("slack-message").forEach((tag) => {
+          tag.replaceWith("");
+        });
+        // remove p tags that are direct children of li tags
+        msgParsed.querySelectorAll("li").forEach((tag) => {
+          tag.querySelectorAll("p").forEach((pTag) => {
+            pTag.replaceWith(pTag.innerHTML);
+          });
+        });
         const slackMessage = opts.htmlToSlack(msgParsed.toString());
 
         const messages: PostMessageData["messages"] = [];
         for (const channel of input.channels) {
+          const token = tokenItem[channel.teamId].authed_user.access_token;
           const res = await fetch(
-            `https://slack.com/api/chat.postMessage?token=${tokenItem[channel.teamId].access_token}&channel=${channel.channelId}&text=${slackMessage}`,
-            { headers: { Authorization: `Bearer ${tokenItem[channel.teamId].access_token}` } },
+            `https://slack.com/api/chat.postMessage?channel=${channel.channelId}&blocks=${JSON.stringify(slackMessage)}`,
+            { headers: { Authorization: `Bearer ${token}` } },
           ).then(async (req) => (await req.json()) as PostMessageReq);
           if (!res.ok) {
             const channelInfo = await fetch(
-              `https://slack.com/api/conversations.info?token=${tokenItem[channel.teamId].access_token}&channel=${channel.channelId}`,
-              { headers: { Authorization: `Bearer ${tokenItem[channel.teamId].access_token}` } },
+              `https://slack.com/api/conversations.info?channel=${channel.channelId}`,
+              { headers: { Authorization: `Bearer ${token}` } },
             )
-              .then(async (req) => (await req.json()) as ChannelsReq)
+              .then(async (req) => (await req.json()) as ConversationInfoReq)
               .catch(() => null);
             throw new opts.GraphQLError(`Couldn't post message.`, {
               extensions: {
                 code: "COULDNT_POST_MESSAGE",
-                userFriendlyMessage: `Couldn't post message to channel ${channelInfo?.channels[0].name ?? "Unknonwn"}. Please try connecting your Slack account again.`,
+                userFriendlyMessage: `Couldn't post message to channel ${channelInfo?.channel.name ? `#${channelInfo?.channel.name}` : "Unknonwn"}. The message may be too complex.`,
               },
             });
           }
@@ -232,7 +245,7 @@ export default definePlugin((opts) => {
         status: function (this: PrismaTypes.Task) {
           if (!("status" in this)) return "";
           return new opts.Handlebars.SafeString(
-            `<slack-status data-taskId=\"Task_${this.id}\">${statusMap[this.status]}</slack-status>`,
+            `<slack-status data-task-id=\"Task_${this.id}\">${statusMap[this.status]}</slack-status>`,
           );
         },
       },
@@ -249,8 +262,8 @@ export default definePlugin((opts) => {
 
         /**  find all <slack-message> tags:
          * <slack-message
-         *   data-teamId="<teamId>"
-         *   data-channelId="<channelId>"
+         *   data-team-id="<teamId>"
+         *   data-channel-id="<channelId>"
          *   data-messageId="messageId"
          * >channelName</slack-message>
          */
@@ -258,8 +271,8 @@ export default definePlugin((opts) => {
           .parseHtml(note.content)
           .querySelectorAll("slack-message")
           .map((tag) => ({
-            teamId: tag.attributes["data-teamId"],
-            channelId: tag.attributes["data-channelId"],
+            teamId: tag.attributes["data-team-id"],
+            channelId: tag.attributes["data-channel-id"],
             ts: tag.attributes["data-ts"],
           }));
         if (!messages.length) return;
@@ -272,7 +285,8 @@ export default definePlugin((opts) => {
 
         const noteParsed = opts.parseHtml(note.content);
         noteParsed.querySelectorAll("slack-status").forEach((tag) => {
-          const taskIdRaw = opts.decodeGlobalId(tag.attributes["data-taskId"])?.id;
+          if (!tag.attributes["data-task-id"]) return;
+          const taskIdRaw = opts.decodeGlobalId(tag.attributes["data-task-id"])?.id;
           if (!taskIdRaw) return;
           const taskId = parseInt(taskIdRaw);
           if (!taskId) return;
@@ -280,21 +294,26 @@ export default definePlugin((opts) => {
           if (!task) return;
           tag.replaceWith(statusMap[task.status]);
         });
+        // remove the <slack-message> tags
+        noteParsed.querySelectorAll("slack-message").forEach((tag) => {
+          tag.replaceWith("");
+        });
+        // remove p tags that are direct children of li tags
+        noteParsed.querySelectorAll("li").forEach((tag) => {
+          tag.querySelectorAll("p").forEach((pTag) => {
+            pTag.replaceWith(pTag.innerHTML);
+          });
+        });
         const slackMessage = opts.htmlToSlack(noteParsed.toString());
 
         for (const message of messages) {
-          const tokenInfo = tokenItem[message.teamId];
-          // api/chat.update
+          const token = tokenItem[message.teamId].authed_user.access_token;
           const res = await fetch(
-            `https://slack.com/api/chat.update?token=${tokenInfo.access_token}&channel=${message.channelId}&ts=${message.ts}&text=${slackMessage}`,
-            { headers: { Authorization: `Bearer ${tokenItem[message.teamId].access_token}` } },
-          );
+            `https://slack.com/api/chat.update?channel=${message.channelId}&ts=${message.ts}&blocks=${JSON.stringify(slackMessage)}`,
+            { headers: { Authorization: `Bearer ${token}` } },
+          ).then(async (req) => (await req.json()) as ChatUpdateReq);
           if (!res.ok) {
-            console.log(
-              "❌ Slack channel update failed - res.ok is false",
-              res.status,
-              res.statusText,
-            );
+            console.log("❌ Slack message update failed - res.ok is false", res.error);
             continue;
           }
           console.log("✅ Slack message update successful");
@@ -456,6 +475,60 @@ type ChannelsReq = {
   };
 };
 
+type ConversationInfoReq = {
+  ok: boolean;
+  channel: {
+    id: string;
+    name: string;
+    is_channel: boolean;
+    is_group: boolean;
+    is_im: boolean;
+    is_mpim: boolean;
+    is_private: boolean;
+    created: number;
+    is_archived: boolean;
+    is_general: boolean;
+    unlinked: number;
+    name_normalized: string;
+    is_shared: boolean;
+    is_org_shared: boolean;
+    is_pending_ext_shared: boolean;
+    pending_shared: string[];
+    context_team_id: string;
+    updated: number;
+    parent_conversation: null;
+    creator: string;
+    is_ext_shared: boolean;
+    shared_team_ids: string[];
+    pending_connected_team_ids: string[];
+    is_member: boolean;
+    last_read: string;
+    topic: {
+      value: string;
+      creator: string;
+      last_set: number;
+    };
+    purpose: {
+      value: string;
+      creator: string;
+      last_set: number;
+    };
+    properties: {
+      canvas: {
+        file_id: string;
+        quip_thread_id: string;
+      };
+      tabs: {
+        id: string;
+        label: string;
+        type: string;
+      }[];
+      use_case: string;
+    };
+    previous_names: string[];
+  };
+};
+
 type PostMessageReq = {
   ok: boolean;
   channel: string;
@@ -474,6 +547,22 @@ type PostMessageReq = {
     ts: string;
   };
 };
+
+type ChatUpdateReq =
+  | {
+      ok: true;
+      channel: string;
+      ts: string;
+      text: string;
+      message: {
+        text: string;
+        user: string;
+      };
+    }
+  | {
+      ok: false;
+      error: string;
+    };
 
 type Templates = {
   [routineStepId: string]: {

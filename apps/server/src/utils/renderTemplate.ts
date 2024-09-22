@@ -45,8 +45,6 @@ export const renderTemplate = async (template: string, data: TemplateData) => {
     ...data,
   });
 
-  console.log(result);
-
   return result;
 };
 
