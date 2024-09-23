@@ -61,7 +61,7 @@ export default definePlugin((opts) => {
         <Flow.Tooltip>
           <Flow.TooltipTrigger
             className={opts.cn(
-              "p-0.5 mr-1 rounded-sm bg-background-200 hover:bg-background-300 transform translate-y-0.5 h-5 w-5 inline-flex items-center justify-center",
+              "p-0.5 rounded-sm bg-background-200 hover:bg-background-300 transform translate-y-0.5 h-5 w-5 inline-flex items-center justify-center",
               props.selected && "bg-background-300",
             )}
           >
@@ -163,7 +163,7 @@ export default definePlugin((opts) => {
         multiselect
         label={props.withLabel ? "Default channels" : undefined}
       >
-        <Flow.ComboboxTrigger className="flex items-center gap-2 self-start px-3 py-2 rounded-md bg-background-50 ring-primary-200 text-foreground-900 hover:ring-primary-300 disabled:bg-background-300/50 focus:ring-primary-500 focus:outline-none ring-2">
+        <Flow.ComboboxTrigger className="flex items-center gap-2 self-start px-3 py-1.5 rounded-md bg-background-50 ring-primary-200 text-foreground-900 hover:ring-primary-300 disabled:bg-background-300/50 focus:ring-primary-500 focus:outline-none ring-2">
           <Flow.ComboboxValue
             placeholder="Select channels..."
             renderValues={(ids) =>
@@ -323,43 +323,50 @@ export default definePlugin((opts) => {
           }, [editorRef.current]);
 
           return (
-            <form onSubmit={handleSubmit(onSubmit)} className="flex flex-col gap-4">
-              <opts.reactHookForm.Controller
-                name="message"
-                control={control}
-                render={({ field }) => (
-                  <Flow.NoteEditor
-                    editorRef={editorRef}
-                    slug={`slack_post-plan-${today.format("YYYY-MM-DD")}`}
-                    title={`Plan for ${today.format("MMMM D, YYYY")}`}
-                    initialValue={field.value}
-                    onChange={({ html }) => {
-                      console.log(html);
-                      field.onChange(html);
-                    }}
-                    onBlur={field.onBlur}
-                    saveNow={saveNow}
-                    onSaveEnd={handleNoteSaved}
-                  />
+            <div className="bg-background-100 w-full">
+              <form
+                onSubmit={handleSubmit(onSubmit)}
+                className="flex flex-col gap-4 mx-auto max-w-2xl pt-48 min-h-screen"
+              >
+                <div className="font-semibold text-4xl">Post your plan to Slack</div>
+                <opts.reactHookForm.Controller
+                  name="message"
+                  control={control}
+                  render={({ field }) => (
+                    <Flow.NoteEditor
+                      editorRef={editorRef}
+                      slug={`slack_post-plan-${today.format("YYYY-MM-DD")}`}
+                      title={`Plan for ${today.format("MMMM D, YYYY")}`}
+                      initialValue={field.value}
+                      onChange={({ html }) => {
+                        console.log(html);
+                        field.onChange(html);
+                      }}
+                      onBlur={field.onBlur}
+                      saveNow={saveNow}
+                      onSaveEnd={handleNoteSaved}
+                      className="min-h-[40vh]"
+                    />
+                  )}
+                />
+                {formState.errors.root && (
+                  <div className="text-negative-600 text-sm">{formState.errors.root.message}</div>
                 )}
-              />
-              {formState.errors.root && (
-                <div className="text-negative-600 text-sm">{formState.errors.root.message}</div>
-              )}
-              <div className="flex justify-between items-center">
-                <ChannelsPicker control={control} channels={channels} />
-                <div className="flex items-center gap-2">
-                  <props.BackButton type="button" />
-                  <props.NextButton
-                    type="submit"
-                    loading={postingMessages}
-                    onClick={() => {
-                      // override the default onClick to prevent from going to the next step until the form is submitted
-                    }}
-                  />
+                <div className="flex justify-between items-center">
+                  <ChannelsPicker control={control} channels={channels} />
+                  <div className="flex items-center gap-2">
+                    <props.BackButton type="button" />
+                    <props.NextButton
+                      type="submit"
+                      loading={postingMessages}
+                      onClick={() => {
+                        // override the default onClick to prevent from going to the next step until the form is submitted
+                      }}
+                    />
+                  </div>
                 </div>
-              </div>
-            </form>
+              </form>
+            </div>
           );
         },
         renderSettings: async (props) => {
@@ -451,7 +458,15 @@ export default definePlugin((opts) => {
                       )}
                     />
                   </div>
-                  <ChannelsPicker control={control} channels={channels} />
+                  <div className="flex flex-col gap-1">
+                    <div className="text-foreground-900 text-base font-medium">
+                      Default channels
+                    </div>
+                    <div className="text-foreground-700 text-sm">
+                      Which channels should be selected by default when posting a plan?
+                    </div>
+                    <ChannelsPicker control={control} channels={channels} />
+                  </div>
                   <div className="flex items-center gap-2 self-end">
                     <Flow.Button type="button" secondary onClick={props.onCancel}>
                       Cancel

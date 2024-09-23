@@ -170,7 +170,7 @@ builder.mutationField("updateRoutine", (t) =>
     },
     resolve: async (query, _, args) => {
       const { routine, newSteps } = await prisma.$transaction(async (tx) => {
-        const { count: deletedStepsCount } = await tx.routineStep.deleteMany({
+        await tx.routineStep.deleteMany({
           where: {
             routineId: parseInt(args.input.routineId.id),
             id: {
@@ -180,7 +180,7 @@ builder.mutationField("updateRoutine", (t) =>
             },
           },
         });
-        console.log("deletedStepsCount", deletedStepsCount);
+
         const stepsOrdered: number[] = [];
         const newSteps: RoutineStep[] = [];
         for (const step of args.input.steps ?? []) {

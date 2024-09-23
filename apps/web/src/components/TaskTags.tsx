@@ -94,7 +94,7 @@ export const TaskTagsExtension = Mention.extend<
     return [
       "span",
       mergeAttributes(this.options.HTMLAttributes, HTMLAttributes, {
-        class: `text-${taskTag?.color ?? "gray"}-700 rounded-md px-1 py-0.5`,
+        class: `text-${taskTag?.color ?? "gray"}-700`,
       }),
       `${this.options.suggestion.char}${taskTag?.name ?? taskTagAttrs.name}`,
     ];

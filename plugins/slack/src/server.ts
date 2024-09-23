@@ -243,7 +243,7 @@ export default definePlugin((opts) => {
       helpers: {
         // reminder: handlebars helpers are prefixed with the plugin's slug. Example: if the plugin slug is `slack`, then the full helper name will be `slack-helperName`.
         status: function (this: PrismaTypes.Task) {
-          if (!("status" in this)) return "";
+          if (!("status" in this) || !("id" in this)) return "";
           return new opts.Handlebars.SafeString(
             `<slack-status data-task-id=\"Task_${this.id}\">${statusMap[this.status]}</slack-status>`,
           );

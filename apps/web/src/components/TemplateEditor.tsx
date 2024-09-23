@@ -116,7 +116,6 @@ const PreviewTemplate = (props: { template: Template }) => {
   const editor = useEditor(
     {
       extensions: [StarterKit, ...pluginExtensions],
-      editorProps: { attributes: { class: "prose" } },
       editable: false,
       content: data.renderTemplate,
     },
@@ -124,7 +123,10 @@ const PreviewTemplate = (props: { template: Template }) => {
   );
 
   return (
-    <EditorContent editor={editor} className="min-h-85 border border-primary-200 rounded px-4" />
+    <EditorContent
+      editor={editor}
+      className="min-h-85 border border-primary-200 rounded px-4 pt-4"
+    />
   );
 };
 

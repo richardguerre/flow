@@ -7,15 +7,15 @@ import {
   ReactNodeViewRenderer,
   NodeViewWrapper,
 } from "@tiptap/react";
-import { Blockquote, BlockquoteOptions } from "@tiptap/extension-blockquote";
-import { BulletList, BulletListOptions } from "@tiptap/extension-bullet-list";
+import { Blockquote as $Blockquote, BlockquoteOptions } from "@tiptap/extension-blockquote";
+import { BulletList as $BulletList, BulletListOptions } from "@tiptap/extension-bullet-list";
 import { CodeBlock as $CodeBlock, CodeBlockOptions } from "@tiptap/extension-code-block";
 import { HardBreak, HardBreakOptions } from "@tiptap/extension-hard-break";
-import { Heading, HeadingOptions } from "@tiptap/extension-heading";
+import { Heading as $Heading, HeadingOptions } from "@tiptap/extension-heading";
 import { HorizontalRule, HorizontalRuleOptions } from "@tiptap/extension-horizontal-rule";
-import { ListItem, ListItemOptions } from "@tiptap/extension-list-item";
-import { OrderedList, OrderedListOptions } from "@tiptap/extension-ordered-list";
-import { Paragraph, ParagraphOptions } from "@tiptap/extension-paragraph";
+import { ListItem as $ListItem, ListItemOptions } from "@tiptap/extension-list-item";
+import { OrderedList as $OrderedList, OrderedListOptions } from "@tiptap/extension-ordered-list";
+import { Paragraph as $Paragraph, ParagraphOptions } from "@tiptap/extension-paragraph";
 import { Text } from "@tiptap/extension-text";
 import { Link as $Link, LinkOptions } from "@tiptap/extension-link";
 import { Bold, BoldOptions } from "@tiptap/extension-bold";
@@ -33,17 +33,11 @@ import { EditorView } from "@tiptap/pm/view";
 
 export {
   Document,
-  Paragraph,
   useEditor,
   Editor,
   EditorContent,
-  Blockquote,
-  BulletList,
   HardBreak,
-  Heading,
   HorizontalRule,
-  ListItem,
-  OrderedList,
   Text,
   Bold,
   Italic,
@@ -60,6 +54,64 @@ export {
   ReactNodeViewRenderer,
   NodeViewWrapper,
 };
+
+export const Paragraph = $Paragraph.configure({
+  HTMLAttributes: {
+    ...$Paragraph.options?.HTMLAttributes,
+    class: $Paragraph.options?.HTMLAttributes?.class ?? "mb-2",
+  },
+});
+
+export const Heading = $Heading.extend({
+  renderHTML(props) {
+    const level = props.node.attrs.level as 1 | 2 | 3 | 4 | 5 | 6;
+    const classes = {
+      1: "text-4xl font-semibold mb-2",
+      2: "text-3xl font-semibold mb-2",
+      3: "text-2xl font-semibold mb-2",
+      4: "text-xl font-semibold mb-2",
+      5: "text-lg font-semibold mb-2",
+      6: "text-base font-semibold mb-2",
+    } as const;
+    return [
+      `h${level}`,
+      mergeAttributes(this.options.HTMLAttributes, props.HTMLAttributes, {
+        class: `${classes[level]}`,
+      }),
+      0,
+    ];
+  },
+});
+
+export const BulletList = $BulletList.configure({
+  HTMLAttributes: {
+    ...$BulletList.options?.HTMLAttributes,
+    class: $BulletList.options?.HTMLAttributes?.class ?? "list-disc ml-5 mb-2",
+  },
+});
+
+export const OrderedList = $OrderedList.configure({
+  HTMLAttributes: {
+    ...$OrderedList.options?.HTMLAttributes,
+    class: $OrderedList.options?.HTMLAttributes?.class ?? "list-decimal ml-6 mb-2",
+  },
+});
+
+export const ListItem = $ListItem.configure({
+  HTMLAttributes: {
+    ...$ListItem.options?.HTMLAttributes,
+    class: $ListItem.options?.HTMLAttributes?.class ?? "!*:mb-0",
+  },
+});
+
+export const Blockquote = $Blockquote.configure({
+  HTMLAttributes: {
+    ...$Blockquote.options?.HTMLAttributes,
+    class:
+      $Blockquote.options?.HTMLAttributes?.class ??
+      "border-l-4 border-background-300 bg-background-300/30 text-foreground-800 px-3 py-1 rounded",
+  },
+});
 
 export const Link = $Link.configure({
   HTMLAttributes: {

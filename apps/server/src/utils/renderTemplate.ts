@@ -4,12 +4,15 @@ import { getPlugins } from "@flowdev/server/src/utils/getPlugins";
 import { prisma } from "./prisma";
 import { getUsersTimezone } from "./index";
 import { dayjs } from "./dayjs";
+import { Task } from "@prisma/client";
+import htmlParser from "node-html-parser";
 
 type TemplateData = Partial<FlowDefaultData> & Record<string, any>;
 
 export const Handlebars = asyncHelpersWrapper($Handlebars) as typeof $Handlebars;
 
 export const renderTemplate = async (template: string, data: TemplateData) => {
+  console.log("renderTemplate()");
   const plugins = await getPlugins();
   const helpers: TrueHelperDeclareSpec = {};
   for (const [pluginSlug, plugin] of Object.entries(plugins)) {
@@ -26,19 +29,19 @@ export const renderTemplate = async (template: string, data: TemplateData) => {
   await registerFlowsDefaultHelpers({
     usersTimezone,
     include: {
+      "title-without-tags": template.includes("title-without-tags"),
       tasks: template.includes("tasks"),
+      yesterday: template.includes("yesterday"),
       today: template.includes("today"),
+      tomorrow: template.includes("tomorrow"),
     },
   });
   console.log("-- Handlebars.helpers", Handlebars.helpers);
 
   const defaultData = await getFlowsDefaultData({
-    include: {
-      yesterdaysTasks: !data.yesterdaysTasks && template.includes("yesterdaysTasks"),
-      todaysTasks: !data.todaysTasks && template.includes("todaysTasks"),
-      tomorrowsTasks: !data.tomorrowsTasks && template.includes("tomorrowsTasks"),
-    },
+    include: {},
   });
+  console.log("-- defaultData", defaultData);
 
   const result = await Handlebars.compile(template)({
     ...defaultData,
@@ -59,6 +62,7 @@ const getFlowsDefaultData = async (_opts?: {
 };
 
 type FlowDefaultRegisters = {
+  "title-without-tags": boolean;
   tasks: boolean;
   yesterday: boolean;
   today: boolean;
@@ -100,6 +104,17 @@ const registerFlowsDefaultHelpers = async (opts?: {
       const tomorrow = today.add(1, "day");
       if (format === "ISO") return tomorrow.toISOString();
       return tomorrow.format(format);
+    });
+  }
+
+  if (opts?.include?.["title-without-tags"]) {
+    Handlebars.registerHelper("title-without-tags", async function (this: Task) {
+      if (!("title" in this)) return "";
+      const titleParsed = htmlParser.parse(this.title);
+      titleParsed.querySelectorAll("span[data-tasktag-id]").forEach((tag) => {
+        tag.replaceWith("");
+      });
+      return new Handlebars.SafeString(titleParsed.toString());
     });
   }
 

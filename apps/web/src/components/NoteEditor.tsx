@@ -6,6 +6,7 @@ import { NoteEditorQuery } from "@flowdev/web/relay/__gen__/NoteEditorQuery.grap
 import { NoteEditorUpsertNoteMutation } from "@flowdev/web/relay/__gen__/NoteEditorUpsertNoteMutation.graphql";
 import { dayjs } from "@flowdev/web/dayjs";
 import { usePlugins } from "../getPlugin";
+import { tw } from "@flowdev/ui/tw";
 // import { CreateNoteTagInput } from "@flowdev/web/relay/__gen__/RoutineStepSaveNoteMutation.graphql";
 
 type NoteEditorProps = {
@@ -20,6 +21,10 @@ type NoteEditorProps = {
   autofocus?: boolean;
   /** If true, the editor will be disabled and a loading indicator will be shown. Useful when fetching the `initialValue`. */
   loading?: boolean;
+  /** className to apply to the editor. */
+  className?: string;
+  /** className to apply to the editor container. */
+  containerClassName?: string;
   /**
    * Triggers for each key pressed within the editor. If you want to retrive the values less often, use `onSaveBegin` and `onSaveEnd`.
    *
@@ -136,7 +141,7 @@ const NoteEditorContent = (props: NoteEditorProps) => {
       extensions: [StarterKit, ...pluginExtensions],
       editorProps: {
         attributes: {
-          class: "prose focus:outline-none",
+          class: tw("focus:outline-none", props.className),
         },
       },
       content: data.note?.content ?? props.initialValue,
@@ -167,5 +172,5 @@ const NoteEditorContent = (props: NoteEditorProps) => {
     }
   }, [props.editorRef, props.saveNow, editor]);
 
-  return <EditorContent editor={editor} />;
+  return <EditorContent editor={editor} className={props.containerClassName} />;
 };

@@ -149,7 +149,7 @@ var re = { exports: {} }, u = {};
  * This source code is licensed under the MIT license found in the
  * LICENSE file in the root directory of this source tree.
  */
-var I = Symbol.for("react.element"), ge = Symbol.for("react.portal"), ve = Symbol.for("react.fragment"), ye = Symbol.for("react.strict_mode"), he = Symbol.for("react.profiler"), Ee = Symbol.for("react.provider"), Ce = Symbol.for("react.context"), ke = Symbol.for("react.forward_ref"), Se = Symbol.for("react.suspense"), we = Symbol.for("react.memo"), xe = Symbol.for("react.lazy"), X = Symbol.iterator;
+var I = Symbol.for("react.element"), ge = Symbol.for("react.portal"), ve = Symbol.for("react.fragment"), he = Symbol.for("react.strict_mode"), ye = Symbol.for("react.profiler"), Ee = Symbol.for("react.provider"), Ce = Symbol.for("react.context"), ke = Symbol.for("react.forward_ref"), Se = Symbol.for("react.suspense"), xe = Symbol.for("react.memo"), we = Symbol.for("react.lazy"), X = Symbol.iterator;
 function Me(e) {
   return e === null || typeof e != "object" ? null : (e = X && e[X] || e["@@iterator"], typeof e == "function" ? e : null);
 }
@@ -159,27 +159,27 @@ var le = { isMounted: function() {
 }, enqueueReplaceState: function() {
 }, enqueueSetState: function() {
 } }, ae = Object.assign, oe = {};
-function w(e, t, n) {
+function x(e, t, n) {
   this.props = e, this.context = t, this.refs = oe, this.updater = n || le;
 }
-w.prototype.isReactComponent = {};
-w.prototype.setState = function(e, t) {
+x.prototype.isReactComponent = {};
+x.prototype.setState = function(e, t) {
   if (typeof e != "object" && typeof e != "function" && e != null)
     throw Error("setState(...): takes an object of state variables to update or a function which returns an object of state variables.");
   this.updater.enqueueSetState(this, e, t, "setState");
 };
-w.prototype.forceUpdate = function(e) {
+x.prototype.forceUpdate = function(e) {
   this.updater.enqueueForceUpdate(this, e, "forceUpdate");
 };
 function ue() {
 }
-ue.prototype = w.prototype;
+ue.prototype = x.prototype;
 function B(e, t, n) {
   this.props = e, this.context = t, this.refs = oe, this.updater = n || le;
 }
 var U = B.prototype = new ue();
 U.constructor = B;
-ae(U, w.prototype);
+ae(U, x.prototype);
 U.isPureReactComponent = !0;
 var Q = Array.isArray, ie = Object.prototype.hasOwnProperty, z = { current: null }, se = { key: !0, ref: !0, __self: !0, __source: !0 };
 function ce(e, t, n) {
@@ -295,11 +295,11 @@ u.Children = { map: H, forEach: function(e, t, n) {
     throw Error("React.Children.only expected to receive a single React element child.");
   return e;
 } };
-u.Component = w;
+u.Component = x;
 u.Fragment = ve;
-u.Profiler = he;
+u.Profiler = ye;
 u.PureComponent = B;
-u.StrictMode = ye;
+u.StrictMode = he;
 u.Suspense = Se;
 u.__SECRET_INTERNALS_DO_NOT_USE_OR_YOU_WILL_BE_FIRED = Oe;
 u.act = me;
@@ -340,10 +340,10 @@ u.forwardRef = function(e) {
 };
 u.isValidElement = Y;
 u.lazy = function(e) {
-  return { $$typeof: xe, _payload: { _status: -1, _result: e }, _init: Ie };
+  return { $$typeof: we, _payload: { _status: -1, _result: e }, _init: Ie };
 };
 u.memo = function(e, t) {
-  return { $$typeof: we, type: e, compare: t === void 0 ? null : t };
+  return { $$typeof: xe, type: e, compare: t === void 0 ? null : t };
 };
 u.startTransition = function(e) {
   var t = V.transition;
@@ -409,16 +409,16 @@ var fe = {
   className: void 0,
   style: void 0,
   attr: void 0
-}, te = k.createContext && k.createContext(fe), h = function() {
-  return h = Object.assign || function(e) {
+}, te = k.createContext && k.createContext(fe), y = function() {
+  return y = Object.assign || function(e) {
     for (var t, n = 1, a = arguments.length; n < a; n++) {
       t = arguments[n];
       for (var o in t)
         Object.prototype.hasOwnProperty.call(t, o) && (e[o] = t[o]);
     }
     return e;
-  }, h.apply(this, arguments);
-}, $e = function(e, t) {
+  }, y.apply(this, arguments);
+}, Pe = function(e, t) {
   var n = {};
   for (var a in e)
     Object.prototype.hasOwnProperty.call(e, a) && t.indexOf(a) < 0 && (n[a] = e[a]);
@@ -429,28 +429,28 @@ var fe = {
 };
 function de(e) {
   return e && e.map(function(t, n) {
-    return k.createElement(t.tag, h({
+    return k.createElement(t.tag, y({
       key: n
     }, t.attr), de(t.child));
   });
 }
 function _e(e) {
   return function(t) {
-    return k.createElement(Pe, h({
-      attr: h({}, e.attr)
+    return k.createElement($e, y({
+      attr: y({}, e.attr)
     }, t), de(e.child));
   };
 }
-function Pe(e) {
+function $e(e) {
   var t = function(n) {
-    var a = e.attr, o = e.size, c = e.title, f = $e(e, ["attr", "size", "title"]), m = o || n.size || "1em", i;
-    return n.className && (i = n.className), e.className && (i = (i ? i + " " : "") + e.className), k.createElement("svg", h({
+    var a = e.attr, o = e.size, c = e.title, f = Pe(e, ["attr", "size", "title"]), m = o || n.size || "1em", i;
+    return n.className && (i = n.className), e.className && (i = (i ? i + " " : "") + e.className), k.createElement("svg", y({
       stroke: "currentColor",
       fill: "currentColor",
       strokeWidth: "0"
     }, n.attr, a, f, {
       className: i,
-      style: h(h({
+      style: y(y({
         color: e.color || n.color
       }, n.style), e.style),
       height: m,
@@ -529,7 +529,7 @@ const Ae = Ne((e) => {
     fileName: l,
     lineNumber: 61,
     columnNumber: 9
-  } }, /* @__PURE__ */ t.createElement(n.TooltipTrigger, { className: e.cn("p-0.5 mr-1 rounded-sm bg-background-200 hover:bg-background-300 transform translate-y-0.5 h-5 w-5 inline-flex items-center justify-center", r.selected && "bg-background-300"), __self: void 0, __source: {
+  } }, /* @__PURE__ */ t.createElement(n.TooltipTrigger, { className: e.cn("p-0.5 rounded-sm bg-background-200 hover:bg-background-300 transform translate-y-0.5 h-5 w-5 inline-flex items-center justify-center", r.selected && "bg-background-300"), __self: void 0, __source: {
     fileName: l,
     lineNumber: 62,
     columnNumber: 11
@@ -616,7 +616,7 @@ const Ae = Ne((e) => {
       fileName: l,
       lineNumber: 160,
       columnNumber: 7
-    } }, /* @__PURE__ */ t.createElement(n.ComboboxTrigger, { className: "flex items-center gap-2 self-start px-3 py-2 rounded-md bg-background-50 ring-primary-200 text-foreground-900 hover:ring-primary-300 disabled:bg-background-300/50 focus:ring-primary-500 focus:outline-none ring-2", __self: void 0, __source: {
+    } }, /* @__PURE__ */ t.createElement(n.ComboboxTrigger, { className: "flex items-center gap-2 self-start px-3 py-1.5 rounded-md bg-background-50 ring-primary-200 text-foreground-900 hover:ring-primary-300 disabled:bg-background-300/50 focus:ring-primary-500 focus:outline-none ring-2", __self: void 0, __source: {
       fileName: l,
       lineNumber: 166,
       columnNumber: 9
@@ -723,20 +723,20 @@ const Ae = Ne((e) => {
         description: "Post your plan for the day in Slack channels.",
         component: (r) => {
           var q;
-          const d = r.templates[0], s = t.useRef(null), _ = e.dayjs(), [v, O] = t.useState(!1), [x, F] = t.useState(((q = r.stepConfig) == null ? void 0 : q.defaultChannels) ?? []), {
+          const d = r.templates[0], s = t.useRef(null), _ = e.dayjs(), [v, O] = t.useState(!1), [w, F] = t.useState(((q = r.stepConfig) == null ? void 0 : q.defaultChannels) ?? []), {
             control: L,
-            handleSubmit: $,
+            handleSubmit: P,
             formState: M,
             setError: T,
-            setValue: P
+            setValue: $
           } = e.reactHookForm.useForm({
             defaultValues: {
               message: (d == null ? void 0 : d.rendered) ?? "",
-              channels: x.map((p) => p.id)
+              channels: w.map((p) => p.id)
             }
           }), [j, b] = e.operations.useMutation("postMessage"), R = async (p) => {
             var Z, W, G;
-            const E = x.filter((y) => p.channels.includes(y.id));
+            const E = w.filter((h) => p.channels.includes(h.id));
             if (!E.length) {
               T("root", {
                 message: "Please select at least one channel."
@@ -745,9 +745,9 @@ const Ae = Ne((e) => {
             }
             const C = await j({
               message: p.message,
-              channels: E.map((y) => ({
-                teamId: y.team.id,
-                channelId: y.id
+              channels: E.map((h) => ({
+                teamId: h.team.id,
+                channelId: h.id
               }))
             });
             if (!((Z = C == null ? void 0 : C.data) != null && Z.ok)) {
@@ -758,13 +758,13 @@ const Ae = Ne((e) => {
             }
             let K = ((W = s.current) == null ? void 0 : W.state.doc.content.size) ?? 0;
             const S = (G = s.current) == null ? void 0 : G.chain();
-            for (const y of C.data.messages)
+            for (const h of C.data.messages)
               S == null || S.insertContentAt(K, {
                 type: "slack-message",
                 attrs: {
-                  teamId: y.teamId,
-                  channelId: y.channelId,
-                  ts: y.ts
+                  teamId: h.teamId,
+                  channelId: h.channelId,
+                  ts: h.ts
                 }
               }), K++;
             S == null || S.run(), O(!0);
@@ -782,56 +782,64 @@ const Ae = Ne((e) => {
           }, []), t.useEffect(() => {
             if (s.current) {
               const p = s.current.getHTML();
-              P("message", p);
+              $("message", p);
             }
-          }, [s.current]), /* @__PURE__ */ t.createElement("form", { onSubmit: $(R), className: "flex flex-col gap-4", __self: void 0, __source: {
+          }, [s.current]), /* @__PURE__ */ t.createElement("div", { className: "bg-background-100 w-full", __self: void 0, __source: {
             fileName: l,
             lineNumber: 326,
             columnNumber: 13
-          } }, /* @__PURE__ */ t.createElement(e.reactHookForm.Controller, { name: "message", control: L, render: ({
+          } }, /* @__PURE__ */ t.createElement("form", { onSubmit: P(R), className: "flex flex-col gap-4 mx-auto max-w-2xl pt-48 min-h-screen", __self: void 0, __source: {
+            fileName: l,
+            lineNumber: 327,
+            columnNumber: 15
+          } }, /* @__PURE__ */ t.createElement("div", { className: "font-semibold text-4xl", __self: void 0, __source: {
+            fileName: l,
+            lineNumber: 331,
+            columnNumber: 17
+          } }, "Post your plan to Slack"), /* @__PURE__ */ t.createElement(e.reactHookForm.Controller, { name: "message", control: L, render: ({
             field: p
           }) => /* @__PURE__ */ t.createElement(n.NoteEditor, { editorRef: s, slug: `slack_post-plan-${_.format("YYYY-MM-DD")}`, title: `Plan for ${_.format("MMMM D, YYYY")}`, initialValue: p.value, onChange: ({
             html: E
           }) => {
             console.log(E), p.onChange(E);
-          }, onBlur: p.onBlur, saveNow: v, onSaveEnd: g, __self: void 0, __source: {
+          }, onBlur: p.onBlur, saveNow: v, onSaveEnd: g, className: "min-h-[40vh]", __self: void 0, __source: {
             fileName: l,
-            lineNumber: 331,
-            columnNumber: 19
+            lineNumber: 336,
+            columnNumber: 21
           } }), __self: void 0, __source: {
             fileName: l,
-            lineNumber: 327,
-            columnNumber: 15
+            lineNumber: 332,
+            columnNumber: 17
           } }), M.errors.root && /* @__PURE__ */ t.createElement("div", { className: "text-negative-600 text-sm", __self: void 0, __source: {
-            fileName: l,
-            lineNumber: 347,
-            columnNumber: 17
-          } }, M.errors.root.message), /* @__PURE__ */ t.createElement("div", { className: "flex justify-between items-center", __self: void 0, __source: {
-            fileName: l,
-            lineNumber: 349,
-            columnNumber: 15
-          } }, /* @__PURE__ */ t.createElement(i, { control: L, channels: x, __self: void 0, __source: {
-            fileName: l,
-            lineNumber: 350,
-            columnNumber: 17
-          } }), /* @__PURE__ */ t.createElement("div", { className: "flex items-center gap-2", __self: void 0, __source: {
-            fileName: l,
-            lineNumber: 351,
-            columnNumber: 17
-          } }, /* @__PURE__ */ t.createElement(r.BackButton, { type: "button", __self: void 0, __source: {
-            fileName: l,
-            lineNumber: 352,
-            columnNumber: 19
-          } }), /* @__PURE__ */ t.createElement(r.NextButton, { type: "submit", loading: b, onClick: () => {
-          }, __self: void 0, __source: {
             fileName: l,
             lineNumber: 353,
             columnNumber: 19
-          } }))));
+          } }, M.errors.root.message), /* @__PURE__ */ t.createElement("div", { className: "flex justify-between items-center", __self: void 0, __source: {
+            fileName: l,
+            lineNumber: 355,
+            columnNumber: 17
+          } }, /* @__PURE__ */ t.createElement(i, { control: L, channels: w, __self: void 0, __source: {
+            fileName: l,
+            lineNumber: 356,
+            columnNumber: 19
+          } }), /* @__PURE__ */ t.createElement("div", { className: "flex items-center gap-2", __self: void 0, __source: {
+            fileName: l,
+            lineNumber: 357,
+            columnNumber: 19
+          } }, /* @__PURE__ */ t.createElement(r.BackButton, { type: "button", __self: void 0, __source: {
+            fileName: l,
+            lineNumber: 358,
+            columnNumber: 21
+          } }), /* @__PURE__ */ t.createElement(r.NextButton, { type: "submit", loading: b, onClick: () => {
+          }, __self: void 0, __source: {
+            fileName: l,
+            lineNumber: 359,
+            columnNumber: 21
+          } })))));
         },
         renderSettings: async (r) => ({
           component: () => {
-            var $, M, T, P, j;
+            var P, M, T, $, j;
             const d = r.routineStep.templates[0], {
               control: s,
               handleSubmit: _
@@ -841,11 +849,11 @@ const Ae = Ne((e) => {
                   content: (d == null ? void 0 : d.raw) ?? be,
                   data: (d == null ? void 0 : d.metadata) ?? {}
                 },
-                channels: ((T = (M = ($ = r.routineStep) == null ? void 0 : $.config) == null ? void 0 : M.defaultChannels) == null ? void 0 : T.map((b) => b.id)) ?? []
+                channels: ((T = (M = (P = r.routineStep) == null ? void 0 : P.config) == null ? void 0 : M.defaultChannels) == null ? void 0 : T.map((b) => b.id)) ?? []
               }
-            }), [v, O] = t.useState(((j = (P = r.routineStep) == null ? void 0 : P.config) == null ? void 0 : j.defaultChannels) ?? []), [x, F] = e.relay.useMutation(ne), L = async (b) => {
+            }), [v, O] = t.useState(((j = ($ = r.routineStep) == null ? void 0 : $.config) == null ? void 0 : j.defaultChannels) ?? []), [w, F] = e.relay.useMutation(ne), L = async (b) => {
               const R = v.filter((g) => b.channels.includes(g.id));
-              x({
+              w({
                 variables: {
                   routineStep: {
                     id: r.routineStep.id,
@@ -875,49 +883,61 @@ const Ae = Ne((e) => {
               });
             }, []), /* @__PURE__ */ t.createElement("form", { onSubmit: _(L), className: "flex flex-col gap-4", __self: void 0, __source: {
               fileName: l,
-              lineNumber: 434,
+              lineNumber: 441,
               columnNumber: 17
             } }, /* @__PURE__ */ t.createElement("div", { className: "flex flex-col gap-1", __self: void 0, __source: {
               fileName: l,
-              lineNumber: 435,
+              lineNumber: 442,
               columnNumber: 19
             } }, /* @__PURE__ */ t.createElement("div", { className: "text-foreground-900 text-base font-medium", __self: void 0, __source: {
               fileName: l,
-              lineNumber: 436,
+              lineNumber: 443,
               columnNumber: 21
             } }, "Template"), /* @__PURE__ */ t.createElement("div", { className: "text-foreground-700 text-sm", __self: void 0, __source: {
               fileName: l,
-              lineNumber: 437,
+              lineNumber: 444,
               columnNumber: 21
             } }, "Write the template message for the routine in HTML. You can preview it before saving.", /* @__PURE__ */ t.createElement("br", { __self: void 0, __source: {
               fileName: l,
-              lineNumber: 440,
+              lineNumber: 447,
               columnNumber: 23
             } }), "Don't worry, you can edit the message each time you do the routine."), /* @__PURE__ */ t.createElement(e.reactHookForm.Controller, { name: "template", control: s, render: ({
               field: b
             }) => /* @__PURE__ */ t.createElement(n.TemplateEditor, { initialTemplate: b.value, onChange: b.onChange, __self: void 0, __source: {
               fileName: l,
-              lineNumber: 447,
+              lineNumber: 454,
               columnNumber: 25
             } }), __self: void 0, __source: {
               fileName: l,
-              lineNumber: 443,
+              lineNumber: 450,
               columnNumber: 21
-            } })), /* @__PURE__ */ t.createElement(i, { control: s, channels: v, __self: void 0, __source: {
+            } })), /* @__PURE__ */ t.createElement("div", { className: "flex flex-col gap-1", __self: void 0, __source: {
               fileName: l,
-              lineNumber: 454,
+              lineNumber: 461,
               columnNumber: 19
-            } }), /* @__PURE__ */ t.createElement("div", { className: "flex items-center gap-2 self-end", __self: void 0, __source: {
+            } }, /* @__PURE__ */ t.createElement("div", { className: "text-foreground-900 text-base font-medium", __self: void 0, __source: {
               fileName: l,
-              lineNumber: 455,
+              lineNumber: 462,
+              columnNumber: 21
+            } }, "Default channels"), /* @__PURE__ */ t.createElement("div", { className: "text-foreground-700 text-sm", __self: void 0, __source: {
+              fileName: l,
+              lineNumber: 465,
+              columnNumber: 21
+            } }, "Which channels should be selected by default when posting a plan?"), /* @__PURE__ */ t.createElement(i, { control: s, channels: v, __self: void 0, __source: {
+              fileName: l,
+              lineNumber: 468,
+              columnNumber: 21
+            } })), /* @__PURE__ */ t.createElement("div", { className: "flex items-center gap-2 self-end", __self: void 0, __source: {
+              fileName: l,
+              lineNumber: 470,
               columnNumber: 19
             } }, /* @__PURE__ */ t.createElement(n.Button, { type: "button", secondary: !0, onClick: r.onCancel, __self: void 0, __source: {
               fileName: l,
-              lineNumber: 456,
+              lineNumber: 471,
               columnNumber: 21
             } }, "Cancel"), /* @__PURE__ */ t.createElement(n.Button, { type: "submit", loading: F, __self: void 0, __source: {
               fileName: l,
-              lineNumber: 459,
+              lineNumber: 474,
               columnNumber: 21
             } }, "Save")));
           }
