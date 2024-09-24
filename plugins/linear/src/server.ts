@@ -1,4 +1,4 @@
-import { PrismaTypes, TaskInTemplate, definePlugin } from "@flowdev/plugin/server";
+import { type ServerTypes, definePlugin } from "@flowdev/plugin/server";
 
 const ACCOUNT_TOKENS_STORE_KEY = "account-tokens";
 const SYNCED_VIEWS_STORE_KEY = "synced-views";
@@ -321,14 +321,14 @@ export default definePlugin((opts) => {
     },
     handlebars: {
       helpers: {
-        "issue-link": function (this: TaskInTemplate) {
+        "issue-link": function (this: ServerTypes.TaskInTemplate) {
           if (!("pluginDatas" in this)) return "";
           const pluginData = this.pluginDatas.find((p) => p.pluginSlug === "linear");
           if (!pluginData) return "";
           const min = pluginData.min as LinearIssueItemMin;
           return min.url ?? `https://linear.app/issue/${min.identifier}`;
         },
-        "issue-id": function (this: TaskInTemplate) {
+        "issue-id": function (this: ServerTypes.TaskInTemplate) {
           if (!("pluginDatas" in this)) return "";
           const pluginData = this.pluginDatas.find((p) => p.pluginSlug === "linear");
           if (!pluginData) return "";
@@ -561,7 +561,7 @@ export default definePlugin((opts) => {
             title: issue.title,
             isRelevant,
             inboxPoints: 10, // TODO: make it configurable by the user.
-          } satisfies PrismaTypes.Prisma.ItemUpdateInput;
+          } satisfies ServerTypes.PrismaTypes.Prisma.ItemUpdateInput;
 
           const min = {
             ...((existinPluginData?.min as LinearIssueItemMin) ?? {}),

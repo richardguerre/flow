@@ -11,7 +11,7 @@ import { PluginOnCreateCalendarItem } from "@flowdev/server/src/utils";
 import { type HelperDeclareSpec } from "@flowdev/server/src/utils/renderTemplate";
 import type { PluginOnAddRoutineStepEnd } from "@flowdev/server/src/graphql/Routine";
 
-export type { PrismaTypes, TaskInTemplate } from "@flowdev/server/src/exportedTypes";
+export type * as ServerTypes from "@flowdev/server/src/exportedTypes";
 
 export type ServerPluginOptions = _ServerPluginOptions;
 
