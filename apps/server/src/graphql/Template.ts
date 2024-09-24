@@ -110,7 +110,9 @@ builder.mutationField("createTemplate", (t) =>
       }
 
       // verify template is valid
-      await renderTemplate(args.input.template, {}).catch((err) => {
+      const data =
+        args.input.metadata && typeof args.input.metadata === "object" ? args.input.metadata : {};
+      await renderTemplate(args.input.template, data).catch((err) => {
         throw new GraphQLError(err.message, {
           extensions: {
             code: "INVALID_TEMPLATE",
@@ -181,7 +183,9 @@ builder.mutationField("updateTemplate", (t) =>
 
       // verify template is valid
       if (args.input.raw) {
-        await renderTemplate(args.input.raw, {}).catch((err) => {
+        const data =
+          args.input.metadata && typeof args.input.metadata === "object" ? args.input.metadata : {};
+        await renderTemplate(args.input.raw, data).catch((err) => {
           throw new GraphQLError(err.message, {
             extensions: {
               code: "INVALID_TEMPLATE",
@@ -249,7 +253,9 @@ builder.mutationField("createOrUpdateTemplate", (t) =>
       }
 
       // verify template is valid
-      await renderTemplate(args.input.raw, {}).catch((err) => {
+      const data =
+        args.input.metadata && typeof args.input.metadata === "object" ? args.input.metadata : {};
+      await renderTemplate(args.input.raw, data).catch((err) => {
         throw new GraphQLError(err.message, {
           extensions: {
             code: "INVALID_TEMPLATE",
