@@ -201,6 +201,12 @@ CREATE TABLE "_TaskToTaskTag" (
     "B" INTEGER NOT NULL
 );
 
+-- CreateTable
+CREATE TABLE "_ItemToTaskTag" (
+    "A" INTEGER NOT NULL,
+    "B" INTEGER NOT NULL
+);
+
 -- CreateIndex
 CREATE UNIQUE INDEX "Note_slug_key" ON "Note"("slug");
 
@@ -233,6 +239,12 @@ CREATE UNIQUE INDEX "_TaskToTaskTag_AB_unique" ON "_TaskToTaskTag"("A", "B");
 
 -- CreateIndex
 CREATE INDEX "_TaskToTaskTag_B_index" ON "_TaskToTaskTag"("B");
+
+-- CreateIndex
+CREATE UNIQUE INDEX "_ItemToTaskTag_AB_unique" ON "_ItemToTaskTag"("A", "B");
+
+-- CreateIndex
+CREATE INDEX "_ItemToTaskTag_B_index" ON "_ItemToTaskTag"("B");
 
 -- AddForeignKey
 ALTER TABLE "Note" ADD CONSTRAINT "Note_date_fkey" FOREIGN KEY ("date") REFERENCES "Day"("date") ON DELETE RESTRICT ON UPDATE CASCADE;
@@ -278,3 +290,9 @@ ALTER TABLE "_TaskToTaskTag" ADD CONSTRAINT "_TaskToTaskTag_A_fkey" FOREIGN KEY 
 
 -- AddForeignKey
 ALTER TABLE "_TaskToTaskTag" ADD CONSTRAINT "_TaskToTaskTag_B_fkey" FOREIGN KEY ("B") REFERENCES "TaskTag"("id") ON DELETE CASCADE ON UPDATE CASCADE;
+
+-- AddForeignKey
+ALTER TABLE "_ItemToTaskTag" ADD CONSTRAINT "_ItemToTaskTag_A_fkey" FOREIGN KEY ("A") REFERENCES "Item"("id") ON DELETE CASCADE ON UPDATE CASCADE;
+
+-- AddForeignKey
+ALTER TABLE "_ItemToTaskTag" ADD CONSTRAINT "_ItemToTaskTag_B_fkey" FOREIGN KEY ("B") REFERENCES "TaskTag"("id") ON DELETE CASCADE ON UPDATE CASCADE;

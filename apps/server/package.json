@@ -16,6 +16,7 @@
     "db:migrate": "bunx prisma migrate dev --create-only",
     "db:reset": "bun run prisma/dropOtherSchemas.ts && prisma migrate reset --force",
     "db:seed": "bun run prisma/seed.ts",
+    "db:dropOtherSchemas": "bun run prisma/dropOtherSchemas.ts",
     "setup:db": "psql -c \"CREATE DATABASE flow;\" || echo \"🔵 Ignore the above error. Everything is good to go!\"",
     "setup:db:test": "psql -c \"CREATE DATABASE flow_test;\" || echo \"🔵 Ignore the above error. Everything is good to go!\"",
     "env:example": "cp -n .env.example .env || true",

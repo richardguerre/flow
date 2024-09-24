@@ -146,7 +146,10 @@ model TaskTag {
   /// Whether tasks with this tag should be private. (default: true)
   isPrivate Boolean  @default(true)
 
+  /// The tasks linked to the tag
   tasks Task[]
+  /// the items linked to the tag
+  items Item[]
 }
 
 /// The data required by a plugin to be linked to a task.
@@ -222,6 +225,8 @@ model Item {
 
   /// The tasks linked to the item
   tasks       Task[]
+  /// The tags linked to the item
+  tags        TaskTag[]
   /// The plugin datas linked to the item
   pluginDatas ItemPluginData[]
   /// The list in which the item is in
@@ -333,7 +338,7 @@ model Template {
   updatedAt DateTime @updatedAt @db.Timestamptz()
   /// The Handlebars template -- https://handlebarsjs.com/guide
   template  String
-  /// Extra data attached to the template. This column may not be used yet.
+  /// Extra data attached to the template.
   metadata  Json?
 
   /// The routineStep (if any) the template is used in
