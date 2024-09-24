@@ -5,13 +5,9 @@ export const getDefaultPlanYourDayTemplate = (props?: { withLinear?: boolean }) 
     ? `- <a href="{{linear-issue-link}}">{{linear-issue-id}}</a>`
     : "";
   return `Plan for today
-{{#tasks}}
-  <ul>
-    <li>
-      <p>{{slack-status}} {{title}} ${linearLink}</p>
-    </li>
-  </ul>
+<ul>{{#tasks}}
+  <li>{{slack-status}} {{title}} ${linearLink}</li>
 {{else}}
-  <p>No tasks today</p>
-{{/tasks}}`;
+  <li>No tasks</li> 
+{{/tasks}}</ul>`;
 };
