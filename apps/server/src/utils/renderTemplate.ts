@@ -6,6 +6,7 @@ import { getUsersTimezone } from "./index";
 import { dayjs } from "./dayjs";
 import { Task } from "@prisma/client";
 import htmlParser from "node-html-parser";
+import { TaskInTemplate } from "../exportedTypes";
 
 type TemplateData = Partial<FlowDefaultData> & Record<string, any>;
 
@@ -133,12 +134,13 @@ const registerFlowsDefaultHelpers = async (opts?: {
         .findMany({
           ...prismaArgs,
           where: { date: today.toISOString(), ...prismaArgs.where },
+          include: { tags: true, pluginDatas: true, item: { select: { id: true } } },
         })
         .then((tasks) =>
           tasks.map((task) => {
             // remove wrapping <p> tags from the title
             const title = task.title.replace(/<p>(.*)<\/p>/, "$1");
-            return { ...task, title: new Handlebars.SafeString(title) };
+            return { ...task, title: new Handlebars.SafeString(title) } satisfies TaskInTemplate;
           }),
         );
 

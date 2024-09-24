@@ -56,6 +56,7 @@ declare global {
 
   type LinearIssue = {
     id: string;
+    identifier: string;
     url: string;
     title: string;
     priority: number;
@@ -91,13 +92,14 @@ declare global {
 
   type LinearIssueItemMin = {
     id: string;
+    identifier: string;
     state: LinearIssueState;
     views: ViewId[];
     url: string;
     priority: number;
   };
 
-  type LinearIssueItemFull = LinearIssueItemMi & {
-    description: string;
+  type LinearIssueItemFull = LinearIssueItemMin & {
+    description: string | null;
   };
 }

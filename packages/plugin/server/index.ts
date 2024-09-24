@@ -8,9 +8,10 @@ import type {
 import { PluginOnUpdateItemStatus } from "@flowdev/server/src/graphql/Item";
 import type { Elysia } from "elysia";
 import { PluginOnCreateCalendarItem } from "@flowdev/server/src/utils";
-export type { PrismaTypes } from "@flowdev/server/src/exportedTypes";
 import { type HelperDeclareSpec } from "@flowdev/server/src/utils/renderTemplate";
 import type { PluginOnAddRoutineStepEnd } from "@flowdev/server/src/graphql/Routine";
+
+export type { PrismaTypes, TaskInTemplate } from "@flowdev/server/src/exportedTypes";
 
 export type ServerPluginOptions = _ServerPluginOptions;
 

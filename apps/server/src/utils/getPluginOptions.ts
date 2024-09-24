@@ -11,6 +11,7 @@ import { getUsersTimezone } from "./index";
 import htmlParser from "node-html-parser";
 import { decodeGlobalId, encodeGlobalId } from "@flowdev/common";
 import htmlToSlack from "html-to-slack";
+import { getPlugins } from "./getPlugins";
 
 type PrismaJsonInput = string | number | boolean | Prisma.JsonObject | Prisma.JsonArray;
 
@@ -202,6 +203,11 @@ export const getPluginOptions = (pluginSlug: string) => ({
    * @example "America/New_York"
    */
   getUsersTimezone,
+  /** Get the installed plugins (slug only). */
+  getInstalledPlugins: async () => {
+    const plugins = await getPlugins();
+    return Object.keys(plugins).map((slug) => ({ slug }));
+  },
   /** Get the nearest valid Item.color to the specified Hex. */
   getNearestItemColor: (hex: string) => nearestTailwindColor(hex) as Color,
   /**

@@ -1,5 +1,5 @@
-import { definePlugin, PrismaTypes } from "@flowdev/plugin/server";
-import { POST_TO_SLACK, DEFAULT_PLAN_YOUR_DAY } from "./common";
+import { definePlugin, type TaskInTemplate } from "@flowdev/plugin/server";
+import { POST_TO_SLACK, getDefaultPlanYourDayTemplate } from "./common";
 
 const ACCOUNT_TOKENS_STORE_KEY = "account-tokens";
 
@@ -214,12 +214,15 @@ export default definePlugin((opts) => {
     },
     onAddRoutineStepEnd: async (input) => {
       if (input.step.stepSlug === POST_TO_SLACK) {
+        const plugins = await opts.getInstalledPlugins();
         // add default template
         await opts.prisma.template.upsert({
           where: { slug: `${opts.pluginSlug}-${input.step.stepSlug}` },
           create: {
             slug: `${opts.pluginSlug}-${input.step.stepSlug}`,
-            template: DEFAULT_PLAN_YOUR_DAY,
+            template: getDefaultPlanYourDayTemplate({
+              withLinear: plugins.some((p) => p.slug === "linear"),
+            }),
             routineStepId: input.step.id,
           },
           update: { routineStepId: input.step.id }, // don't update the template if it already exists, just update the routineStepId
@@ -229,7 +232,7 @@ export default definePlugin((opts) => {
     handlebars: {
       helpers: {
         // reminder: handlebars helpers are prefixed with the plugin's slug. Example: if the plugin slug is `slack`, then the full helper name will be `slack-helperName`.
-        status: function (this: PrismaTypes.Task) {
+        status: function (this: TaskInTemplate) {
           if (!("status" in this) || !("id" in this)) return "";
           return new opts.Handlebars.SafeString(
             `<slack-status data-task-id=\"Task_${this.id}\">${statusMap[this.status]}</slack-status>`,

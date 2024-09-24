@@ -1,6 +1,6 @@
 import { definePlugin } from "@flowdev/plugin/web";
 import type { Editor } from "@tiptap/core";
-import { DEFAULT_PLAN_YOUR_DAY, POST_TO_SLACK } from "./common";
+import { getDefaultPlanYourDayTemplate, POST_TO_SLACK } from "./common";
 import type { webUpdateRoutineStepMutation } from "./relay/__gen__/webUpdateRoutineStepMutation.graphql";
 import { BsCheck, BsChevronDown } from "@flowdev/icons";
 import { Control } from "react-hook-form";
@@ -378,7 +378,7 @@ export default definePlugin((opts) => {
               const { control, handleSubmit } = opts.reactHookForm.useForm<PostToSlackSettings>({
                 defaultValues: {
                   template: {
-                    content: template?.raw ?? DEFAULT_PLAN_YOUR_DAY,
+                    content: template?.raw ?? getDefaultPlanYourDayTemplate(),
                     data: template?.metadata ?? {},
                   },
                   channels:
