@@ -2,6 +2,7 @@ import { GraphQLError } from "graphql";
 import { prisma } from "../utils/prisma";
 import { builder, u } from "./builder";
 import { ColorEnum } from "./Color";
+import { urlSafe } from "../utils/urlSafe";
 
 export const TaskTagType = builder.prismaNode("TaskTag", {
   id: { field: "id" },
@@ -108,7 +109,7 @@ builder.mutationField("createTaskTag", (t) =>
   }),
 );
 
-export const createTaskTagSlug = (name: string) => name.toLowerCase().replaceAll(" ", "-");
+export const createTaskTagSlug = (name: string) => urlSafe(name);
 
 builder.mutationField("updateTaskTag", (t) =>
   t.prismaFieldWithInput({
