@@ -4,10 +4,15 @@
   "version": "0.1.0",
   "private": false,
   "scripts": {
+    "setup:relay": "mkdir -p src/relay/__gen__",
+    "relay": "cd ../.. && relay-compiler && echo '✅ Relay compiled!'",
+    "print-schema": "cd ../../apps/server && DATABASE_URL=this_makes_it_run_wo_server_envs ORIGIN=same_as_db_url bun run print-schema",
+    "prebuild:web": "bun run print-schema && bun run setup:relay && bun run relay",
     "build:web": "bun --bun run vite build -c vite.web.mts",
     "build:server": "bun --bun run vite build -c vite.server.ts",
+    "prebuild": "bun run print-schema && bun run setup:relay && bun run relay",
     "build": "bun run build:web && bun run build:server",
-    "dev:web": "bun --bun run vite build -c vite.web.mts --watch",
+    "dev:web": "bun run relay && bun --bun run vite build -c vite.web.mts --watch",
     "dev:server": "bun --bun run vite build -c vite.server.dev.ts --watch"
   },
   "dependencies": {

@@ -1261,6 +1261,8 @@ type TaskTag implements Node {
 
   """The slug (i.e. the url-safe version) of the task tag name"""
   slug: String!
+
+  """The tasks linked to the tag"""
   tasks(after: ID, before: ID, first: Int, last: Int): TaskTagTasksConnection!
 }
 
@@ -1287,7 +1289,7 @@ type Template implements Node {
   createdAt: DateTime!
   id: ID!
 
-  """Extra data attached to the template. This column may not be used yet."""
+  """Extra data attached to the template."""
   metadata: JSON
 
   """The Handlebars template -- https://handlebarsjs.com/guide"""
