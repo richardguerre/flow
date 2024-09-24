@@ -12,7 +12,6 @@ export const DELETE_PGBOSS_ARCHIVE_JOB_NAME = "delete-pgboss-archive";
 export const CALENDAR_ITEM_CREATED_JOB_NAME = "calendar-item-created";
 const DEFAULT_4AM_CRON = "0 4 * * *";
 const ROLLOVER_TASKS_CRON = DEFAULT_4AM_CRON;
-const EVERY_3_DAYS_CRON = "10 4 */3 * *"; // every 3 days at 04:10
 
 export const syncTasks = async () => {
   console.log("-- Syncing tasks...");
@@ -51,8 +50,7 @@ const deletePgBossArchive: PgBoss.WorkHandler<void> = async () => {
 };
 
 export const scheduleDeletePgBossArchive = async (timezone: string = "Etc/GMT-11") => {
-  // delete pgboss archive every day at 04:00 (least busy time of the day)
-  await pgBoss.schedule(DELETE_PGBOSS_ARCHIVE_JOB_NAME, EVERY_3_DAYS_CRON, undefined, {
+  await pgBoss.schedule(DELETE_PGBOSS_ARCHIVE_JOB_NAME, DEFAULT_4AM_CRON, undefined, {
     tz: timezone,
     singletonKey: DELETE_PGBOSS_ARCHIVE_JOB_NAME,
   });
