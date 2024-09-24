@@ -90,14 +90,10 @@ export default definePlugin((opts) => {
   };
 
   const View = (props: { view: ViewsOperationData["views"][number]; isUserIssues?: boolean }) => {
-    const [addViewToSync, addingView] = opts.operations.useMutation<
-      AddViewToSyncOperationInput,
-      {}
-    >("addViewToSync");
-    const [removeViewToSync, removingView] = opts.operations.useMutation<
-      RemoveViewToSyncOperationInput,
-      {}
-    >("removeViewToSync");
+    const [addViewToSync, addingView] =
+      opts.operations.useMutation<AddViewToSyncOperationInput>("addViewToSync");
+    const [removeViewToSync, removingView] =
+      opts.operations.useMutation<RemoveViewToSyncOperationInput>("removeViewToSync");
     const nearestColor = props.view.color ? opts.nearestTailwindColor(props.view.color) : "blue";
 
     return (
@@ -153,7 +149,7 @@ export default definePlugin((opts) => {
     const [refreshMyIssues, isRefreshingMyIssues] = opts.operations.useMutation("syncUserIssues", {
       minimumWait: 1000,
     });
-    const [refreshView, isRefreshingView] = opts.operations.useMutation<SyncViewOperationInput, {}>(
+    const [refreshView, isRefreshingView] = opts.operations.useMutation<SyncViewOperationInput>(
       "syncView",
       { minimumWait: 1000 },
     );

@@ -10,6 +10,7 @@ import { pluginOperationQuery } from "@flowdev/web/relay/__gen__/pluginOperation
 import { pluginOperationMutation } from "@flowdev/web/relay/__gen__/pluginOperationMutation.graphql";
 import { pluginOperationRenderTemplateQuery } from "@flowdev/web/relay/__gen__/pluginOperationRenderTemplateQuery.graphql";
 import { useState } from "react";
+import { type GraphQLError } from "graphql";
 
 const queryDoc = graphql`
   query pluginOperationQuery($input: QueryPluginOperationInput!) {
@@ -30,7 +31,7 @@ const mutation =
   (pluginSlug: string) =>
   async <T extends JsonValue>(
     params: PluginOperationParams,
-    opts?: MutationOpts,
+    opts?: MutationOpts & { throwOnError?: boolean },
   ): Promise<PluginOperationsReturn<T>> => {
     try {
       const mutation = await commitMutationPromise<pluginOperationMutation>(environment, {
@@ -62,6 +63,9 @@ const mutation =
       };
     } catch (e) {
       console.error(e);
+      if (opts?.throwOnError) {
+        throw e;
+      }
       return null;
     }
   };
@@ -129,20 +133,28 @@ export const getPluginOperationUtils = (pluginSlug: string) => ({
    * If you need to fetch data, use `query` instead.
    */
   mutation: mutation(pluginSlug),
-  useMutation: <TInput extends JsonValue, TData extends JsonValue>(
+  useMutation: <TInput extends JsonValue, TData extends JsonValue = {}>(
     operationName: string,
-    opts?: MutationOpts,
+    opts?: MutationOpts & { throwOnError?: boolean },
   ) => {
     const [loading, setLoading] = useState(false);
+    const [error, setError] = useState<GraphQLError | null>(null);
 
     return [
       async (input?: TInput) => {
         setLoading(true);
-        const res = await mutation(pluginSlug)({ operationName, input }, opts);
+        const res = await mutation(pluginSlug)(
+          { operationName, input },
+          { ...opts, throwOnError: true },
+        ).catch((e) => {
+          if (opts?.throwOnError) throw e;
+          setError(e);
+        });
         setLoading(false);
         return res as PluginOperationsReturn<TData>;
       },
       loading,
+      error,
     ] as const;
   },
   renderTemplate: async (template: string, data: Record<string, any>) => {

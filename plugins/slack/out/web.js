@@ -1,4 +1,4 @@
-const ne = /* @__PURE__ */ function() {
+const re = /* @__PURE__ */ function() {
   var e = [
     {
       defaultValue: null,
@@ -124,8 +124,8 @@ const ne = /* @__PURE__ */ function() {
     }
   };
 }();
-ne.hash = "b71dfd7eaaba64f4182f87b2c5257a96";
-const Ne = (e) => ({ plugin: e }), J = "post-to-slack", be = (e) => `Plan for today
+re.hash = "b71dfd7eaaba64f4182f87b2c5257a96";
+const be = (e) => ({ plugin: e }), X = "post-to-slack", pe = (e) => `Plan for today
 {{#tasks}}
   <ul>
     <li>
@@ -135,10 +135,10 @@ const Ne = (e) => ({ plugin: e }), J = "post-to-slack", be = (e) => `Plan for to
 {{else}}
   <p>No tasks today</p>
 {{/tasks}}`;
-function pe(e) {
+function ge(e) {
   return e && e.__esModule && Object.prototype.hasOwnProperty.call(e, "default") ? e.default : e;
 }
-var re = { exports: {} }, u = {};
+var le = { exports: {} }, u = {};
 /**
  * @license React
  * react.production.min.js
@@ -148,72 +148,72 @@ var re = { exports: {} }, u = {};
  * This source code is licensed under the MIT license found in the
  * LICENSE file in the root directory of this source tree.
  */
-var I = Symbol.for("react.element"), ge = Symbol.for("react.portal"), ve = Symbol.for("react.fragment"), he = Symbol.for("react.strict_mode"), ye = Symbol.for("react.profiler"), Ee = Symbol.for("react.provider"), ke = Symbol.for("react.context"), Ce = Symbol.for("react.forward_ref"), Se = Symbol.for("react.suspense"), xe = Symbol.for("react.memo"), we = Symbol.for("react.lazy"), X = Symbol.iterator;
-function Me(e) {
-  return e === null || typeof e != "object" ? null : (e = X && e[X] || e["@@iterator"], typeof e == "function" ? e : null);
+var I = Symbol.for("react.element"), ve = Symbol.for("react.portal"), he = Symbol.for("react.fragment"), ye = Symbol.for("react.strict_mode"), Ee = Symbol.for("react.profiler"), ke = Symbol.for("react.provider"), Ce = Symbol.for("react.context"), Se = Symbol.for("react.forward_ref"), xe = Symbol.for("react.suspense"), we = Symbol.for("react.memo"), Me = Symbol.for("react.lazy"), Q = Symbol.iterator;
+function Te(e) {
+  return e === null || typeof e != "object" ? null : (e = Q && e[Q] || e["@@iterator"], typeof e == "function" ? e : null);
 }
-var le = { isMounted: function() {
+var ae = { isMounted: function() {
   return !1;
 }, enqueueForceUpdate: function() {
 }, enqueueReplaceState: function() {
 }, enqueueSetState: function() {
-} }, ae = Object.assign, oe = {};
-function x(e, t, n) {
-  this.props = e, this.context = t, this.refs = oe, this.updater = n || le;
+} }, oe = Object.assign, ue = {};
+function w(e, t, n) {
+  this.props = e, this.context = t, this.refs = ue, this.updater = n || ae;
 }
-x.prototype.isReactComponent = {};
-x.prototype.setState = function(e, t) {
+w.prototype.isReactComponent = {};
+w.prototype.setState = function(e, t) {
   if (typeof e != "object" && typeof e != "function" && e != null)
     throw Error("setState(...): takes an object of state variables to update or a function which returns an object of state variables.");
   this.updater.enqueueSetState(this, e, t, "setState");
 };
-x.prototype.forceUpdate = function(e) {
+w.prototype.forceUpdate = function(e) {
   this.updater.enqueueForceUpdate(this, e, "forceUpdate");
 };
-function ue() {
+function se() {
 }
-ue.prototype = x.prototype;
+se.prototype = w.prototype;
 function B(e, t, n) {
-  this.props = e, this.context = t, this.refs = oe, this.updater = n || le;
+  this.props = e, this.context = t, this.refs = ue, this.updater = n || ae;
 }
-var U = B.prototype = new ue();
+var U = B.prototype = new se();
 U.constructor = B;
-ae(U, x.prototype);
+oe(U, w.prototype);
 U.isPureReactComponent = !0;
-var Q = Array.isArray, ie = Object.prototype.hasOwnProperty, z = { current: null }, se = { key: !0, ref: !0, __self: !0, __source: !0 };
-function ce(e, t, n) {
+var ee = Array.isArray, ie = Object.prototype.hasOwnProperty, z = { current: null }, ce = { key: !0, ref: !0, __self: !0, __source: !0 };
+function me(e, t, n) {
   var a, o = {}, c = null, f = null;
   if (t != null)
     for (a in t.ref !== void 0 && (f = t.ref), t.key !== void 0 && (c = "" + t.key), t)
-      ie.call(t, a) && !se.hasOwnProperty(a) && (o[a] = t[a]);
+      ie.call(t, a) && !ce.hasOwnProperty(a) && (o[a] = t[a]);
   var m = arguments.length - 2;
   if (m === 1)
     o.children = n;
   else if (1 < m) {
-    for (var i = Array(m), r = 0; r < m; r++)
-      i[r] = arguments[r + 2];
-    o.children = i;
+    for (var s = Array(m), r = 0; r < m; r++)
+      s[r] = arguments[r + 2];
+    o.children = s;
   }
   if (e && e.defaultProps)
     for (a in m = e.defaultProps, m)
       o[a] === void 0 && (o[a] = m[a]);
   return { $$typeof: I, type: e, key: c, ref: f, props: o, _owner: z.current };
 }
-function Te(e, t) {
+function Re(e, t) {
   return { $$typeof: I, type: e.type, key: t, ref: e.ref, props: e.props, _owner: e._owner };
 }
 function K(e) {
   return typeof e == "object" && e !== null && e.$$typeof === I;
 }
-function Re(e) {
+function Ie(e) {
   var t = { "=": "=0", ":": "=2" };
   return "$" + e.replace(/[=:]/g, function(n) {
     return t[n];
   });
 }
-var ee = /\/+/g;
+var te = /\/+/g;
 function D(e, t) {
-  return typeof e == "object" && e !== null && e.key != null ? Re("" + e.key) : t.toString(36);
+  return typeof e == "object" && e !== null && e.key != null ? Ie("" + e.key) : t.toString(36);
 }
 function V(e, t, n, a, o) {
   var c = typeof e;
@@ -230,23 +230,23 @@ function V(e, t, n, a, o) {
       case "object":
         switch (e.$$typeof) {
           case I:
-          case ge:
+          case ve:
             f = !0;
         }
     }
   if (f)
-    return f = e, o = o(f), e = a === "" ? "." + D(f, 0) : a, Q(o) ? (n = "", e != null && (n = e.replace(ee, "$&/") + "/"), V(o, t, n, "", function(r) {
+    return f = e, o = o(f), e = a === "" ? "." + D(f, 0) : a, ee(o) ? (n = "", e != null && (n = e.replace(te, "$&/") + "/"), V(o, t, n, "", function(r) {
       return r;
-    })) : o != null && (K(o) && (o = Te(o, n + (!o.key || f && f.key === o.key ? "" : ("" + o.key).replace(ee, "$&/") + "/") + e)), t.push(o)), 1;
-  if (f = 0, a = a === "" ? "." : a + ":", Q(e))
+    })) : o != null && (K(o) && (o = Re(o, n + (!o.key || f && f.key === o.key ? "" : ("" + o.key).replace(te, "$&/") + "/") + e)), t.push(o)), 1;
+  if (f = 0, a = a === "" ? "." : a + ":", ee(e))
     for (var m = 0; m < e.length; m++) {
       c = e[m];
-      var i = a + D(c, m);
-      f += V(c, t, n, i, o);
+      var s = a + D(c, m);
+      f += V(c, t, n, s, o);
     }
-  else if (i = Me(e), typeof i == "function")
-    for (e = i.call(e), m = 0; !(c = e.next()).done; )
-      c = c.value, i = a + D(c, m++), f += V(c, t, n, i, o);
+  else if (s = Te(e), typeof s == "function")
+    for (e = s.call(e), m = 0; !(c = e.next()).done; )
+      c = c.value, s = a + D(c, m++), f += V(c, t, n, s, o);
   else if (c === "object")
     throw t = String(e), Error("Objects are not valid as a React child (found: " + (t === "[object Object]" ? "object with keys {" + Object.keys(e).join(", ") + "}" : t) + "). If you meant to render a collection of children, use an array instead.");
   return f;
@@ -259,7 +259,7 @@ function H(e, t, n) {
     return t.call(n, c, o++);
   }), a;
 }
-function Ie(e) {
+function Oe(e) {
   if (e._status === -1) {
     var t = e._result;
     t = t(), t.then(function(n) {
@@ -272,8 +272,8 @@ function Ie(e) {
     return e._result.default;
   throw e._result;
 }
-var N = { current: null }, A = { transition: null }, Oe = { ReactCurrentDispatcher: N, ReactCurrentBatchConfig: A, ReactCurrentOwner: z };
-function me() {
+var b = { current: null }, F = { transition: null }, $e = { ReactCurrentDispatcher: b, ReactCurrentBatchConfig: F, ReactCurrentOwner: z };
+function fe() {
   throw Error("act(...) is not supported in production builds of React.");
 }
 u.Children = { map: H, forEach: function(e, t, n) {
@@ -294,130 +294,130 @@ u.Children = { map: H, forEach: function(e, t, n) {
     throw Error("React.Children.only expected to receive a single React element child.");
   return e;
 } };
-u.Component = x;
-u.Fragment = ve;
-u.Profiler = ye;
+u.Component = w;
+u.Fragment = he;
+u.Profiler = Ee;
 u.PureComponent = B;
-u.StrictMode = he;
-u.Suspense = Se;
-u.__SECRET_INTERNALS_DO_NOT_USE_OR_YOU_WILL_BE_FIRED = Oe;
-u.act = me;
+u.StrictMode = ye;
+u.Suspense = xe;
+u.__SECRET_INTERNALS_DO_NOT_USE_OR_YOU_WILL_BE_FIRED = $e;
+u.act = fe;
 u.cloneElement = function(e, t, n) {
   if (e == null)
     throw Error("React.cloneElement(...): The argument must be a React element, but you passed " + e + ".");
-  var a = ae({}, e.props), o = e.key, c = e.ref, f = e._owner;
+  var a = oe({}, e.props), o = e.key, c = e.ref, f = e._owner;
   if (t != null) {
     if (t.ref !== void 0 && (c = t.ref, f = z.current), t.key !== void 0 && (o = "" + t.key), e.type && e.type.defaultProps)
       var m = e.type.defaultProps;
-    for (i in t)
-      ie.call(t, i) && !se.hasOwnProperty(i) && (a[i] = t[i] === void 0 && m !== void 0 ? m[i] : t[i]);
+    for (s in t)
+      ie.call(t, s) && !ce.hasOwnProperty(s) && (a[s] = t[s] === void 0 && m !== void 0 ? m[s] : t[s]);
   }
-  var i = arguments.length - 2;
-  if (i === 1)
+  var s = arguments.length - 2;
+  if (s === 1)
     a.children = n;
-  else if (1 < i) {
-    m = Array(i);
-    for (var r = 0; r < i; r++)
+  else if (1 < s) {
+    m = Array(s);
+    for (var r = 0; r < s; r++)
       m[r] = arguments[r + 2];
     a.children = m;
   }
   return { $$typeof: I, type: e.type, key: o, ref: c, props: a, _owner: f };
 };
 u.createContext = function(e) {
-  return e = { $$typeof: ke, _currentValue: e, _currentValue2: e, _threadCount: 0, Provider: null, Consumer: null, _defaultValue: null, _globalName: null }, e.Provider = { $$typeof: Ee, _context: e }, e.Consumer = e;
+  return e = { $$typeof: Ce, _currentValue: e, _currentValue2: e, _threadCount: 0, Provider: null, Consumer: null, _defaultValue: null, _globalName: null }, e.Provider = { $$typeof: ke, _context: e }, e.Consumer = e;
 };
-u.createElement = ce;
+u.createElement = me;
 u.createFactory = function(e) {
-  var t = ce.bind(null, e);
+  var t = me.bind(null, e);
   return t.type = e, t;
 };
 u.createRef = function() {
   return { current: null };
 };
 u.forwardRef = function(e) {
-  return { $$typeof: Ce, render: e };
+  return { $$typeof: Se, render: e };
 };
 u.isValidElement = K;
 u.lazy = function(e) {
-  return { $$typeof: we, _payload: { _status: -1, _result: e }, _init: Ie };
+  return { $$typeof: Me, _payload: { _status: -1, _result: e }, _init: Oe };
 };
 u.memo = function(e, t) {
-  return { $$typeof: xe, type: e, compare: t === void 0 ? null : t };
+  return { $$typeof: we, type: e, compare: t === void 0 ? null : t };
 };
 u.startTransition = function(e) {
-  var t = A.transition;
-  A.transition = {};
+  var t = F.transition;
+  F.transition = {};
   try {
     e();
   } finally {
-    A.transition = t;
+    F.transition = t;
   }
 };
-u.unstable_act = me;
+u.unstable_act = fe;
 u.useCallback = function(e, t) {
-  return N.current.useCallback(e, t);
+  return b.current.useCallback(e, t);
 };
 u.useContext = function(e) {
-  return N.current.useContext(e);
+  return b.current.useContext(e);
 };
 u.useDebugValue = function() {
 };
 u.useDeferredValue = function(e) {
-  return N.current.useDeferredValue(e);
+  return b.current.useDeferredValue(e);
 };
 u.useEffect = function(e, t) {
-  return N.current.useEffect(e, t);
+  return b.current.useEffect(e, t);
 };
 u.useId = function() {
-  return N.current.useId();
+  return b.current.useId();
 };
 u.useImperativeHandle = function(e, t, n) {
-  return N.current.useImperativeHandle(e, t, n);
+  return b.current.useImperativeHandle(e, t, n);
 };
 u.useInsertionEffect = function(e, t) {
-  return N.current.useInsertionEffect(e, t);
+  return b.current.useInsertionEffect(e, t);
 };
 u.useLayoutEffect = function(e, t) {
-  return N.current.useLayoutEffect(e, t);
+  return b.current.useLayoutEffect(e, t);
 };
 u.useMemo = function(e, t) {
-  return N.current.useMemo(e, t);
+  return b.current.useMemo(e, t);
 };
 u.useReducer = function(e, t, n) {
-  return N.current.useReducer(e, t, n);
+  return b.current.useReducer(e, t, n);
 };
 u.useRef = function(e) {
-  return N.current.useRef(e);
+  return b.current.useRef(e);
 };
 u.useState = function(e) {
-  return N.current.useState(e);
+  return b.current.useState(e);
 };
 u.useSyncExternalStore = function(e, t, n) {
-  return N.current.useSyncExternalStore(e, t, n);
+  return b.current.useSyncExternalStore(e, t, n);
 };
 u.useTransition = function() {
-  return N.current.useTransition();
+  return b.current.useTransition();
 };
 u.version = "18.3.1";
-re.exports = u;
-var $e = re.exports;
-const C = /* @__PURE__ */ pe($e);
-var fe = {
+le.exports = u;
+var Le = le.exports;
+const S = /* @__PURE__ */ ge(Le);
+var de = {
   color: void 0,
   size: void 0,
   className: void 0,
   style: void 0,
   attr: void 0
-}, te = C.createContext && C.createContext(fe), y = function() {
-  return y = Object.assign || function(e) {
+}, ne = S.createContext && S.createContext(de), E = function() {
+  return E = Object.assign || function(e) {
     for (var t, n = 1, a = arguments.length; n < a; n++) {
       t = arguments[n];
       for (var o in t)
         Object.prototype.hasOwnProperty.call(t, o) && (e[o] = t[o]);
     }
     return e;
-  }, y.apply(this, arguments);
-}, Le = function(e, t) {
+  }, E.apply(this, arguments);
+}, Pe = function(e, t) {
   var n = {};
   for (var a in e)
     Object.prototype.hasOwnProperty.call(e, a) && t.indexOf(a) < 0 && (n[a] = e[a]);
@@ -426,53 +426,53 @@ var fe = {
       t.indexOf(a[o]) < 0 && Object.prototype.propertyIsEnumerable.call(e, a[o]) && (n[a[o]] = e[a[o]]);
   return n;
 };
-function de(e) {
+function _e(e) {
   return e && e.map(function(t, n) {
-    return C.createElement(t.tag, y({
+    return S.createElement(t.tag, E({
       key: n
-    }, t.attr), de(t.child));
+    }, t.attr), _e(t.child));
   });
 }
-function _e(e) {
+function Ne(e) {
   return function(t) {
-    return C.createElement(Pe, y({
-      attr: y({}, e.attr)
-    }, t), de(e.child));
+    return S.createElement(je, E({
+      attr: E({}, e.attr)
+    }, t), _e(e.child));
   };
 }
-function Pe(e) {
+function je(e) {
   var t = function(n) {
-    var a = e.attr, o = e.size, c = e.title, f = Le(e, ["attr", "size", "title"]), m = o || n.size || "1em", i;
-    return n.className && (i = n.className), e.className && (i = (i ? i + " " : "") + e.className), C.createElement("svg", y({
+    var a = e.attr, o = e.size, c = e.title, f = Pe(e, ["attr", "size", "title"]), m = o || n.size || "1em", s;
+    return n.className && (s = n.className), e.className && (s = (s ? s + " " : "") + e.className), S.createElement("svg", E({
       stroke: "currentColor",
       fill: "currentColor",
       strokeWidth: "0"
     }, n.attr, a, f, {
-      className: i,
-      style: y(y({
+      className: s,
+      style: E(E({
         color: e.color || n.color
       }, n.style), e.style),
       height: m,
       width: m,
       xmlns: "http://www.w3.org/2000/svg"
-    }), c && C.createElement("title", null, c), e.children);
+    }), c && S.createElement("title", null, c), e.children);
   };
-  return te !== void 0 ? C.createElement(te.Consumer, null, function(n) {
+  return ne !== void 0 ? S.createElement(ne.Consumer, null, function(n) {
     return t(n);
-  }) : t(fe);
-}
-function je(e) {
-  return _e({ tag: "svg", attr: { fill: "currentColor", viewBox: "0 0 16 16" }, child: [{ tag: "path", attr: { d: "M10.97 4.97a.75.75 0 0 1 1.07 1.05l-3.99 4.99a.75.75 0 0 1-1.08.02L4.324 8.384a.75.75 0 1 1 1.06-1.06l2.094 2.093 3.473-4.425a.267.267 0 0 1 .02-.022z" } }] })(e);
+  }) : t(de);
 }
 function He(e) {
-  return _e({ tag: "svg", attr: { fill: "currentColor", viewBox: "0 0 16 16" }, child: [{ tag: "path", attr: { fillRule: "evenodd", d: "M1.646 4.646a.5.5 0 0 1 .708 0L8 10.293l5.646-5.647a.5.5 0 0 1 .708.708l-6 6a.5.5 0 0 1-.708 0l-6-6a.5.5 0 0 1 0-.708z" } }] })(e);
+  return Ne({ tag: "svg", attr: { fill: "currentColor", viewBox: "0 0 16 16" }, child: [{ tag: "path", attr: { d: "M10.97 4.97a.75.75 0 0 1 1.07 1.05l-3.99 4.99a.75.75 0 0 1-1.08.02L4.324 8.384a.75.75 0 1 1 1.06-1.06l2.094 2.093 3.473-4.425a.267.267 0 0 1 .02-.022z" } }] })(e);
+}
+function Ve(e) {
+  return Ne({ tag: "svg", attr: { fill: "currentColor", viewBox: "0 0 16 16" }, child: [{ tag: "path", attr: { fillRule: "evenodd", d: "M1.646 4.646a.5.5 0 0 1 .708 0L8 10.293l5.646-5.647a.5.5 0 0 1 .708.708l-6 6a.5.5 0 0 1-.708 0l-6-6a.5.5 0 0 1 0-.708z" } }] })(e);
 }
 var l = "/Users/richardguerre/Projects/flow/plugins/slack/src/web.tsx";
-const Ve = Ne((e) => {
+const Fe = be((e) => {
   const t = e.React, n = e.components;
   e.relay.graphql;
   const a = () => {
-    var d, s;
+    var d, i;
     const r = e.operations.useLazyQuery({
       operationName: "workspaces"
     });
@@ -480,7 +480,7 @@ const Ve = Ne((e) => {
       fileName: l,
       lineNumber: 27,
       columnNumber: 7
-    } }, (s = r == null ? void 0 : r.data) == null ? void 0 : s.workspaces.map((_) => /* @__PURE__ */ t.createElement("div", { className: "flex items-center gap-2 rounded max-w-2xl bg-background-50 shadow px-4 py-4", __self: void 0, __source: {
+    } }, (i = r == null ? void 0 : r.data) == null ? void 0 : i.workspaces.map((_) => /* @__PURE__ */ t.createElement("div", { className: "flex items-center gap-2 rounded max-w-2xl bg-background-50 shadow px-4 py-4", __self: void 0, __source: {
       fileName: l,
       lineNumber: 29,
       columnNumber: 11
@@ -609,8 +609,8 @@ const Ve = Ne((e) => {
       tag: "slack-message"
     }],
     renderHTML: (r) => ["slack-message", e.tiptap.mergeAttributes(r.HTMLAttributes)]
-  }), i = (r) => {
-    const d = t.useMemo(() => new Map(r.channels.map((s) => [s.id, s])), [r.channels.length]);
+  }), s = (r) => {
+    const d = t.useMemo(() => new Map(r.channels.map((i) => [i.id, i])), [r.channels.length]);
     return /* @__PURE__ */ t.createElement(n.FormCombobox, { name: "channels", control: r.control, multiselect: !0, label: r.withLabel ? "Default channels" : void 0, __self: void 0, __source: {
       fileName: l,
       lineNumber: 160,
@@ -619,18 +619,18 @@ const Ve = Ne((e) => {
       fileName: l,
       lineNumber: 166,
       columnNumber: 9
-    } }, /* @__PURE__ */ t.createElement(n.ComboboxValue, { placeholder: "Select channels...", renderValues: (s) => r.channels.filter((_) => s.includes(_.id)).map((_) => `#${_.name}`).join(", "), __self: void 0, __source: {
+    } }, /* @__PURE__ */ t.createElement(n.ComboboxValue, { placeholder: "Select channels...", renderValues: (i) => r.channels.filter((_) => i.includes(_.id)).map((_) => `#${_.name}`).join(", "), __self: void 0, __source: {
       fileName: l,
       lineNumber: 167,
       columnNumber: 11
-    } }), /* @__PURE__ */ t.createElement(He, { size: 14, className: "text-foreground-700", __self: void 0, __source: {
+    } }), /* @__PURE__ */ t.createElement(Ve, { size: 14, className: "text-foreground-700", __self: void 0, __source: {
       fileName: l,
       lineNumber: 176,
       columnNumber: 11
     } })), /* @__PURE__ */ t.createElement(n.ComboboxContent, { align: "start", side: "bottom", commandProps: {
-      filter: (s, _) => {
-        var v;
-        return (v = d.get(s)) != null && v.name.includes(_) ? 1 : 0;
+      filter: (i, _) => {
+        var h;
+        return (h = d.get(i)) != null && h.name.includes(_) ? 1 : 0;
       }
     }, __self: void 0, __source: {
       fileName: l,
@@ -648,7 +648,7 @@ const Ve = Ne((e) => {
       fileName: l,
       lineNumber: 190,
       columnNumber: 11
-    } }, r.channels.map((s) => /* @__PURE__ */ t.createElement(n.ComboboxItem, { key: s.id, value: s.id, className: "flex items-center justify-between gap-2", __self: void 0, __source: {
+    } }, r.channels.map((i) => /* @__PURE__ */ t.createElement(n.ComboboxItem, { key: i.id, value: i.id, className: "flex items-center justify-between gap-2", __self: void 0, __source: {
       fileName: l,
       lineNumber: 192,
       columnNumber: 15
@@ -656,7 +656,7 @@ const Ve = Ne((e) => {
       fileName: l,
       lineNumber: 197,
       columnNumber: 17
-    } }, /* @__PURE__ */ t.createElement("img", { src: s.team.icon, className: "h-5 w-5 shrink-0", __self: void 0, __source: {
+    } }, /* @__PURE__ */ t.createElement("img", { src: i.team.icon, className: "h-5 w-5 shrink-0", __self: void 0, __source: {
       fileName: l,
       lineNumber: 198,
       columnNumber: 19
@@ -664,11 +664,11 @@ const Ve = Ne((e) => {
       fileName: l,
       lineNumber: 199,
       columnNumber: 19
-    } }, "#", s.name)), /* @__PURE__ */ t.createElement(n.ComboboxSelected, { className: "ml-2 h-4 w-4 opacity-0", selectedClassName: "opacity-100", __self: void 0, __source: {
+    } }, "#", i.name)), /* @__PURE__ */ t.createElement(n.ComboboxSelected, { className: "ml-2 h-4 w-4 opacity-0", selectedClassName: "opacity-100", __self: void 0, __source: {
       fileName: l,
       lineNumber: 201,
       columnNumber: 17
-    } }, /* @__PURE__ */ t.createElement(je, { size: 20, __self: void 0, __source: {
+    } }, /* @__PURE__ */ t.createElement(He, { size: 20, __self: void 0, __source: {
       fileName: l,
       lineNumber: 205,
       columnNumber: 19
@@ -695,8 +695,8 @@ const Ve = Ne((e) => {
         } }, "Connect an account")), /* @__PURE__ */ t.createElement(n.ErrorBoundary, { fallbackRender: ({
           error: r
         }) => {
-          var d, s, _;
-          return ((_ = (s = (d = r.cause) == null ? void 0 : d[0]) == null ? void 0 : s.extensions) == null ? void 0 : _.code) === "NOT_AUTHENTICATED" ? /* @__PURE__ */ t.createElement(t.Fragment, null) : /* @__PURE__ */ t.createElement("p", { className: "text-sm text-negative-600", __self: void 0, __source: {
+          var d, i, _;
+          return ((_ = (i = (d = r.cause) == null ? void 0 : d[0]) == null ? void 0 : i.extensions) == null ? void 0 : _.code) === "NOT_AUTHENTICATED" ? /* @__PURE__ */ t.createElement(t.Fragment, null) : /* @__PURE__ */ t.createElement("p", { className: "text-sm text-negative-600", __self: void 0, __source: {
             fileName: l,
             lineNumber: 232,
             columnNumber: 26
@@ -717,142 +717,153 @@ const Ve = Ne((e) => {
       }
     },
     routineSteps: {
-      [J]: {
+      [X]: {
         name: "Post in Slack",
         description: "Post a message in Slack channels.",
         component: (r) => {
           var Y;
-          const d = r.templates[0], s = t.useRef(null), _ = e.dayjs(), [v, O] = t.useState(!1), [w, F] = t.useState(((Y = r.stepConfig) == null ? void 0 : Y.defaultChannels) ?? []), {
+          const d = r.templates[0], i = t.useRef(null), _ = e.dayjs(), [h, O] = t.useState(!1), [M, A] = t.useState(((Y = r.stepConfig) == null ? void 0 : Y.defaultChannels) ?? []), {
             control: $,
             handleSubmit: L,
-            formState: M,
-            setError: T,
+            formState: T,
+            setError: y,
             setValue: P
           } = e.reactHookForm.useForm({
             defaultValues: {
               message: (d == null ? void 0 : d.rendered) ?? "",
-              channels: w.map((p) => p.id)
+              channels: M.map((g) => g.id)
             }
-          }), [j, b] = e.operations.useMutation("postMessage"), R = async (p) => {
+          }), [j, p] = e.operations.useMutation("postMessage", {
+            throwOnError: !0
+          }), R = async (g) => {
             var Z, W, G;
-            const E = w.filter((h) => p.channels.includes(h.id));
-            if (!E.length) {
-              T("root", {
+            const k = M.filter((N) => g.channels.includes(N.id));
+            if (!k.length) {
+              y("root", {
                 message: "Please select at least one channel."
               });
               return;
             }
-            const k = await j({
-              message: p.message,
-              channels: E.map((h) => ({
-                teamId: h.team.id,
-                channelId: h.id
+            const C = await j({
+              message: g.message,
+              channels: k.map((N) => ({
+                teamId: N.team.id,
+                channelId: N.id
               }))
+            }).catch((N) => {
+              var J;
+              "extensions" in N && ((J = N == null ? void 0 : N.extensions) != null && J.userFriendlyMessage) ? y("root", {
+                message: N.extensions.userFriendlyMessage
+              }) : "message" in N ? y("root", {
+                message: N.message
+              }) : y("root", {
+                message: "Couldn't post message to Slack channels. Please try again."
+              });
             });
-            if (!((Z = k == null ? void 0 : k.data) != null && Z.ok)) {
-              T("root", {
+            if (!((Z = C == null ? void 0 : C.data) != null && Z.ok)) {
+              y("root", {
                 message: "Couldn't post message to Slack channels."
               });
               return;
             }
-            let q = ((W = s.current) == null ? void 0 : W.state.doc.content.size) ?? 0;
-            const S = (G = s.current) == null ? void 0 : G.chain();
-            for (const h of k.data.messages)
-              S == null || S.insertContentAt(q, {
+            let q = ((W = i.current) == null ? void 0 : W.state.doc.content.size) ?? 0;
+            const x = (G = i.current) == null ? void 0 : G.chain();
+            for (const N of C.data.messages)
+              x == null || x.insertContentAt(q, {
                 type: "slack-message",
                 attrs: {
-                  teamId: h.teamId,
-                  channelId: h.channelId,
-                  ts: h.ts
+                  teamId: N.teamId,
+                  channelId: N.channelId,
+                  ts: N.ts
                 }
               }), q++;
-            S == null || S.run(), O(!0);
-          }, g = () => {
-            v && (O(!1), r.onNext());
+            x == null || x.run(), O(!0);
+          }, v = () => {
+            h && (O(!1), r.onNext());
           };
           return e.hooks.useAsyncEffect(async () => {
-            const p = await e.operations.query({
+            const g = await e.operations.query({
               operationName: "getChannels"
             });
-            F((E) => {
-              var k;
-              return ((k = p == null ? void 0 : p.data) == null ? void 0 : k.channels) ?? E;
+            A((k) => {
+              var C;
+              return ((C = g == null ? void 0 : g.data) == null ? void 0 : C.channels) ?? k;
             });
           }, []), t.useEffect(() => {
-            if (s.current) {
-              const p = s.current.getHTML();
-              P("message", p);
+            if (i.current) {
+              const g = i.current.getHTML();
+              P("message", g);
             }
-          }, [s.current]), /* @__PURE__ */ t.createElement("div", { className: "bg-background-100 w-full", __self: void 0, __source: {
+          }, [i.current]), /* @__PURE__ */ t.createElement("div", { className: "bg-background-100 w-full", __self: void 0, __source: {
             fileName: l,
-            lineNumber: 326,
+            lineNumber: 336,
             columnNumber: 13
           } }, /* @__PURE__ */ t.createElement("form", { onSubmit: L(R), className: "flex flex-col gap-4 mx-auto max-w-2xl pt-48 min-h-screen", __self: void 0, __source: {
             fileName: l,
-            lineNumber: 327,
+            lineNumber: 337,
             columnNumber: 15
           } }, /* @__PURE__ */ t.createElement("div", { className: "font-semibold text-4xl", __self: void 0, __source: {
             fileName: l,
-            lineNumber: 331,
+            lineNumber: 341,
             columnNumber: 17
           } }, "Post to Slack"), /* @__PURE__ */ t.createElement(e.reactHookForm.Controller, { name: "message", control: $, render: ({
-            field: p
-          }) => /* @__PURE__ */ t.createElement(n.NoteEditor, { editorRef: s, slug: `slack_post-to-slack-${_.format("YYYY-MM-DD")}`, title: `Post to Slack for ${_.format("MMMM D, YYYY")}`, initialValue: p.value, onChange: ({
-            html: E
+            field: g
+          }) => /* @__PURE__ */ t.createElement(n.NoteEditor, { editorRef: i, slug: `slack_post-to-slack-${_.format("YYYY-MM-DD")}`, title: `Post to Slack for ${_.format("MMMM D, YYYY")}`, initialValue: g.value, onChange: ({
+            html: k
           }) => {
-            console.log(E), p.onChange(E);
-          }, onBlur: p.onBlur, saveNow: v, onSaveEnd: g, className: "min-h-[40vh]", __self: void 0, __source: {
+            console.log(k), g.onChange(k);
+          }, onBlur: g.onBlur, saveNow: h, onSaveEnd: v, className: "min-h-[40vh]", __self: void 0, __source: {
             fileName: l,
-            lineNumber: 336,
+            lineNumber: 346,
             columnNumber: 21
           } }), __self: void 0, __source: {
             fileName: l,
-            lineNumber: 332,
+            lineNumber: 342,
             columnNumber: 17
-          } }), M.errors.root && /* @__PURE__ */ t.createElement("div", { className: "text-negative-600 text-sm", __self: void 0, __source: {
+          } }), T.errors.root && /* @__PURE__ */ t.createElement("div", { className: "text-negative-600 text-sm", __self: void 0, __source: {
             fileName: l,
-            lineNumber: 353,
+            lineNumber: 363,
             columnNumber: 19
-          } }, M.errors.root.message), /* @__PURE__ */ t.createElement("div", { className: "flex justify-between items-center", __self: void 0, __source: {
+          } }, T.errors.root.message), /* @__PURE__ */ t.createElement("div", { className: "flex justify-between items-center", __self: void 0, __source: {
             fileName: l,
-            lineNumber: 355,
+            lineNumber: 365,
             columnNumber: 17
-          } }, /* @__PURE__ */ t.createElement(i, { control: $, channels: w, __self: void 0, __source: {
+          } }, /* @__PURE__ */ t.createElement(s, { control: $, channels: M, __self: void 0, __source: {
             fileName: l,
-            lineNumber: 356,
+            lineNumber: 366,
             columnNumber: 19
           } }), /* @__PURE__ */ t.createElement("div", { className: "flex items-center gap-2", __self: void 0, __source: {
             fileName: l,
-            lineNumber: 357,
+            lineNumber: 367,
             columnNumber: 19
           } }, /* @__PURE__ */ t.createElement(r.BackButton, { type: "button", __self: void 0, __source: {
             fileName: l,
-            lineNumber: 358,
+            lineNumber: 368,
             columnNumber: 21
-          } }), /* @__PURE__ */ t.createElement(r.NextButton, { type: "submit", loading: b, onClick: () => {
+          } }), /* @__PURE__ */ t.createElement(r.NextButton, { type: "submit", loading: p, onClick: () => {
           }, __self: void 0, __source: {
             fileName: l,
-            lineNumber: 359,
+            lineNumber: 369,
             columnNumber: 21
           } })))));
         },
         renderSettings: async (r) => ({
           component: () => {
-            var L, M, T, P, j;
+            var L, T, y, P, j;
             const d = r.routineStep.templates[0], {
-              control: s,
+              control: i,
               handleSubmit: _
             } = e.reactHookForm.useForm({
               defaultValues: {
                 template: {
-                  content: (d == null ? void 0 : d.raw) ?? be(),
+                  content: (d == null ? void 0 : d.raw) ?? pe(),
                   data: (d == null ? void 0 : d.metadata) ?? {}
                 },
-                channels: ((T = (M = (L = r.routineStep) == null ? void 0 : L.config) == null ? void 0 : M.defaultChannels) == null ? void 0 : T.map((b) => b.id)) ?? []
+                channels: ((y = (T = (L = r.routineStep) == null ? void 0 : L.config) == null ? void 0 : T.defaultChannels) == null ? void 0 : y.map((p) => p.id)) ?? []
               }
-            }), [v, O] = t.useState(((j = (P = r.routineStep) == null ? void 0 : P.config) == null ? void 0 : j.defaultChannels) ?? []), [w, F] = e.relay.useMutation(ne), $ = async (b) => {
-              const R = v.filter((g) => b.channels.includes(g.id));
-              w({
+            }), [h, O] = t.useState(((j = (P = r.routineStep) == null ? void 0 : P.config) == null ? void 0 : j.defaultChannels) ?? []), [M, A] = e.relay.useMutation(re), $ = async (p) => {
+              const R = h.filter((v) => p.channels.includes(v.id));
+              M({
                 variables: {
                   routineStep: {
                     id: r.routineStep.id,
@@ -861,82 +872,82 @@ const Ve = Ne((e) => {
                     }
                   },
                   template: {
-                    slug: (d == null ? void 0 : d.slug) ?? `slack-${J}-${r.routineStep.id}`,
-                    raw: b.template.content,
-                    metadata: b.template.data ?? {}
+                    slug: (d == null ? void 0 : d.slug) ?? `slack-${X}-${r.routineStep.id}`,
+                    raw: p.template.content,
+                    metadata: p.template.data ?? {}
                   }
                 },
                 onCompleted: () => {
-                  var g;
-                  return (g = r.onClose) == null ? void 0 : g.call(r);
+                  var v;
+                  return (v = r.onClose) == null ? void 0 : v.call(r);
                 }
               });
             };
             return e.hooks.useAsyncEffect(async () => {
-              const b = await e.operations.query({
+              const p = await e.operations.query({
                 operationName: "getChannels"
               });
               O((R) => {
-                var g;
-                return ((g = b == null ? void 0 : b.data) == null ? void 0 : g.channels) ?? R;
+                var v;
+                return ((v = p == null ? void 0 : p.data) == null ? void 0 : v.channels) ?? R;
               });
             }, []), /* @__PURE__ */ t.createElement("form", { onSubmit: _($), className: "flex flex-col gap-4", __self: void 0, __source: {
               fileName: l,
-              lineNumber: 441,
+              lineNumber: 451,
               columnNumber: 17
             } }, /* @__PURE__ */ t.createElement("div", { className: "flex flex-col gap-1", __self: void 0, __source: {
               fileName: l,
-              lineNumber: 442,
+              lineNumber: 452,
               columnNumber: 19
             } }, /* @__PURE__ */ t.createElement("div", { className: "text-foreground-900 text-base font-medium", __self: void 0, __source: {
               fileName: l,
-              lineNumber: 443,
+              lineNumber: 453,
               columnNumber: 21
             } }, "Template"), /* @__PURE__ */ t.createElement("div", { className: "text-foreground-700 text-sm", __self: void 0, __source: {
               fileName: l,
-              lineNumber: 444,
+              lineNumber: 454,
               columnNumber: 21
             } }, "Write the template message for the routine in HTML. You can preview it before saving.", /* @__PURE__ */ t.createElement("br", { __self: void 0, __source: {
               fileName: l,
-              lineNumber: 447,
+              lineNumber: 457,
               columnNumber: 23
-            } }), "Don't worry, you can edit the message each time you do the routine."), /* @__PURE__ */ t.createElement(e.reactHookForm.Controller, { name: "template", control: s, render: ({
-              field: b
-            }) => /* @__PURE__ */ t.createElement(n.TemplateEditor, { initialTemplate: b.value, onChange: b.onChange, __self: void 0, __source: {
+            } }), "Don't worry, you can edit the message each time you do the routine."), /* @__PURE__ */ t.createElement(e.reactHookForm.Controller, { name: "template", control: i, render: ({
+              field: p
+            }) => /* @__PURE__ */ t.createElement(n.TemplateEditor, { initialTemplate: p.value, onChange: p.onChange, __self: void 0, __source: {
               fileName: l,
-              lineNumber: 454,
+              lineNumber: 464,
               columnNumber: 25
             } }), __self: void 0, __source: {
               fileName: l,
-              lineNumber: 450,
+              lineNumber: 460,
               columnNumber: 21
             } })), /* @__PURE__ */ t.createElement("div", { className: "flex flex-col gap-1", __self: void 0, __source: {
               fileName: l,
-              lineNumber: 461,
+              lineNumber: 471,
               columnNumber: 19
             } }, /* @__PURE__ */ t.createElement("div", { className: "text-foreground-900 text-base font-medium", __self: void 0, __source: {
               fileName: l,
-              lineNumber: 462,
+              lineNumber: 472,
               columnNumber: 21
             } }, "Default channels"), /* @__PURE__ */ t.createElement("div", { className: "text-foreground-700 text-sm", __self: void 0, __source: {
               fileName: l,
-              lineNumber: 465,
+              lineNumber: 475,
               columnNumber: 21
-            } }, "Which channels should be selected by default when posting to Slack?"), /* @__PURE__ */ t.createElement(i, { control: s, channels: v, __self: void 0, __source: {
+            } }, "Which channels should be selected by default when posting to Slack?"), /* @__PURE__ */ t.createElement(s, { control: i, channels: h, __self: void 0, __source: {
               fileName: l,
-              lineNumber: 468,
+              lineNumber: 478,
               columnNumber: 21
             } })), /* @__PURE__ */ t.createElement("div", { className: "flex items-center gap-2 self-end", __self: void 0, __source: {
               fileName: l,
-              lineNumber: 470,
+              lineNumber: 480,
               columnNumber: 19
             } }, /* @__PURE__ */ t.createElement(n.Button, { type: "button", secondary: !0, onClick: r.onCancel, __self: void 0, __source: {
               fileName: l,
-              lineNumber: 471,
+              lineNumber: 481,
               columnNumber: 21
-            } }, "Cancel"), /* @__PURE__ */ t.createElement(n.Button, { type: "submit", loading: F, __self: void 0, __source: {
+            } }, "Cancel"), /* @__PURE__ */ t.createElement(n.Button, { type: "submit", loading: A, __self: void 0, __source: {
               fileName: l,
-              lineNumber: 474,
+              lineNumber: 484,
               columnNumber: 21
             } }, "Save")));
           }
@@ -946,5 +957,5 @@ const Ve = Ne((e) => {
   };
 });
 export {
-  Ve as default
+  Fe as default
 };

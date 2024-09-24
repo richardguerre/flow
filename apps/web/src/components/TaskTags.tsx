@@ -90,7 +90,6 @@ export const TaskTagsExtension = Mention.extend<
   renderHTML({ node, HTMLAttributes }) {
     const taskTagAttrs = node.attrs as TaskTagsAttrs;
     const taskTag = this.options.tags.find((tag) => tag.id === taskTagAttrs.id);
-    console.log(taskTag);
     return [
       "span",
       mergeAttributes(this.options.HTMLAttributes, HTMLAttributes, {

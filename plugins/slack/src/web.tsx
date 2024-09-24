@@ -263,7 +263,7 @@ export default definePlugin((opts) => {
           const [postMessage, postingMessages] = opts.operations.useMutation<
             PostMessageInput,
             PostMessageData
-          >("postMessage");
+          >("postMessage", { throwOnError: true });
 
           const onSubmit = async (values: PostToSlack) => {
             const channelsToPost = channels.filter((channel) =>
@@ -279,6 +279,16 @@ export default definePlugin((opts) => {
                 teamId: channel.team.id,
                 channelId: channel.id,
               })),
+            }).catch((e) => {
+              if ("extensions" in e && e?.extensions?.userFriendlyMessage) {
+                setError("root", { message: e.extensions.userFriendlyMessage });
+              } else if ("message" in e) {
+                setError("root", { message: e.message });
+              } else {
+                setError("root", {
+                  message: "Couldn't post message to Slack channels. Please try again.",
+                });
+              }
             });
             if (!res?.data?.ok) {
               setError("root", { message: "Couldn't post message to Slack channels." });
