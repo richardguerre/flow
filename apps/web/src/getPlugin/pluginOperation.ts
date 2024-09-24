@@ -21,12 +21,6 @@ const queryDoc = graphql`
   }
 `;
 
-const renderTemplateQuery = graphql`
-  query pluginOperationRenderTemplateQuery($input: QueryRenderTemplateInput!) {
-    renderTemplate(input: $input)
-  }
-`;
-
 const mutation =
   (pluginSlug: string) =>
   async <T extends JsonValue>(
@@ -157,20 +151,6 @@ export const getPluginOperationUtils = (pluginSlug: string) => ({
       error,
     ] as const;
   },
-  renderTemplate: async (template: string, data: Record<string, any>) => {
-    const query = await fetchQuery<pluginOperationRenderTemplateQuery>(
-      environment,
-      renderTemplateQuery,
-      { input: { template, data } },
-    ).toPromise();
-    return query?.renderTemplate ?? "";
-  },
-  useRenderTemplate: async (template: string, data: Record<string, any>) => {
-    const res = useLazyLoadQuery<pluginOperationRenderTemplateQuery>(renderTemplateQuery, {
-      input: { template, data },
-    });
-    return res.renderTemplate ?? "";
-  },
 });
 
 type PluginOperationParams = {
@@ -182,3 +162,25 @@ type PluginOperationsReturn<T extends JsonValue = JsonValue> = {
   readonly data: T | null;
   readonly id: string;
 } | null;
+
+const renderTemplateQuery = graphql`
+  query pluginOperationRenderTemplateQuery($input: QueryRenderTemplateInput!) {
+    renderTemplate(input: $input)
+  }
+`;
+
+export const renderTemplate = async (template: string, data: Record<string, any>) => {
+  const query = await fetchQuery<pluginOperationRenderTemplateQuery>(
+    environment,
+    renderTemplateQuery,
+    { input: { template, data } },
+  ).toPromise();
+  return query?.renderTemplate ?? "";
+};
+
+export const useRenderTemplate = async (template: string, data: Record<string, any>) => {
+  const res = useLazyLoadQuery<pluginOperationRenderTemplateQuery>(renderTemplateQuery, {
+    input: { template, data },
+  });
+  return res.renderTemplate ?? "";
+};

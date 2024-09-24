@@ -15,7 +15,7 @@ import { useAsyncEffect } from "../useAsyncEffect";
 import { createItem } from "./createItem";
 import { createTask } from "./createTask";
 import { getStoreUtils } from "./getStoreUtils";
-import { getPluginOperationUtils } from "./pluginOperation";
+import { getPluginOperationUtils, renderTemplate, useRenderTemplate } from "./pluginOperation";
 import { FormInput } from "@flowdev/ui/FormInput";
 import { FormSelect } from "@flowdev/ui/FormSelect";
 import { Input } from "@flowdev/ui/Input";
@@ -226,7 +226,13 @@ export const getPluginOptions = (slug: string) => ({
      * This hook is useful to do async operations in a useEffect.
      */
     useAsyncEffect,
+    /**
+     * This hooks is useful to render a template. Alternatively, you can use the `opts.renderTemplate`.
+     */
+    useRenderTemplate,
   },
+  /** Render a template. Alternatively, you can use the `opts.hooks.useRenderTemplate`. */
+  renderTemplate,
   /**
    * Utilities for interacting with the store.
    */
