@@ -44,7 +44,7 @@ export const TestViewContent = () => {
         },
       }),
     ],
-    content: `<ul><li><p><slack-status data-taskId="Task_1">✅</slack-status> task title 1 <span data-tasktag-id="Task_1" data-name="Test">#Test</span></p></li></ul><slack-workspace-channel data-workspace-id="someId" data-channel-id="someId"></slack-workspace-channel>`,
+    content: `<ul><li><slack-status data-taskId="Task_1">✅</slack-status> Product daily</li></ul><slack-workspace-channel data-workspace-id="someId" data-channel-id="someId"></slack-workspace-channel>`,
     onUpdate: (props) => {
       console.log(props.editor.getHTML());
       // props.editor.state.doc.descendants((node) => {
@@ -55,7 +55,7 @@ export const TestViewContent = () => {
     },
     editorProps: {
       attributes: {
-        class: "prose h-full w-full",
+        class: "h-full w-full",
       },
     },
     autofocus: true,
@@ -76,7 +76,7 @@ const Component = (props: any) => {
         <TooltipTrigger asChild>
           <span
             className={tw(
-              "p-0.5 mr-1 rounded-sm hover:bg-background-200 translate-y-0.75 h-5 w-5 inline-flex items-center justify-center",
+              "p-0.5 rounded-sm hover:bg-background-200 translate-y-0.75 h-5 w-5 inline-flex items-center justify-center",
               props.selected && "bg-primary-200",
             )}
           >

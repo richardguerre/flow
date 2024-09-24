@@ -112,6 +112,11 @@ const registerFlowsDefaultHelpers = async (opts?: {
     Handlebars.registerHelper("title-without-tags", async function (this: Task) {
       if (!("title" in this)) return "";
       const titleParsed = htmlParser.parse(this.title);
+      // remove wrapping <p> tags from the title
+      titleParsed.querySelectorAll("p").forEach((tag) => {
+        tag.replaceWith(tag.innerHTML);
+      });
+      // remove task tags
       titleParsed.querySelectorAll("span[data-tasktag-id]").forEach((tag) => {
         tag.replaceWith("");
       });
@@ -139,8 +144,14 @@ const registerFlowsDefaultHelpers = async (opts?: {
         .then((tasks) =>
           tasks.map((task) => {
             // remove wrapping <p> tags from the title
-            const title = task.title.replace(/<p>(.*)<\/p>/, "$1");
-            return { ...task, title: new Handlebars.SafeString(title) } satisfies TaskInTemplate;
+            const titleParsed = htmlParser.parse(task.title);
+            titleParsed.querySelectorAll("p").forEach((tag) => {
+              tag.replaceWith(tag.innerHTML);
+            });
+            return {
+              ...task,
+              title: new Handlebars.SafeString(titleParsed.toString()),
+            } satisfies TaskInTemplate;
           }),
         );
 
