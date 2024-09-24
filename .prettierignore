@@ -47,6 +47,7 @@ apps/server/plugins/*
 
 # ignoring schema.graphql as it's genrated from the server and doesn't need to be formatted
 packages/relay/schema.graphql
+packages/common/schema.graphql
 
 # ignoring generated files from relay-compiler (copied from apps/web/.gitignore)
 apps/web/src/relay/__gen__

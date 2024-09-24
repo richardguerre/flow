@@ -35,6 +35,17 @@ input CreateNoteTagInput {
   slug: String
 }
 
+input CreateTaskTagInput {
+  """The color of the task tag."""
+  color: Color!
+
+  """Whether tasks with this tag will be considered private."""
+  isPrivate: Boolean!
+
+  """The name of the task tag."""
+  name: String!
+}
+
 """
 A date string, such as 2007-12-03, compliant with the `full-date` format outlined in section 5.6 of the RFC 3339 profile of the ISO 8601 standard for representation of dates and times using the Gregorian calendar.
 """
@@ -170,6 +181,11 @@ The `JSON` scalar type represents JSON values as specified by [ECMA-404](http://
 """
 scalar JSON
 
+"""
+The `JSONObject` scalar type represents JSON objects as specified by [ECMA-404](http://www.ecma-international.org/publications/files/ECMA-ST/ECMA-404.pdf).
+"""
+scalar JSONObject
+
 """List of items"""
 type List implements Node {
   """The date and time of creation of the list"""
@@ -216,6 +232,9 @@ type Mutation {
   Updates a note if one exists with the passed in `slug`, otherwise creates a new note.
   """
   createOrUpdateNote(input: MutationCreateOrUpdateNoteInput!): Note!
+
+  """Create or update a template."""
+  createOrUpdateTemplate(input: MutationCreateOrUpdateTemplateInput!): Template!
   createRoutine(input: MutationCreateRoutineInput!): Routine!
 
   """Create a new subtask."""
@@ -226,6 +245,9 @@ type Mutation {
 
   """Create a new task tag."""
   createTaskTag(input: MutationCreateTaskTagInput!): TaskTag!
+
+  """Create a new template and link it to a routine step."""
+  createTemplate(input: TemplateInput!): Template!
 
   """Delete an item."""
   deleteItem(id: ID!): Item!
@@ -238,6 +260,12 @@ type Mutation {
 
   """Delete a task tag."""
   deleteTaskTag(input: MutationDeleteTaskTagInput!): TaskTag!
+
+  """Delete a template."""
+  deleteTemplate(
+    """The Relay ID of the template to delete."""
+    id: ID!
+  ): Template!
 
   """
   Dismiss an item from the inbox. This effectively sets `inboxPoints = null` for the item.
@@ -285,6 +313,7 @@ type Mutation {
   """
   updateItemStatus(input: MutationUpdateItemStatusInput!): Item!
   updateRoutine(input: MutationUpdateRoutineInput!): Routine!
+  updateRoutineStep(input: MutationUpdateRoutineStepInput!): RoutineStep!
 
   """Update a task."""
   updateTask(input: MutationUpdateTaskInput!): Task!
@@ -312,6 +341,9 @@ type Mutation {
 
   """Update a task tag."""
   updateTaskTag(input: MutationUpdateTaskTagInput!): TaskTag!
+
+  """Update a template."""
+  updateTemplate(input: MutationUpdateTemplateInput!): Template!
 
   """
   Creates a store item. If a store item with the same key exists, only its value will be updated (`isSecret` and `isServerOnly` will not be updated).
@@ -398,6 +430,15 @@ input MutationCreateOrUpdateNoteInput {
   title: String!
 }
 
+input MutationCreateOrUpdateTemplateInput {
+  metadata: JSON
+  raw: String!
+
+  """The Relay ID of the routine step to link the template to."""
+  routineStepId: ID
+  slug: String!
+}
+
 input MutationCreateRoutineInput {
   actionName: String!
   name: String!
@@ -434,11 +475,19 @@ input MutationCreateTaskInput {
   """The Relay ID of the Item that should be linked to the task."""
   itemId: ID
 
+  """Create new tags and link them to the task."""
+  newTags: [CreateTaskTagInput!]
+
   """The plugin data to be linked to the task."""
   pluginDatas: [TaskPluginDataInput!]
 
   """The initial status of the task. Defaults to `TODO`."""
   status: TaskStatus = TODO
+
+  """
+  The IDs of exsiting tags to be linked to the task. If you want to create a new tag, use the `newTags` input.
+  """
+  tags: [ID!]
 
   """The title of the task."""
   title: String!
@@ -550,8 +599,22 @@ input MutationUpdateRoutineInput {
   """The steps to update the routine with."""
   steps: [RoutineStepInput!]
 
-  """The time to update the routine with."""
+  """The time to use the routine with."""
   time: Time
+}
+
+input MutationUpdateRoutineStepInput {
+  """The config of the step. This can be any JSONObject"""
+  config: JSONObject
+
+  """The ID of the routine step. It must exist."""
+  id: ID!
+
+  """Whether the step should be skipped or not."""
+  shouldSkip: Boolean
+
+  """The templates linked to the step."""
+  templates: [TemplateInput!]
 }
 
 input MutationUpdateTaskDateInput {
@@ -571,6 +634,19 @@ input MutationUpdateTaskInput {
 
   """The Relay ID of the task to update."""
   id: ID!
+
+  """Create new tags and link them to the task."""
+  newTags: [CreateTaskTagInput!]
+
+  """
+  The IDs of tags to be unlinked from the task. If you want to create a new tag, use the `newTags` input.
+  """
+  removeTags: [ID!]
+
+  """
+  The IDs of exsiting tags to be linked to the task. If you want to create a new tag, use the `newTags` input.
+  """
+  tags: [ID!]
 
   """The title of the task."""
   title: String
@@ -599,6 +675,17 @@ input MutationUpdateTaskTagInput {
 
   """The new name of the task tag."""
   name: String
+}
+
+input MutationUpdateTemplateInput {
+  """The Relay ID of the template to update."""
+  id: ID!
+  metadata: JSON
+  newSlug: String
+  raw: String
+
+  """The Relay ID of the routine step to link the template to."""
+  routineStepId: ID
 }
 
 input MutationUpsertStoreItemInput {
@@ -838,6 +925,11 @@ type Query {
   ): QueryNoteTagsConnection!
   pluginOperation(input: QueryPluginOperationInput!): PluginOperation
 
+  """
+  Render a template string with the given data. Plugin helpers and partials can be used in the template.
+  """
+  renderTemplate(input: QueryRenderTemplateInput!): String!
+
   """Get all routines."""
   routines: [Routine!]!
 
@@ -860,6 +952,12 @@ type Query {
     """Filters to use when querying task tags."""
     where: TaskTagWhereInput
   ): QueryTaskTagsConnection!
+
+  """Get a template by its slug."""
+  template(
+    """The slug of the template."""
+    slug: String!
+  ): Template
 
   """The timezone set for the Flow instance. `null` if no timezone is set."""
   timezoneSet: String
@@ -899,6 +997,11 @@ input QueryPluginOperationInput {
   data: JSON
   operationName: String!
   pluginSlug: String!
+}
+
+input QueryRenderTemplateInput {
+  data: JSON!
+  template: String!
 }
 
 input QueryStoreItemsInput {
@@ -942,7 +1045,7 @@ type Routine implements Node {
   """
   Returns the first step in the routine. If there are no steps in the routine, it returns `null`.
   """
-  firstStep: String
+  firstStep: RoutineStep
   id: ID!
 
   """Whether the routine is active. This can be used to pause a routine."""
@@ -953,29 +1056,49 @@ type Routine implements Node {
 
   """The pattern(s) the routine repeats on"""
   repeats: [RepetitionPattern!]!
+
+  """The steps of the routine."""
   steps: [RoutineStep!]!
 
   """The time the routine takes place"""
   time: Time!
 }
 
-"""
-A step in a routine. To know which plugin the step belongs to, see `pluginSlug`.
-"""
-type RoutineStep {
-  """The slug of the plugin that the step belongs to."""
+type RoutineStep implements Node {
+  """Extra data to configure the step"""
+  config: JSON
+
+  """The ID of the step"""
+  id: ID!
+
+  """The plugin slug of the step"""
   pluginSlug: String!
 
+  """The routine the step is in"""
+  routine: Routine!
+
+  """The id of routine the step is in"""
+  routineId: ID!
+
   """
-  Whether the step should be skipped if the previous routine was done (i.e. routine.done = true).
+  Whether the step should be skipped if it has already been completed in the previous routine
   """
   shouldSkip: Boolean!
 
-  """The slug of the step."""
+  """The step slug of the step"""
   stepSlug: String!
+
+  """The templates the step uses"""
+  templates: [Template!]!
 }
 
 input RoutineStepInput {
+  config: JSONObject
+
+  """
+  The ID of the step if it exists. Leave empty or null to create a new step.
+  """
+  id: ID
   pluginSlug: String!
   shouldSkip: Boolean!
   stepSlug: String!
@@ -1050,7 +1173,7 @@ type Task implements Node {
   """The status of the task"""
   status: TaskStatus!
 
-  """The subtasks of the task"""
+  """The subtasks of the task."""
   subtasks: [Task!]!
 
   """The tags of the task """
@@ -1157,6 +1280,52 @@ input TaskTagWhereInput {
 
   """Filter by name. Case insensitive."""
   nameIsLike: String
+}
+
+type Template implements Node {
+  """The date and time of creation of the template"""
+  createdAt: DateTime!
+  id: ID!
+
+  """Extra data attached to the template. This column may not be used yet."""
+  metadata: JSON
+
+  """The Handlebars template -- https://handlebarsjs.com/guide"""
+  raw: String!
+
+  """
+  The rendered template given the data as input. If no data is given, the template will be rendered with the default metadata.
+  """
+  rendered(input: TemplateRenderedInput): String!
+
+  """The routineStep (if any) the template is used in"""
+  routineStep: RoutineStep!
+
+  """The id of the routineStep (if any) the template is used in"""
+  routineStepId: ID
+
+  """The slug and id of the template"""
+  slug: String!
+
+  """The date and time the template was last updated"""
+  updatedAt: DateTime!
+}
+
+input TemplateInput {
+  """
+  The ID of the template to update. Not required when creating a new template.
+  """
+  id: ID
+  metadata: JSONObject
+
+  """The ID of the routine step to link the template to."""
+  routineStepId: ID
+  slug: String!
+  template: String!
+}
+
+input TemplateRenderedInput {
+  data: JSONObject
 }
 
 """

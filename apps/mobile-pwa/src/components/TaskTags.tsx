@@ -61,13 +61,13 @@ export const TaskTagsExtension = Mention.extend<
   MentionOptions & { tags: TaskTagsNode[] },
   { tags: TaskTagsNode[] }
 >({
-  name: "taskTags",
+  name: "taskTag",
   addOptions() {
     return { ...this.parent?.(), tags: [] };
   },
   addAttributes: () => ({
     id: {
-      default: "something",
+      default: null,
       parseHTML: (element) => element.getAttribute("data-tasktag-id") ?? null,
       renderHTML: (attrs) => {
         if (!attrs.id) return {};
@@ -90,7 +90,7 @@ export const TaskTagsExtension = Mention.extend<
     return [
       "span",
       mergeAttributes(this.options.HTMLAttributes, HTMLAttributes, {
-        class: `text-${taskTag?.color ?? "gray"}-700 rounded-md px-1 py-0.5`,
+        class: `text-${taskTag?.color ?? "gray"}-700`,
       }),
       `${this.options.suggestion.char}${taskTag?.name ?? taskTagAttrs.name}`,
     ];
@@ -182,7 +182,7 @@ const TaskTagsList = forwardRef(
         props.editor
           .chain()
           .deleteRange({ from: props.range.from, to: props.range.to })
-          .insertContent({ type: "taskTags", attrs: item })
+          .insertContent({ type: "taskTag", attrs: item })
           .run();
       }
     };

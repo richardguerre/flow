@@ -29,6 +29,9 @@ export const TaskTitle = (props: TaskTitleProps) => {
         date # added to be spread in TaskTitleCreateTaskMutation
         status # added to be spread in TaskTitleCreateTaskMutation
         durationInMinutes # added to be spread in TaskTitleCreateTaskMutation
+        tags {
+          id
+        }
       }
     `,
     props.task,
@@ -53,6 +56,12 @@ export const TaskTitle = (props: TaskTitleProps) => {
   `);
 
   const handleSave = (title: string) => {
+    const tags: string[] = [];
+    props.editorRef?.current?.state.doc.descendants((node) => {
+      if (node.type.name === "taskTag") {
+        tags.push(node.attrs.id);
+      }
+    });
     if (isTemp) {
       createTask({
         variables: {
@@ -61,6 +70,7 @@ export const TaskTitle = (props: TaskTitleProps) => {
             date: task.date,
             status: task.status,
             durationInMinutes: task.durationInMinutes,
+            tags,
           },
         },
         updater: (store, data) => {
@@ -78,7 +88,14 @@ export const TaskTitle = (props: TaskTitleProps) => {
       createVirtualTask({ date: task.date });
     } else {
       updateTask({
-        variables: { input: { id: task.id, title: title } },
+        variables: {
+          input: {
+            id: task.id,
+            title: title,
+            tags,
+            removeTags: task.tags.filter((tag) => !tags.includes(tag.id)).map((tag) => tag.id),
+          },
+        },
         optimisticResponse: { updateTask: { id: task.id, title } },
       });
     }
@@ -118,11 +135,11 @@ type TaskTitleInputProps = {
 };
 
 export const TaskTitleInput = (props: TaskTitleInputProps) => {
-  const editorRef = useRef<Editor | null>(null);
+  const editorRef = useRef<Editor | null>(props.editorRef?.current ?? null);
   const [editable, setEditable] = useState(props.autoFocus ?? false);
-  const { taskTags } = useTaskTags();
+  const { taskTags, loaded: tagsLoaded } = useTaskTags();
 
-  const handleSave = useCallback(() => {
+  const handleSave = useCallback(async () => {
     setEditable(false);
     if (!editorRef.current) return;
     if (editorRef.current.isEmpty) {
@@ -157,7 +174,8 @@ export const TaskTitleInput = (props: TaskTitleInputProps) => {
       editable: props.readOnly ? false : undefined,
       onBlur: handleSave,
     },
-    [taskTags.length],
+    // only depend on tagsLoaded if it's not a new task (i.e. when autoFocus is false)
+    [...(props.autoFocus ? [] : [tagsLoaded])],
   );
 
   const handleClick = () => {

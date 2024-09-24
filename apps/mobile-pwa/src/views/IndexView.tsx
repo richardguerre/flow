@@ -106,7 +106,7 @@ const IndexViewContent = (props: {
 };
 
 type FormValues = {
-  title: string;
+  title: TitleValue;
   date: string;
   durationInMinutes: number | null;
 };
@@ -117,7 +117,10 @@ const CreateTaskDrawer = (props: {
 }) => {
   const [openDrawer, setOpenDrawer] = useState(true);
   const defaultValues: FormValues = {
-    title: "",
+    title: {
+      content: "",
+      tags: [],
+    },
     date: dayjs().format("YYYY-MM-DD"),
     durationInMinutes: null,
   };
@@ -143,11 +146,12 @@ const CreateTaskDrawer = (props: {
     $createTask({
       variables: {
         input: {
-          title: values.title,
+          title: values.title.content,
           date,
           durationInMinutes,
           status: "TODO",
           atIndex: props.lastNonTerminalTaskIndex + 1,
+          tags: values.title.tags,
         },
       },
       onCompleted: (res) => {
@@ -235,9 +239,10 @@ const CreateTaskDrawer = (props: {
   );
 };
 
+type TitleValue = { content: string; tags: string[] };
 const TaskTitleInput = (props: {
-  value: string;
-  onChange: (value: string) => void;
+  value: TitleValue;
+  onChange: (input: TitleValue) => void;
   onBlur: () => void;
   onSave: () => void;
 }) => {
@@ -245,12 +250,14 @@ const TaskTitleInput = (props: {
   const { taskTags } = useTaskTags();
   editorRef.current = useEditor(
     {
-      content: props.value,
+      content: props.value.content,
       onBlur: ({ editor }) => {
-        props.onChange(editor.getHTML());
+        props.onChange({ content: editor.getHTML(), tags: getTags() });
         props.onBlur();
       },
-      onUpdate: ({ editor }) => props.onChange(editor.getHTML()),
+      onUpdate: ({ editor }) => {
+        props.onChange({ content: editor.getHTML(), tags: getTags() });
+      },
       extensions: [
         MinimumKit.configure({ placeholder: { placeholder: "What needs to be done?" } }),
         CatchNewLines(() => {
@@ -263,6 +270,16 @@ const TaskTitleInput = (props: {
     },
     [taskTags],
   );
+
+  const getTags = () => {
+    const tags: string[] = [];
+    editorRef.current?.state.doc.descendants((node) => {
+      if (node.type.name === "taskTag") {
+        tags.push(node.attrs.id);
+      }
+    });
+    return tags;
+  };
 
   useEffect(() => {
     setTimeout(() => {

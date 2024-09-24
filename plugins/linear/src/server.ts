@@ -1,4 +1,4 @@
-import { Prisma, definePlugin } from "@flowdev/plugin/server";
+import { type ServerTypes, definePlugin } from "@flowdev/plugin/server";
 
 const ACCOUNT_TOKENS_STORE_KEY = "account-tokens";
 const SYNCED_VIEWS_STORE_KEY = "synced-views";
@@ -306,6 +306,37 @@ export default definePlugin((opts) => {
         return { data: true };
       },
     },
+    onCreateTask: async ({ task }) => {
+      const itemPluginData = task.item?.pluginDatas?.find(
+        (pd) => pd.pluginSlug === opts.pluginSlug,
+      );
+      if (!itemPluginData?.originalId) return;
+      return {
+        pluginData: {
+          originalId: itemPluginData.originalId,
+          min: itemPluginData.min as LinearIssueItemMin,
+          full: itemPluginData.full as LinearIssueItemFull,
+        },
+      };
+    },
+    handlebars: {
+      helpers: {
+        "issue-link": function (this: ServerTypes.TaskInTemplate) {
+          if (!("pluginDatas" in this)) return "";
+          const pluginData = this.pluginDatas.find((p) => p.pluginSlug === "linear");
+          if (!pluginData) return "";
+          const min = pluginData.min as LinearIssueItemMin;
+          return min.url ?? `https://linear.app/issue/${min.identifier}`;
+        },
+        "issue-id": function (this: ServerTypes.TaskInTemplate) {
+          if (!("pluginDatas" in this)) return "";
+          const pluginData = this.pluginDatas.find((p) => p.pluginSlug === "linear");
+          if (!pluginData) return "";
+          const min = pluginData.min as LinearIssueItemMin;
+          return min.identifier;
+        },
+      },
+    },
     handlePgBossWork: (work) => [
       work(CONNECT_ACCOUNT_JOB_NAME, async (job) => {
         const { token } = job.data as JobConnectAccount;
@@ -530,11 +561,12 @@ export default definePlugin((opts) => {
             title: issue.title,
             isRelevant,
             inboxPoints: 10, // TODO: make it configurable by the user.
-          } satisfies Prisma.ItemUpdateInput;
+          } satisfies ServerTypes.PrismaTypes.Prisma.ItemUpdateInput;
 
           const min = {
             ...((existinPluginData?.min as LinearIssueItemMin) ?? {}),
             id: issue.id,
+            identifier: issue.identifier,
             state: issue.state,
             url: issue.url,
             priority: issue.priority,
@@ -772,6 +804,7 @@ const linearCommentFragment = /* GraphQL */ `
 const linearIssueFragment = /* GraphQL */ `
   fragment LinearIssue on Issue {
     id
+    identifier
     title
     url
     state {

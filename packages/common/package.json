@@ -1,0 +1,7 @@
+{
+  "name": "@flowdev/common",
+  "version": "0.1.0",
+  "description": "Common code for Flow (web, mobile-pwa, server, etc.)",
+  "private": true,
+  "main": "index.ts"
+}

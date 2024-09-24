@@ -15,7 +15,7 @@ import { useAsyncEffect } from "../useAsyncEffect";
 import { createItem } from "./createItem";
 import { createTask } from "./createTask";
 import { getStoreUtils } from "./getStoreUtils";
-import { getPluginOperationUtils } from "./pluginOperation";
+import { getPluginOperationUtils, renderTemplate, useRenderTemplate } from "./pluginOperation";
 import { FormInput } from "@flowdev/ui/FormInput";
 import { FormSelect } from "@flowdev/ui/FormSelect";
 import { Input } from "@flowdev/ui/Input";
@@ -93,6 +93,8 @@ import { ItemsList } from "../components/RenderList";
 import { nearestTailwindColor } from "@flowdev/nearest-color";
 import { Spinner } from "@flowdev/ui/Spinner";
 import { Loading } from "@flowdev/ui/Loading";
+import { TemplateEditor } from "../components/TemplateEditor";
+import { graphql, useMutation, useMutationPromise } from "@flowdev/relay";
 
 export const getPluginOptions = (slug: string) => ({
   /**
@@ -209,6 +211,7 @@ export const getPluginOptions = (slug: string) => ({
     TooltipContent,
     Spinner,
     Loading,
+    TemplateEditor,
   },
   hooks: {
     /**
@@ -223,7 +226,13 @@ export const getPluginOptions = (slug: string) => ({
      * This hook is useful to do async operations in a useEffect.
      */
     useAsyncEffect,
+    /**
+     * This hooks is useful to render a template. Alternatively, you can use the `opts.renderTemplate`.
+     */
+    useRenderTemplate,
   },
+  /** Render a template. Alternatively, you can use the `opts.hooks.useRenderTemplate`. */
+  renderTemplate,
   /**
    * Utilities for interacting with the store.
    */
@@ -281,6 +290,11 @@ export const getPluginOptions = (slug: string) => ({
    * @link https://react-hot-toast.com/
    */
   toast,
+  relay: {
+    graphql,
+    useMutation,
+    useMutationPromise,
+  },
 });
 
 export type WebPluginOptions = ReturnType<typeof getPluginOptions>;

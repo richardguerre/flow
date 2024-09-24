@@ -2,7 +2,7 @@ import { describe, it, expect } from "vitest";
 import { withDb } from "../../.vitest/prisma";
 import { graphql, gql } from "../../.vitest/server";
 import { Factory } from "../../.vitest/factory";
-import { encodeGlobalID } from "../../src/graphql/builder";
+import { encodeGlobalID } from "@flowdev/common";
 import { addDays, startOfDay, toDateOnly } from "../../src/utils/getDays";
 import { prisma } from "../../src/utils/prisma";
 import { TaskStatus } from "@prisma/client";

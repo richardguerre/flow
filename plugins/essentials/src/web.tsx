@@ -219,7 +219,7 @@ export default definePlugin((options) => {
           return (
             <div>
               <Flow.NoteEditor
-                slug={`flow-essentials_retro-${today.format("YYYY-MM-DD")}`}
+                slug={`flow-essentials_todays-plan-${today.format("YYYY-MM-DD")}`}
                 title={`Plan for ${today.format("MMMM D")}`}
                 loading={initialValue === null}
                 initialValue={initialValue ?? ""}

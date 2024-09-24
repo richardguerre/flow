@@ -6,22 +6,25 @@ import PrismaPlugin from "@pothos/plugin-prisma";
 import PrismaUtils from "@pothos/plugin-prisma-utils";
 import WithInputPlugin from "@pothos/plugin-with-input";
 import type PrismaTypes from "@pothos/plugin-prisma/generated";
-import { DateResolver, DateTimeResolver, PositiveIntResolver, JSONResolver } from "graphql-scalars";
+import {
+  DateResolver,
+  DateTimeResolver,
+  PositiveIntResolver,
+  JSONResolver,
+  JSONObjectResolver,
+} from "graphql-scalars";
 import { dayjs } from "../utils/dayjs";
 import { GraphQLError } from "graphql";
 import ScopeAuthPlugin from "@pothos/plugin-scope-auth";
 import SmartSubscriptionsPlugin from "@pothos/plugin-smart-subscriptions";
 import SimpleObjectsPlugin from "@pothos/plugin-simple-objects";
 import { pubsub } from "../pubsub";
+import { decodeGlobalId as $decodeGlobalId, encodeGlobalId } from "@flowdev/common";
 
-export const encodeGlobalID = (typename: string, id: string | number | bigint) => {
-  return `${typename}_${id}`;
-};
-export const decodeGlobalID = (globalId: string) => {
-  const [typename, ...idElements] = globalId.split("_");
-  const id = idElements.join("_"); // For dates, the ID is a string with colons
-  if (!typename || !id) throw new Error("Invalid Relay ID");
-  return { typename, id };
+const decodeGlobalId = (globalId: string) => {
+  const id = $decodeGlobalId(globalId);
+  if (!id) throw new Error("Invalid Relay ID");
+  return id;
 };
 export const builder = new SchemaBuilder<{
   PrismaTypes: PrismaTypes;
@@ -30,6 +33,7 @@ export const builder = new SchemaBuilder<{
     DateTime: { Input: Date; Output: Date };
     PositiveInt: { Input: number; Output: number };
     JSON: { Input: Prisma.InputJsonValue; Output: Prisma.JsonValue };
+    JSONObject: { Input: Record<string, any>; Output: Record<string, any> };
     Time: { Input: Date; Output: Date };
   };
   Context: {
@@ -63,8 +67,8 @@ export const builder = new SchemaBuilder<{
     nodeFieldOptions: {
       nullable: false,
     },
-    encodeGlobalID,
-    decodeGlobalID,
+    encodeGlobalID: encodeGlobalId,
+    decodeGlobalID: decodeGlobalId,
   },
   prisma: {
     client: prisma,
@@ -117,6 +121,7 @@ builder.addScalarType("Date", DateResolver, {});
 builder.addScalarType("DateTime", DateTimeResolver, {});
 builder.addScalarType("PositiveInt", PositiveIntResolver, {}); // only used in input types
 builder.addScalarType("JSON", JSONResolver, {});
+builder.addScalarType("JSONObject", JSONObjectResolver, {});
 builder.scalarType("Time", {
   description:
     "A time of day, represented as a string in the format `HH:mm`. For example, `16:20`.",

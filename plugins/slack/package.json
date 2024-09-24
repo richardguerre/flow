@@ -1,0 +1,22 @@
+{
+  "name": "@flowdev/plugin-slack",
+  "description": "Official Slack plugin for Flow.",
+  "version": "0.1.0",
+  "private": false,
+  "scripts": {
+    "build:web": "bun --bun run vite build -c vite.web.mts",
+    "build:server": "bun --bun run vite build -c vite.server.ts",
+    "build": "bun run build:web && bun run build:server",
+    "dev:web": "bun --bun run vite build -c vite.web.mts --watch",
+    "dev:server": "bun --bun run vite build -c vite.server.dev.ts --watch"
+  },
+  "dependencies": {
+    "@flowdev/plugin": "workspace:*",
+    "html-to-slack": "^0.2.2"
+  },
+  "devDependencies": {
+    "@vitejs/plugin-react": "4.1.0",
+    "graphql": "16.6.0",
+    "vite": "4.5.2"
+  }
+}

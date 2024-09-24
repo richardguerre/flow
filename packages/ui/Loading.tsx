@@ -129,6 +129,20 @@ export const LoadingView = (props: { className?: string }) => {
   );
 };
 
+export const LoadingDialog = (props: { className?: string }) => {
+  return (
+    <motion.div
+      className={tw("flex h-full w-full items-center justify-center", props.className)}
+      transition={{ duration: 0.3 }}
+      initial={{ opacity: 0 }}
+      animate={{ opacity: 1 }}
+      exit={{ opacity: 0 }} // TODO: this exit animation still doesn't work, the component get's unmouted immediately instead of fading out. Look into https://github.com/framer/motion/issues/1193 and react-freeze maybe?
+    >
+      <Loading minProgress={40} maxProgress={60} />
+    </motion.div>
+  );
+};
+
 const wait = (ms: number) => new Promise((resolve) => setTimeout(() => resolve(true), ms));
 /** This component will suspend for the given time (in ms). 500ms by default. Also, yes, it's a play on words. */
 const WaitInSuspense = ({ waitFor = 500 }: { waitFor?: number }) => {

@@ -88,6 +88,16 @@ const PLUGINS: Plugin[] = [
     version: "0.1.0",
     authors: [{ name: "Flow", avatarUrl: "FlowIcon.svg" }],
   },
+  {
+    iconUrl: "https://slack.com/favicon.ico",
+    name: "Slack",
+    slug: "slack",
+    description:
+      "Official Slack plugin for Flow, allowing you to post your plan to Slack channels when doing your routines.",
+    installUrl: "https://cdn.jsdelivr.net/gh/richardguerre/flow@main/plugins/slack/out",
+    version: "0.1.0",
+    authors: [{ name: "Flow", avatarUrl: "FlowIcon.svg" }],
+  },
 ];
 
 export default () => {
@@ -184,7 +194,7 @@ const PluginCard = (props: Plugin) => {
         {props.authors[0].avatarUrl && (
           <img
             src={props.authors[0].avatarUrl}
-            className="ring-primary-100 inline-block h-5 w-5 rounded-full ring"
+            className="ring-primary-200 inline-block h-5 w-5 rounded-full ring-1"
           />
         )}
         {props.authors[0].name}

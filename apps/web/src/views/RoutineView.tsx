@@ -12,7 +12,7 @@ import { dayjs } from "@flowdev/web/dayjs";
 import { RoutineStep } from "@flowdev/web/components/RoutineStep";
 import { environment } from "@flowdev/web/relay/environment";
 import { RoutineViewLatestQuery } from "@flowdev/web/relay/__gen__/RoutineViewLatestQuery.graphql";
-import { decodeGlobalId } from "@flowdev/web/relay/utils";
+import { decodeGlobalId } from "@flowdev/common";
 
 const routineViewQuery = graphql`
   query RoutineViewQuery($previousDayId: ID!, $currentDayId: ID!, $routineId: ID!) {

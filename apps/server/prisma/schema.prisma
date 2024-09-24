@@ -146,7 +146,10 @@ model TaskTag {
   /// Whether tasks with this tag should be private. (default: true)
   isPrivate Boolean  @default(true)
 
+  /// The tasks linked to the tag
   tasks Task[]
+  /// the items linked to the tag
+  items Item[]
 }
 
 /// The data required by a plugin to be linked to a task.
@@ -222,6 +225,8 @@ model Item {
 
   /// The tasks linked to the item
   tasks       Task[]
+  /// The tags linked to the item
+  tags        TaskTag[]
   /// The plugin datas linked to the item
   pluginDatas ItemPluginData[]
   /// The list in which the item is in
@@ -296,10 +301,50 @@ model Routine {
   /// Whether the routine is active. This can be used to pause a routine.
   isActive        Boolean             @default(true)
   /// The steps of the routine.
-  /// A list of strings in the format `['flow' or pluginSlug]_[stepSlug]_[shouldSkip]`.
-  steps           String[]
+  steps           RoutineStep[]
+  /// The order the steps should be displayed in
+  stepsOrder      Int[]
   /// The days the routine has been completed on.
   daysCompletedOn Day[]
+}
+
+model RoutineStep {
+  /// The id of the step
+  id         Int     @id @default(autoincrement())
+  /// The plugin slug of the step
+  pluginSlug String
+  /// The step slug of the step
+  stepSlug   String
+  /// Whether the step should be skipped if it has already been completed in the previous routine
+  shouldSkip Boolean
+  /// Extra data to configure the step
+  config     Json?
+
+  /// The routine the step is in
+  routine   Routine @relation(fields: [routineId], references: [id])
+  /// The id of routine the step is in
+  routineId Int
+
+  /// The templates the step uses
+  templates Template[]
+}
+
+model Template {
+  /// The slug and id of the template
+  slug      String   @id
+  /// The date and time of creation of the template
+  createdAt DateTime @default(now()) @db.Timestamptz()
+  /// The date and time the template was last updated
+  updatedAt DateTime @updatedAt @db.Timestamptz()
+  /// The Handlebars template -- https://handlebarsjs.com/guide
+  template  String
+  /// Extra data attached to the template.
+  metadata  Json?
+
+  /// The routineStep (if any) the template is used in
+  routineStep   RoutineStep? @relation(fields: [routineStepId], references: [id])
+  /// The id of the routineStep (if any) the template is used in
+  routineStepId Int?
 }
 
 enum RepetitionPattern {

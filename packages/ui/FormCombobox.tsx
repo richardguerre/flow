@@ -27,7 +27,7 @@ export const FormCombobox = <
 ) => {
   const errorMessage = typeof props.error === "object" ? props.error.message : props.error;
   return (
-    <label className={tw("flex flex-col gap-1", props.fullWidth && "w-full")}>
+    <label className={tw("flex flex-col gap-1 w-fit", props.fullWidth && "w-full")}>
       {props.label && (
         <div className="text-foreground-900 text-base font-medium">{props.label}</div>
       )}
@@ -39,6 +39,7 @@ export const FormCombobox = <
             {...(props.multiselect || props.comboboxProps?.multiselect
               ? {
                   multiselect: true,
+                  defaultValues: field.value,
                   value: field.value,
                   onValuesChange: (values) => {
                     field.onChange(values);
@@ -48,6 +49,7 @@ export const FormCombobox = <
                 }
               : {
                   value: field.value,
+                  defaultValue: field.value,
                   onValueChange: (value) => {
                     field.onChange(value);
                     // @ts-ignore as the types are complicated but the logic is correct

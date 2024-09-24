@@ -46,28 +46,31 @@ const getTaskTags = async () => {
 export const useTaskTags = (props?: { onLoaded?: (tags: TaskTagsNode[]) => void }) => {
   const [taskTags, setTaskTags] = useState<TaskTagsNode[]>([]);
   const [loading, setLoading] = useState(true);
+  const [loaded, setLoaded] = useState(false);
 
   useAsyncEffect(async () => {
     setLoading(true);
     const tags = await getTaskTags().finally(() => setLoading(false));
     props?.onLoaded?.(tags);
     setTaskTags(tags);
+    setLoaded(true);
+    setLoading(false);
   }, []);
 
-  return { taskTags, loading };
+  return { taskTags, loading, loaded };
 };
 
 export const TaskTagsExtension = Mention.extend<
   MentionOptions & { tags: TaskTagsNode[] },
   { tags: TaskTagsNode[] }
 >({
-  name: "taskTags",
+  name: "taskTag",
   addOptions() {
     return { ...this.parent?.(), tags: [] };
   },
   addAttributes: () => ({
     id: {
-      default: "something",
+      default: null,
       parseHTML: (element) => element.getAttribute("data-tasktag-id") ?? null,
       renderHTML: (attrs) => {
         if (!attrs.id) return {};
@@ -90,7 +93,7 @@ export const TaskTagsExtension = Mention.extend<
     return [
       "span",
       mergeAttributes(this.options.HTMLAttributes, HTMLAttributes, {
-        class: `text-${taskTag?.color ?? "gray"}-700 rounded-md px-1 py-0.5`,
+        class: `text-${taskTag?.color ?? "gray"}-700`,
       }),
       `${this.options.suggestion.char}${taskTag?.name ?? taskTagAttrs.name}`,
     ];
@@ -182,7 +185,7 @@ const TaskTagsList = forwardRef(
         props.editor
           .chain()
           .deleteRange({ from: props.range.from, to: props.range.to })
-          .insertContent({ type: "taskTags", attrs: item })
+          .insertContent({ type: "taskTag", attrs: item })
           .run();
       }
     };
@@ -206,7 +209,7 @@ const TaskTagsList = forwardRef(
     }));
 
     return (
-      <div className="flex flex-col gap-1 rounded-md border border-gray-200 bg-white p-1">
+      <div className="flex flex-col gap-1 rounded-md border border-gray-200 bg-background-50 p-1">
         {props.items.length ? (
           props.items.map((item, index) => (
             <button

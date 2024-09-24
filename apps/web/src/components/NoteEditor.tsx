@@ -1,12 +1,17 @@
 import { graphql, useLazyLoadQuery, useMutationPromise } from "@flowdev/relay";
 import { StarterKit, useEditor, EditorContent } from "@flowdev/tiptap";
+import type { Editor } from "@tiptap/core";
 import { Suspense, useEffect, useRef } from "react";
 import { NoteEditorQuery } from "@flowdev/web/relay/__gen__/NoteEditorQuery.graphql";
 import { NoteEditorUpsertNoteMutation } from "@flowdev/web/relay/__gen__/NoteEditorUpsertNoteMutation.graphql";
 import { dayjs } from "@flowdev/web/dayjs";
+import { usePlugins } from "../getPlugin";
+import { tw } from "@flowdev/ui/tw";
 // import { CreateNoteTagInput } from "@flowdev/web/relay/__gen__/RoutineStepSaveNoteMutation.graphql";
 
 type NoteEditorProps = {
+  /** A ref of the TipTap editor instance. */
+  editorRef?: React.MutableRefObject<Editor | null>;
   /** The slug of the note. The note will either be created or updated using that slug. */
   slug: string;
   /** The title of the note. Unlike the slug, this doesn't have to be unique. */
@@ -16,12 +21,18 @@ type NoteEditorProps = {
   autofocus?: boolean;
   /** If true, the editor will be disabled and a loading indicator will be shown. Useful when fetching the `initialValue`. */
   loading?: boolean;
+  /** className to apply to the editor. */
+  className?: string;
+  /** className to apply to the editor container. */
+  containerClassName?: string;
   /**
    * Triggers for each key pressed within the editor. If you want to retrive the values less often, use `onSaveBegin` and `onSaveEnd`.
    *
    * Note: the tags and newTags will always be empty arrays for now as the NoteEditor is not fully implemented yet.
    * */
   onChange?: (values: NoteEditorOnChangeValue) => void;
+  /** Triggers when the user clicks outside of the editor. */
+  onBlur?: () => void;
   /** If true, the note will be saved immediately without waiting for the user to stop typing. */
   saveNow?: boolean;
   /** Triggers at the beginging of each time the values are being saved to the server. */
@@ -31,6 +42,8 @@ type NoteEditorProps = {
 };
 
 export type NoteEditorOnChangeValue = {
+  /** The TipTap editor instance. */
+  editor: Editor;
   /** The HTML content of the NoteEditor. */
   html: string;
   /**
@@ -64,6 +77,7 @@ export const NoteEditor = (props: NoteEditorProps) => {
 };
 
 const NoteEditorContent = (props: NoteEditorProps) => {
+  const { plugins } = usePlugins();
   const timout = useRef<NodeJS.Timeout>();
   const data = useLazyLoadQuery<NoteEditorQuery>(
     graphql`
@@ -91,9 +105,10 @@ const NoteEditorContent = (props: NoteEditorProps) => {
     }
   `);
 
-  const handleSave = async (html: string) => {
+  const handleSave = async (input: { editor: Editor; html: string }) => {
     props.onSaveBegin?.({
-      html,
+      editor: input.editor,
+      html: input.html,
       tags: [],
     });
     await upsertNote({
@@ -102,7 +117,7 @@ const NoteEditorContent = (props: NoteEditorProps) => {
           date: dayjs().format("YYYY-MM-DD"),
           slug: props.slug,
           title: props.title,
-          content: html,
+          content: input.html,
           // TODO: tags
           tags: [],
           newTags: [],
@@ -111,40 +126,51 @@ const NoteEditorContent = (props: NoteEditorProps) => {
       },
     });
     props.onSaveEnd?.({
-      html,
+      editor: input.editor,
+      html: input.html,
       tags: [],
     });
   };
 
-  const editor = useEditor({
-    extensions: [StarterKit],
-    editorProps: {
-      attributes: {
-        class: "prose focus:outline-none",
+  const pluginExtensions = Object.values(plugins).flatMap(
+    (plugin) => plugin.noteEditorTipTapExtensions ?? [],
+  );
+
+  const editor = useEditor(
+    {
+      extensions: [StarterKit, ...pluginExtensions],
+      editorProps: {
+        attributes: {
+          class: tw("focus:outline-none", props.className),
+        },
       },
+      content: data.note?.content ?? props.initialValue,
+      autofocus: props.autofocus,
+      onUpdate: ({ editor }) => {
+        if (timout.current) clearTimeout(timout.current);
+        const html = editor.getHTML();
+        timout.current = setTimeout(() => {
+          handleSave({ editor, html });
+        }, 1000); // save after 1 second of inactivity
+        if (props.onChange) {
+          props.onChange({
+            editor,
+            html,
+            tags: [],
+          });
+        }
+      },
+      onBlur: props.onBlur,
     },
-    content: data.note?.content ?? props.initialValue,
-    autofocus: props.autofocus,
-    onUpdate: ({ editor }) => {
-      if (timout.current) clearTimeout(timout.current);
-      const content = editor.getHTML();
-      timout.current = setTimeout(() => {
-        handleSave(content);
-      }, 1000); // save after 1 second of inactivity
-      if (props.onChange) {
-        props.onChange({
-          html: content,
-          tags: [],
-        });
-      }
-    },
-  });
+    [pluginExtensions.length],
+  );
 
   useEffect(() => {
+    if (props.editorRef && editor) props.editorRef.current = editor;
     if (editor && props.saveNow) {
-      handleSave(editor.getHTML());
+      handleSave({ editor, html: editor.getHTML() });
     }
-  }, [props.saveNow, editor]);
+  }, [props.editorRef, props.saveNow, editor]);
 
-  return <EditorContent editor={editor} />;
+  return <EditorContent editor={editor} className={props.containerClassName} />;
 };

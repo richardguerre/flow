@@ -13,9 +13,13 @@ import type {
 } from "@flowdev/web/src/components/RenderCalendarActions";
 import type { PluginRenderLists as RenderLists } from "@flowdev/web/src/components/RenderLists";
 import type { PluginRenderList as RenderList } from "@flowdev/web/src/components/RenderList";
+import type { RenderRoutineStepSettings_routineStep$data } from "@flowdev/web/src/relay/__gen__/RenderRoutineStepSettings_routineStep.graphql";
+import type { Extensions } from "@tiptap/core";
+import { ComponentType } from "react";
 
 export type { WebPluginOptions, PluginRoutineStepProps, OnCreateTask };
 
+type ToRender = { component: ComponentType };
 export type WebPluginRoutineStep = {
   /** The name of the step. */
   name: string;
@@ -23,11 +27,26 @@ export type WebPluginRoutineStep = {
   description: string;
   /** The component to render for the step. */
   component: React.ComponentType<PluginRoutineStepProps>;
+  /**
+   * The component to render for the settings of the step.
+   * This is called when the user clicks on the settings icon on a routine step in the Routine Settings view.
+   *
+   * The component can be rendered asynchronously or return null if no settings are needed.
+   */
+  renderSettings?: (props: {
+    routineStep: RenderRoutineStepSettings_routineStep$data;
+    onCancel?: () => void;
+    onClose?: () => void;
+  }) => Promise<null | ToRender>; // had to compose this type here directly instead of @flowdev/web/src/components/RenderRoutineStepSettings as it's too complex for TypeScript to handle.
 };
+
+type WaysToContact = { email: string };
 
 export type WebPlugin = (options: WebPluginOptions) => {
   /** The name of the plugin. */
   name: string;
+  /** Who and how to contact for support. You can add as many ways as you want, but the first one will be the default way to contact. */
+  contact?: WaysToContact[];
   /** Routine steps the user can choose to add to their routines. */
   routineSteps?: {
     [stepSlug: string]: WebPluginRoutineStep;
@@ -94,6 +113,10 @@ export type WebPlugin = (options: WebPluginOptions) => {
    * Render a list in the Lists component (i.e. the right sidebar).
    */
   renderList?: RenderList;
+  /**
+   * TipTap extensions to use in the NoteEditor component.
+   */
+  noteEditorTipTapExtensions?: Extensions;
 };
 
 export const definePlugin = (plugin: WebPlugin) => ({ plugin });

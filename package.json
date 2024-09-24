@@ -17,11 +17,12 @@
   "devDependencies": {
     "bun-types": "1.0.4",
     "decompress-response": "^9.0.0",
-    "patch-package": "^6.0.2",
+    "patch-package": "6.0.2",
     "prettier": "3.3.3",
     "relay-compiler": "^17.0.0",
     "turbo": "^1.10.4",
-    "typescript": "5.2.2"
+    "typescript": "5.2.2",
+    "vercel": "^37.2.1"
   },
   "license": "MIT",
   "prettier": {

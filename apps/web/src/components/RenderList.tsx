@@ -41,7 +41,7 @@ export type PluginRenderList = (input: PluginProps) => Promise<null | ToRender>;
 type ToRender = { component: ComponentType };
 
 /**
- * Component to be used in the
+ * Component to be used in the List component to render the items of a list in the standard way.
  */
 export const ItemsList = (props: { where?: ItemFilter; emptyState?: React.ReactNode }) => {
   const [data] = useSmartSubscription<RenderListPluginItemsSubscription>(

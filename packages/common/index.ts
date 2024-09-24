@@ -4,3 +4,9 @@ export const decodeGlobalId = (globalId: string) => {
   if (!typename || !id) return null;
   return { typename, id };
 };
+
+export const encodeGlobalId = (typename: string, id: string | number | bigint) => {
+  return `${typename}_${id}`;
+};
+
+export const wait = (ms: number) => new Promise((resolve) => setTimeout(resolve, ms));

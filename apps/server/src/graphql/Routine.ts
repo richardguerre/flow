@@ -2,41 +2,11 @@ import { GraphQLError } from "graphql";
 import { prisma } from "../utils/prisma";
 import { builder, u } from "./builder";
 import { RepetitionPatternEnum } from "./RepetitionPattern";
+import { RoutineStepInput } from "./RoutineStep";
+import { getPlugins } from "../utils/getPlugins";
+import { RoutineStep, Routine } from "@prisma/client";
 
 // -------------- Routine types --------------
-
-// TODO: move this into its own file / package
-type Letter =
-  | "a"
-  | "b"
-  | "c"
-  | "d"
-  | "e"
-  | "f"
-  | "g"
-  | "h"
-  | "i"
-  | "j"
-  | "k"
-  | "l"
-  | "m"
-  | "n"
-  | "o"
-  | "p"
-  | "q"
-  | "r"
-  | "s"
-  | "t"
-  | "u"
-  | "v"
-  | "w"
-  | "x"
-  | "y"
-  | "z";
-type Digit = 0 | 1 | 2 | 3 | 4 | 5 | 6 | 7 | 8 | 9;
-type UrlSlug = `${Letter | Digit}${string}`;
-
-export type RoutineStep = `${UrlSlug}_${UrlSlug}_${boolean}`;
 
 export const RoutineType = builder.prismaNode("Routine", {
   id: { field: "id" },
@@ -46,24 +16,34 @@ export const RoutineType = builder.prismaNode("Routine", {
     actionName: t.exposeString("actionName"),
     time: t.expose("time", { type: "Time" }),
     repeats: t.expose("repeats", { type: [RepetitionPatternEnum] }),
-    steps: t.field({
-      type: [RoutineStepType],
-      resolve: (routine) =>
-        routine.steps.map((step) => {
-          const [pluginSlug, stepSlug, shouldSkip] = step.split("_");
-          return {
-            pluginSlug: pluginSlug!,
-            stepSlug: stepSlug!,
-            shouldSkip: shouldSkip === "true",
-          };
-        }),
+    steps: t.prismaField({
+      type: ["RoutineStep"],
+      description: "The steps of the routine.",
+      resolve: async (query, routine) => {
+        const order = routine.stepsOrder ?? [];
+        const steps = await prisma.routineStep.findMany({
+          ...query,
+          where: { routineId: routine.id },
+        });
+        const stepsOrdered = steps.sort((a, b) => order.indexOf(a.id) - order.indexOf(b.id));
+        return stepsOrdered;
+      },
     }),
     isActive: t.exposeBoolean("isActive"),
-    firstStep: t.string({
-      resolve: (routine) => routine.steps[0] ?? null,
+    firstStep: t.prismaField({
+      type: "RoutineStep",
       nullable: true,
       description:
         "Returns the first step in the routine. If there are no steps in the routine, it returns `null`.",
+      resolve: async (query, routine) => {
+        const order = routine.stepsOrder ?? [];
+        const steps = await prisma.routineStep.findMany({
+          ...query,
+          where: { routineId: routine.id },
+        });
+        const stepsOrdered = steps.sort((a, b) => order.indexOf(a.id) - order.indexOf(b.id));
+        return stepsOrdered[0] ?? null;
+      },
     }),
     done: t.boolean({
       description:
@@ -77,44 +57,24 @@ export const RoutineType = builder.prismaNode("Routine", {
   }),
 });
 
-export const RoutineStepType = builder.simpleObject("RoutineStep", {
-  description: "A step in a routine. To know which plugin the step belongs to, see `pluginSlug`.",
-  fields: (t) => ({
-    pluginSlug: t.string({ description: "The slug of the plugin that the step belongs to." }),
-    stepSlug: t.string({ description: "The slug of the step." }),
-    shouldSkip: t.boolean({
-      description:
-        "Whether the step should be skipped if the previous routine was done (i.e. routine.done = true).",
-    }),
-  }),
-});
-
-const RoutineStepInput = builder.inputType(
-  builder.inputRef<{
-    pluginSlug: string;
-    stepSlug: string;
-    shouldSkip: boolean;
-  }>("RoutineStepInput"),
-  {
-    fields: (t) => ({
-      pluginSlug: t.string({ required: true }),
-      stepSlug: t.string({ required: true }),
-      shouldSkip: t.boolean({ required: true }),
-    }),
-  },
-);
-
 // --------------- Routine query types ---------------
 
 builder.queryField("routines", (t) =>
   t.prismaField({
     type: ["Routine"],
     description: "Get all routines.",
-    resolve: prisma.routine.findMany,
+    resolve: (query) => {
+      return prisma.routine.findMany(query);
+    },
   }),
 );
 
 // --------------- Routine mutation types ---------------
+
+export type PluginOnAddRoutineStepEnd = (input: {
+  routine: Routine;
+  step: RoutineStep;
+}) => Promise<void>;
 
 builder.mutationField("createRoutine", (t) =>
   t.prismaFieldWithInput({
@@ -127,20 +87,47 @@ builder.mutationField("createRoutine", (t) =>
       steps: t.input.field({ type: [RoutineStepInput], required: true }),
     },
     resolve: async (query, _, args) => {
-      return prisma.routine.create({
-        ...query,
-        data: {
-          name: args.input.name,
-          actionName: args.input.actionName,
-          time: args.input.time,
-          repeats: args.input.repeats,
-          firstDay: new Date(), // FIXME: refactor this to have the correct date according to the user's timezone
-          isActive: true,
-          steps: args.input.steps.map(
-            (step) => `${step.pluginSlug}_${step.stepSlug}_${step.shouldSkip}`,
-          ),
-        },
+      const { routine, stepsOrdered } = await prisma.$transaction(async (tx) => {
+        const routine = await tx.routine.create({
+          select: { id: true },
+          data: {
+            name: args.input.name,
+            actionName: args.input.actionName,
+            time: args.input.time,
+            repeats: args.input.repeats,
+            firstDay: new Date(), // FIXME: refactor this to have the correct date according to the user's timezone
+            isActive: true,
+          },
+        });
+        const stepsOrdered: RoutineStep[] = [];
+        for (const step of args.input.steps) {
+          const routineStep = await tx.routineStep.create({
+            data: {
+              pluginSlug: step.pluginSlug,
+              stepSlug: step.stepSlug,
+              shouldSkip: step.shouldSkip,
+              routineId: routine.id,
+            },
+          });
+          stepsOrdered.push(routineStep);
+        }
+        return {
+          routine: await tx.routine.update({
+            ...query,
+            where: { id: routine.id },
+            data: { stepsOrder: { set: stepsOrdered.map((step) => step.id) } },
+          }),
+          stepsOrdered,
+        };
       });
+      const plugins = await getPlugins();
+      for (const step of stepsOrdered) {
+        if (!step.id) continue;
+        const plugin = plugins[step.pluginSlug];
+        if (!plugin) continue;
+        await plugin.onAddRoutineStepEnd?.({ routine, step });
+      }
+      return routine;
     },
   }),
 );
@@ -167,7 +154,7 @@ builder.mutationField("updateRoutine", (t) =>
       }),
       time: t.input.field({
         type: "Time",
-        description: "The time to update the routine with.",
+        description: "The time to use the routine with.",
         required: false,
       }),
       steps: t.input.field({
@@ -182,21 +169,86 @@ builder.mutationField("updateRoutine", (t) =>
       }),
     },
     resolve: async (query, _, args) => {
-      return prisma.routine.update({
-        ...query,
-        where: { id: parseInt(args.input.routineId.id) },
-        data: {
-          isActive: u(args.input.isActive),
-          name: u(args.input.name),
-          actionName: u(args.input.actionName),
-          time: u(args.input.time),
-          repeats: u(args.input.repeats),
-          steps:
-            args.input.steps?.map(
-              (step) => `${step.pluginSlug}_${step.stepSlug}_${step.shouldSkip}`,
-            ) ?? undefined,
-        },
+      const { routine, newSteps } = await prisma.$transaction(async (tx) => {
+        await tx.routineStep.deleteMany({
+          where: {
+            routineId: parseInt(args.input.routineId.id),
+            id: {
+              notIn: args.input.steps
+                ?.filter((s) => s.id?.typename === "RoutineStep")
+                .map((s) => parseInt(s.id!.id)),
+            },
+          },
+        });
+
+        const stepsOrdered: number[] = [];
+        const newSteps: RoutineStep[] = [];
+        for (const step of args.input.steps ?? []) {
+          if (step.id?.typename === "NewStep") {
+            // the step doesn't exist, so we create it
+            const routineStep = await tx.routineStep.create({
+              data: {
+                pluginSlug: step.pluginSlug,
+                stepSlug: step.stepSlug,
+                shouldSkip: step.shouldSkip,
+                config: u(step.config),
+                routine: { connect: { id: parseInt(args.input.routineId.id) } },
+              },
+            });
+            stepsOrdered.push(routineStep.id);
+            newSteps.push(routineStep);
+          } else if (step.id?.typename === "RoutineStep") {
+            // the step exists, so we update it
+            const routineStep = await tx.routineStep.update({
+              select: { id: true },
+              where: { id: parseInt(step.id.id) },
+              data: {
+                pluginSlug: step.pluginSlug,
+                stepSlug: step.stepSlug,
+                shouldSkip: step.shouldSkip,
+                config: u(step.config),
+              },
+            });
+            stepsOrdered.push(routineStep.id);
+          } else {
+            throw new GraphQLError("Invalid step ID type.", {
+              extensions: {
+                code: "INVALID_STEP_ID_TYPE",
+                userFriendlyMessage:
+                  "The step ID type is invalid. Please try again with a different step.",
+              },
+            });
+          }
+        }
+
+        const updatedRoutine = await tx.routine.update({
+          ...query,
+          where: { id: parseInt(args.input.routineId.id) },
+          data: {
+            isActive: u(args.input.isActive),
+            name: u(args.input.name),
+            actionName: u(args.input.actionName),
+            time: u(args.input.time),
+            repeats: u(args.input.repeats),
+            ...(args.input.steps ? { stepsOrder: { set: stepsOrdered } } : {}),
+          },
+        });
+
+        return {
+          routine: updatedRoutine,
+          newSteps,
+        };
       });
+
+      const plugins = await getPlugins();
+      for (const step of newSteps) {
+        if (!step.id) continue;
+        const plugin = plugins[step.pluginSlug];
+        if (!plugin) continue;
+        await plugin.onAddRoutineStepEnd?.({ routine, step });
+      }
+
+      return routine;
     },
   }),
 );

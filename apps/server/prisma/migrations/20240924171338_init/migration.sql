@@ -51,6 +51,7 @@ CREATE TABLE "Task" (
     "completedAt" TIMESTAMPTZ,
     "date" DATE NOT NULL,
     "durationInMinutes" INTEGER,
+    "subtasksOrder" INTEGER[],
     "itemId" INTEGER,
     "parentTaskId" INTEGER,
 
@@ -153,9 +154,33 @@ CREATE TABLE "Routine" (
     "firstDay" DATE NOT NULL DEFAULT CURRENT_TIMESTAMP,
     "lastDay" DATE,
     "isActive" BOOLEAN NOT NULL DEFAULT true,
-    "steps" TEXT[],
+    "stepsOrder" INTEGER[],
 
     CONSTRAINT "Routine_pkey" PRIMARY KEY ("id")
+);
+
+-- CreateTable
+CREATE TABLE "RoutineStep" (
+    "id" SERIAL NOT NULL,
+    "pluginSlug" TEXT NOT NULL,
+    "stepSlug" TEXT NOT NULL,
+    "shouldSkip" BOOLEAN NOT NULL,
+    "config" JSONB,
+    "routineId" INTEGER NOT NULL,
+
+    CONSTRAINT "RoutineStep_pkey" PRIMARY KEY ("id")
+);
+
+-- CreateTable
+CREATE TABLE "Template" (
+    "slug" TEXT NOT NULL,
+    "createdAt" TIMESTAMPTZ NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    "updatedAt" TIMESTAMPTZ NOT NULL,
+    "template" TEXT NOT NULL,
+    "metadata" JSONB,
+    "routineStepId" INTEGER,
+
+    CONSTRAINT "Template_pkey" PRIMARY KEY ("slug")
 );
 
 -- CreateTable
@@ -172,6 +197,12 @@ CREATE TABLE "_NoteToNoteTag" (
 
 -- CreateTable
 CREATE TABLE "_TaskToTaskTag" (
+    "A" INTEGER NOT NULL,
+    "B" INTEGER NOT NULL
+);
+
+-- CreateTable
+CREATE TABLE "_ItemToTaskTag" (
     "A" INTEGER NOT NULL,
     "B" INTEGER NOT NULL
 );
@@ -209,6 +240,12 @@ CREATE UNIQUE INDEX "_TaskToTaskTag_AB_unique" ON "_TaskToTaskTag"("A", "B");
 -- CreateIndex
 CREATE INDEX "_TaskToTaskTag_B_index" ON "_TaskToTaskTag"("B");
 
+-- CreateIndex
+CREATE UNIQUE INDEX "_ItemToTaskTag_AB_unique" ON "_ItemToTaskTag"("A", "B");
+
+-- CreateIndex
+CREATE INDEX "_ItemToTaskTag_B_index" ON "_ItemToTaskTag"("B");
+
 -- AddForeignKey
 ALTER TABLE "Note" ADD CONSTRAINT "Note_date_fkey" FOREIGN KEY ("date") REFERENCES "Day"("date") ON DELETE RESTRICT ON UPDATE CASCADE;
 
@@ -231,6 +268,12 @@ ALTER TABLE "ItemPluginData" ADD CONSTRAINT "ItemPluginData_itemId_fkey" FOREIGN
 ALTER TABLE "Item" ADD CONSTRAINT "Item_listId_fkey" FOREIGN KEY ("listId") REFERENCES "List"("id") ON DELETE SET NULL ON UPDATE CASCADE;
 
 -- AddForeignKey
+ALTER TABLE "RoutineStep" ADD CONSTRAINT "RoutineStep_routineId_fkey" FOREIGN KEY ("routineId") REFERENCES "Routine"("id") ON DELETE RESTRICT ON UPDATE CASCADE;
+
+-- AddForeignKey
+ALTER TABLE "Template" ADD CONSTRAINT "Template_routineStepId_fkey" FOREIGN KEY ("routineStepId") REFERENCES "RoutineStep"("id") ON DELETE SET NULL ON UPDATE CASCADE;
+
+-- AddForeignKey
 ALTER TABLE "_DayToRoutine" ADD CONSTRAINT "_DayToRoutine_A_fkey" FOREIGN KEY ("A") REFERENCES "Day"("date") ON DELETE CASCADE ON UPDATE CASCADE;
 
 -- AddForeignKey
@@ -247,3 +290,9 @@ ALTER TABLE "_TaskToTaskTag" ADD CONSTRAINT "_TaskToTaskTag_A_fkey" FOREIGN KEY 
 
 -- AddForeignKey
 ALTER TABLE "_TaskToTaskTag" ADD CONSTRAINT "_TaskToTaskTag_B_fkey" FOREIGN KEY ("B") REFERENCES "TaskTag"("id") ON DELETE CASCADE ON UPDATE CASCADE;
+
+-- AddForeignKey
+ALTER TABLE "_ItemToTaskTag" ADD CONSTRAINT "_ItemToTaskTag_A_fkey" FOREIGN KEY ("A") REFERENCES "Item"("id") ON DELETE CASCADE ON UPDATE CASCADE;
+
+-- AddForeignKey
+ALTER TABLE "_ItemToTaskTag" ADD CONSTRAINT "_ItemToTaskTag_B_fkey" FOREIGN KEY ("B") REFERENCES "TaskTag"("id") ON DELETE CASCADE ON UPDATE CASCADE;

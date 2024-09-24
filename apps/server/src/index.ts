@@ -15,6 +15,7 @@ import {
   getTimezone,
   isSessionTokenValid,
   pgBossWorkers,
+  scheduleDeletePgBossArchive,
   scheduleRolloverTasks,
   syncTasks,
 } from "./utils";
@@ -199,6 +200,7 @@ if (env.NODE_ENV !== "test") {
   if (env.NODE_ENV !== "development") {
     const timezone = await getTimezone();
     await scheduleRolloverTasks(timezone);
+    await scheduleDeletePgBossArchive(timezone);
     await syncTasks(); // initial sync on server start
   }
 } else {

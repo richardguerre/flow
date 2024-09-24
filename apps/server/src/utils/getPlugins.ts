@@ -117,7 +117,7 @@ export async function installServerPlugin(opts: Options) {
 
   // check if server.js contains unsafe code (require(), eval(), etc.)
   if (
-    /Bun|require(?=\(|\/\*)|eval|setTimeout|setInterval|setImmidiate|process\.|__dirname|__filename|spawn|spawnSync|write|import\.meta| ffi|transpile|transform| \$`/.test(
+    /Bun|require(?=\(|\/\*)|eval|setTimeout|setInterval|setImmidiate|process\.|__dirname|__filename|spawnSync|spawn|write|import\.meta| ffi|transpile|transform| \$`/.test(
       text,
     )
   ) {

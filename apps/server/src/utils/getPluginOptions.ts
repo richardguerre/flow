@@ -6,7 +6,12 @@ import { nearestTailwindColor } from "@flowdev/nearest-color";
 import type { Color, Store } from "@prisma/client";
 import { env } from "../env";
 import { GraphQLError } from "graphql";
-import { FlowPluginSlug, StoreKeys } from "../graphql/Store";
+import { renderTemplate, Handlebars } from "./renderTemplate";
+import { getUsersTimezone } from "./index";
+import htmlParser from "node-html-parser";
+import { decodeGlobalId, encodeGlobalId } from "@flowdev/common";
+import htmlToSlack from "html-to-slack";
+import { getPlugins } from "./getPlugins";
 
 type PrismaJsonInput = string | number | boolean | Prisma.JsonObject | Prisma.JsonArray;
 
@@ -67,6 +72,8 @@ export const getPluginOptions = (pluginSlug: string) => ({
     itemPluginData: prisma.itemPluginData,
     list: prisma.list,
     routine: prisma.routine,
+    routineStep: prisma.routineStep,
+    template: prisma.template,
   },
   /**
    * A key-value store plugins can use to store data, user preferences, settings, configurations, etc.
@@ -195,11 +202,11 @@ export const getPluginOptions = (pluginSlug: string) => ({
    * @returns [dayjs timezone string](https://day.js.org/docs/en/plugin/timezone)
    * @example "America/New_York"
    */
-  getUsersTimezone: async () => {
-    const timezoneItem = await prisma.store.findFirst({
-      where: { key: StoreKeys.TIMEZONE, pluginSlug: FlowPluginSlug },
-    });
-    return (timezoneItem?.value ?? null) as string | null;
+  getUsersTimezone,
+  /** Get the installed plugins (slug only). */
+  getInstalledPlugins: async () => {
+    const plugins = await getPlugins();
+    return Object.keys(plugins).map((slug) => ({ slug }));
   },
   /** Get the nearest valid Item.color to the specified Hex. */
   getNearestItemColor: (hex: string) => nearestTailwindColor(hex) as Color,
@@ -218,6 +225,25 @@ export const getPluginOptions = (pluginSlug: string) => ({
    * ```
    */
   GraphQLError,
+  /**
+   * Render handlebars templates with Flow's default context. All plugin helpers and partials have already been registered.
+   *
+   * To register helpers and partials, your server plugin should return the `handlebars` object from `definePlugin`.
+   *
+   * You can override the default data by passing it in the second argument. For example, if you want to override the `todaysTasks` key, you can pass in `{ todaysTasks: [...yourTasks] }`.
+   */
+  renderTemplate,
+  /** Instance of Handlebars wrapped with the `handlebars-async-helpers` package. */
+  Handlebars: { SafeString: Handlebars.SafeString },
+  // TODO replace with htmlparser2 so there is only 1 html parser (html-to-slack also uses it)
+  /** Parse HTML to a DOM tree. */
+  parseHtml: htmlParser.parse,
+  /** Convert HTML to Slack blocks. */
+  htmlToSlack,
+  /** Decode a (GraphQL Relay) global ID. */
+  decodeGlobalId,
+  /** Encode a (GraphQL Relay) global ID. */
+  encodeGlobalId,
 });
 
 export type ServerPluginOptions = ReturnType<typeof getPluginOptions>;

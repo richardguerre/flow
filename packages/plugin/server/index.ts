@@ -8,7 +8,10 @@ import type {
 import { PluginOnUpdateItemStatus } from "@flowdev/server/src/graphql/Item";
 import type { Elysia } from "elysia";
 import { PluginOnCreateCalendarItem } from "@flowdev/server/src/utils";
-export type { Prisma, TaskStatus } from "@flowdev/server/src/exportedTypes";
+import { type HelperDeclareSpec } from "@flowdev/server/src/utils/renderTemplate";
+import type { PluginOnAddRoutineStepEnd } from "@flowdev/server/src/graphql/Routine";
+
+export type * as ServerTypes from "@flowdev/server/src/exportedTypes";
 
 export type ServerPluginOptions = _ServerPluginOptions;
 
@@ -23,12 +26,16 @@ export type ServerPlugin = (opts: ServerPluginOptions) => {
   onCreateTask?: PluginOnCreateTask;
   /** Hook called before a task's status is updated. */
   onUpdateTaskStatus?: PluginOnUpdateTaskStatus;
+  /** Hook called after a task's status is updated. */
+  onUpdateTaskStatusEnd?: PluginOnUpdateTaskStatus;
   /** Hook called before an item's status is updated. */
   onUpdateItemStatus?: PluginOnUpdateItemStatus;
   /** Hook called when the user creates a calendar item. */
   onCreateCalendarItem?: PluginOnCreateCalendarItem;
   /** Hook called when the user refreshes the calendar items. */
   onRefreshCalendarItems?: () => Promise<void>;
+  /** Hook called after the user adds a routine step to a routine. */
+  onAddRoutineStepEnd?: PluginOnAddRoutineStepEnd;
   /**
    * Hook called when a request is made at `/api/plugin/:pluginSlug`.
    *
@@ -75,6 +82,21 @@ export type ServerPlugin = (opts: ServerPluginOptions) => {
    * Note: the `work` function is not given in the options because Flow needs to control the order in which things run, including the pg-boss work handlers.
    */
   handlePgBossWork?: (work: PgBossType["work"]) => Promise<string>[];
+  /**
+   * Handlebars helpers and partials that users can use in their templates.
+   */
+  handlebars?: {
+    /**
+     * Handlebars helpers that users can use in their templates prefixed with the plugin's slug. Example: if the plugin slug is `myPlugin`, then the helper name should be `myPlugin-helperName`.
+     *
+     * Note:
+     * - Unlike standard Handlebars, `options` is the first argument (not the last).
+     * - You can only use the `this` context if the helper is defined as a `function` and not as an arrow function (i.e. not`() => {}`).
+     * - You can use async/await in the helper function as this instance of Handlebars is wrapped with the `handlebars-async-helpers` package.
+     * - Remember to await the `options.fn()` call if you are using the helper as a block helper, as children of your helper can also be async.
+     */
+    helpers?: HelperDeclareSpec;
+  };
 };
 
 export type ServerPluginReturn = ReturnType<ServerPlugin>;
