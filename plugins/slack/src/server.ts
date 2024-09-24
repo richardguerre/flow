@@ -1,4 +1,4 @@
-import { definePlugin, type TaskInTemplate } from "@flowdev/plugin/server";
+import { definePlugin, type ServerTypes } from "@flowdev/plugin/server";
 import { POST_TO_SLACK, getDefaultPlanYourDayTemplate } from "./common";
 
 const ACCOUNT_TOKENS_STORE_KEY = "account-tokens";
@@ -232,7 +232,7 @@ export default definePlugin((opts) => {
     handlebars: {
       helpers: {
         // reminder: handlebars helpers are prefixed with the plugin's slug. Example: if the plugin slug is `slack`, then the full helper name will be `slack-helperName`.
-        status: function (this: TaskInTemplate) {
+        status: function (this: ServerTypes.TaskInTemplate) {
           if (!("status" in this) || !("id" in this)) return "";
           return new opts.Handlebars.SafeString(
             `<slack-status data-task-id=\"Task_${this.id}\">${statusMap[this.status]}</slack-status>`,
