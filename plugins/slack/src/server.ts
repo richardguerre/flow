@@ -1,8 +1,7 @@
 import { definePlugin, PrismaTypes } from "@flowdev/plugin/server";
-import { POST_YOUR_PLAN, DEFAULT_PLAN_YOUR_DAY } from "./common";
+import { POST_TO_SLACK, DEFAULT_PLAN_YOUR_DAY } from "./common";
 
 const ACCOUNT_TOKENS_STORE_KEY = "account-tokens";
-const TEMPLATES_STORE_KEY = "templates";
 
 export default definePlugin((opts) => {
   const UPDATE_TASK_STATUS_JOB_NAME = "update-task-status";
@@ -208,25 +207,13 @@ export default definePlugin((opts) => {
           } as PostMessageData,
         };
       },
-      getRoutineStepInfo: async (input) => {
-        const {} = input as GetRoutineStepInfoInput;
-        const templates = await opts.store
-          .getPluginItem<Templates>(TEMPLATES_STORE_KEY)
-          .then((res) => res?.value ?? {});
-        const template = templates[input.routineStepId]?.template ?? DEFAULT_PLAN_YOUR_DAY;
-        const renderedTemplate = await opts.renderTemplate(template, {
-          jfdksl: null,
-        });
-
-        return { data: { renderedTemplate } } as GetRoutineStepInfoOutput;
-      },
     },
     onUpdateTaskStatusEnd: async (_input) => {
       const today = opts.dayjs();
       await opts.pgBoss.send(UPDATE_TASK_STATUS_JOB_NAME, { date: today.toISOString() });
     },
     onAddRoutineStepEnd: async (input) => {
-      if (input.step.stepSlug === POST_YOUR_PLAN) {
+      if (input.step.stepSlug === POST_TO_SLACK) {
         // add default template
         await opts.prisma.template.upsert({
           where: { slug: `${opts.pluginSlug}-${input.step.stepSlug}` },
@@ -563,9 +550,3 @@ type ChatUpdateReq =
       ok: false;
       error: string;
     };
-
-type Templates = {
-  [routineStepId: string]: {
-    template: string;
-  };
-};

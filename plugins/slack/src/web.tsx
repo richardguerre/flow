@@ -1,6 +1,6 @@
 import { definePlugin } from "@flowdev/plugin/web";
 import type { Editor } from "@tiptap/core";
-import { DEFAULT_PLAN_YOUR_DAY, POST_YOUR_PLAN } from "./common";
+import { DEFAULT_PLAN_YOUR_DAY, POST_TO_SLACK } from "./common";
 import type { webUpdateRoutineStepMutation } from "./relay/__gen__/webUpdateRoutineStepMutation.graphql";
 import { BsCheck, BsChevronDown } from "@flowdev/icons";
 import { Control } from "react-hook-form";
@@ -242,9 +242,9 @@ export default definePlugin((opts) => {
       },
     },
     routineSteps: {
-      [POST_YOUR_PLAN]: {
-        name: "Post your plan to Slack",
-        description: "Post your plan for the day in Slack channels.",
+      [POST_TO_SLACK]: {
+        name: "Post in Slack",
+        description: "Post a message in Slack channels.",
         component: (props) => {
           const template = props.templates[0] as (typeof props.templates)[0] | undefined;
           const editorRef = React.useRef<Editor>(null);
@@ -254,7 +254,7 @@ export default definePlugin((opts) => {
             props.stepConfig?.defaultChannels ?? [],
           );
           const { control, handleSubmit, formState, setError, setValue } =
-            opts.reactHookForm.useForm<PostPlan>({
+            opts.reactHookForm.useForm<PostToSlack>({
               defaultValues: {
                 message: template?.rendered ?? "",
                 channels: channels.map((channel) => channel.id),
@@ -265,7 +265,7 @@ export default definePlugin((opts) => {
             PostMessageData
           >("postMessage");
 
-          const onSubmit = async (values: PostPlan) => {
+          const onSubmit = async (values: PostToSlack) => {
             const channelsToPost = channels.filter((channel) =>
               values.channels.includes(channel.id),
             );
@@ -328,15 +328,15 @@ export default definePlugin((opts) => {
                 onSubmit={handleSubmit(onSubmit)}
                 className="flex flex-col gap-4 mx-auto max-w-2xl pt-48 min-h-screen"
               >
-                <div className="font-semibold text-4xl">Post your plan to Slack</div>
+                <div className="font-semibold text-4xl">Post to Slack</div>
                 <opts.reactHookForm.Controller
                   name="message"
                   control={control}
                   render={({ field }) => (
                     <Flow.NoteEditor
                       editorRef={editorRef}
-                      slug={`slack_post-plan-${today.format("YYYY-MM-DD")}`}
-                      title={`Plan for ${today.format("MMMM D, YYYY")}`}
+                      slug={`slack_post-to-slack-${today.format("YYYY-MM-DD")}`}
+                      title={`Post to Slack for ${today.format("MMMM D, YYYY")}`}
                       initialValue={field.value}
                       onChange={({ html }) => {
                         console.log(html);
@@ -375,7 +375,7 @@ export default definePlugin((opts) => {
               const template = props.routineStep.templates[0] as
                 | (typeof props.routineStep.templates)[0]
                 | undefined;
-              const { control, handleSubmit } = opts.reactHookForm.useForm<PostPlanSettings>({
+              const { control, handleSubmit } = opts.reactHookForm.useForm<PostToSlackSettings>({
                 defaultValues: {
                   template: {
                     content: template?.raw ?? DEFAULT_PLAN_YOUR_DAY,
@@ -410,7 +410,7 @@ export default definePlugin((opts) => {
                   }
                 `);
 
-              const onSubmit = async (values: PostPlanSettings) => {
+              const onSubmit = async (values: PostToSlackSettings) => {
                 const defaultChannels = channels.filter((channel) =>
                   values.channels.includes(channel.id),
                 );
@@ -421,7 +421,7 @@ export default definePlugin((opts) => {
                       config: { defaultChannels },
                     },
                     template: {
-                      slug: template?.slug ?? `slack-${POST_YOUR_PLAN}-${props.routineStep.id}`,
+                      slug: template?.slug ?? `slack-${POST_TO_SLACK}-${props.routineStep.id}`,
                       raw: values.template.content,
                       metadata: values.template.data ?? {},
                     },
@@ -463,7 +463,7 @@ export default definePlugin((opts) => {
                       Default channels
                     </div>
                     <div className="text-foreground-700 text-sm">
-                      Which channels should be selected by default when posting a plan?
+                      Which channels should be selected by default when posting to Slack?
                     </div>
                     <ChannelsPicker control={control} channels={channels} />
                   </div>
@@ -485,12 +485,12 @@ export default definePlugin((opts) => {
   };
 });
 
-type PostPlan = {
+type PostToSlack = {
   message: string;
   channels: string[];
 };
 
-type PostPlanSettings = {
+type PostToSlackSettings = {
   template: {
     content: string;
     data: Record<string, any>;

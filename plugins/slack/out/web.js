@@ -125,7 +125,7 @@ const ne = /* @__PURE__ */ function() {
   };
 }();
 ne.hash = "b71dfd7eaaba64f4182f87b2c5257a96";
-const Ne = (e) => ({ plugin: e }), J = "post-your-plan", be = `Plan for today
+const Ne = (e) => ({ plugin: e }), J = "post-to-slack", be = `Plan for today
 {{#tasks}}
   <ul>
     <li>
@@ -418,7 +418,7 @@ var fe = {
     }
     return e;
   }, y.apply(this, arguments);
-}, Pe = function(e, t) {
+}, $e = function(e, t) {
   var n = {};
   for (var a in e)
     Object.prototype.hasOwnProperty.call(e, a) && t.indexOf(a) < 0 && (n[a] = e[a]);
@@ -436,14 +436,14 @@ function de(e) {
 }
 function _e(e) {
   return function(t) {
-    return k.createElement($e, y({
+    return k.createElement(Pe, y({
       attr: y({}, e.attr)
     }, t), de(e.child));
   };
 }
-function $e(e) {
+function Pe(e) {
   var t = function(n) {
-    var a = e.attr, o = e.size, c = e.title, f = Pe(e, ["attr", "size", "title"]), m = o || n.size || "1em", i;
+    var a = e.attr, o = e.size, c = e.title, f = $e(e, ["attr", "size", "title"]), m = o || n.size || "1em", i;
     return n.className && (i = n.className), e.className && (i = (i ? i + " " : "") + e.className), k.createElement("svg", y({
       stroke: "currentColor",
       fill: "currentColor",
@@ -719,16 +719,16 @@ const Ae = Ne((e) => {
     },
     routineSteps: {
       [J]: {
-        name: "Post your plan to Slack",
-        description: "Post your plan for the day in Slack channels.",
+        name: "Post in Slack",
+        description: "Post a message in Slack channels.",
         component: (r) => {
-          var q;
-          const d = r.templates[0], s = t.useRef(null), _ = e.dayjs(), [v, O] = t.useState(!1), [w, F] = t.useState(((q = r.stepConfig) == null ? void 0 : q.defaultChannels) ?? []), {
+          var K;
+          const d = r.templates[0], s = t.useRef(null), _ = e.dayjs(), [v, O] = t.useState(!1), [w, F] = t.useState(((K = r.stepConfig) == null ? void 0 : K.defaultChannels) ?? []), {
             control: L,
-            handleSubmit: P,
+            handleSubmit: $,
             formState: M,
             setError: T,
-            setValue: $
+            setValue: P
           } = e.reactHookForm.useForm({
             defaultValues: {
               message: (d == null ? void 0 : d.rendered) ?? "",
@@ -756,17 +756,17 @@ const Ae = Ne((e) => {
               });
               return;
             }
-            let K = ((W = s.current) == null ? void 0 : W.state.doc.content.size) ?? 0;
+            let q = ((W = s.current) == null ? void 0 : W.state.doc.content.size) ?? 0;
             const S = (G = s.current) == null ? void 0 : G.chain();
             for (const h of C.data.messages)
-              S == null || S.insertContentAt(K, {
+              S == null || S.insertContentAt(q, {
                 type: "slack-message",
                 attrs: {
                   teamId: h.teamId,
                   channelId: h.channelId,
                   ts: h.ts
                 }
-              }), K++;
+              }), q++;
             S == null || S.run(), O(!0);
           }, g = () => {
             v && (O(!1), r.onNext());
@@ -782,13 +782,13 @@ const Ae = Ne((e) => {
           }, []), t.useEffect(() => {
             if (s.current) {
               const p = s.current.getHTML();
-              $("message", p);
+              P("message", p);
             }
           }, [s.current]), /* @__PURE__ */ t.createElement("div", { className: "bg-background-100 w-full", __self: void 0, __source: {
             fileName: l,
             lineNumber: 326,
             columnNumber: 13
-          } }, /* @__PURE__ */ t.createElement("form", { onSubmit: P(R), className: "flex flex-col gap-4 mx-auto max-w-2xl pt-48 min-h-screen", __self: void 0, __source: {
+          } }, /* @__PURE__ */ t.createElement("form", { onSubmit: $(R), className: "flex flex-col gap-4 mx-auto max-w-2xl pt-48 min-h-screen", __self: void 0, __source: {
             fileName: l,
             lineNumber: 327,
             columnNumber: 15
@@ -796,9 +796,9 @@ const Ae = Ne((e) => {
             fileName: l,
             lineNumber: 331,
             columnNumber: 17
-          } }, "Post your plan to Slack"), /* @__PURE__ */ t.createElement(e.reactHookForm.Controller, { name: "message", control: L, render: ({
+          } }, "Post to Slack"), /* @__PURE__ */ t.createElement(e.reactHookForm.Controller, { name: "message", control: L, render: ({
             field: p
-          }) => /* @__PURE__ */ t.createElement(n.NoteEditor, { editorRef: s, slug: `slack_post-plan-${_.format("YYYY-MM-DD")}`, title: `Plan for ${_.format("MMMM D, YYYY")}`, initialValue: p.value, onChange: ({
+          }) => /* @__PURE__ */ t.createElement(n.NoteEditor, { editorRef: s, slug: `slack_post-to-slack-${_.format("YYYY-MM-DD")}`, title: `Post to Slack for ${_.format("MMMM D, YYYY")}`, initialValue: p.value, onChange: ({
             html: E
           }) => {
             console.log(E), p.onChange(E);
@@ -839,7 +839,7 @@ const Ae = Ne((e) => {
         },
         renderSettings: async (r) => ({
           component: () => {
-            var P, M, T, $, j;
+            var $, M, T, P, j;
             const d = r.routineStep.templates[0], {
               control: s,
               handleSubmit: _
@@ -849,9 +849,9 @@ const Ae = Ne((e) => {
                   content: (d == null ? void 0 : d.raw) ?? be,
                   data: (d == null ? void 0 : d.metadata) ?? {}
                 },
-                channels: ((T = (M = (P = r.routineStep) == null ? void 0 : P.config) == null ? void 0 : M.defaultChannels) == null ? void 0 : T.map((b) => b.id)) ?? []
+                channels: ((T = (M = ($ = r.routineStep) == null ? void 0 : $.config) == null ? void 0 : M.defaultChannels) == null ? void 0 : T.map((b) => b.id)) ?? []
               }
-            }), [v, O] = t.useState(((j = ($ = r.routineStep) == null ? void 0 : $.config) == null ? void 0 : j.defaultChannels) ?? []), [w, F] = e.relay.useMutation(ne), L = async (b) => {
+            }), [v, O] = t.useState(((j = (P = r.routineStep) == null ? void 0 : P.config) == null ? void 0 : j.defaultChannels) ?? []), [w, F] = e.relay.useMutation(ne), L = async (b) => {
               const R = v.filter((g) => b.channels.includes(g.id));
               w({
                 variables: {
@@ -923,7 +923,7 @@ const Ae = Ne((e) => {
               fileName: l,
               lineNumber: 465,
               columnNumber: 21
-            } }, "Which channels should be selected by default when posting a plan?"), /* @__PURE__ */ t.createElement(i, { control: s, channels: v, __self: void 0, __source: {
+            } }, "Which channels should be selected by default when posting to Slack?"), /* @__PURE__ */ t.createElement(i, { control: s, channels: v, __self: void 0, __source: {
               fileName: l,
               lineNumber: 468,
               columnNumber: 21

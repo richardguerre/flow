@@ -1,4 +1,4 @@
-export const POST_YOUR_PLAN = "post-your-plan";
+export const POST_TO_SLACK = "post-to-slack";
 
 export const DEFAULT_PLAN_YOUR_DAY = `Plan for today
 {{#tasks}}
