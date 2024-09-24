@@ -2,11 +2,11 @@
 
 ## What can the user do with the Slack plugin?
 
-- Post their plan for the day from a routine step
-- Update their plan for they as they complete/cancel tasks
-- Post their retro of the day from a routine step
+- Post their plan for the day (or whatever they want to Slack) from a routine step
+- Automatically update Slack messages when they complete/cancel tasks 
 - Post a message to a channel when they start a task
-- Post a message to a channel when are focusing on a task
+- Post a message to a channel when they are focusing on a task
+  - TODO: need to create a "Focus" plugin and have it communicate to the Slack plugin
   - In Slack:
     - Pause notifications
     - Set status emoji
@@ -36,5 +36,5 @@ Example template:
 {{/each}}
 ```
 
-Plugins, like Slack, can register their own handlebars helpers to use in the template.
+Plugins, like Slack or Linear, can register their own handlebars helpers to use in the template.
 
