@@ -204,7 +204,7 @@ const N = f((a) => {
             fileName: t,
             lineNumber: 220,
             columnNumber: 13
-          } }, /* @__PURE__ */ e.createElement(i.NoteEditor, { slug: `flow-essentials_retro-${m.format("YYYY-MM-DD")}`, title: `Plan for ${m.format("MMMM D")}`, loading: l === null, initialValue: l ?? "", __self: void 0, __source: {
+          } }, /* @__PURE__ */ e.createElement(i.NoteEditor, { slug: `flow-essentials_todays-plan-${m.format("YYYY-MM-DD")}`, title: `Plan for ${m.format("MMMM D")}`, loading: l === null, initialValue: l ?? "", __self: void 0, __source: {
             fileName: t,
             lineNumber: 221,
             columnNumber: 15
