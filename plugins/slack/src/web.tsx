@@ -178,6 +178,7 @@ export default definePlugin((opts) => {
         <Flow.ComboboxContent
           align="start"
           side="bottom"
+          className="max-h-96 overflow-y-auto"
           commandProps={{
             filter: (channelId, search) => {
               // return 1 if the channel matches the search, 0 otherwise
@@ -195,7 +196,7 @@ export default definePlugin((opts) => {
                 className="flex items-center justify-between gap-2"
               >
                 <div className="flex items-center gap-2">
-                  <img src={channel.team.icon} className="h-5 w-5 shrink-0" />
+                  <img src={channel.team.icon} className="h-5 w-5 shrink-0 rounded" />
                   <span className="max-w-48 truncate">#{channel.name}</span>
                 </div>
                 <Flow.ComboboxSelected
