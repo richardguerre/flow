@@ -2,7 +2,7 @@ export const POST_TO_SLACK = "post-to-slack";
 
 export const getDefaultPlanYourDayTemplate = (props?: { withLinear?: boolean }) => {
   const linearLink = props?.withLinear
-    ? `- <a href="{{linear-issue-link}}">{{linear-issue-id}}</a>`
+    ? `{{#linear-issue-exists}}- <a href="{{linear-issue-link}}">{{linear-issue-id}}</a>{{/linear-issue-exists}}`
     : "";
   return `Plan for today
 <ul>{{#tasks}}

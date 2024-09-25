@@ -321,16 +321,24 @@ export default definePlugin((opts) => {
     },
     handlebars: {
       helpers: {
+        "issue-exists": function (this: ServerTypes.TaskInTemplate, ...args) {
+          if (args.length === 0) return "";
+          const hopts = args.at(-1) as Handlebars.HelperOptions | undefined;
+          if (!("pluginDatas" in this)) return "";
+          const pluginData = this.pluginDatas.find((p) => p.pluginSlug === opts.pluginSlug);
+          if (!pluginData) return "";
+          return hopts?.fn(this);
+        },
         "issue-link": function (this: ServerTypes.TaskInTemplate) {
           if (!("pluginDatas" in this)) return "";
-          const pluginData = this.pluginDatas.find((p) => p.pluginSlug === "linear");
+          const pluginData = this.pluginDatas.find((p) => p.pluginSlug === opts.pluginSlug);
           if (!pluginData) return "";
           const min = pluginData.min as LinearIssueItemMin;
           return min.url ?? `https://linear.app/issue/${min.identifier}`;
         },
         "issue-id": function (this: ServerTypes.TaskInTemplate) {
           if (!("pluginDatas" in this)) return "";
-          const pluginData = this.pluginDatas.find((p) => p.pluginSlug === "linear");
+          const pluginData = this.pluginDatas.find((p) => p.pluginSlug === opts.pluginSlug);
           if (!pluginData) return "";
           const min = pluginData.min as LinearIssueItemMin;
           return min.identifier;
