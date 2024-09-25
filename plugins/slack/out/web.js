@@ -126,15 +126,11 @@ const re = /* @__PURE__ */ function() {
 }();
 re.hash = "b71dfd7eaaba64f4182f87b2c5257a96";
 const be = (e) => ({ plugin: e }), X = "post-to-slack", pe = (e) => `Plan for today
-{{#tasks}}
-  <ul>
-    <li>
-      <p>{{slack-status}} {{title}} </p>
-    </li>
-  </ul>
+<ul>{{#tasks}}
+  <li>{{slack-status}} {{title}} </li>
 {{else}}
-  <p>No tasks today</p>
-{{/tasks}}`;
+  <li>No tasks</li> 
+{{/tasks}}</ul>`;
 function ge(e) {
   return e && e.__esModule && Object.prototype.hasOwnProperty.call(e, "default") ? e.default : e;
 }
@@ -627,7 +623,7 @@ const Fe = be((e) => {
       fileName: l,
       lineNumber: 176,
       columnNumber: 11
-    } })), /* @__PURE__ */ t.createElement(n.ComboboxContent, { align: "start", side: "bottom", commandProps: {
+    } })), /* @__PURE__ */ t.createElement(n.ComboboxContent, { align: "start", side: "bottom", className: "max-h-96 overflow-y-auto", commandProps: {
       filter: (i, _) => {
         var h;
         return (h = d.get(i)) != null && h.name.includes(_) ? 1 : 0;
@@ -638,39 +634,39 @@ const Fe = be((e) => {
       columnNumber: 9
     } }, /* @__PURE__ */ t.createElement(n.ComboboxInput, { placeholder: "Search channels...", __self: void 0, __source: {
       fileName: l,
-      lineNumber: 188,
+      lineNumber: 189,
       columnNumber: 11
     } }), /* @__PURE__ */ t.createElement(n.ComboboxEmpty, { __self: void 0, __source: {
       fileName: l,
-      lineNumber: 189,
+      lineNumber: 190,
       columnNumber: 11
     } }, "No channel found."), /* @__PURE__ */ t.createElement(n.ComboboxGroup, { __self: void 0, __source: {
       fileName: l,
-      lineNumber: 190,
+      lineNumber: 191,
       columnNumber: 11
     } }, r.channels.map((i) => /* @__PURE__ */ t.createElement(n.ComboboxItem, { key: i.id, value: i.id, className: "flex items-center justify-between gap-2", __self: void 0, __source: {
       fileName: l,
-      lineNumber: 192,
+      lineNumber: 193,
       columnNumber: 15
     } }, /* @__PURE__ */ t.createElement("div", { className: "flex items-center gap-2", __self: void 0, __source: {
       fileName: l,
-      lineNumber: 197,
-      columnNumber: 17
-    } }, /* @__PURE__ */ t.createElement("img", { src: i.team.icon, className: "h-5 w-5 shrink-0", __self: void 0, __source: {
-      fileName: l,
       lineNumber: 198,
-      columnNumber: 19
-    } }), /* @__PURE__ */ t.createElement("span", { className: "max-w-48 truncate", __self: void 0, __source: {
+      columnNumber: 17
+    } }, /* @__PURE__ */ t.createElement("img", { src: i.team.icon, className: "h-5 w-5 shrink-0 rounded", __self: void 0, __source: {
       fileName: l,
       lineNumber: 199,
       columnNumber: 19
+    } }), /* @__PURE__ */ t.createElement("span", { className: "max-w-48 truncate", __self: void 0, __source: {
+      fileName: l,
+      lineNumber: 200,
+      columnNumber: 19
     } }, "#", i.name)), /* @__PURE__ */ t.createElement(n.ComboboxSelected, { className: "ml-2 h-4 w-4 opacity-0", selectedClassName: "opacity-100", __self: void 0, __source: {
       fileName: l,
-      lineNumber: 201,
+      lineNumber: 202,
       columnNumber: 17
     } }, /* @__PURE__ */ t.createElement(He, { size: 20, __self: void 0, __source: {
       fileName: l,
-      lineNumber: 205,
+      lineNumber: 206,
       columnNumber: 19
     } })))))));
   };
@@ -682,15 +678,15 @@ const Fe = be((e) => {
         type: "custom",
         render: () => /* @__PURE__ */ t.createElement("div", { className: "flex flex-col gap-2", __self: void 0, __source: {
           fileName: l,
-          lineNumber: 223,
+          lineNumber: 224,
           columnNumber: 13
         } }, /* @__PURE__ */ t.createElement("a", { href: `${e.serverOrigin}/api/plugin/${e.pluginSlug}/auth`, __self: void 0, __source: {
           fileName: l,
-          lineNumber: 224,
+          lineNumber: 225,
           columnNumber: 15
         } }, /* @__PURE__ */ t.createElement(n.Button, { __self: void 0, __source: {
           fileName: l,
-          lineNumber: 225,
+          lineNumber: 226,
           columnNumber: 17
         } }, "Connect an account")), /* @__PURE__ */ t.createElement(n.ErrorBoundary, { fallbackRender: ({
           error: r
@@ -698,20 +694,20 @@ const Fe = be((e) => {
           var d, i, _;
           return ((_ = (i = (d = r.cause) == null ? void 0 : d[0]) == null ? void 0 : i.extensions) == null ? void 0 : _.code) === "NOT_AUTHENTICATED" ? /* @__PURE__ */ t.createElement(t.Fragment, null) : /* @__PURE__ */ t.createElement("p", { className: "text-sm text-negative-600", __self: void 0, __source: {
             fileName: l,
-            lineNumber: 232,
+            lineNumber: 233,
             columnNumber: 26
           } }, r.message);
         }, __self: void 0, __source: {
           fileName: l,
-          lineNumber: 227,
+          lineNumber: 228,
           columnNumber: 15
         } }, /* @__PURE__ */ t.createElement(t.Suspense, { fallback: "Loading connected accounts...", __self: void 0, __source: {
           fileName: l,
-          lineNumber: 235,
+          lineNumber: 236,
           columnNumber: 17
         } }, /* @__PURE__ */ t.createElement(a, { __self: void 0, __source: {
           fileName: l,
-          lineNumber: 236,
+          lineNumber: 237,
           columnNumber: 19
         } }))))
       }
@@ -796,15 +792,15 @@ const Fe = be((e) => {
             }
           }, [i.current]), /* @__PURE__ */ t.createElement("div", { className: "bg-background-100 w-full", __self: void 0, __source: {
             fileName: l,
-            lineNumber: 336,
+            lineNumber: 337,
             columnNumber: 13
           } }, /* @__PURE__ */ t.createElement("form", { onSubmit: L(R), className: "flex flex-col gap-4 mx-auto max-w-2xl pt-48 min-h-screen", __self: void 0, __source: {
             fileName: l,
-            lineNumber: 337,
+            lineNumber: 338,
             columnNumber: 15
           } }, /* @__PURE__ */ t.createElement("div", { className: "font-semibold text-4xl", __self: void 0, __source: {
             fileName: l,
-            lineNumber: 341,
+            lineNumber: 342,
             columnNumber: 17
           } }, "Post to Slack"), /* @__PURE__ */ t.createElement(e.reactHookForm.Controller, { name: "message", control: $, render: ({
             field: g
@@ -814,36 +810,36 @@ const Fe = be((e) => {
             console.log(k), g.onChange(k);
           }, onBlur: g.onBlur, saveNow: h, onSaveEnd: v, className: "min-h-[40vh]", __self: void 0, __source: {
             fileName: l,
-            lineNumber: 346,
+            lineNumber: 347,
             columnNumber: 21
           } }), __self: void 0, __source: {
             fileName: l,
-            lineNumber: 342,
+            lineNumber: 343,
             columnNumber: 17
           } }), T.errors.root && /* @__PURE__ */ t.createElement("div", { className: "text-negative-600 text-sm", __self: void 0, __source: {
             fileName: l,
-            lineNumber: 363,
+            lineNumber: 364,
             columnNumber: 19
           } }, T.errors.root.message), /* @__PURE__ */ t.createElement("div", { className: "flex justify-between items-center", __self: void 0, __source: {
             fileName: l,
-            lineNumber: 365,
+            lineNumber: 366,
             columnNumber: 17
           } }, /* @__PURE__ */ t.createElement(s, { control: $, channels: M, __self: void 0, __source: {
             fileName: l,
-            lineNumber: 366,
+            lineNumber: 367,
             columnNumber: 19
           } }), /* @__PURE__ */ t.createElement("div", { className: "flex items-center gap-2", __self: void 0, __source: {
             fileName: l,
-            lineNumber: 367,
+            lineNumber: 368,
             columnNumber: 19
           } }, /* @__PURE__ */ t.createElement(r.BackButton, { type: "button", __self: void 0, __source: {
             fileName: l,
-            lineNumber: 368,
+            lineNumber: 369,
             columnNumber: 21
           } }), /* @__PURE__ */ t.createElement(r.NextButton, { type: "submit", loading: p, onClick: () => {
           }, __self: void 0, __source: {
             fileName: l,
-            lineNumber: 369,
+            lineNumber: 370,
             columnNumber: 21
           } })))));
         },
@@ -893,61 +889,61 @@ const Fe = be((e) => {
               });
             }, []), /* @__PURE__ */ t.createElement("form", { onSubmit: _($), className: "flex flex-col gap-4", __self: void 0, __source: {
               fileName: l,
-              lineNumber: 451,
+              lineNumber: 452,
               columnNumber: 17
             } }, /* @__PURE__ */ t.createElement("div", { className: "flex flex-col gap-1", __self: void 0, __source: {
               fileName: l,
-              lineNumber: 452,
+              lineNumber: 453,
               columnNumber: 19
             } }, /* @__PURE__ */ t.createElement("div", { className: "text-foreground-900 text-base font-medium", __self: void 0, __source: {
               fileName: l,
-              lineNumber: 453,
+              lineNumber: 454,
               columnNumber: 21
             } }, "Template"), /* @__PURE__ */ t.createElement("div", { className: "text-foreground-700 text-sm", __self: void 0, __source: {
               fileName: l,
-              lineNumber: 454,
+              lineNumber: 455,
               columnNumber: 21
             } }, "Write the template message for the routine in HTML. You can preview it before saving.", /* @__PURE__ */ t.createElement("br", { __self: void 0, __source: {
               fileName: l,
-              lineNumber: 457,
+              lineNumber: 458,
               columnNumber: 23
             } }), "Don't worry, you can edit the message each time you do the routine."), /* @__PURE__ */ t.createElement(e.reactHookForm.Controller, { name: "template", control: i, render: ({
               field: p
             }) => /* @__PURE__ */ t.createElement(n.TemplateEditor, { initialTemplate: p.value, onChange: p.onChange, __self: void 0, __source: {
               fileName: l,
-              lineNumber: 464,
+              lineNumber: 465,
               columnNumber: 25
             } }), __self: void 0, __source: {
               fileName: l,
-              lineNumber: 460,
+              lineNumber: 461,
               columnNumber: 21
             } })), /* @__PURE__ */ t.createElement("div", { className: "flex flex-col gap-1", __self: void 0, __source: {
               fileName: l,
-              lineNumber: 471,
+              lineNumber: 472,
               columnNumber: 19
             } }, /* @__PURE__ */ t.createElement("div", { className: "text-foreground-900 text-base font-medium", __self: void 0, __source: {
               fileName: l,
-              lineNumber: 472,
+              lineNumber: 473,
               columnNumber: 21
             } }, "Default channels"), /* @__PURE__ */ t.createElement("div", { className: "text-foreground-700 text-sm", __self: void 0, __source: {
               fileName: l,
-              lineNumber: 475,
+              lineNumber: 476,
               columnNumber: 21
             } }, "Which channels should be selected by default when posting to Slack?"), /* @__PURE__ */ t.createElement(s, { control: i, channels: h, __self: void 0, __source: {
               fileName: l,
-              lineNumber: 478,
+              lineNumber: 479,
               columnNumber: 21
             } })), /* @__PURE__ */ t.createElement("div", { className: "flex items-center gap-2 self-end", __self: void 0, __source: {
               fileName: l,
-              lineNumber: 480,
+              lineNumber: 481,
               columnNumber: 19
             } }, /* @__PURE__ */ t.createElement(n.Button, { type: "button", secondary: !0, onClick: r.onCancel, __self: void 0, __source: {
               fileName: l,
-              lineNumber: 481,
+              lineNumber: 482,
               columnNumber: 21
             } }, "Cancel"), /* @__PURE__ */ t.createElement(n.Button, { type: "submit", loading: A, __self: void 0, __source: {
               fileName: l,
-              lineNumber: 484,
+              lineNumber: 485,
               columnNumber: 21
             } }, "Save")));
           }
