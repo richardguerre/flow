@@ -1,7 +1,7 @@
 import { EditorContent, StarterKit, useEditor } from "@flowdev/tiptap";
 import { Tooltip, TooltipContent, TooltipTrigger } from "@flowdev/ui/Tooltip";
 import { tw } from "@flowdev/ui/tw";
-import { Node, mergeAttributes } from "@tiptap/core";
+import { Node } from "@tiptap/core";
 import { ReactNodeViewRenderer, NodeViewWrapper } from "@tiptap/react";
 import { TaskTagsExtension } from "../components/TaskTags";
 import { Suspense, useRef } from "react";
@@ -26,25 +26,41 @@ export const TestViewContent = () => {
         group: "inline",
         atom: true,
         addAttributes: () => ({
-          taskId: {
+          innerHTML: {
             default: null,
-            parseHTML: (element) => element.getAttribute("data-taskId") ?? null,
+            parseHTML: (element) => element.innerHTML,
+            rendered: false,
+          },
+          filter: {
+            default: null,
+            parseHTML: (element) => {
+              const rawFilter = element.getAttribute("filter");
+              if (!rawFilter) return null;
+              return JSON.parse(rawFilter);
+            },
             renderHTML: (attrs) => {
-              if (!attrs.taskId) return {};
-              return { "data-taskId": attrs.taskId };
+              if (!attrs.filter) return {};
+              return { filter: JSON.stringify(attrs.filter) };
             },
           },
         }),
-        parseHTML: () => [{ tag: "slack-status" }],
-        renderHTML({ HTMLAttributes }) {
-          return ["slack-status", mergeAttributes(HTMLAttributes)];
+        parseHTML: () => {
+          return [{ tag: "slack-status" }];
+        },
+        renderHTML({ HTMLAttributes, node }) {
+          const dom = document.createElement("slack-status");
+          dom.innerHTML = node.attrs.innerHTML;
+          for (const attr in HTMLAttributes) {
+            dom.setAttribute(attr, HTMLAttributes[attr]);
+          }
+          return { dom };
         },
         addNodeView() {
           return ReactNodeViewRenderer(Component);
         },
       }),
     ],
-    content: `<ul><li><slack-status data-taskId="Task_1">✅</slack-status> Product daily</li></ul><slack-workspace-channel data-workspace-id="someId" data-channel-id="someId"></slack-workspace-channel>`,
+    content: `<ul><li>✅ Product daily</li><slack-status filter="{&quot;where&quot;:&quot;\\&quot;test&quot;}"><li>{{slack-status}} {{title}}</li></slack-status></li></ul><slack-workspace-channel data-workspace-id="someId" data-channel-id="someId"></slack-workspace-channel>`,
     onUpdate: (props) => {
       console.log(props.editor.getHTML());
       // props.editor.state.doc.descendants((node) => {
@@ -70,22 +86,28 @@ export const TestViewContent = () => {
 };
 
 const Component = (props: any) => {
+  console.log(props.node.attrs);
   return (
     <NodeViewWrapper as="span">
       <Tooltip>
-        <TooltipTrigger asChild>
-          <span
-            className={tw(
-              "p-0.5 rounded-sm hover:bg-background-200 translate-y-0.75 h-5 w-5 inline-flex items-center justify-center",
-              props.selected && "bg-primary-200",
-            )}
-          >
-            <SlackMark />
-          </span>
+        <TooltipTrigger
+          className={tw(
+            "p-0.5 rounded-sm bg-background-200 hover:bg-background-300 transform translate-y-0.5 h-5 inline-flex items-center gap-1",
+            props.selected && "bg-background-300",
+          )}
+        >
+          <SlackMark />
+          <span className="text-foreground-700 select-none">New tasks will be added here.</span>
         </TooltipTrigger>
         <TooltipContent className="max-w-xs">
-          This is a placeholder for where the Slack plugin will add and automatically update the
-          status of the task (✅ when done, ❌ when canceled.)
+          New tasks that match the filters you set in the <b>Post in Slack</b> routine step will be
+          added here (defaults to today's tasks).
+          <br />
+          <br />
+          New tasks will be rendered using this template:
+          <pre>
+            <code className="text-xs">{props.node.attrs.innerHTML}</code>
+          </pre>
         </TooltipContent>
       </Tooltip>
     </NodeViewWrapper>

@@ -16,6 +16,7 @@
   - These messages can be summarized and ordered correctly by an AI.
 - Create a task from a Slack message (from Slack)
 - Auto-reply to Slack messages
+- Add Slack reminders as items in the Flow inbox
 
 ## How does the user choose which channels to post into?
 

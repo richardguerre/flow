@@ -19,8 +19,8 @@ export const renderTemplate = async (template: string, data: TemplateData) => {
   for (const [pluginSlug, plugin] of Object.entries(plugins)) {
     if (plugin.handlebars?.helpers) {
       for (const [helperName, helper] of Object.entries(plugin.handlebars.helpers)) {
-        helpers[`${pluginSlug}-${helperName}`] = function (this, context, ...args) {
-          return helper.bind(this)(args.at(-1), context, ...args);
+        helpers[`${pluginSlug}-${helperName}`] = function (this, ...args) {
+          return helper.bind(this)(args.at(-1), ...args);
         };
       }
     }
@@ -62,6 +62,15 @@ const getFlowsDefaultData = async (_opts?: {
   return {};
 };
 
+/**
+ * Register a handlebars helper the same way Flow plugins do (i.e. with the `options` argument first instead of last).
+ */
+function registerHelper(name: string, helper: HelperDeclareFunc) {
+  return Handlebars.registerHelper(name, async function (this: any, ...args) {
+    return helper.bind(this)(args.at(-1), ...args);
+  });
+}
+
 type FlowDefaultRegisters = {
   "title-without-tags": boolean;
   tasks: boolean;
@@ -81,27 +90,27 @@ const registerFlowsDefaultHelpers = async (opts?: {
     .startOf("day");
   if (opts?.include?.yesterday) {
     // helper to render yesterday's date with the given format in args[0]
-    Handlebars.registerHelper("yesterday", async function (this: any, ...args) {
-      const format = args.at(0) ?? "MMMM D, YYYY";
+    registerHelper("yesterday", async function (options: Handlebars.HelperOptions | undefined) {
+      const format = options?.hash?.format ?? "MMMM D, YYYY";
       const yesterday = today.subtract(1, "day");
       if (format === "ISO") return yesterday.toISOString();
-      return yesterday.format(format ?? "MMMM D, YYYY");
+      return yesterday.format(format);
     });
   }
 
   if (opts?.include?.today) {
     // helper to render today's date with the given format in args[0]
-    Handlebars.registerHelper("today", async function (this: any, ...args) {
-      const format = args.at(0) ?? "MMMM D, YYYY";
+    registerHelper("today", async function (options: Handlebars.HelperOptions | undefined) {
+      const format = options?.hash?.format ?? "MMMM D, YYYY";
       if (format === "ISO") return today.toISOString();
-      return today.format(format ?? "MMMM D, YYYY");
+      return today.format(format);
     });
   }
 
   if (opts?.include?.tomorrow) {
     // helper to render tomorrow's date with the given format in args[0]
-    Handlebars.registerHelper("tomorrow", async function (this: any, ...args) {
-      const format = args.at(0) ?? "MMMM D, YYYY";
+    registerHelper("tomorrow", async function (options: Handlebars.HelperOptions | undefined) {
+      const format = options?.hash?.format ?? "MMMM D, YYYY";
       const tomorrow = today.add(1, "day");
       if (format === "ISO") return tomorrow.toISOString();
       return tomorrow.format(format);
@@ -109,7 +118,7 @@ const registerFlowsDefaultHelpers = async (opts?: {
   }
 
   if (opts?.include?.["title-without-tags"]) {
-    Handlebars.registerHelper("title-without-tags", async function (this: Task) {
+    registerHelper("title-without-tags", async function (this: Task) {
       if (!("title" in this)) return "";
       const titleParsed = htmlParser.parse(this.title);
       // remove wrapping <p> tags from the title
@@ -125,54 +134,57 @@ const registerFlowsDefaultHelpers = async (opts?: {
   }
 
   if (opts?.include?.tasks) {
-    Handlebars.registerHelper("tasks", async function (this: any, ...args) {
-      const options = args.at(-1) as Handlebars.HelperOptions | undefined;
-      // possible the passed args are also templates that need to be rendered. Example: {{today 'ISO}}
-      const arg0 = args.at(0);
-      const prismaArgsRendered = !isHandlebarsCtx(arg0)
-        ? await Handlebars.compile(JSON.stringify(arg0))(options?.data?.root ?? this ?? {})
-        : "{}";
-      const prismaArgs =
-        (JSON.parse(prismaArgsRendered) as Parameters<typeof prisma.task.findMany>[0]) ?? {};
+    registerHelper(
+      "tasks",
+      async function (this: any, options: Handlebars.HelperOptions | undefined) {
+        // possible the passed filter also contains templates that need to be rendered.
+        // Example: {{today format='ISO'}}
+        const filter = options?.hash?.filter;
+        const prismaArgsRendered = !isHandlebarsCtx(filter)
+          ? await Handlebars.compile(JSON.stringify(filter))(options?.data?.root ?? this ?? {})
+          : "{}";
+        const prismaArgs =
+          (JSON.parse(prismaArgsRendered) as Parameters<typeof prisma.task.findMany>[0]) ?? {};
 
-      const tasks = await prisma.task
-        .findMany({
-          ...prismaArgs,
-          where: { date: today.toISOString(), ...prismaArgs.where },
-          include: { tags: true, pluginDatas: true, item: { select: { id: true } } },
-        })
-        .then((tasks) =>
-          tasks.map((task) => {
-            // remove wrapping <p> tags from the title
-            const titleParsed = htmlParser.parse(task.title);
-            titleParsed.querySelectorAll("p").forEach((tag) => {
-              tag.replaceWith(tag.innerHTML);
-            });
-            return {
-              ...task,
-              title: new Handlebars.SafeString(titleParsed.toString()),
-            } satisfies TaskInTemplate;
-          }),
-        );
+        const tasks = await prisma.task
+          .findMany({
+            ...prismaArgs,
+            where: { date: today.toISOString(), ...prismaArgs.where },
+            include: { tags: true, pluginDatas: true, item: { select: { id: true } } },
+          })
+          .then((tasks) =>
+            tasks.map((task) => {
+              // remove wrapping <p> tags from the title
+              const titleParsed = htmlParser.parse(task.title);
+              titleParsed.querySelectorAll("p").forEach((tag) => {
+                tag.replaceWith(tag.innerHTML);
+              });
+              return {
+                ...task,
+                title: new Handlebars.SafeString(titleParsed.toString()),
+              } satisfies TaskInTemplate;
+            }),
+          );
 
-      if (!options) {
-        if (!tasks.length) return `No tasks.`;
-        // they're not using the helper as a block helper so just return the default list of tasks
-        return new Handlebars.SafeString(
-          `<ul>${tasks.map((task) => `<li>${task.title}</li>`).join("")}</ul>`,
-        );
-      }
+        if (!options) {
+          if (!tasks.length) return `No tasks.`;
+          // they're not using the helper as a block helper so just return the default list of tasks
+          return new Handlebars.SafeString(
+            `<ul>${tasks.map((task) => `<li>${task.title}</li>`).join("")}</ul>`,
+          );
+        }
 
-      if (!tasks.length) {
-        return options.inverse(this); // if there are no tasks, render the inverse block
-      }
+        if (!tasks.length) {
+          return options.inverse(this); // if there are no tasks, render the inverse block
+        }
 
-      let res = "";
-      for (const task of tasks) {
-        res += await options.fn(task); // have to await the options.fn() call as children can have async helpers as well
-      }
-      return res;
-    });
+        let res = "";
+        for (const task of tasks) {
+          res += await options.fn(task); // have to await the options.fn() call as children can have async helpers as well
+        }
+        return res;
+      },
+    );
   }
 };
 
@@ -182,20 +194,22 @@ const isHandlebarsCtx = (arg: any) => {
 
 export type PartialDeclareSpec = { [name: string]: HandlebarsTemplateDelegate };
 
+type HelperDeclareFunc = {
+  (
+    /** The options object Handlebars provides. You can call `options.fn()` to render children of the helper block. */
+    options?: HelperOptions,
+    /** The arguments passed to the helper. `{{myHelper arg1 arg2 arg3}}` would be `[arg1, arg2, arg3]`. */
+    ...args: any[]
+  ): any | Promise<any>;
+};
+
 /**
  * This type is for plugins to more easily declare handlebars helpers,
  * where the options is the first argument and the context is the second
  * argument, then the rest of the arguments are the arguments passed to the helper.
  */
 export type HelperDeclareSpec = {
-  [name: string]: {
-    (
-      /** The options object Handlebars provides. You can call `options.fn()` to render children of the helper block. */
-      options?: HelperOptions,
-      /** The arguments passed to the helper. `{{myHelper arg1 arg2 arg3}}` would be `[arg1, arg2, arg3]`. */
-      ...args: any[]
-    ): any | Promise<any>;
-  };
+  [name: string]: HelperDeclareFunc;
 };
 type TrueHelperDeclareSpec = {
   [name: string]: (context: any, ...args: any[]) => any;

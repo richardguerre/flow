@@ -4,7 +4,7 @@ import { POST_TO_SLACK, getDefaultPlanYourDayTemplate } from "./common";
 const ACCOUNT_TOKENS_STORE_KEY = "account-tokens";
 
 export default definePlugin((opts) => {
-  const UPDATE_TASK_STATUS_JOB_NAME = "update-task-status";
+  const UPDATE_SLACK_MESSAGES_JOB_NAME = "update-slack-messages";
 
   const getTokensFromStore = async () => {
     const accountsTokensItem =
@@ -21,11 +21,15 @@ export default definePlugin((opts) => {
     return accountsTokensItem.value;
   };
 
-  const statusMap = { TODO: "", DONE: "✅", CANCELED: "❌" } as const;
+  const statusMap: Record<ServerTypes.PrismaTypes.TaskStatus, string> = {
+    TODO: "",
+    DONE: "✅",
+    CANCELED: "❌",
+  };
 
   const getTasksFromMessage = async (message: string) => {
-    const taskIds = opts
-      .parseHtml(message)
+    const taskIds = opts.html
+      .parse(message)
       .querySelectorAll("slack-status")
       .map((tag) => {
         if (!tag.attributes["data-task-id"]) return null;
@@ -154,7 +158,7 @@ export default definePlugin((opts) => {
         }
 
         const tasks = await getTasksFromMessage(input.message);
-        const msgParsed = opts.parseHtml(input.message);
+        const msgParsed = opts.html.parse(input.message);
         msgParsed.querySelectorAll("slack-status").forEach((tag) => {
           if (!tag.attributes["data-task-id"]) return;
           const taskIdRaw = opts.decodeGlobalId(tag.attributes["data-task-id"])?.id;
@@ -175,7 +179,12 @@ export default definePlugin((opts) => {
             pTag.replaceWith(pTag.innerHTML);
           });
         });
-        const slackMessage = opts.htmlToSlack(msgParsed.toString());
+        // remove <slack-future-tasks> tags and wrapping <li> tags
+        msgParsed.querySelectorAll("slack-future-tasks").forEach((tag) => {
+          if (tag.parentNode.tagName === "LI") tag = tag.parentNode;
+          tag.replaceWith("");
+        });
+        const slackMessage = opts.html.toSlack(msgParsed.toString());
 
         const messages: PostMessageData["messages"] = [];
         for (const channel of input.channels) {
@@ -208,9 +217,13 @@ export default definePlugin((opts) => {
         };
       },
     },
-    onUpdateTaskStatusEnd: async (_input) => {
-      const today = opts.dayjs();
-      await opts.pgBoss.send(UPDATE_TASK_STATUS_JOB_NAME, { date: today.toISOString() });
+    onUpdateTaskStatusEnd: async (input) => {
+      const date = opts.dayjs(input.task.date);
+      await opts.pgBoss.send(UPDATE_SLACK_MESSAGES_JOB_NAME, { date: date.toISOString() });
+    },
+    onCreateTask: async (input) => {
+      const date = opts.dayjs(input.task.date);
+      await opts.pgBoss.send(UPDATE_SLACK_MESSAGES_JOB_NAME, { date: date.toISOString() });
     },
     onAddRoutineStepEnd: async (input) => {
       if (input.step.stepSlug === POST_TO_SLACK) {
@@ -238,11 +251,22 @@ export default definePlugin((opts) => {
             `<slack-status data-task-id=\"Task_${this.id}\">${statusMap[this.status]}</slack-status>`,
           );
         },
+        "future-tasks": function (options: Handlebars.HelperOptions | undefined) {
+          if (!options || !("fn" in options)) return "";
+          const filter = options.hash.filter ?? {};
+          const filterStr = opts.html.escape(JSON.stringify(filter));
+          return new opts.Handlebars.SafeString(
+            `<slack-future-tasks filter="${filterStr}">${options.fn({})}</slack-future-tasks>`,
+          );
+        },
       },
     },
     handlePgBossWork: (work) => [
-      work(UPDATE_TASK_STATUS_JOB_NAME, async (job) => {
+      work(UPDATE_SLACK_MESSAGES_JOB_NAME, async (job) => {
         const jobData = job.data as { date: string };
+
+        const tokenItem = await getTokensFromStore().catch(() => null);
+        if (!tokenItem) return; // return if the user is not authenticated yet
 
         // find the day's note
         const note = await opts.prisma.note.findFirst({
@@ -250,6 +274,7 @@ export default definePlugin((opts) => {
         });
         if (!note) return;
 
+        const tasks = await getTasksFromMessage(note.content);
         /**  find all <slack-message> tags:
          * <slack-message
          *   data-team-id="<teamId>"
@@ -257,23 +282,68 @@ export default definePlugin((opts) => {
          *   data-messageId="messageId"
          * >channelName</slack-message>
          */
-        const messages = opts
-          .parseHtml(note.content)
+        const messages = opts.html
+          .parse(note.content)
           .querySelectorAll("slack-message")
           .map((tag) => ({
             teamId: tag.attributes["data-team-id"],
             channelId: tag.attributes["data-channel-id"],
             ts: tag.attributes["data-ts"],
           }));
-        if (!messages.length) return;
+        if (!messages.length) return; // return if the note was never posted to Slack
 
-        const tokenItem = await getTokensFromStore().catch(() => null);
-        if (!tokenItem) return;
+        /**
+         * 1. find <slack-future-tasks> tag
+         * 2. render the innerHTML of the tag
+         * 3. if tag is in <li> tag, make tag the li tag
+         * 3. replace the tag with the rendered HTML
+         */
+        const noteParsed = opts.html.parse(note.content);
+        for (let tag of noteParsed.querySelectorAll("slack-future-tasks")) {
+          const innerHTML = tag.innerHTML;
+          let filter = {} as Parameters<typeof opts.prisma.task.findMany>[0];
+          try {
+            const filterStr = opts.html.unescape(tag.getAttribute("filter") ?? "{}");
+            const filterStrRendered = await opts.renderTemplate(filterStr, {});
+            filter = JSON.parse(filterStrRendered);
+          } catch {
+            // do nothing
+          }
+          const tasksNotInNote = await opts.prisma.task
+            .findMany({
+              where: {
+                date: jobData.date,
+                id: { notIn: Array.from(tasks.keys()) },
+                ...(filter?.where ?? {}),
+              },
+              include: {
+                tags: true,
+                pluginDatas: true,
+                item: { select: { id: true } },
+                ...(filter?.include ?? {}),
+              },
+              ...filter,
+            })
+            .then((tasks) =>
+              tasks.map((task) => {
+                // remove wrapping <p> tags from the title
+                const titleParsed = opts.html.parse(task.title);
+                titleParsed.querySelectorAll("p").forEach((tag) => {
+                  tag.replaceWith(tag.innerHTML);
+                });
+                return { ...task, title: new opts.Handlebars.SafeString(titleParsed.toString()) };
+              }),
+            );
+          let renderedHtml = "";
+          for (const task of tasksNotInNote) {
+            renderedHtml += await opts.renderTemplate(innerHTML, task);
+          }
+          if (tag.parentNode.tagName === "LI") tag = tag.parentNode;
+          tag.replaceWith(renderedHtml);
+          return innerHTML;
+        }
 
         // replace <slack-status> tags with the status of the task
-        const tasks = await getTasksFromMessage(note.content);
-
-        const noteParsed = opts.parseHtml(note.content);
         noteParsed.querySelectorAll("slack-status").forEach((tag) => {
           if (!tag.attributes["data-task-id"]) return;
           const taskIdRaw = opts.decodeGlobalId(tag.attributes["data-task-id"])?.id;
@@ -294,7 +364,7 @@ export default definePlugin((opts) => {
             pTag.replaceWith(pTag.innerHTML);
           });
         });
-        const slackMessage = opts.htmlToSlack(noteParsed.toString());
+        const slackMessage = opts.html.toSlack(noteParsed.toString());
 
         for (const message of messages) {
           const token = tokenItem[message.teamId].authed_user.access_token;

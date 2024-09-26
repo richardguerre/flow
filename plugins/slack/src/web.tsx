@@ -76,6 +76,75 @@ export default definePlugin((opts) => {
     );
   };
 
+  const SlackFutureTasks = opts.tiptap.Node.create({
+    name: "slack-future-tasks",
+    inline: true,
+    group: "inline",
+    atom: true,
+    draggable: true,
+    selectable: true,
+    addAttributes: () => ({
+      innerHTML: {
+        default: null,
+        parseHTML: (element) => element.innerHTML,
+        rendered: false,
+      },
+      filter: {
+        default: null,
+        parseHTML: (element) => {
+          const rawFilter = element.getAttribute("filter");
+          if (!rawFilter) return null;
+          return JSON.parse(rawFilter);
+        },
+        renderHTML: (attrs) => {
+          if (!attrs.filter) return {};
+          return { filter: JSON.stringify(attrs.filter) };
+        },
+      },
+    }),
+    parseHTML: () => [{ tag: "slack-future-tasks" }],
+    renderHTML({ HTMLAttributes, node }) {
+      const dom = document.createElement("slack-future-tasks");
+      dom.innerHTML = node.attrs.innerHTML;
+      for (const attr in HTMLAttributes) {
+        dom.setAttribute(attr, HTMLAttributes[attr]);
+      }
+      return { dom };
+    },
+    addNodeView: () => opts.tiptap.ReactNodeViewRenderer(SlackFutureTasksNodeView),
+  });
+
+  const SlackFutureTasksNodeView = (props: {
+    selected: boolean;
+    node: { attrs: { innerHTML: string } };
+  }) => {
+    return (
+      <opts.tiptap.NodeViewWrapper as="span">
+        <Flow.Tooltip>
+          <Flow.TooltipTrigger
+            className={opts.cn(
+              "p-0.5 rounded-sm bg-background-200 hover:bg-background-300 transform translate-y-0.5 h-5 inline-flex items-center gap-1",
+              props.selected && "bg-background-300",
+            )}
+          >
+            <SlackMark />
+            <span className="text-foreground-700">New tasks will be added here.</span>
+          </Flow.TooltipTrigger>
+          <Flow.TooltipContent className="max-w-xs">
+            New tasks that match the filters you set in the <b>Post in Slack</b> routine step will
+            be added here (defaults to today's tasks).
+            <br />
+            <br />
+            New tasks will be rendered using this template:
+            <pre>
+              <code className="text-xs">{props.node.attrs.innerHTML}</code>
+            </pre>
+          </Flow.TooltipContent>
+        </Flow.Tooltip>
+      </opts.tiptap.NodeViewWrapper>
+    );
+  };
+
   const SlackMark = () => (
     <svg
       width="16"
@@ -215,7 +284,7 @@ export default definePlugin((opts) => {
 
   return {
     name: "Slack",
-    noteEditorTipTapExtensions: [SlackStatusNode, SlackMessageNode],
+    noteEditorTipTapExtensions: [SlackStatusNode, SlackMessageNode, SlackFutureTasks],
     settings: {
       "connect-accounts": {
         type: "custom",
