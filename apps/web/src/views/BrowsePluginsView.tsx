@@ -55,7 +55,7 @@ const PLUGINS: Plugin[] = [
     slug: "google-calendar",
     description: "Official Google Calendar plugin for Flow.",
     installUrl:
-      "https://cdn.jsdelivr.net/gh/richardguerre/flow@c1dc94b/plugins/google-calendar/out",
+      "https://cdn.jsdelivr.net/gh/richardguerre/flow@c7b4cc7/plugins/google-calendar/out",
     version: "0.1.0",
     authors: [{ name: "Flow", avatarUrl: "FlowIcon.svg" }],
   },
