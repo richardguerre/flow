@@ -643,6 +643,7 @@ export default definePlugin((opts) => {
             {},
             scheduledEnd.toDate(),
           );
+          console.log("Scheduled event to be updated after", scheduledEnd.toISOString());
         }
       }),
       work(GET_EVENTS_JOB_NAME, async (job) => {
