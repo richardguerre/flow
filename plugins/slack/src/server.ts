@@ -336,6 +336,7 @@ export default definePlugin((opts) => {
           }
           const tasksNotInNote = await opts.prisma.task
             .findMany({
+              ...filter,
               where: {
                 date: jobData.date,
                 id: { notIn: Array.from(tasks.keys()) },
@@ -347,7 +348,6 @@ export default definePlugin((opts) => {
                 item: { select: { id: true } },
                 ...(filter?.include ?? {}),
               },
-              ...filter,
             })
             .then((tasks) =>
               tasks.map((task) => {
