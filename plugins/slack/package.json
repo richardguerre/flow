@@ -10,7 +10,6 @@
     "prebuild:web": "bun run print-schema && bun run setup:relay && bun run relay",
     "build:web": "bun --bun run vite build -c vite.web.mts",
     "build:server": "bun --bun run vite build -c vite.server.ts",
-    "prebuild": "bun run print-schema && bun run setup:relay && bun run relay",
     "build": "bun run build:web && bun run build:server",
     "dev:web": "bun run relay && bun --bun run vite build -c vite.web.mts --watch",
     "dev:server": "bun --bun run vite build -c vite.server.dev.ts --watch"

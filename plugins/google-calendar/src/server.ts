@@ -152,7 +152,7 @@ export default definePlugin((opts) => {
         : scheduledStart.add(1, "millisecond");
     const isOver = scheduledEnd.isBefore(opts.dayjs());
     const scheduledAtDate = scheduledStart.tz(usersTimezone).utc(true).toISOString();
-    const isRelevant = input.event.status !== "cancelled";
+    const isRelevant = input.event.status !== "cancelled" || scheduledEnd.isBefore(opts.dayjs());
 
     const itemCommonBetweenUpdateAndCreate = {
       title: input.event.summary ?? "No title",
@@ -632,13 +632,16 @@ export default definePlugin((opts) => {
             itemInfo.scheduledStart?.toISOString(),
           );
 
-          if (!itemInfo.isRelevant || opts.dayjs(itemInfo.scheduledEnd).isBefore(opts.dayjs()))
-            return;
+          if (!itemInfo.isRelevant) return;
+
+          const scheduledEnd = opts.dayjs(itemInfo.scheduledEnd).add(1, "second"); // just to make sure the event is over
+          if (scheduledEnd.isBefore(opts.dayjs())) return;
+
           await opts.pgBoss.sendAfter(
             UPSERT_EVENT_JOB_NAME,
             { ...event },
             {},
-            itemInfo.scheduledEnd.add(1, "second").toDate(), // just to make sure the event is over
+            scheduledEnd.toDate(),
           );
         }
       }),
