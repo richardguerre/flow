@@ -12,7 +12,7 @@ export const getDefaultPlanYourDayTemplate = (props?: { withLinear?: boolean }) 
     <li>No tasks</li> 
   {{/tasks}}
   {{! Do not remove the extra curly braces around the slack-future-tasks block.}}
-  {{{{#slack-future-tasks}}}}
+  {{{{slack-future-tasks}}}}
     <li>{{slack-status}} {{title}}${linearLink}</li>
   {{{{/slack-future-tasks}}}}
 </ul>`;

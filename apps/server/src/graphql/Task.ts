@@ -331,11 +331,12 @@ builder.mutationField("deleteTask", (t) =>
   }),
 );
 
+type PluginOnUpdateTaskStatusTask = Task & { pluginDatas: TaskPluginData[] };
 export type PluginOnUpdateTaskStatus = (input: {
   /** The actionData that the web runtime of the plugin passed in. */
   actionData?: Prisma.InputJsonValue | null;
   newStatus: TaskStatus;
-  task: Task & { pluginDatas: TaskPluginData[] };
+  task: PluginOnUpdateTaskStatusTask;
 }) => Promise<void>;
 
 builder.mutationField("updateTaskStatus", (t) =>
@@ -372,10 +373,11 @@ Any other scenario is not possible by nature of the app, where tasks:
       const plugins = await getPlugins();
       await prisma.$transaction(async (tx) => {
         const newStatus = args.input.status;
-        const task = await tx.task.findUniqueOrThrow({
+        let updatedTask: PluginOnUpdateTaskStatusTask;
+        const task = (updatedTask = await tx.task.findUniqueOrThrow({
           where: { id: parseInt(args.input.id.id) },
           include: { day: { select: { date: true, tasksOrder: true } }, pluginDatas: true },
-        });
+        }));
         for (const pluginSlug in plugins) {
           const plugin = plugins[pluginSlug]!;
           // errors from plugins should interrupt the transaction and be thrown as GraphQL errors
@@ -394,8 +396,9 @@ Any other scenario is not possible by nature of the app, where tasks:
         } else if (task.date >= startOfToday && task.date <= endOfToday) {
           // When the task is for today, we only need to update the status
           // and the position of the task in the day
-          await tx.task.update({
+          updatedTask = await tx.task.update({
             where: { id: task.id },
+            include: { pluginDatas: true },
             data: {
               status: newStatus,
               completedAt: newStatus === "DONE" ? new Date() : null,
@@ -424,8 +427,9 @@ Any other scenario is not possible by nature of the app, where tasks:
         } else if (task.date > endOfToday && (newStatus === "DONE" || newStatus === "CANCELED")) {
           // When the task is in the future and the new status is DONE or CANCELED,
           // we need to move it to today and update the status
-          await tx.task.update({
+          updatedTask = await tx.task.update({
             where: { id: task.id },
+            include: { pluginDatas: true },
             data: {
               status: newStatus,
               completedAt: newStatus === "DONE" ? new Date() : null,
@@ -460,7 +464,7 @@ Any other scenario is not possible by nature of the app, where tasks:
         } else if (task.date < startOfToday) {
           if (newStatus === "TODO") {
             // Task is in the past and TODO, so we need to move it to today and update the status
-            const updatedTask = await tx.task.update({
+            const $updatedTask = (updatedTask = await tx.task.update({
               where: { id: task.id },
               data: {
                 status: newStatus,
@@ -482,23 +486,25 @@ Any other scenario is not possible by nature of the app, where tasks:
                   },
                 },
               },
-              select: {
+              include: {
+                pluginDatas: true,
                 day: {
                   select: { tasks: { select: { id: true, status: true } }, tasksOrder: true },
                 },
               },
-            });
+            }));
             await tx.day.update({
               where: { date: originalDay.date },
               data: { tasksOrder: { set: originalDay.tasksOrder.filter((id) => id !== task.id) } },
             });
             days.push(task.date);
-            const tasksOrdered = updatedTask.day.tasks.sort(
+            const tasksOrdered = $updatedTask.day.tasks.sort(
               (a, b) =>
-                updatedTask.day.tasksOrder.indexOf(a.id) - updatedTask.day.tasksOrder.indexOf(b.id),
+                $updatedTask.day.tasksOrder.indexOf(a.id) -
+                $updatedTask.day.tasksOrder.indexOf(b.id),
             );
             const lastTodoIndex = tasksOrdered.findIndex((t) => t.status === "TODO");
-            const newTasksOrder = updatedTask.day.tasksOrder.splice(lastTodoIndex + 1, 0, task.id);
+            const newTasksOrder = $updatedTask.day.tasksOrder.splice(lastTodoIndex + 1, 0, task.id);
             await tx.day.update({
               where: { date: startOfToday },
               data: { tasksOrder: { set: newTasksOrder } },
@@ -506,8 +512,9 @@ Any other scenario is not possible by nature of the app, where tasks:
             days.push(startOfToday);
           } else {
             // Task is in the past, so we only need to update the status
-            await tx.task.update({
+            updatedTask = await tx.task.update({
               where: { id: task.id },
+              include: { pluginDatas: true },
               data: {
                 status: newStatus,
                 completedAt: newStatus === "DONE" ? dayjs(task.date).endOf("day").toDate() : null,
@@ -529,7 +536,9 @@ Any other scenario is not possible by nature of the app, where tasks:
         for (const pluginSlug in plugins) {
           const plugin = plugins[pluginSlug]!;
           // errors from plugins should not interrupt. just log them.
-          await plugin.onUpdateTaskStatusEnd?.({ task, newStatus }).catch(console.error);
+          await plugin
+            .onUpdateTaskStatusEnd?.({ task: updatedTask, newStatus })
+            .catch(console.error);
         }
       });
       return prisma.day.findMany({

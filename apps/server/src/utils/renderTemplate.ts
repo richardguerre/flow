@@ -139,7 +139,7 @@ const registerFlowsDefaultHelpers = async (opts?: {
       async function (this: any, options: Handlebars.HelperOptions | undefined) {
         // possible the passed filter also contains templates that need to be rendered.
         // Example: {{today format='ISO'}}
-        const filter = options?.hash?.filter;
+        const filter = options?.hash?.filter ?? {};
         const prismaArgsRendered = !isHandlebarsCtx(filter)
           ? await Handlebars.compile(JSON.stringify(filter))(options?.data?.root ?? this ?? {})
           : "{}";

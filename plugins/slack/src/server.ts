@@ -27,9 +27,9 @@ export default definePlugin((opts) => {
     CANCELED: "❌",
   };
 
-  const getTasksFromMessage = async (message: string) => {
+  const getTasksFromNote = async (note: string) => {
     const taskIds = opts.html
-      .parse(message)
+      .parse(note)
       .querySelectorAll("slack-status")
       .map((tag) => {
         if (!tag.attributes["data-task-id"]) return null;
@@ -45,6 +45,25 @@ export default definePlugin((opts) => {
       .then((tasks) => new Map(tasks.map((task) => [task.id, task])));
 
     return tasks;
+  };
+
+  /**  find all <slack-message> tags:
+   * <slack-message
+   *   data-team-id="<teamId>"
+   *   data-channel-id="<channelId>"
+   *   data-messageId="messageId"
+   * >channelName</slack-message>
+   */
+  const getMessagesFromNote = (note: string) => {
+    const messages = opts.html
+      .parse(note)
+      .querySelectorAll("slack-message")
+      .map((tag) => ({
+        teamId: tag.attributes["data-team-id"],
+        channelId: tag.attributes["data-channel-id"],
+        ts: tag.attributes["data-ts"],
+      }));
+    return messages;
   };
 
   return {
@@ -157,7 +176,24 @@ export default definePlugin((opts) => {
           });
         }
 
-        const tasks = await getTasksFromMessage(input.message);
+        const messagesFromNote = getMessagesFromNote(input.message);
+        if (messagesFromNote.length) {
+          const date = opts.dayjs(messagesFromNote[0].ts).toISOString();
+          // HACK: need to wait for the note to be updated by the frontend before updating the messages, waiting 10 seconds should be enough
+          opts.pgBoss.send(
+            UPDATE_SLACK_MESSAGES_JOB_NAME,
+            { date },
+            { startAfter: opts.dayjs().add(10, "seconds").toISOString() },
+          );
+          return {
+            data: {
+              ok: true,
+              messages: [], // don't append existing messages to the note
+            } as PostMessageData,
+          };
+        }
+
+        const tasks = await getTasksFromNote(input.message);
         const msgParsed = opts.html.parse(input.message);
         msgParsed.querySelectorAll("slack-status").forEach((tag) => {
           if (!tag.attributes["data-task-id"]) return;
@@ -181,6 +217,7 @@ export default definePlugin((opts) => {
         });
         // remove <slack-future-tasks> tags and wrapping <li> tags
         msgParsed.querySelectorAll("slack-future-tasks").forEach((tag) => {
+          if (tag.parentNode.tagName === "P") tag = tag.parentNode;
           if (tag.parentNode.tagName === "LI") tag = tag.parentNode;
           tag.replaceWith("");
         });
@@ -251,12 +288,13 @@ export default definePlugin((opts) => {
             `<slack-status data-task-id=\"Task_${this.id}\">${statusMap[this.status]}</slack-status>`,
           );
         },
-        "future-tasks": function (options: Handlebars.HelperOptions | undefined) {
+        "future-tasks": async function (options: Handlebars.HelperOptions | undefined) {
           if (!options || !("fn" in options)) return "";
           const filter = options.hash.filter ?? {};
           const filterStr = opts.html.escape(JSON.stringify(filter));
+          const innerHTML = await options.fn({});
           return new opts.Handlebars.SafeString(
-            `<slack-future-tasks filter="${filterStr}">${options.fn({})}</slack-future-tasks>`,
+            `<slack-future-tasks filter="${filterStr}">${innerHTML}</slack-future-tasks>`,
           );
         },
       },
@@ -274,29 +312,16 @@ export default definePlugin((opts) => {
         });
         if (!note) return;
 
-        const tasks = await getTasksFromMessage(note.content);
-        /**  find all <slack-message> tags:
-         * <slack-message
-         *   data-team-id="<teamId>"
-         *   data-channel-id="<channelId>"
-         *   data-messageId="messageId"
-         * >channelName</slack-message>
-         */
-        const messages = opts.html
-          .parse(note.content)
-          .querySelectorAll("slack-message")
-          .map((tag) => ({
-            teamId: tag.attributes["data-team-id"],
-            channelId: tag.attributes["data-channel-id"],
-            ts: tag.attributes["data-ts"],
-          }));
+        const tasks = await getTasksFromNote(note.content);
+        const messages = getMessagesFromNote(note.content);
         if (!messages.length) return; // return if the note was never posted to Slack
 
         /**
          * 1. find <slack-future-tasks> tag
          * 2. render the innerHTML of the tag
-         * 3. if tag is in <li> tag, make tag the li tag
-         * 3. replace the tag with the rendered HTML
+         * 3. if tag is in <p> tag, make tag the p tag
+         * 4. if tag is in <li> tag, make tag the li tag
+         * 5. replace the tag with the rendered HTML
          */
         const noteParsed = opts.html.parse(note.content);
         for (let tag of noteParsed.querySelectorAll("slack-future-tasks")) {
@@ -338,9 +363,9 @@ export default definePlugin((opts) => {
           for (const task of tasksNotInNote) {
             renderedHtml += await opts.renderTemplate(innerHTML, task);
           }
+          if (tag.parentNode.tagName === "P") tag = tag.parentNode;
           if (tag.parentNode.tagName === "LI") tag = tag.parentNode;
           tag.replaceWith(renderedHtml);
-          return innerHTML;
         }
 
         // replace <slack-status> tags with the status of the task
@@ -351,8 +376,8 @@ export default definePlugin((opts) => {
           const taskId = parseInt(taskIdRaw);
           if (!taskId) return;
           const task = tasks.get(taskId);
-          if (!task) return;
-          tag.replaceWith(statusMap[task.status]);
+          if (task) tag.replaceWith(statusMap[task.status]);
+          else tag.replaceWith(tag.innerHTML);
         });
         // remove the <slack-message> tags
         noteParsed.querySelectorAll("slack-message").forEach((tag) => {
@@ -623,3 +648,7 @@ type ChatUpdateReq =
       ok: false;
       error: string;
     };
+
+`
+<p class="mb-2">Plan for today</p><ul class="list-disc ml-5 mb-2"><li class="!*:mb-0"><p class="mb-2"><slack-status data-task-id="Task_9"></slack-status> New task</p></li><li class="!*:mb-0"><p class="mb-2"><slack-status data-task-id="Task_6"></slack-status> Task 6 which is scheduled for tomorrow</p></li><li class="!*:mb-0"><p class="mb-2"><slack-status data-task-id="Task_3"></slack-status> Make a new friend</p></li><li class="!*:mb-0"><p class="mb-2"><slack-future-tasks filter="{}">    <li>{{slack-status}} {{title}}</li></slack-future-tasks></p></li></ul><slack-message data-team-id="T07KTQ7M30R" data-channel-id="C07KF4MQJCS" data-ts="1727420798.133199"></slack-message>
+`;

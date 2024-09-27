@@ -127,6 +127,10 @@ const RoutineViewContent = (props: RoutineViewProps) => {
   };
 
   const handleNext = () => {
+    if (currentStep === stepsLeft.length - 1) {
+      // redirect to the IndexView
+      navigate(`/`);
+    }
     setCurrentStep((prev) => {
       if (prev === stepsLeft.length - 1) return prev; // TODO: mark routine as done
       const nextStep = stepsLeft[prev + 1];
