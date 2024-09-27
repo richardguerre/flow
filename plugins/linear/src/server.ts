@@ -4,12 +4,12 @@ const ACCOUNT_TOKENS_STORE_KEY = "account-tokens";
 const SYNCED_VIEWS_STORE_KEY = "synced-views";
 
 export default definePlugin((opts) => {
-  const PROCESS_WEBHOOK_EVENT_JOB_NAME = `${opts.pluginSlug}-process-webhook`;
-  const CONNECT_ACCOUNT_JOB_NAME = `${opts.pluginSlug}-connect-account`;
-  const SYNC_ALL_VIEWS_JOB_NAME = `${opts.pluginSlug}-sync-all-views`;
-  const SYNC_VIEW_JOB_NAME = `${opts.pluginSlug}-sync-view`;
-  const SYNC_USER_ISSUES_JOB_NAME = `${opts.pluginSlug}-sync-user-issues`;
-  const UPSERT_ISSUE_JOB = `${opts.pluginSlug}-upsert-item-from-issue`;
+  const PROCESS_WEBHOOK_EVENT_JOB_NAME = `process-webhook`;
+  const CONNECT_ACCOUNT_JOB_NAME = `connect-account`;
+  const SYNC_ALL_VIEWS_JOB_NAME = `sync-all-views`;
+  const SYNC_VIEW_JOB_NAME = `sync-view`;
+  const SYNC_USER_ISSUES_JOB_NAME = `sync-user-issues`;
+  const UPSERT_ISSUE_JOB = `upsert-item-from-issue`;
 
   const gqlRequest = async <T>(query: string, params: { token: string; variables?: object }) => {
     const res = await fetch("https://api.linear.app/graphql", {

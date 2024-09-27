@@ -15,6 +15,7 @@ import {
   getTimezone,
   isSessionTokenValid,
   pgBossWorkers,
+  pluginPgBossWorkers,
   scheduleDeletePgBossArchive,
   scheduleRolloverTasks,
   syncTasks,
@@ -192,10 +193,7 @@ if (env.NODE_ENV !== "test") {
   // -------------------------- PgBoss ------------------------------
   await pgBoss.start();
   console.log("✅ PgBoss started.");
-  for (const plugin of Object.values(plugins)) {
-    const handlers = plugin.handlePgBossWork?.(pgBoss.work) ?? [];
-    await Promise.all(handlers);
-  }
+  await pluginPgBossWorkers({ plugins });
   await pgBossWorkers();
   if (env.NODE_ENV !== "development") {
     const timezone = await getTimezone();

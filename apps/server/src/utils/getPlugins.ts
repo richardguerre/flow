@@ -7,6 +7,7 @@ import { getPluginOptions } from "./getPluginOptions";
 import { FlowPluginSlug, PluginInstallation, StoreKeys } from "../graphql/Store";
 import { prisma } from "./prisma";
 import { env } from "../env";
+import { reloadPluginPgBossWorkers } from ".";
 
 const cache = new Map<string, ServerPluginReturn>();
 const pathToPlugins = path.join(import.meta.dir, env.PATH_TO_PLUGINS ?? "../../plugins");
@@ -158,6 +159,11 @@ export async function installServerPlugin(opts: Options) {
   await fs.rename(pathToTemp, path.join(pathToPlugins, `${opts.slug}.js`));
   const plugin = exported.plugin(getPluginOptions(opts.slug));
   cache.set(opts.slug, plugin);
+
+  await reloadPluginPgBossWorkers({
+    pluginSlug: opts.slug,
+    plugins: Object.fromEntries(cache.entries()),
+  });
 
   await plugin.onInstall?.();
 }

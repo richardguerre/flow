@@ -7,8 +7,8 @@ const generateId = () => Date.now().toString();
 const log = console.log;
 // const log = (..._args: any) => {};
 export default definePlugin((opts) => {
-  const CREATE_TASKS_JOB_NAME = `${opts.pluginSlug}-create-tasks-schedule`;
-  const REMOVE_FUTURE_TASKS_JOB_NAME = `${opts.pluginSlug}-remove-future-tasks-schedule`;
+  const CREATE_TASKS_JOB_NAME = `create-tasks-schedule`;
+  const REMOVE_FUTURE_TASKS_JOB_NAME = `remove-future-tasks-schedule`;
   const operationRepeatingTasks = async () => {
     const repeatingTasks = await opts.store.getItem<RepeatingTasksInStore>("repeatingTasks");
     return {

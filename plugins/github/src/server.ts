@@ -7,7 +7,7 @@ export const TOKEN_STORE_KEY = "github-token";
 export const GITHUB_NOTIFICATIONS_LIST_SLUG = "github-notifications";
 
 export default definePlugin((opts) => {
-  const SYNC_NOTIFICATIONS = `${opts.pluginSlug}-sync-notifications`;
+  const SYNC_NOTIFICATIONS = `sync-notifications`;
   const LAST_SYNCED_NOTIFICATIONS_AT = `last-synced-notifications-at`;
   const getToken = async () => {
     const tokenItem = await opts.store.getPluginItem<string>(TOKEN_STORE_KEY);

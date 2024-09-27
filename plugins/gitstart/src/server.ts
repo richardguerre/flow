@@ -11,8 +11,8 @@ const RELEVANT_STATUSES = [
 export const GITSTART_LIST_SLUG = "gitstart-items";
 
 export default definePlugin((opts) => {
-  const UPSERT_PR_JOB_NAME = `${opts.pluginSlug}-upsert-pr-as-item`;
-  const SYNC_ITEMS = `${opts.pluginSlug}-sync-items`;
+  const UPSERT_PR_JOB_NAME = `upsert-pr-as-item`;
+  const SYNC_ITEMS = `sync-items`;
 
   const gqlRequest = async <T>(token: string, query: string, variables?: object) => {
     const res = await fetch("https://gateway.gitstart.dev/graphql", {

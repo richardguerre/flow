@@ -106,6 +106,31 @@ const createExternalCalendarItem: PgBoss.WorkHandler<ItemWithTasks> = async ({ d
   }
 };
 
+type PluginPgBossWorkersProps = {
+  plugins?: Awaited<ReturnType<typeof getPlugins>>;
+};
+export const pluginPgBossWorkers = async (props?: PluginPgBossWorkersProps) => {
+  const plugins = props?.plugins ?? (await getPlugins());
+  for (const [pluginSlug, plugin] of Object.entries(plugins)) {
+    const handlers =
+      plugin.handlePgBossWork?.((name, ...args: any[]) => {
+        return pgBoss.work(
+          `${pluginSlug}-${name}`,
+          // @ts-ignore as the types are too complex but runtime works
+          ...args,
+        );
+      }) ?? [];
+    await Promise.all(handlers);
+  }
+};
+
+export const reloadPluginPgBossWorkers = async (
+  props: PluginPgBossWorkersProps & { pluginSlug: string },
+) => {
+  pgBoss.offWork(props.pluginSlug);
+  await pluginPgBossWorkers(props);
+};
+
 export const pgBossWorkers = async () => {
   if (env.NODE_ENV !== "development") {
     await pgBoss.work(ROLLOVER_TASKS_JOB_NAME, syncTasks);
