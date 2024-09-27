@@ -130,13 +130,13 @@ const ge = (e) => ({ plugin: e }), ee = "post-to-slack", ve = (e) => {
   return `Plan for today
 <ul>
   {{#tasks}}
-    <li>{{slack-status}} {{title}}${t}</li>
+    <li>{{slack-status}} {{title-without-tags}}${t}</li>
   {{else}}
     <li>No tasks</li> 
   {{/tasks}}
   {{! Do not remove the extra curly braces around the slack-future-tasks block.}}
   {{{{slack-future-tasks}}}}
-    <li>{{slack-status}} {{title}}${t}</li>
+    <li>{{slack-status}} {{title-without-tags}}${t}</li>
   {{{{/slack-future-tasks}}}}
 </ul>`;
 };
