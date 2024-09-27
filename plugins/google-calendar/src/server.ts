@@ -640,7 +640,7 @@ export default definePlugin((opts) => {
           await opts.pgBoss.sendAfter(
             UPSERT_EVENT_JOB_NAME,
             { ...event },
-            {},
+            { singletonKey: event.id!, singletonMinutes: 1 },
             scheduledEnd.toDate(),
           );
           console.log("Scheduled event to be updated after", scheduledEnd.toISOString());
@@ -676,10 +676,14 @@ export default definePlugin((opts) => {
             jobData.calendarId,
           );
           for (const event of events.items ?? []) {
-            await opts.pgBoss.send(UPSERT_EVENT_JOB_NAME, {
-              ...event,
-              calendarColor: calendar.backgroundColor ?? null,
-            });
+            await opts.pgBoss.send(
+              UPSERT_EVENT_JOB_NAME,
+              {
+                ...event,
+                calendarColor: calendar.backgroundColor ?? null,
+              },
+              { singletonKey: event.id!, singletonMinutes: 1 },
+            );
           }
         }
       }),
@@ -716,10 +720,14 @@ export default definePlugin((opts) => {
           jobData.calendarId,
         );
         for (const event of events.items ?? []) {
-          await opts.pgBoss.send(UPSERT_EVENT_JOB_NAME, {
-            ...event,
-            calendarColor: calendar.backgroundColor ?? null,
-          });
+          await opts.pgBoss.send(
+            UPSERT_EVENT_JOB_NAME,
+            {
+              ...event,
+              calendarColor: calendar.backgroundColor ?? null,
+            },
+            { singletonKey: event.id!, singletonMinutes: 1 },
+          );
         }
 
         // update lastSyncedAt
