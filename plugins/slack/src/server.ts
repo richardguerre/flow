@@ -262,6 +262,10 @@ export default definePlugin((opts) => {
       const date = opts.dayjs(input.task.date);
       await opts.pgBoss.send(UPDATE_SLACK_MESSAGES_JOB_NAME, { date: date.toISOString() });
     },
+    onUpdateTaskEnd: async (input) => {
+      const date = opts.dayjs(input.task.date);
+      await opts.pgBoss.send(UPDATE_SLACK_MESSAGES_JOB_NAME, { date: date.toISOString() });
+    },
     onAddRoutineStepEnd: async (input) => {
       if (input.step.stepSlug === POST_TO_SLACK) {
         const plugins = await opts.getInstalledPlugins();

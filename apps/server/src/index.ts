@@ -223,6 +223,3 @@ process.on("SIGINT", () => {
       process.exit(1);
     });
 });
-
-// curl to introspect schema
-// curl -X POST http://localhost:4000/graphql -H "Content-Type: application/json" -d '{"query":"{__schema {types {name}} }"}'

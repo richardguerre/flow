@@ -266,6 +266,13 @@ const TaskActionDataInput = builder.inputType("TaskActionDataInput", {
   }),
 });
 
+type PluginOnUpdateTaskTask = Task & { pluginDatas: TaskPluginData[] };
+export type PluginOnUpdateTask = (input: {
+  /** The actionData that the web runtime of the plugin passed in. */
+  // actionData?: Prisma.InputJsonValue | null;
+  task: PluginOnUpdateTaskTask;
+}) => Promise<void>;
+
 builder.mutationField("updateTask", (t) =>
   t.prismaFieldWithInput({
     type: "Task",
@@ -293,10 +300,11 @@ builder.mutationField("updateTask", (t) =>
           "The IDs of tags to be unlinked from the task. If you want to create a new tag, use the `newTags` input.",
       }),
     },
-    resolve: (query, _, args) => {
-      return prisma.task.update({
+    resolve: async (query, _, args) => {
+      const updatedTask = await prisma.task.update({
         ...query,
         where: { id: parseInt(args.input.id.id) },
+        include: { ...query.include, pluginDatas: true },
         data: {
           title: u(args.input.title),
           durationInMinutes: args.input.durationInMinutes,
@@ -313,6 +321,12 @@ builder.mutationField("updateTask", (t) =>
           },
         },
       });
+      const plugins = await getPlugins();
+      for (const pluginSlug in plugins) {
+        const plugin = plugins[pluginSlug]!;
+        await plugin.onUpdateTaskEnd?.({ task: updatedTask }).catch(console.error);
+      }
+      return updatedTask;
     },
   }),
 );

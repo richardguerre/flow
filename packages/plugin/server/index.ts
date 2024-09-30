@@ -3,6 +3,7 @@ import { type ServerPluginOptions as _ServerPluginOptions } from "@flowdev/serve
 import { type PgBossType } from "@flowdev/server/src/utils/pgBoss";
 import type {
   PluginOnCreateTask,
+  PluginOnUpdateTask,
   PluginOnUpdateTaskStatus,
 } from "@flowdev/server/src/graphql/Task";
 import { PluginOnUpdateItemStatus } from "@flowdev/server/src/graphql/Item";
@@ -24,6 +25,8 @@ export type ServerPlugin = (opts: ServerPluginOptions) => {
   onStoreItemUpsert?: (key: string) => Promise<void>;
   /** Hook called before a task is created. Useful to add plugin data to the task. */
   onCreateTask?: PluginOnCreateTask;
+  /** Hook called after a task is updated. */
+  onUpdateTaskEnd?: PluginOnUpdateTask;
   /** Hook called before a task's status is updated. */
   onUpdateTaskStatus?: PluginOnUpdateTaskStatus;
   /** Hook called after a task's status is updated. */
