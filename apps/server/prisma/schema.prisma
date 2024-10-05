@@ -6,10 +6,10 @@ datasource db {
 generator client {
   provider      = "prisma-client-js"
   // native for development
-  // rhel-openssl-3.0.x for production
+  // linux-arm64-openssl-3.0.x for production (amazon linux 2023 on EC2 r6g arm instances)
   // darwin-arm64 for M1 Macs
   // debian-openssl-3.0.x for GitHub Actions on ubuntu-latest
-  binaryTargets = ["native", "rhel-openssl-3.0.x", "darwin-arm64", "debian-openssl-3.0.x"]
+  binaryTargets = ["native", "linux-arm64-openssl-3.0.x", "darwin-arm64", "debian-openssl-3.0.x"]
 }
 
 generator pothos {

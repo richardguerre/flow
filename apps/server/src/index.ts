@@ -29,9 +29,7 @@ const PORT = env.PORT ?? 4000;
 const yogaHandler = async (request: Request) => {
   const res = await createYoga({
     schema,
-    cors: {
-      origin: undefined,
-    },
+    cors: { origin: undefined },
     context: async (req) => {
       const sessionToken = req.request.headers.get("authorization")?.replace("Bearer ", "");
 
@@ -44,7 +42,7 @@ const yogaHandler = async (request: Request) => {
       };
     },
     graphiql: {
-      title: "Flow GraphQL API",
+      title: "Flow API",
       headers: JSON.stringify({
         Authorization: `Bearer COPY_TOKEN_FROM_BROWSER_CONSOLE_OR_LOGIN_MUTATION`,
       }),
