@@ -136,7 +136,11 @@ export default definePlugin((opts) => {
     };
   };
 
-  const eventToInfo = async (input: { event: UpsertEventJobData; taskId: number | undefined }) => {
+  const eventToInfo = async (input: {
+    event: UpsertEventJobData;
+    taskId: number | undefined;
+    originalItem?: ServerTypes.PrismaTypes.Item | null;
+  }) => {
     const usersTimezone = (await opts.getUsersTimezone()) ?? "Etc/GMT-0"; // this should not be null, but just in case
 
     const isAllDay = !!input.event.start?.date;
@@ -149,7 +153,7 @@ export default definePlugin((opts) => {
       ? opts.dayjs(input.event.end.date).endOf("day")
       : input.event.end?.dateTime
         ? opts.dayjs(input.event.end.dateTime)
-        : scheduledStart.add(1, "millisecond");
+        : scheduledStart.add(input.originalItem?.durationInMinutes ?? 5, "minutes");
     const isOver = scheduledEnd.isBefore(opts.dayjs());
     const scheduledAtDate = scheduledStart.tz(usersTimezone).utc(true).toISOString();
     const isRelevant = input.event.status !== "cancelled" || scheduledEnd.isBefore(opts.dayjs());
@@ -558,7 +562,11 @@ export default definePlugin((opts) => {
           }
 
           const task = item?.tasks[0];
-          const { itemInfo, taskInfo } = await eventToInfo({ event, taskId: task?.id });
+          const { itemInfo, taskInfo } = await eventToInfo({
+            event,
+            taskId: task?.id,
+            originalItem: item,
+          });
 
           if (item) {
             await opts.prisma.item.update({
@@ -571,31 +579,36 @@ export default definePlugin((opts) => {
                     data: { min: itemInfo.min, full: itemInfo.full },
                   },
                 },
-                tasks: {
-                  upsert: {
-                    where: { id: task?.id },
-                    update: {
-                      ...taskInfo.commonBetweenUpdateAndCreate,
-                      pluginDatas: {
-                        update: {
-                          where: { id: task?.pluginDatas[0]?.id },
-                          data: { min: taskInfo.min, full: taskInfo.full },
+                tasks:
+                  // if event was originally in the future and is not relevant anymore, delete the task
+                  opts.dayjs(item.scheduledAt).isAfter(opts.dayjs().endOf("day")) &&
+                  !itemInfo.isRelevant
+                    ? { delete: { id: task?.id } }
+                    : {
+                        upsert: {
+                          where: { id: task?.id },
+                          update: {
+                            ...taskInfo.commonBetweenUpdateAndCreate,
+                            pluginDatas: {
+                              update: {
+                                where: { id: task?.pluginDatas[0]?.id },
+                                data: { min: taskInfo.min, full: taskInfo.full },
+                              },
+                            },
+                          },
+                          create: {
+                            ...taskInfo.commonBetweenUpdateAndCreate,
+                            pluginDatas: {
+                              create: {
+                                pluginSlug: opts.pluginSlug,
+                                originalId: event.id,
+                                min: taskInfo.min,
+                                full: taskInfo.full,
+                              },
+                            },
+                          },
                         },
                       },
-                    },
-                    create: {
-                      ...taskInfo.commonBetweenUpdateAndCreate,
-                      pluginDatas: {
-                        create: {
-                          pluginSlug: opts.pluginSlug,
-                          originalId: event.id,
-                          min: taskInfo.min,
-                          full: taskInfo.full,
-                        },
-                      },
-                    },
-                  },
-                },
               },
             });
           } else {
@@ -822,7 +835,7 @@ export default definePlugin((opts) => {
 
       // update the item and task in Flow
       const taskId = item.tasks[0]?.id;
-      const { itemInfo, taskInfo } = await eventToInfo({ event, taskId });
+      const { itemInfo, taskInfo } = await eventToInfo({ event, taskId, originalItem: item });
       await opts.prisma.item.update({
         where: { id: item.id },
         data: {

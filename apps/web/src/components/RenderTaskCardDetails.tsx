@@ -34,8 +34,8 @@ export const RenderTaskCardDetails = (props: Props) => {
 
   const flowDetails = (
     <>
-      {task?.durationInMinutes && <DurationBadge durationInMinutes={task?.durationInMinutes} />}
-      {task?.item?.scheduledAt && <TimeBadge time={task?.item.scheduledAt} />}
+      {!!task?.durationInMinutes && <DurationBadge durationInMinutes={task?.durationInMinutes} />}
+      {!!task?.item?.scheduledAt && <TimeBadge time={task?.item.scheduledAt} />}
     </>
   );
 
