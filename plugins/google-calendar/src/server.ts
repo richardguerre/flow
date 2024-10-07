@@ -650,11 +650,10 @@ export default definePlugin((opts) => {
           const scheduledEnd = opts.dayjs(itemInfo.scheduledEnd).add(1, "second"); // just to make sure the event is over
           if (scheduledEnd.isBefore(opts.dayjs())) return;
 
-          await opts.pgBoss.sendAfter(
+          await opts.pgBoss.send(
             UPSERT_EVENT_JOB_NAME,
             { ...event },
-            { singletonKey: event.id!, singletonMinutes: 1 },
-            scheduledEnd.toDate(),
+            { startAfter: scheduledEnd.toDate(), singletonKey: event.id!, singletonMinutes: 1 },
           );
           console.log("Scheduled event to be updated after", scheduledEnd.toISOString());
         }
