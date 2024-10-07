@@ -114,8 +114,10 @@ export const pluginPgBossWorkers = async (props?: PluginPgBossWorkersProps) => {
   for (const [pluginSlug, plugin] of Object.entries(plugins)) {
     const handlers =
       plugin.handlePgBossWork?.((name, ...args: any[]) => {
+        const workerName = `${pluginSlug}-${name}`;
+        console.log(`Starting worker \`${workerName}\``);
         return pgBoss.work(
-          `${pluginSlug}-${name}`,
+          workerName,
           // @ts-ignore as the types are too complex but runtime works
           ...args,
         );
