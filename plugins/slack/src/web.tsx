@@ -330,9 +330,10 @@ export default definePlugin((opts) => {
           const today = opts.dayjs();
           const [refreshing, setRefreshing] = React.useState(false);
           const [saveNow, setSaveNow] = React.useState(false);
-          const [channelsData, setChannelsData] = React.useState<GetChannelsData>(
-            props.stepConfig?.defaultChannels ?? [],
-          );
+          const [channelsData, setChannelsData] = React.useState<GetChannelsData>({
+            channels: props.stepConfig?.defaultChannels ?? [],
+            lastCachedAt: opts.dayjs().toISOString(),
+          });
           const { control, handleSubmit, formState, setError, setValue } =
             opts.reactHookForm.useForm<PostToSlack>({
               defaultValues: {
@@ -490,9 +491,10 @@ export default definePlugin((opts) => {
                 },
               });
               const [refreshing, setRefreshing] = React.useState(false);
-              const [channelsData, setChannelsData] = React.useState<GetChannelsData>(
-                props.routineStep?.config?.defaultChannels ?? [],
-              );
+              const [channelsData, setChannelsData] = React.useState<GetChannelsData>({
+                channels: props.routineStep?.config?.defaultChannels ?? [],
+                lastCachedAt: opts.dayjs().toISOString(),
+              });
 
               const [updateRoutineStep, savingTemplate] =
                 opts.relay.useMutation<webUpdateRoutineStepMutation>(graphql`
