@@ -94,7 +94,7 @@ const PLUGINS: Plugin[] = [
     slug: "slack",
     description:
       "Official Slack plugin for Flow, allowing you to post your plan to Slack channels when doing your routines.",
-    installUrl: "https://cdn.jsdelivr.net/gh/richardguerre/flow@1702518/plugins/slack/out",
+    installUrl: "https://cdn.jsdelivr.net/gh/richardguerre/flow@5565245/plugins/slack/out",
     version: "0.1.0",
     authors: [{ name: "Flow", avatarUrl: "FlowIcon.svg" }],
   },
