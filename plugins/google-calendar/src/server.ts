@@ -136,13 +136,10 @@ export default definePlugin((opts) => {
     };
   };
 
-  const eventToInfo = async (input: {
-    event: UpsertEventJobData;
-    taskId: number | undefined;
+  const getEventStartEnd = (input: {
+    event: calendar_v3.Schema$Event;
     originalItem?: ServerTypes.PrismaTypes.Item | null;
   }) => {
-    const usersTimezone = (await opts.getUsersTimezone()) ?? "Etc/GMT-0"; // this should not be null, but just in case
-
     const isAllDay = !!input.event.start?.date;
     const scheduledStart = input.event.start?.date
       ? opts.dayjs(input.event.start.date).startOf("day")
@@ -155,6 +152,17 @@ export default definePlugin((opts) => {
         ? opts.dayjs(input.event.end.dateTime)
         : scheduledStart.add(input.originalItem?.durationInMinutes ?? 5, "minutes");
     const isOver = scheduledEnd.isBefore(opts.dayjs());
+    return { isAllDay, scheduledStart, scheduledEnd, isOver };
+  };
+
+  const eventToInfo = async (input: {
+    event: UpsertEventJobData;
+    taskId: number | undefined;
+    originalItem?: ServerTypes.PrismaTypes.Item | null;
+  }) => {
+    const usersTimezone = (await opts.getUsersTimezone()) ?? "Etc/GMT-0"; // this should not be null, but just in case
+
+    const { isAllDay, scheduledStart, scheduledEnd, isOver } = await getEventStartEnd(input);
     const scheduledAtDate = scheduledStart.tz(usersTimezone).utc(true).toISOString();
     const isRelevant = input.event.status !== "cancelled" || scheduledEnd.isBefore(opts.dayjs());
 
@@ -649,6 +657,10 @@ export default definePlugin((opts) => {
 
           const scheduledEnd = opts.dayjs(itemInfo.scheduledEnd).add(1, "second"); // just to make sure the event is over
           if (scheduledEnd.isBefore(opts.dayjs())) return;
+          // don't schedule events that are more than a month in the future, things can change
+          // and the regular calendar sync job will sync those events
+          const certainPeriod = opts.dayjs().add(1, "month");
+          if (scheduledEnd.isAfter(certainPeriod)) return;
 
           await opts.pgBoss.send(
             UPSERT_EVENT_JOB_NAME,
@@ -687,13 +699,13 @@ export default definePlugin((opts) => {
             "to process from initial sync of calendar",
             jobData.calendarId,
           );
+          const certainPeriod = opts.dayjs().add(1, "month");
           for (const event of events.items ?? []) {
+            const { scheduledStart } = getEventStartEnd({ event, originalItem: null });
+            if (scheduledStart.isAfter(certainPeriod)) continue;
             await opts.pgBoss.send(
               UPSERT_EVENT_JOB_NAME,
-              {
-                ...event,
-                calendarColor: calendar.backgroundColor ?? null,
-              },
+              { ...event, calendarColor: calendar.backgroundColor ?? null },
               { singletonKey: event.id!, singletonMinutes: 1 },
             );
           }
@@ -734,10 +746,7 @@ export default definePlugin((opts) => {
         for (const event of events.items ?? []) {
           await opts.pgBoss.send(
             UPSERT_EVENT_JOB_NAME,
-            {
-              ...event,
-              calendarColor: calendar.backgroundColor ?? null,
-            },
+            { ...event, calendarColor: calendar.backgroundColor ?? null },
             { singletonKey: event.id!, singletonMinutes: 1 },
           );
         }
