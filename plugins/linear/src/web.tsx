@@ -245,6 +245,34 @@ export default definePlugin((opts) => {
     );
   };
 
+  const priorityToBadge: Record<number, React.ReactNode> = {
+    0: null,
+    1: (
+      <div className="bg-orange-200 text-orange-700 flex items-center gap-1 px-1 py-px rounded text-sm">
+        <BsExclamationSquareFill size={14} />
+        Urgent
+      </div>
+    ),
+    2: (
+      <div className="bg-gray-200 text-gray-700 flex items-center gap-1 px-1 py-px rounded text-sm">
+        <BsReception4 size={14} />
+        High
+      </div>
+    ),
+    3: (
+      <div className="bg-gray-200 text-gray-700 flex items-center gap-1 px-1 py-px rounded text-sm">
+        <BsReception2 size={14} />
+        Medium
+      </div>
+    ),
+    4: (
+      <div className="bg-gray-200 text-gray-700 flex items-center gap-1 px-1 py-px rounded text-sm">
+        <BsReception1 size={14} />
+        Low
+      </div>
+    ),
+  };
+
   return {
     name: "Linear",
     settings: {
@@ -358,31 +386,3 @@ export default definePlugin((opts) => {
 });
 
 type MinPath = [keyof LinearIssueItemMin];
-
-const priorityToBadge: Record<number, React.ReactNode> = {
-  0: null,
-  1: (
-    <div className="bg-orange-200 text-orange-700 flex items-center gap-1 px-1 py-px rounded text-sm">
-      <BsExclamationSquareFill size={14} />
-      Urgent
-    </div>
-  ),
-  2: (
-    <div className="bg-gray-200 text-gray-700 flex items-center gap-1 px-1 py-px rounded text-sm">
-      <BsReception4 size={14} />
-      High
-    </div>
-  ),
-  3: (
-    <div className="bg-gray-200 text-gray-700 flex items-center gap-1 px-1 py-px rounded text-sm">
-      <BsReception2 size={14} />
-      Medium
-    </div>
-  ),
-  4: (
-    <div className="bg-gray-200 text-gray-700 flex items-center gap-1 px-1 py-px rounded text-sm">
-      <BsReception1 size={14} />
-      Low
-    </div>
-  ),
-};
