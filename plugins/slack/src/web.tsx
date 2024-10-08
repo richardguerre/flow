@@ -218,12 +218,14 @@ export default definePlugin((opts) => {
 
   const ChannelsPicker = (props: {
     control: Control<{ channels: string[] } & any>;
-    channels: GetChannelsData["channels"];
+    channelsData: GetChannelsData;
     withLabel?: boolean;
+    onRefresh: () => void;
+    refreshing: boolean;
   }) => {
     const channelsMap = React.useMemo(() => {
-      return new Map(props.channels.map((channel) => [channel.id, channel]));
-    }, [props.channels.length]);
+      return new Map(props.channelsData.channels.map((channel) => [channel.id, channel]));
+    }, [props.channelsData.channels.length]);
 
     return (
       <Flow.FormCombobox
@@ -236,10 +238,7 @@ export default definePlugin((opts) => {
           <Flow.ComboboxValue
             placeholder="Select channels..."
             renderValues={(ids) =>
-              props.channels
-                .filter((channel) => ids.includes(channel.id))
-                .map((c) => `#${c.name}`)
-                .join(", ")
+              ids.map((id) => `#${channelsMap.get(id)?.name ?? "unknown"}`).join(", ")
             }
           />
           <BsChevronDown size={14} className="text-foreground-700" />
@@ -247,7 +246,7 @@ export default definePlugin((opts) => {
         <Flow.ComboboxContent
           align="start"
           side="bottom"
-          className="max-h-96 overflow-y-auto"
+          className="max-h-64 overflow-y-auto"
           commandProps={{
             filter: (channelId, search) => {
               // return 1 if the channel matches the search, 0 otherwise
@@ -256,9 +255,19 @@ export default definePlugin((opts) => {
           }}
         >
           <Flow.ComboboxInput placeholder="Search channels..." />
-          <Flow.ComboboxEmpty>No channel found.</Flow.ComboboxEmpty>
+          <Flow.ComboboxEmpty>
+            <div className="flex flex-col items-center gap-1">
+              <div>Can't find the channel you're looking for?</div>
+              <div className="text-foreground-700 text-sm">
+                Last refreshed {opts.dayjs(props.channelsData.lastCachedAt).fromNow()}
+              </div>
+              <Flow.Button sm secondary onClick={props.onRefresh} loading={props.refreshing}>
+                Refresh
+              </Flow.Button>
+            </div>
+          </Flow.ComboboxEmpty>
           <Flow.ComboboxGroup>
-            {props.channels.map((channel) => (
+            {props.channelsData.channels.map((channel) => (
               <Flow.ComboboxItem
                 key={channel.id}
                 value={channel.id}
@@ -319,15 +328,16 @@ export default definePlugin((opts) => {
           const template = props.templates[0] as (typeof props.templates)[0] | undefined;
           const editorRef = React.useRef<Editor>(null);
           const today = opts.dayjs();
+          const [refreshing, setRefreshing] = React.useState(false);
           const [saveNow, setSaveNow] = React.useState(false);
-          const [channels, setChannels] = React.useState<GetChannelsData["channels"]>(
+          const [channelsData, setChannelsData] = React.useState<GetChannelsData>(
             props.stepConfig?.defaultChannels ?? [],
           );
           const { control, handleSubmit, formState, setError, setValue } =
             opts.reactHookForm.useForm<PostToSlack>({
               defaultValues: {
                 message: template?.rendered ?? "",
-                channels: channels.map((channel) => channel.id),
+                channels: channelsData.channels.map((channel) => channel.id),
               },
             });
           const [postMessage, postingMessages] = opts.operations.useMutation<
@@ -336,7 +346,7 @@ export default definePlugin((opts) => {
           >("postMessage", { throwOnError: true });
 
           const onSubmit = async (values: PostToSlack) => {
-            const channelsToPost = channels.filter((channel) =>
+            const channelsToPost = channelsData.channels.filter((channel) =>
               values.channels.includes(channel.id),
             );
             if (!channelsToPost.length) {
@@ -388,11 +398,18 @@ export default definePlugin((opts) => {
             props.onNext();
           };
 
-          opts.hooks.useAsyncEffect(async () => {
-            const res = await opts.operations.query<GetChannelsData>({
+          const getAndSetChannels = async (input?: GetChannelsInput) => {
+            setRefreshing(!!input?.forceRefresh);
+            const res = await opts.operations.query<GetChannelsInput, GetChannelsData>({
               operationName: "getChannels",
+              input,
             });
-            setChannels((prev) => res?.data?.channels ?? prev);
+            setChannelsData((prev) => res?.data ?? prev);
+            setRefreshing(false);
+          };
+
+          opts.hooks.useAsyncEffect(async () => {
+            await getAndSetChannels();
           }, []);
 
           React.useEffect(() => {
@@ -433,7 +450,12 @@ export default definePlugin((opts) => {
                   <div className="text-negative-600 text-sm">{formState.errors.root.message}</div>
                 )}
                 <div className="flex justify-between items-center">
-                  <ChannelsPicker control={control} channels={channels} />
+                  <ChannelsPicker
+                    control={control}
+                    channelsData={channelsData}
+                    onRefresh={() => getAndSetChannels({ forceRefresh: true })}
+                    refreshing={refreshing}
+                  />
                   <div className="flex items-center gap-2">
                     <props.BackButton type="button" />
                     <props.NextButton
@@ -467,7 +489,8 @@ export default definePlugin((opts) => {
                     ) ?? [],
                 },
               });
-              const [channels, setChannels] = React.useState<GetChannelsData["channels"]>(
+              const [refreshing, setRefreshing] = React.useState(false);
+              const [channelsData, setChannelsData] = React.useState<GetChannelsData>(
                 props.routineStep?.config?.defaultChannels ?? [],
               );
 
@@ -491,7 +514,7 @@ export default definePlugin((opts) => {
                 `);
 
               const onSubmit = async (values: PostToSlackSettings) => {
-                const defaultChannels = channels.filter((channel) =>
+                const defaultChannels = channelsData.channels.filter((channel) =>
                   values.channels.includes(channel.id),
                 );
                 updateRoutineStep({
@@ -510,11 +533,18 @@ export default definePlugin((opts) => {
                 });
               };
 
-              opts.hooks.useAsyncEffect(async () => {
-                const res = await opts.operations.query<GetChannelsData>({
+              const getAndSetChannels = async (input?: GetChannelsInput) => {
+                setRefreshing(!!input?.forceRefresh);
+                const res = await opts.operations.query<GetChannelsInput, GetChannelsData>({
                   operationName: "getChannels",
+                  input,
                 });
-                setChannels((prev) => res?.data?.channels ?? prev);
+                setChannelsData((prev) => res?.data ?? prev);
+                setRefreshing(false);
+              };
+
+              opts.hooks.useAsyncEffect(async () => {
+                await getAndSetChannels();
               }, []);
 
               return (
@@ -545,7 +575,12 @@ export default definePlugin((opts) => {
                     <div className="text-foreground-700 text-sm">
                       Which channels should be selected by default when posting to Slack?
                     </div>
-                    <ChannelsPicker control={control} channels={channels} />
+                    <ChannelsPicker
+                      control={control}
+                      channelsData={channelsData}
+                      onRefresh={() => getAndSetChannels({ forceRefresh: true })}
+                      refreshing={refreshing}
+                    />
                   </div>
                   <div className="flex items-center gap-2 self-end">
                     <Flow.Button type="button" secondary onClick={props.onCancel}>

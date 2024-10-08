@@ -1,4 +1,4 @@
-import { forwardRef, ElementRef, ComponentPropsWithoutRef, HTMLAttributes } from "react";
+import { forwardRef, ElementRef, ComponentPropsWithoutRef, HTMLAttributes, useEffect } from "react";
 import { DialogProps } from "@radix-ui/react-dialog";
 import { BsSearch } from "@flowdev/icons";
 import { Command as CommandPrimitive } from "cmdk";
@@ -63,10 +63,20 @@ export const CommandList = forwardRef<
 
 export const CommandEmpty = forwardRef<
   ElementRef<typeof CommandPrimitive.Empty>,
-  ComponentPropsWithoutRef<typeof CommandPrimitive.Empty>
->((props, ref) => (
-  <CommandPrimitive.Empty ref={ref} className="py-6 text-center text-sm" {...props} />
-));
+  ComponentPropsWithoutRef<typeof CommandPrimitive.Empty> & { onEmpty?: () => void }
+>((props, ref) => {
+  return (
+    <CommandPrimitive.Empty ref={ref} className="py-6 text-center text-sm" {...props}>
+      {props.children}
+      <OnEmpty onEmpty={props.onEmpty} />
+    </CommandPrimitive.Empty>
+  );
+});
+type OnEmptyProps = { onEmpty?: () => void };
+const OnEmpty = (props: OnEmptyProps) => {
+  useEffect(() => props.onEmpty?.(), []);
+  return <></>;
+};
 
 export const CommandGroup = forwardRef<
   ElementRef<typeof CommandPrimitive.Group>,

@@ -73,9 +73,9 @@ export const getPluginOperationUtils = (pluginSlug: string) => ({
    *
    * If you need to mutate data, use `mutation` instead.
    */
-  query: async <T extends JsonValue>(
-    params: PluginOperationParams,
-  ): Promise<PluginOperationsReturn<T>> => {
+  query: async <TInput extends JsonValue, TData extends JsonValue>(
+    params: PluginOperationParams<TInput>,
+  ): Promise<PluginOperationsReturn<TData>> => {
     try {
       const query = await fetchQuery<pluginOperationQuery>(environment, queryDoc, {
         input: {
@@ -88,7 +88,7 @@ export const getPluginOperationUtils = (pluginSlug: string) => ({
       if (!query?.pluginOperation) return null;
       return {
         id: query.pluginOperation.id,
-        data: query.pluginOperation.data as T,
+        data: query.pluginOperation.data as TData,
       };
     } catch (e) {
       console.error(e);
@@ -153,9 +153,9 @@ export const getPluginOperationUtils = (pluginSlug: string) => ({
   },
 });
 
-type PluginOperationParams = {
+type PluginOperationParams<TInput = JsonValue> = {
   operationName: string;
-  input?: JsonValue;
+  input?: TInput;
 };
 
 type PluginOperationsReturn<T extends JsonValue = JsonValue> = {

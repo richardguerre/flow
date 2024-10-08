@@ -20,8 +20,11 @@ declare global {
   type WorkspacesData = {
     workspaces: Workspace[];
   };
-  type GetChannelsInput = {};
+  type GetChannelsInput = {
+    forceRefresh?: boolean;
+  };
   type GetChannelsData = {
+    lastCachedAt: string;
     channels: {
       id: string;
       name: string;

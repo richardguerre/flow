@@ -2,9 +2,11 @@ import { definePlugin, type ServerTypes } from "@flowdev/plugin/server";
 import { POST_TO_SLACK, getDefaultPlanYourDayTemplate } from "./common";
 
 const ACCOUNT_TOKENS_STORE_KEY = "account-tokens";
+const CACHED_CHANNELS = "slack-cached-channels";
 
 export default definePlugin((opts) => {
   const UPDATE_SLACK_MESSAGES_JOB_NAME = "update-slack-messages";
+  const UPDATE_CACHED_CHANNELS_JOB_NAME = "update-cached-channels";
 
   const getTokensFromStore = async () => {
     const accountsTokensItem =
@@ -66,6 +68,60 @@ export default definePlugin((opts) => {
     return messages;
   };
 
+  const getSlackChannels = async (props?: {}) => {
+    const tokenItem = await getTokensFromStore().catch(() => null);
+
+    const channels: GetChannelsData["channels"] = [];
+    for (const teamId in tokenItem) {
+      const tokenInfo = tokenItem[teamId];
+      const token = tokenInfo.access_token ?? tokenInfo.authed_user.access_token;
+
+      const channelsReq = await fetch(
+        `https://slack.com/api/conversations.list?exclude_archived=true&limit=999`,
+        { headers: { Authorization: `Bearer ${token}` } },
+      )
+        .then(async (res) => (await res.json()) as ConversationsListReq)
+        .catch(() => null);
+      if (!channelsReq?.ok) continue;
+      channels.push(
+        ...(channelsReq.channels.map((channel) => ({
+          id: channel.id,
+          name: channel.name,
+          team: {
+            id: tokenInfo.team.id,
+            name: tokenInfo.team.name,
+            icon: tokenInfo.team.icon.image_44,
+          },
+        })) as GetChannelsData["channels"]),
+      );
+
+      let cursor = channelsReq.response_metadata?.next_cursor;
+      while (cursor) {
+        const nextChannelsReq = await fetch(
+          `https://slack.com/api/conversations.list?exclude_archived=true&limit=999&cursor=${cursor}`,
+          { headers: { Authorization: `Bearer ${token}` } },
+        )
+          .then(async (req) => (await req.json()) as ConversationsListReq)
+          .catch(() => null);
+        if (!nextChannelsReq?.ok) break;
+        channels.push(
+          ...(nextChannelsReq.channels.map((channel) => ({
+            id: channel.id,
+            name: channel.name,
+            team: {
+              id: tokenInfo.team.id,
+              name: tokenInfo.team.name,
+              icon: tokenInfo.team.icon.image_44,
+            },
+          })) as GetChannelsData["channels"]),
+        );
+        cursor = nextChannelsReq.response_metadata?.next_cursor;
+      }
+    }
+
+    return channels;
+  };
+
   return {
     onRequest: async (req) => {
       if (req.path === "/auth") {
@@ -104,6 +160,9 @@ export default definePlugin((opts) => {
           [tokensData.team.id]: tokensData,
         });
 
+        // get channels the user has access to in the team/workspace
+        await opts.pgBoss.send(UPDATE_CACHED_CHANNELS_JOB_NAME, {});
+
         return new Response(); // return 200
       }
 
@@ -127,34 +186,30 @@ export default definePlugin((opts) => {
           } as WorkspacesData,
         };
       },
-      getChannels: async (_input: GetChannelsInput) => {
-        const tokenItem = await getTokensFromStore().catch(() => null);
+      getChannels: async (input: GetChannelsInput) => {
+        const cachedChannelsItem = await opts.store
+          .getPluginItem<CachedChannels>(CACHED_CHANNELS)
+          .then((i) => i?.value)
+          .catch(() => null);
+        const cachedRecently = opts
+          .dayjs(cachedChannelsItem?.updatedAt)
+          .isAfter(opts.dayjs().subtract(1, "minute"));
 
-        const channels: GetChannelsData["channels"] = [];
-        for (const teamId in tokenItem) {
-          const tokenInfo = tokenItem[teamId];
-
-          const channelsReq = await fetch(`https://slack.com/api/conversations.list`, {
-            headers: { Authorization: `Bearer ${tokenInfo.authed_user.access_token}` },
-          })
-            .then(async (res) => (await res.json()) as ChannelsReq)
-            .catch(() => null);
-          if (!channelsReq?.ok) continue;
-          channels.push(
-            ...(channelsReq.channels.map((channel) => ({
-              id: channel.id,
-              name: channel.name,
-              team: {
-                id: tokenInfo.team.id,
-                name: tokenInfo.team.name,
-                icon: tokenInfo.team.icon.image_44,
-              },
-            })) as GetChannelsData["channels"]),
-          );
+        if (input.forceRefresh && !cachedRecently) {
+          const channels = await getSlackChannels();
+          const updatedAt = opts.dayjs().toISOString();
+          await opts.store.setSecretItem<CachedChannels>(CACHED_CHANNELS, {
+            updatedAt,
+            channels,
+          });
+          return { data: { channels, lastCachedAt: updatedAt } satisfies GetChannelsData };
         }
 
         return {
-          data: { channels } as GetChannelsData,
+          data: {
+            channels: cachedChannelsItem?.channels ?? [],
+            lastCachedAt: cachedChannelsItem?.updatedAt ?? opts.dayjs().toISOString(),
+          } satisfies GetChannelsData,
         };
       },
       postMessage: async (input: PostMessageInput) => {
@@ -408,6 +463,13 @@ export default definePlugin((opts) => {
           console.log("✅ Slack message update successful");
         }
       }),
+      work(UPDATE_CACHED_CHANNELS_JOB_NAME, async (_job) => {
+        const channels = await getSlackChannels();
+        await opts.store.setSecretItem<CachedChannels>(CACHED_CHANNELS, {
+          updatedAt: opts.dayjs().toISOString(),
+          channels,
+        });
+      }),
     ],
   };
 });
@@ -522,7 +584,7 @@ type TeamInfoReq = {
   };
 };
 
-type ChannelsReq = {
+type ConversationsListReq = {
   ok: boolean;
   channels: {
     id: string;
@@ -559,8 +621,8 @@ type ChannelsReq = {
     num_members?: number;
     locale?: string;
   }[];
-  response_metadata: {
-    next_cursor: string;
+  response_metadata?: {
+    next_cursor?: string;
   };
 };
 
@@ -653,6 +715,7 @@ type ChatUpdateReq =
       error: string;
     };
 
-`
-<p class="mb-2">Plan for today</p><ul class="list-disc ml-5 mb-2"><li class="!*:mb-0"><p class="mb-2"><slack-status data-task-id="Task_9"></slack-status> New task</p></li><li class="!*:mb-0"><p class="mb-2"><slack-status data-task-id="Task_6"></slack-status> Task 6 which is scheduled for tomorrow</p></li><li class="!*:mb-0"><p class="mb-2"><slack-status data-task-id="Task_3"></slack-status> Make a new friend</p></li><li class="!*:mb-0"><p class="mb-2"><slack-future-tasks filter="{}">    <li>{{slack-status}} {{title}}</li></slack-future-tasks></p></li></ul><slack-message data-team-id="T07KTQ7M30R" data-channel-id="C07KF4MQJCS" data-ts="1727420798.133199"></slack-message>
-`;
+type CachedChannels = {
+  updatedAt: string;
+  channels: GetChannelsData["channels"];
+};

@@ -138,7 +138,7 @@ export default definePlugin((opts) => {
     opts.hooks.useAsyncEffect(async () => {
       setLoading(true);
       const res = await opts.operations
-        .query<ViewsOperationData>({
+        .query<{}, ViewsOperationData>({
           operationName: "views",
         })
         .finally(() => setLoading(false));
