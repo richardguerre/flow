@@ -191,11 +191,12 @@ export default definePlugin((opts) => {
           .getPluginItem<CachedChannels>(CACHED_CHANNELS)
           .then((i) => i?.value)
           .catch(() => null);
-        const cachedRecently = opts
-          .dayjs(cachedChannelsItem?.updatedAt)
-          .isAfter(opts.dayjs().subtract(1, "minute"));
+        const cachedRecently =
+          !!cachedChannelsItem &&
+          opts.dayjs(cachedChannelsItem.updatedAt).isAfter(opts.dayjs().subtract(1, "minute"));
 
         if (input.forceRefresh && !cachedRecently) {
+          console.log("[slack] refreshing channels");
           const channels = await getSlackChannels();
           const updatedAt = opts.dayjs().toISOString();
           await opts.store.setSecretItem<CachedChannels>(CACHED_CHANNELS, {
@@ -205,6 +206,7 @@ export default definePlugin((opts) => {
           return { data: { channels, lastCachedAt: updatedAt } satisfies GetChannelsData };
         }
 
+        console.log(`[slack] using cached channels (cached recently: ${cachedRecently})`);
         return {
           data: {
             channels: cachedChannelsItem?.channels ?? [],

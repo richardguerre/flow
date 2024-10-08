@@ -14,6 +14,7 @@ export default definePlugin((opts) => {
     const workspacesQuery = opts.operations.useLazyQuery<WorkspacesData>({
       operationName: "workspaces",
     });
+    const [refreshing, setRefreshing] = React.useState(false);
 
     if (!workspacesQuery?.data?.workspaces.length) {
       return (
@@ -23,17 +24,34 @@ export default definePlugin((opts) => {
       );
     }
 
+    const handleRefreshChannels = async () => {
+      setRefreshing(true);
+      await opts.operations.query<GetChannelsInput, GetChannelsData>({
+        operationName: "getChannels",
+        input: { forceRefresh: true },
+      });
+      setRefreshing(false);
+    };
+
     return (
-      <div className="flex flex-col gap-2">
-        {workspacesQuery?.data?.workspaces.map((workspace) => (
-          <div className="flex items-center gap-2 rounded max-w-2xl bg-background-50 shadow px-4 py-4">
-            <img src={workspace.teamIcon} className="h-5 w-5 shrink-0" />
-            <span className="font-semibold">{workspace.teamName}</span>
-            <span className="text-sm text-foreground-700">
-              Connected {opts.dayjs(workspace.connectedAt).fromNow()}
-            </span>
-          </div>
-        ))}
+      <div className="flex flex-col gap-4">
+        <div className="flex flex-col gap-2">
+          {workspacesQuery?.data?.workspaces.map((workspace) => (
+            <div className="flex items-center gap-2 rounded max-w-2xl bg-background-50 shadow px-4 py-4">
+              <img src={workspace.teamIcon} className="h-5 w-5 shrink-0" />
+              <span className="font-semibold">{workspace.teamName}</span>
+              <span className="text-sm text-foreground-700">
+                Connected {opts.dayjs(workspace.connectedAt).fromNow()}
+              </span>
+            </div>
+          ))}
+        </div>
+        <div className="flex flex-col gap-2 items-start">
+          <div className="text-foreground-700">Not finding the channels you're looking for?</div>
+          <Flow.Button onClick={handleRefreshChannels} loading={refreshing}>
+            Refresh channels
+          </Flow.Button>
+        </div>
       </div>
     );
   };
@@ -246,7 +264,7 @@ export default definePlugin((opts) => {
         <Flow.ComboboxContent
           align="start"
           side="bottom"
-          className="max-h-64 overflow-y-auto"
+          className="max-h-64 overflow-y-auto w-68"
           commandProps={{
             filter: (channelId, search) => {
               // return 1 if the channel matches the search, 0 otherwise
@@ -257,7 +275,7 @@ export default definePlugin((opts) => {
           <Flow.ComboboxInput placeholder="Search channels..." />
           <Flow.ComboboxEmpty>
             <div className="flex flex-col items-center gap-1">
-              <div>Can't find the channel you're looking for?</div>
+              <div>Can't find a channel?</div>
               <div className="text-foreground-700 text-sm">
                 Last refreshed {opts.dayjs(props.channelsData.lastCachedAt).fromNow()}
               </div>
