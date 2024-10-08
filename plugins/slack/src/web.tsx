@@ -237,7 +237,6 @@ export default definePlugin((opts) => {
   const ChannelsPicker = (props: {
     control: Control<{ channels: string[] } & any>;
     channelsData: GetChannelsData;
-    withLabel?: boolean;
     onRefresh: () => void;
     refreshing: boolean;
   }) => {
@@ -246,12 +245,7 @@ export default definePlugin((opts) => {
     }, [props.channelsData.channels.length]);
 
     return (
-      <Flow.FormCombobox
-        name="channels"
-        control={props.control}
-        multiselect
-        label={props.withLabel ? "Default channels" : undefined}
-      >
+      <Flow.FormCombobox name="channels" control={props.control} multiselect>
         <Flow.ComboboxTrigger className="flex items-center gap-2 self-start px-3 py-1.5 rounded-md bg-background-50 ring-primary-200 text-foreground-900 hover:ring-primary-300 disabled:bg-background-300/50 focus:ring-primary-500 focus:outline-none ring-2">
           <Flow.ComboboxValue
             placeholder="Select channels..."
@@ -264,7 +258,7 @@ export default definePlugin((opts) => {
         <Flow.ComboboxContent
           align="start"
           side="bottom"
-          className="max-h-64 overflow-y-auto w-68"
+          className="w-68"
           commandProps={{
             filter: (channelId, search) => {
               // return 1 if the channel matches the search, 0 otherwise
@@ -284,7 +278,7 @@ export default definePlugin((opts) => {
               </Flow.Button>
             </div>
           </Flow.ComboboxEmpty>
-          <Flow.ComboboxGroup>
+          <Flow.ComboboxGroup className="max-h-64 overflow-auto">
             {props.channelsData.channels.map((channel) => (
               <Flow.ComboboxItem
                 key={channel.id}

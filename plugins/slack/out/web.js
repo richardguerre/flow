@@ -726,85 +726,85 @@ const ze = ye((e) => {
     renderHTML: (l) => ["slack-message", e.tiptap.mergeAttributes(l.HTMLAttributes)]
   }), G = (l) => {
     const c = t.useMemo(() => new Map(l.channelsData.channels.map((s) => [s.id, s])), [l.channelsData.channels.length]);
-    return /* @__PURE__ */ t.createElement(r.FormCombobox, { name: "channels", control: l.control, multiselect: !0, label: l.withLabel ? "Default channels" : void 0, __self: void 0, __source: {
+    return /* @__PURE__ */ t.createElement(r.FormCombobox, { name: "channels", control: l.control, multiselect: !0, __self: void 0, __source: {
       fileName: n,
-      lineNumber: 249,
+      lineNumber: 248,
       columnNumber: 7
     } }, /* @__PURE__ */ t.createElement(r.ComboboxTrigger, { className: "flex items-center gap-2 self-start px-3 py-1.5 rounded-md bg-background-50 ring-primary-200 text-foreground-900 hover:ring-primary-300 disabled:bg-background-300/50 focus:ring-primary-500 focus:outline-none ring-2", __self: void 0, __source: {
       fileName: n,
-      lineNumber: 255,
+      lineNumber: 249,
       columnNumber: 9
     } }, /* @__PURE__ */ t.createElement(r.ComboboxValue, { placeholder: "Select channels...", renderValues: (s) => s.map((_) => {
       var v;
       return `#${((v = c.get(_)) == null ? void 0 : v.name) ?? "unknown"}`;
     }).join(", "), __self: void 0, __source: {
       fileName: n,
-      lineNumber: 256,
+      lineNumber: 250,
       columnNumber: 11
     } }), /* @__PURE__ */ t.createElement(Ue, { size: 14, className: "text-foreground-700", __self: void 0, __source: {
       fileName: n,
-      lineNumber: 262,
+      lineNumber: 256,
       columnNumber: 11
-    } })), /* @__PURE__ */ t.createElement(r.ComboboxContent, { align: "start", side: "bottom", className: "max-h-64 overflow-y-auto w-68", commandProps: {
+    } })), /* @__PURE__ */ t.createElement(r.ComboboxContent, { align: "start", side: "bottom", className: "w-68", commandProps: {
       filter: (s, _) => {
         var v;
         return (v = c.get(s)) != null && v.name.includes(_) ? 1 : 0;
       }
     }, __self: void 0, __source: {
       fileName: n,
-      lineNumber: 264,
+      lineNumber: 258,
       columnNumber: 9
     } }, /* @__PURE__ */ t.createElement(r.ComboboxInput, { placeholder: "Search channels...", __self: void 0, __source: {
       fileName: n,
-      lineNumber: 275,
+      lineNumber: 269,
       columnNumber: 11
     } }), /* @__PURE__ */ t.createElement(r.ComboboxEmpty, { __self: void 0, __source: {
       fileName: n,
-      lineNumber: 276,
+      lineNumber: 270,
       columnNumber: 11
     } }, /* @__PURE__ */ t.createElement("div", { className: "flex flex-col items-center gap-1", __self: void 0, __source: {
       fileName: n,
-      lineNumber: 277,
+      lineNumber: 271,
       columnNumber: 13
     } }, /* @__PURE__ */ t.createElement("div", { __self: void 0, __source: {
       fileName: n,
-      lineNumber: 278,
+      lineNumber: 272,
       columnNumber: 15
     } }, "Can't find a channel?"), /* @__PURE__ */ t.createElement("div", { className: "text-foreground-700 text-sm", __self: void 0, __source: {
       fileName: n,
-      lineNumber: 279,
+      lineNumber: 273,
       columnNumber: 15
     } }, "Last refreshed ", e.dayjs(l.channelsData.lastCachedAt).fromNow()), /* @__PURE__ */ t.createElement(r.Button, { sm: !0, secondary: !0, onClick: l.onRefresh, loading: l.refreshing, __self: void 0, __source: {
       fileName: n,
-      lineNumber: 282,
+      lineNumber: 276,
       columnNumber: 15
-    } }, "Refresh"))), /* @__PURE__ */ t.createElement(r.ComboboxGroup, { __self: void 0, __source: {
+    } }, "Refresh"))), /* @__PURE__ */ t.createElement(r.ComboboxGroup, { className: "max-h-64 overflow-auto", __self: void 0, __source: {
       fileName: n,
-      lineNumber: 287,
+      lineNumber: 281,
       columnNumber: 11
     } }, l.channelsData.channels.map((s) => /* @__PURE__ */ t.createElement(r.ComboboxItem, { key: s.id, value: s.id, className: "flex items-center justify-between gap-2", __self: void 0, __source: {
       fileName: n,
-      lineNumber: 289,
+      lineNumber: 283,
       columnNumber: 15
     } }, /* @__PURE__ */ t.createElement("div", { className: "flex items-center gap-2", __self: void 0, __source: {
       fileName: n,
-      lineNumber: 294,
+      lineNumber: 288,
       columnNumber: 17
     } }, /* @__PURE__ */ t.createElement("img", { src: s.team.icon, className: "h-5 w-5 shrink-0 rounded", __self: void 0, __source: {
       fileName: n,
-      lineNumber: 295,
+      lineNumber: 289,
       columnNumber: 19
     } }), /* @__PURE__ */ t.createElement("span", { className: "max-w-48 truncate", __self: void 0, __source: {
       fileName: n,
-      lineNumber: 296,
+      lineNumber: 290,
       columnNumber: 19
     } }, "#", s.name)), /* @__PURE__ */ t.createElement(r.ComboboxSelected, { className: "ml-2 h-4 w-4 opacity-0", selectedClassName: "opacity-100", __self: void 0, __source: {
       fileName: n,
-      lineNumber: 298,
+      lineNumber: 292,
       columnNumber: 17
     } }, /* @__PURE__ */ t.createElement(Be, { size: 20, __self: void 0, __source: {
       fileName: n,
-      lineNumber: 302,
+      lineNumber: 296,
       columnNumber: 19
     } })))))));
   };
@@ -816,15 +816,15 @@ const ze = ye((e) => {
         type: "custom",
         render: () => /* @__PURE__ */ t.createElement("div", { className: "flex flex-col gap-2", __self: void 0, __source: {
           fileName: n,
-          lineNumber: 320,
+          lineNumber: 314,
           columnNumber: 13
         } }, /* @__PURE__ */ t.createElement("a", { href: `${e.serverOrigin}/api/plugin/${e.pluginSlug}/auth`, __self: void 0, __source: {
           fileName: n,
-          lineNumber: 321,
+          lineNumber: 315,
           columnNumber: 15
         } }, /* @__PURE__ */ t.createElement(r.Button, { __self: void 0, __source: {
           fileName: n,
-          lineNumber: 322,
+          lineNumber: 316,
           columnNumber: 17
         } }, "Connect an account")), /* @__PURE__ */ t.createElement(r.ErrorBoundary, { fallbackRender: ({
           error: l
@@ -832,20 +832,20 @@ const ze = ye((e) => {
           var c, s, _;
           return ((_ = (s = (c = l.cause) == null ? void 0 : c[0]) == null ? void 0 : s.extensions) == null ? void 0 : _.code) === "NOT_AUTHENTICATED" ? /* @__PURE__ */ t.createElement(t.Fragment, null) : /* @__PURE__ */ t.createElement("p", { className: "text-sm text-negative-600", __self: void 0, __source: {
             fileName: n,
-            lineNumber: 329,
+            lineNumber: 323,
             columnNumber: 26
           } }, l.message);
         }, __self: void 0, __source: {
           fileName: n,
-          lineNumber: 324,
+          lineNumber: 318,
           columnNumber: 15
         } }, /* @__PURE__ */ t.createElement(t.Suspense, { fallback: "Loading connected accounts...", __self: void 0, __source: {
           fileName: n,
-          lineNumber: 332,
+          lineNumber: 326,
           columnNumber: 17
         } }, /* @__PURE__ */ t.createElement(a, { __self: void 0, __source: {
           fileName: n,
-          lineNumber: 333,
+          lineNumber: 327,
           columnNumber: 19
         } }))))
       }
@@ -934,15 +934,15 @@ const ze = ye((e) => {
             }
           }, [s.current]), /* @__PURE__ */ t.createElement("div", { className: "bg-background-100 w-full", __self: void 0, __source: {
             fileName: n,
-            lineNumber: 442,
+            lineNumber: 436,
             columnNumber: 13
           } }, /* @__PURE__ */ t.createElement("form", { onSubmit: A(b), className: "flex flex-col gap-4 mx-auto max-w-2xl pt-48 min-h-screen", __self: void 0, __source: {
             fileName: n,
-            lineNumber: 443,
+            lineNumber: 437,
             columnNumber: 15
           } }, /* @__PURE__ */ t.createElement("div", { className: "font-semibold text-4xl", __self: void 0, __source: {
             fileName: n,
-            lineNumber: 447,
+            lineNumber: 441,
             columnNumber: 17
           } }, "Post to Slack"), /* @__PURE__ */ t.createElement(e.reactHookForm.Controller, { name: "message", control: j, render: ({
             field: p
@@ -952,38 +952,38 @@ const ze = ye((e) => {
             console.log(k), p.onChange(k);
           }, onBlur: p.onBlur, saveNow: y, onSaveEnd: w, className: "min-h-[40vh]", __self: void 0, __source: {
             fileName: n,
-            lineNumber: 452,
+            lineNumber: 446,
             columnNumber: 21
           } }), __self: void 0, __source: {
             fileName: n,
-            lineNumber: 448,
+            lineNumber: 442,
             columnNumber: 17
           } }), O.errors.root && /* @__PURE__ */ t.createElement("div", { className: "text-negative-600 text-sm", __self: void 0, __source: {
             fileName: n,
-            lineNumber: 469,
+            lineNumber: 463,
             columnNumber: 19
           } }, O.errors.root.message), /* @__PURE__ */ t.createElement("div", { className: "flex justify-between items-center", __self: void 0, __source: {
             fileName: n,
-            lineNumber: 471,
+            lineNumber: 465,
             columnNumber: 17
           } }, /* @__PURE__ */ t.createElement(G, { control: j, channelsData: H, onRefresh: () => E({
             forceRefresh: !0
           }), refreshing: v, __self: void 0, __source: {
             fileName: n,
-            lineNumber: 472,
+            lineNumber: 466,
             columnNumber: 19
           } }), /* @__PURE__ */ t.createElement("div", { className: "flex items-center gap-2", __self: void 0, __source: {
             fileName: n,
-            lineNumber: 478,
+            lineNumber: 472,
             columnNumber: 19
           } }, /* @__PURE__ */ t.createElement(l.BackButton, { type: "button", __self: void 0, __source: {
             fileName: n,
-            lineNumber: 479,
+            lineNumber: 473,
             columnNumber: 21
           } }), /* @__PURE__ */ t.createElement(l.NextButton, { type: "submit", loading: D, onClick: () => {
           }, __self: void 0, __source: {
             fileName: n,
-            lineNumber: 480,
+            lineNumber: 474,
             columnNumber: 21
           } })))));
         },
@@ -1037,63 +1037,63 @@ const ze = ye((e) => {
               await A();
             }, []), /* @__PURE__ */ t.createElement("form", { onSubmit: _(j), className: "flex flex-col gap-4", __self: void 0, __source: {
               fileName: n,
-              lineNumber: 571,
+              lineNumber: 565,
               columnNumber: 17
             } }, /* @__PURE__ */ t.createElement("div", { className: "flex flex-col gap-1", __self: void 0, __source: {
               fileName: n,
-              lineNumber: 572,
+              lineNumber: 566,
               columnNumber: 19
             } }, /* @__PURE__ */ t.createElement("div", { className: "text-foreground-900 text-base font-medium", __self: void 0, __source: {
               fileName: n,
-              lineNumber: 573,
+              lineNumber: 567,
               columnNumber: 21
             } }, "Template"), /* @__PURE__ */ t.createElement("div", { className: "text-foreground-700 text-sm", __self: void 0, __source: {
               fileName: n,
-              lineNumber: 574,
+              lineNumber: 568,
               columnNumber: 21
             } }, "Write the template message for the routine in HTML. You can preview it before saving.", /* @__PURE__ */ t.createElement("br", { __self: void 0, __source: {
               fileName: n,
-              lineNumber: 577,
+              lineNumber: 571,
               columnNumber: 23
             } }), "Don't worry, you can edit the message each time you do the routine."), /* @__PURE__ */ t.createElement(e.reactHookForm.Controller, { name: "template", control: s, render: ({
               field: b
             }) => /* @__PURE__ */ t.createElement(r.TemplateEditor, { initialTemplate: b.value, onChange: b.onChange, __self: void 0, __source: {
               fileName: n,
-              lineNumber: 584,
+              lineNumber: 578,
               columnNumber: 25
             } }), __self: void 0, __source: {
               fileName: n,
-              lineNumber: 580,
+              lineNumber: 574,
               columnNumber: 21
             } })), /* @__PURE__ */ t.createElement("div", { className: "flex flex-col gap-1", __self: void 0, __source: {
               fileName: n,
-              lineNumber: 591,
+              lineNumber: 585,
               columnNumber: 19
             } }, /* @__PURE__ */ t.createElement("div", { className: "text-foreground-900 text-base font-medium", __self: void 0, __source: {
               fileName: n,
-              lineNumber: 592,
+              lineNumber: 586,
               columnNumber: 21
             } }, "Default channels"), /* @__PURE__ */ t.createElement("div", { className: "text-foreground-700 text-sm", __self: void 0, __source: {
               fileName: n,
-              lineNumber: 595,
+              lineNumber: 589,
               columnNumber: 21
             } }, "Which channels should be selected by default when posting to Slack?"), /* @__PURE__ */ t.createElement(G, { control: s, channelsData: y, onRefresh: () => A({
               forceRefresh: !0
             }), refreshing: v, __self: void 0, __source: {
               fileName: n,
-              lineNumber: 598,
+              lineNumber: 592,
               columnNumber: 21
             } })), /* @__PURE__ */ t.createElement("div", { className: "flex items-center gap-2 self-end", __self: void 0, __source: {
               fileName: n,
-              lineNumber: 605,
+              lineNumber: 599,
               columnNumber: 19
             } }, /* @__PURE__ */ t.createElement(r.Button, { type: "button", secondary: !0, onClick: l.onCancel, __self: void 0, __source: {
               fileName: n,
-              lineNumber: 606,
+              lineNumber: 600,
               columnNumber: 21
             } }, "Cancel"), /* @__PURE__ */ t.createElement(r.Button, { type: "submit", loading: z, __self: void 0, __source: {
               fileName: n,
-              lineNumber: 609,
+              lineNumber: 603,
               columnNumber: 21
             } }, "Save")));
           }
