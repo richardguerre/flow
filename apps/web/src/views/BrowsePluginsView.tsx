@@ -84,7 +84,7 @@ const PLUGINS: Plugin[] = [
     slug: "linear",
     description:
       "Official Linear plugin for Flow, allowing you to manage your Linear issues directly from Flow.",
-    installUrl: "https://cdn.jsdelivr.net/gh/richardguerre/flow@c1dc94b/plugins/linear/out",
+    installUrl: "https://cdn.jsdelivr.net/gh/richardguerre/flow@d9e422e/plugins/linear/out",
     version: "0.1.0",
     authors: [{ name: "Flow", avatarUrl: "FlowIcon.svg" }],
   },
