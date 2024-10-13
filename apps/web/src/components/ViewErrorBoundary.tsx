@@ -1,6 +1,6 @@
 import { ErrorBoundary } from "@flowdev/error-boundary";
 import { Button } from "@flowdev/ui/Button";
-import { Link } from "react-router-dom";
+import { Link, useLocation } from "react-router-dom";
 import { LOCAL_STORAGE_USER_TOKEN_KEY } from "../relay/environment";
 
 type Props = {
@@ -8,8 +8,10 @@ type Props = {
 };
 
 export const ViewErrorBoundary = (props: Props) => {
+  const location = useLocation();
   return (
     <ErrorBoundary
+      resetKeys={[location.pathname]}
       fallbackRender={({ error }) => {
         const unauthenticatedError = error.cause?.find(
           (e: any) => e.extensions?.code === "UNAUTHENTICATED",
