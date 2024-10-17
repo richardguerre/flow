@@ -1,6 +1,12 @@
 {
-  "version": "0.1.0",
   "slug": "repeating-tasks",
+  "version": "0.1.0",
+  "name": "Repeating Tasks",
+  "description":
+    "Official Flow plugin that allows creating repeating tasks. It's like a cron job for your tasks.",
+  "iconUrl": "FlowIcon.svg",
+  "authors": [{ "name": "Flow", "avatarUrl": "FlowIcon.svg" }],
+  
   "server": true,
   "web": true
 }

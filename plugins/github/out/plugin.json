@@ -1,6 +1,11 @@
 {
-  "version": "0.1.0",
   "slug": "github",
+  "version": "0.1.0",
+  "name": "GitHub Requested Reviews",
+  "description": "Official GitHub plugin for Flow. It currently only gets your requested reviews and adds them as items in your inbox. More features coming soon.",
+  "iconUrl": "https://cdn-icons-png.flaticon.com/512/25/25231.png",
+  "authors": [{ "name": "Flow", "avatarUrl": "FlowIcon.svg" }],
+
   "server": true,
   "web": true
 }

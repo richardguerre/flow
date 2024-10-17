@@ -1,6 +1,11 @@
 {
-  "version": "0.1.0",
   "slug": "gitstart",
+  "version": "0.1.0",
+  "name": "GitStart",
+  "description": "Official GitStart plugin for Flow.",
+  "iconUrl": "https://gitstart.com/favicon.ico",
+  "authors": [{ "name": "Flow", "avatarUrl": "FlowIcon.svg" }],
+
   "server": true,
   "web": true
 }

@@ -1,6 +1,11 @@
 {
-  "version": "0.1.0",
   "slug": "google-calendar",
+  "version": "0.1.0",
+  "name": "Google Calendar",
+  "description": "Official Google Calendar plugin for Flow.",
+  "iconUrl": "https://ssl.gstatic.com/calendar/images/dynamiclogo_2020q4/calendar_19_2x.png",
+  "authors": [{ "name": "Flow", "avatarUrl": "FlowIcon.svg" }],
+
   "server": true,
   "web": true
 }

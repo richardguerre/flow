@@ -72,7 +72,7 @@ export const getPluginJson = async (opts: { url: string }) => {
   const text = await res.text();
   if (text.startsWith("Couldn't find the requested file")) {
     // error thrown by jsdelivr
-    throw new GraphQLError(`Couldn't find the plugin at "${opts.url}/server.js"`);
+    throw new GraphQLError(`Couldn't find the plugin at "${opts.url}/plugin.json"`);
   }
 
   try {

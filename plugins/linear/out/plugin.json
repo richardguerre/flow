@@ -1,6 +1,12 @@
 {
-  "version": "0.1.0",
   "slug": "linear",
+  "version": "0.1.0",
+  "name": "Linear",
+  "description":
+    "Official Linear plugin for Flow, allowing you to manage your Linear issues directly from Flow.",
+  "iconUrl": "https://linear.app/favicon.ico",
+  "authors": [{ "name": "Flow", "avatarUrl": "FlowIcon.svg" }],
+  
   "server": true,
   "web": true
 }

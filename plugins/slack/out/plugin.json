@@ -1,6 +1,12 @@
 {
-  "version": "0.1.0",
   "slug": "slack",
+  "version": "0.1.0",
+  "name": "Slack",
+  "description":
+    "Official Slack plugin for Flow, allowing you to post your plan to Slack channels when doing your routines.",
+  "iconUrl": "https://slack.com/favicon.ico",
+  "authors": [{ "name": "Flow", "avatarUrl": "FlowIcon.svg" }],
+  
   "server": true,
   "web": true
 }
