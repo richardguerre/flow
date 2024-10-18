@@ -58,6 +58,7 @@ const InboxListItems = (props: {
           tasks: { none: { status: { equals: TODO } } }
         }
         orderBy: { inboxPoints: Desc }
+        first: 30
       ) {
         ...InboxListItems_itemsConnection
       }

@@ -91,7 +91,6 @@ Pass the \`where\` argument to override these defaults.`,
     resolve: (query, _, args) => {
       return prisma.item.findMany({
         ...query,
-        take: undefined, // prevents `query` from overriding `take` and return all items
         where: args.where ?? undefined,
         orderBy: args.orderBy ?? undefined,
       });

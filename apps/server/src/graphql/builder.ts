@@ -100,6 +100,7 @@ export const builder = new SchemaBuilder<{
   smartSubscriptions: {
     subscribe: async ($name, context, callback) => {
       const name = $name as PubSubKeys;
+      console.log("subscribing", name);
       if (!context.subscriptions[name]) context.subscriptions[name] = pubsub.subscribe(name);
       for await (const data of context.subscriptions[name]) {
         callback(undefined, data);
@@ -107,6 +108,7 @@ export const builder = new SchemaBuilder<{
     },
     unsubscribe: ($name, context) => {
       const name = $name as PubSubKeys;
+      console.log("unsubscribing", name);
       context.subscriptions[name]?.return?.();
       delete context.subscriptions[name];
     },
