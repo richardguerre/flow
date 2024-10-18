@@ -11,7 +11,7 @@ export default definePlugin((opts) => {
   const UPSERT_EVENT_JOB_NAME = `upsert-item-from-event`;
   const PROCESS_EVENTS_WEBHOOK_JOB_NAME = `process-events-webhook`;
   const CLEANUP_EVENTS_JOB_NAME = `cleanup-events`;
-  const EVENTS_WEBHOOK_CHANNEL_ID = `flow-${opts.pluginSlug}-events-webhook-2024-05-26-1`; // suffixed with date to avoid collisions with already created channels
+  const EVENTS_WEBHOOK_CHANNEL_ID = `flow-${opts.pluginSlug}-events-webhook-2024-10-18-0`; // suffixed with date to avoid collisions with already created channels
   const crons = [CALENDARS_SYNC_JOB_NAME];
   const jobs = [
     GET_EVENTS_JOB_NAME,
@@ -368,7 +368,10 @@ export default definePlugin((opts) => {
               }
               return res.json() as calendar_v3.Schema$Channel;
             });
-            if (!res) continue;
+            if (!res) {
+              console.log("❌ Failed to set up webhook for calendar", calendarId, webhookAddress);
+              continue;
+            }
             console.log("✔ Set up webhook for calendar", calendarId, webhookAddress);
 
             // if no default calendar is set, set it to the first calendar
