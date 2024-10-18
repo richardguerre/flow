@@ -528,6 +528,7 @@ export default definePlugin((opts) => {
         // process 5 events at a time to go a little faster (processing 100s at a time might consume too much memory as Google Calendar events can be quite large, especially if it includes conference data)
         for (const job of jobs) {
           const event = job.data as UpsertEventJobData;
+          console.log(`- Upserting event ${event.summary}`);
           const item = await opts.prisma.item.findFirst({
             where: {
               pluginDatas: { some: { originalId: event.id, pluginSlug: opts.pluginSlug } },
@@ -683,23 +684,24 @@ export default definePlugin((opts) => {
             { headers: { Authorization: `Bearer ${tokens.access_token}` } },
           ).then((res) => res.json() as calendar_v3.Schema$CalendarListEntry);
 
+          const from = opts.dayjs().startOf("day").toISOString();
+          const to = opts
+            .dayjs()
+            .add(jobData.days ?? 7, "day")
+            .toISOString();
+          console.log(`Getting events for calendar ${jobData.calendarId}, from ${from} to ${to}`);
           const events = await fetch(
             `https://www.googleapis.com/calendar/v3/calendars/${
               jobData.calendarId
-            }/events?timeMin=${encodeURIComponent(
-              opts.dayjs().startOf("day").toISOString(),
-            )}&timeMax=${encodeURIComponent(
-              opts
-                .dayjs()
-                .add(jobData.days ?? 7, "day")
-                .toISOString(),
+            }/events?timeMin=${encodeURIComponent(from)}&timeMax=${encodeURIComponent(
+              to,
             )}&singleEvents=true&orderBy=startTime`,
             { headers: { Authorization: `Bearer ${tokens.access_token}` } },
           ).then((res) => res.json() as calendar_v3.Schema$Events);
           console.log(
             events.items?.length ?? 0,
             events.items?.length === 1 ? "event" : "events",
-            "to process from initial sync of calendar",
+            "to process for calendar",
             jobData.calendarId,
           );
           const certainPeriod = opts.dayjs().add(1, "month");
