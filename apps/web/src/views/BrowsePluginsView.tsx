@@ -4,104 +4,49 @@ import { FormInput } from "@flowdev/ui/FormInput";
 import { Tooltip, TooltipContent, TooltipTrigger } from "@flowdev/ui/Tooltip";
 import { Popover, PopoverContent, PopoverTrigger } from "@flowdev/ui/Popover";
 import { useForm } from "react-hook-form";
-import { graphql, useMutation } from "@flowdev/relay";
+import {
+  graphql,
+  PreloadedQuery,
+  useFragment,
+  useMutation,
+  usePreloadedQuery,
+  useQueryLoader,
+} from "@flowdev/relay";
 import { Button } from "@flowdev/ui/Button";
 import { BrowsePluginsViewInstallMutation } from "../relay/__gen__/BrowsePluginsViewInstallMutation.graphql";
 import { BrowsePluginsViewInstallFromUrlMutation } from "@flowdev/web/relay/__gen__/BrowsePluginsViewInstallFromUrlMutation.graphql";
 import { useState } from "react";
 import { toast } from "@flowdev/ui/Toast";
 import { usePlugins } from "../getPlugin";
+import { BrowsePluginsViewPluginCard_plugin$key } from "@flowdev/web/relay/__gen__/BrowsePluginsViewPluginCard_plugin.graphql";
+import { BrowsePluginsViewQuery } from "@flowdev/web/relay/__gen__/BrowsePluginsViewQuery.graphql";
 
-type PluginAuthor = {
-  name: string;
-  avatarUrl?: string;
-};
-
-type Plugin = {
-  iconUrl: string;
-  name: string;
-  slug: string;
-  description: string;
-  installUrl: string;
-  version: string;
-  authors: PluginAuthor[]; // first author is the primary author
-};
-
-const PLUGINS: Plugin[] = [
-  {
-    iconUrl: "FlowIcon.svg",
-    name: "Essentials",
-    slug: "essentials",
-    description:
-      "The official and default plugin for Flow containing essential features such as a morning routine and a shutdown routine.",
-    installUrl: "https://cdn.jsdelivr.net/gh/richardguerre/flow@c1dc94b/plugins/essentials/out",
-    version: "0.1.0",
-    authors: [{ name: "Flow", avatarUrl: "FlowIcon.svg" }],
-  },
-  {
-    iconUrl: "FlowIcon.svg",
-    name: "Repeating Tasks",
-    slug: "repeating-tasks",
-    description:
-      "Official Flow plugin that allows creating repeating tasks. It's like a cron job for your tasks.",
-    installUrl:
-      "https://cdn.jsdelivr.net/gh/richardguerre/flow@c1dc94b/plugins/repeating-tasks/out",
-    version: "0.1.0",
-    authors: [{ name: "Flow", avatarUrl: "FlowIcon.svg" }],
-  },
-  {
-    iconUrl: "https://ssl.gstatic.com/calendar/images/dynamiclogo_2020q4/calendar_19_2x.png",
-    name: "Google Calendar",
-    slug: "google-calendar",
-    description: "Official Google Calendar plugin for Flow.",
-    installUrl:
-      "https://cdn.jsdelivr.net/gh/richardguerre/flow@9ccc318/plugins/google-calendar/out",
-    version: "0.1.0",
-    authors: [{ name: "Flow", avatarUrl: "FlowIcon.svg" }],
-  },
-  {
-    iconUrl: "https://cdn-icons-png.flaticon.com/512/25/25231.png",
-    name: "GitHub Requested Reviews",
-    slug: "github",
-    description:
-      "Official GitHub plugin for Flow. It currently only gets your requested reviews and adds them as items in your inbox. More features coming soon.",
-    installUrl: "https://cdn.jsdelivr.net/gh/richardguerre/flow@c1dc94b/plugins/github/out",
-    version: "0.1.0",
-    authors: [{ name: "Flow", avatarUrl: "FlowIcon.svg" }],
-  },
-  {
-    iconUrl: "https://gitstart.com/_astro/logo_black_small.e7d67670.svg",
-    name: "GitStart",
-    slug: "gitstart",
-    description: "Official GitStart plugin for Flow.",
-    installUrl: "https://cdn.jsdelivr.net/gh/richardguerre/flow@c1dc94b/plugins/gitstart/out",
-    version: "0.1.0",
-    authors: [{ name: "Flow", avatarUrl: "FlowIcon.svg" }],
-  },
-  {
-    iconUrl: "https://linear.app/favicon.ico",
-    name: "Linear",
-    slug: "linear",
-    description:
-      "Official Linear plugin for Flow, allowing you to manage your Linear issues directly from Flow.",
-    installUrl: "https://cdn.jsdelivr.net/gh/richardguerre/flow@d9e422e/plugins/linear/out",
-    version: "0.1.0",
-    authors: [{ name: "Flow", avatarUrl: "FlowIcon.svg" }],
-  },
-  {
-    iconUrl: "https://slack.com/favicon.ico",
-    name: "Slack",
-    slug: "slack",
-    description:
-      "Official Slack plugin for Flow, allowing you to post your plan to Slack channels when doing your routines.",
-    installUrl: "https://cdn.jsdelivr.net/gh/richardguerre/flow@5565245/plugins/slack/out",
-    version: "0.1.0",
-    authors: [{ name: "Flow", avatarUrl: "FlowIcon.svg" }],
-  },
-];
+const browsePluginsViewQuery = graphql`
+  query BrowsePluginsViewQuery {
+    plugins {
+      edges {
+        node {
+          slug
+          ...BrowsePluginsViewPluginCard_plugin
+        }
+      }
+    }
+  }
+`;
 
 export default () => {
+  const { queryRef } = useQueryLoader<BrowsePluginsViewQuery>(
+    browsePluginsViewQuery,
+    {},
+    { fetchPolicy: "store-and-network" },
+  );
+  if (!queryRef) return null;
+  return <BrowsePluginsViewContent queryRef={queryRef} />;
+};
+
+const BrowsePluginsViewContent = (props: { queryRef: PreloadedQuery<BrowsePluginsViewQuery> }) => {
   const [openInstallPluginFromUrl, setOpenInstallPluginFromUrl] = useState(false);
+  const data = usePreloadedQuery(browsePluginsViewQuery, props.queryRef);
 
   return (
     <div className="max-w-1488px mx-auto flex w-full flex-col gap-8 p-16">
@@ -134,8 +79,8 @@ export default () => {
           </Popover>
         </div>
         <div className="grid grid-cols-3 gap-4">
-          {PLUGINS.map((plugin) => (
-            <PluginCard {...plugin} />
+          {data.plugins.edges.map((edge) => (
+            <PluginCard plugin={edge.node} />
           ))}
         </div>
       </div>
@@ -143,9 +88,30 @@ export default () => {
   );
 };
 
-const PluginCard = (props: Plugin) => {
+const PluginCard = (props: { plugin: BrowsePluginsViewPluginCard_plugin$key }) => {
+  const plugin = useFragment(
+    graphql`
+      fragment BrowsePluginsViewPluginCard_plugin on Plugin {
+        iconUrl
+        name
+        slug
+        shortDescription
+        latestVersion {
+          version
+          installUrl
+        }
+        authors {
+          name
+          avatarUrl
+        }
+      }
+    `,
+    props.plugin,
+  );
+
   const { plugins } = usePlugins();
-  const installed = !!plugins[props.slug];
+  const installed = !!plugins[plugin.slug];
+
   const [installPlugin, installingPlugin] = useMutation<BrowsePluginsViewInstallMutation>(graphql`
     mutation BrowsePluginsViewInstallMutation($url: String!) {
       installPlugin(input: { url: $url }) {
@@ -155,50 +121,53 @@ const PluginCard = (props: Plugin) => {
   `);
 
   const handleInstallPlugin = () => {
+    if (!plugin.latestVersion) return;
     installPlugin({
-      variables: { url: props.installUrl },
-      onCompleted: () => {
-        toast.success("Plugin installed");
-      },
+      variables: { url: plugin.latestVersion.installUrl },
       onError: (error) => {
         toast.error(error.message);
+      },
+      updater: (store) => {
+        const updatedInstalledPlugins = store.getPluralRootField("installPlugin");
+        const root = store.getRoot();
+        root.setLinkedRecords(updatedInstalledPlugins, "installedPlugins");
       },
     });
   };
   return (
     <div
-      key={props.name}
+      key={plugin.name}
       className="bg-background-50 min-w-xs flex flex-col gap-2 rounded p-4 shadow-md"
     >
       <div className="flex flex-col gap-1">
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-2">
-            <img src={props.iconUrl} className="h-5 w-5 rounded-1" />
-            <div className="text-base font-medium">{props.name}</div>
+            <img src={plugin.iconUrl} className="h-5 w-5 rounded-1" />
+            <div className="text-base font-medium">{plugin.name}</div>
           </div>
           <Button
             secondary
             loading={installingPlugin}
-            disabled={installed}
+            disabled={installed || !plugin.latestVersion}
             onClick={handleInstallPlugin}
           >
             {installed ? "Installed" : "Install"}
           </Button>
         </div>
-        <div className="text-foreground-700 text-sm">{props.description}</div>
+        <div className="text-foreground-700 text-sm">{plugin.shortDescription}</div>
       </div>
       <div className="text-foreground-700 flex items-center gap-4 text-sm">
-        <div className="flex gap-2">v{props.version}</div>
+        <div className="flex gap-2">v{plugin.latestVersion?.version ?? "0.0.0"}</div>
       </div>
       <div className="text-foreground-900 flex items-center gap-2 text-sm">
-        {props.authors[0].avatarUrl && (
+        {plugin.authors[0].avatarUrl && (
           <img
-            src={props.authors[0].avatarUrl}
+            src={plugin.authors[0].avatarUrl}
             className="ring-primary-200 inline-block h-5 w-5 rounded-full ring-1"
           />
         )}
-        {props.authors[0].name}
-        {props.authors.length > 1 && ` & ${props.authors.length - 1} more`}
+        {plugin.authors[0].name}
+        {plugin.authors.length > 1 && ` & ${plugin.authors.length - 1} more`}
       </div>
     </div>
   );

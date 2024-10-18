@@ -5,6 +5,7 @@
   "scripts": {
     "print-schema": "bun run db:gen && NODE_ENV=development bun run src/graphql/index.ts",
     "dev": "NODE_ENV=development bun --watch run src/index.ts",
+    "start": "echo \"⚠️ This is still a development server. In production, the server is bundled and served by Bun.\" && echo \"⚠️ This simulates running in production.\" && NODE_ENV=production bun run src/index.ts",
     "type-check": "bun run db:gen && tsc --noEmit && echo '✅ Type checking passed!'",
     "build": "bun build ./src/index.ts --outdir dist --target bun && bun run copy-web && bun run copy-mobile-pwa",
     "preview": "cd dist && NODE_ENV=production PORT=4040 DATABASE_URL=postgres://postgres:postgres@localhost:5432/flow ORIGIN=https://lamporchestra.isflow.in PATH_TO_PLUGINS=../plugins BUN_JSC_forceRAMSize=180000000 bun run index.js",

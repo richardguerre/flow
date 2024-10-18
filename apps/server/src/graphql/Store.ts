@@ -361,7 +361,7 @@ const generatePasswordHash = async (password: string) => {
 };
 
 const generateSessionToken = () => {
-  return new Bun.CryptoHasher("sha256").digest("base64");
+  return new Bun.CryptoHasher("sha256").update(Math.random().toString()).digest("base64");
 };
 
 builder.mutationField("setPassword", (t) =>

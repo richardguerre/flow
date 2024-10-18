@@ -153,7 +153,14 @@ export async function installServerPlugin(opts: Options) {
 
   if (!opts.override && cache.has(opts.slug)) {
     throw new GraphQLError(
-      `PLUGIN_WITH_SAME_SLUG: A plugin with the slug "${opts.slug}" is already installed. Use the \`override\` option to override the existing plugin.`,
+      `A plugin with the slug "${opts.slug}" is already installed. Use the \`override\` option to override the existing plugin.`,
+      {
+        extensions: {
+          code: "PLUGIN_WITH_SAME_SLUG",
+          userFriendlyMessage:
+            "There is a problem with the plugin you are trying to install (Error: PLUGIN_WITH_SAME_SLUG). Please contact the plugin author for more information.",
+        },
+      },
     );
   }
   await fs.rename(pathToTemp, path.join(pathToPlugins, `${opts.slug}.js`));

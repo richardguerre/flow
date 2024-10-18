@@ -101,12 +101,14 @@ export const usePlugins = () => {
     { fetchPolicy: "store-or-network" },
   );
 
+  const pluginSlugs = data.installedPlugins.map((plugin) => plugin.slug).join(",");
+
   useAsyncEffect(async () => {
     setLoading(true);
     const updatedPlugins: Record<string, ReturnType<WebPlugin>> = { ...plugins };
-    for (const pluginInstallation of data.installedPlugins) {
+    for (const pluginInstallation of Array.from(data.installedPlugins)) {
       if (!pluginInstallation.hasWebRuntime) continue;
-      if (pluginInstallation.slug in plugins) continue;
+      if (pluginInstallation.slug in updatedPlugins) continue;
       const plugin = await getPlugin({ pluginSlug: pluginInstallation.slug });
       if ("_error" in plugin) {
         console.log(`Error loading plugin ${pluginInstallation.slug}: ${plugin._error}`);
@@ -116,7 +118,7 @@ export const usePlugins = () => {
     }
     setPlugins(updatedPlugins);
     setLoading(false);
-  }, [data.installedPlugins.map((plugin) => plugin.slug).join(",")]);
+  }, [pluginSlugs]);
 
   return { plugins, loading };
 };

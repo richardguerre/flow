@@ -790,6 +790,27 @@ type PageInfo {
   startCursor: ID
 }
 
+type Plugin implements Node {
+  authors: [PluginAuthor!]!
+  createdAt: DateTime!
+  iconUrl: String!
+  id: ID!
+  latestVersion: PluginVersion
+  name: String!
+  shortDescription: String!
+  slug: String!
+  updatedAt: DateTime!
+  versions: [PluginVersion!]!
+}
+
+type PluginAuthor implements Node {
+  avatarUrl: String
+  createdAt: DateTime!
+  id: ID!
+  name: String!
+  updatedAt: DateTime!
+}
+
 type PluginInstallation {
   hasMobileRuntime: Boolean!
   hasServerRuntime: Boolean!
@@ -802,6 +823,15 @@ type PluginInstallation {
 type PluginOperation implements Node {
   data: JSON
   id: ID!
+}
+
+type PluginVersion implements Node {
+  createdAt: DateTime!
+  id: ID!
+  installUrl: String!
+  isPrerelease: Boolean!
+  updatedAt: DateTime!
+  version: String!
 }
 
 """Integers that will have a value greater than 0."""
@@ -924,6 +954,7 @@ type Query {
     where: NoteTagWhereInput
   ): QueryNoteTagsConnection!
   pluginOperation(input: QueryPluginOperationInput!): PluginOperation
+  plugins(after: ID, before: ID, first: Int, last: Int): QueryPluginsConnection!
 
   """
   Render a template string with the given data. Plugin helpers and partials can be used in the template.
@@ -997,6 +1028,16 @@ input QueryPluginOperationInput {
   data: JSON
   operationName: String!
   pluginSlug: String!
+}
+
+type QueryPluginsConnection {
+  edges: [QueryPluginsConnectionEdge!]!
+  pageInfo: PageInfo!
+}
+
+type QueryPluginsConnectionEdge {
+  cursor: ID!
+  node: Plugin!
 }
 
 input QueryRenderTemplateInput {

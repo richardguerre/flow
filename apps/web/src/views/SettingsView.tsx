@@ -19,6 +19,7 @@ const settingsViewQuery = graphql`
 graphql`
   fragment SettingsView_pluginInstallation on PluginInstallation {
     slug
+    hasWebRuntime
     ...PluginSettingsView_pluginInstallation
   }
 `;
@@ -52,9 +53,11 @@ const SettingsViewContent = (props: SettingsViewProps) => {
         </div>
         <div className="flex flex-col gap-2">
           <div className="text-base font-semibold">Plugin settings</div>
-          {data.installedPlugins.map((plugin) => (
-            <SettingsViewPluginTab key={plugin.slug} slug={plugin.slug} />
-          ))}
+          {data.installedPlugins
+            .filter((p) => p.hasWebRuntime)
+            .map((plugin) => (
+              <SettingsViewPluginTab key={plugin.slug} slug={plugin.slug} />
+            ))}
         </div>
       </div>
       <ViewErrorBoundary>
