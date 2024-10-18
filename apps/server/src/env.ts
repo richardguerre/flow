@@ -8,6 +8,7 @@ const envsToCheck = {
   DATABASE_URL: [true, true],
   ORIGIN: [true, false],
   PATH_TO_PLUGINS: [false, true],
+  FLOW_CT_API_URL: [false, false],
 } as const;
 
 /** Copy of process.env in memory so that process.env can be deleted and not used in plugins for unsafe things. */

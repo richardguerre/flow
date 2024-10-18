@@ -1,11 +1,5 @@
 import { GraphQLError } from "graphql";
-import {
-  getPluginJson,
-  getPlugins,
-  getPluginsInStore,
-  installServerPlugin,
-  uninstallServerPlugin,
-} from "../utils/getPlugins";
+import { getPlugins } from "../utils/getPlugins";
 import { prisma } from "../utils/prisma";
 import { builder } from "./builder";
 import { dayjs } from "../utils/dayjs";
@@ -37,19 +31,6 @@ type AuthSession = {
       userAgent: string;
     }
 );
-
-export type PluginInstallation = {
-  /** The plugin's slug */
-  slug: string;
-  /** The plugin's URL. It can be jsdelivr URL or anything that servers application/javascript static files. */
-  url: string;
-  /** Whether the plugin has a web runtime. */
-  web: boolean;
-  /** Whether the plugin has a mobile runtime. */
-  mobile: boolean;
-  /** Whether the plugin has a server runtime. */
-  server: boolean;
-};
 
 export const StoreType = builder.prismaNode("Store", {
   id: { field: "id" },
@@ -164,27 +145,6 @@ builder.queryField("isSessionValid", (t) =>
   }),
 );
 
-builder.queryField("installedPlugins", (t) =>
-  t.field({
-    type: [PluginInstallationType],
-    description: "Get all installed plugins.",
-    resolve: getPluginsInStore,
-  }),
-);
-
-const PluginInstallationType = builder.objectType(
-  builder.objectRef<PluginInstallation>("PluginInstallation"),
-  {
-    fields: (t) => ({
-      slug: t.exposeString("slug"),
-      url: t.exposeString("url"),
-      hasWebRuntime: t.exposeBoolean("web"),
-      hasMobileRuntime: t.exposeBoolean("mobile"),
-      hasServerRuntime: t.exposeBoolean("server"),
-    }),
-  },
-);
-
 // --------------- Setting mutation types ---------------
 
 builder.mutationField("upsertStoreItem", (t) =>
@@ -239,119 +199,6 @@ If \`isServerOnly\` is set to true, the store item will not be returned in the \
           console.log(`Error plugin.onStoreItemUpsert for ${args.input.pluginSlug}`, e),
         ); // TODO: maybe execute in message queue instead of synchronously
       return res;
-    },
-  }),
-);
-
-builder.mutationField("installPlugin", (t) =>
-  t.fieldWithInput({
-    type: [PluginInstallationType],
-    description:
-      "Install a plugin. If a plugin with the same slug exists, it will throw an error, unless `override` is set to true.",
-    input: {
-      url: t.input.string({ required: true }),
-      override: t.input.boolean({ required: false }),
-    },
-    resolve: async (_, args) => {
-      let installedPlugins = await getPluginsInStore();
-
-      // this will throw GraphQLErrors if there are problems with the plugin.json file
-      const newPluginJson = await getPluginJson({ url: args.input.url });
-
-      if (!args.input.override && !!installedPlugins.find((p) => p.slug === newPluginJson.slug)) {
-        throw new GraphQLError(
-          `A plugin with the slug "${newPluginJson.slug}" is already installed. Use the \`override\` option to override the existing plugin.`,
-          {
-            extensions: {
-              code: "PLUGIN_WITH_SAME_SLUG",
-              userFriendlyMessage:
-                "There is a problem with the plugin you are trying to install (Error: PLUGIN_WITH_SAME_SLUG). Please contact the plugin author for more information.",
-            },
-          },
-        );
-      }
-
-      if (newPluginJson.slug.includes("_")) {
-        throw new GraphQLError(
-          `The plugin slug "${newPluginJson.slug}" is invalid. Plugin slugs cannot contain underscores.`,
-          {
-            extensions: {
-              code: "PLUGIN_SLUG_INVALID",
-              userFriendlyMessage:
-                "There is a problem with the plugin you are trying to install (Err: PLUGIN_SLUG_INVALID). Please contact the plugin author for more information.",
-            },
-          },
-        );
-      }
-
-      if (newPluginJson.server) {
-        // this will throw GraphQLErrors if there are problems with the plugin installation process
-        await installServerPlugin({
-          url: args.input.url,
-          slug: newPluginJson.slug,
-          override: args.input.override ?? false,
-        });
-      }
-
-      // remove old plugin installation if it exists
-      installedPlugins = installedPlugins.filter((p) => p.slug !== newPluginJson.slug);
-      // add new plugin installation
-      installedPlugins.push({
-        url: args.input.url,
-        slug: newPluginJson.slug,
-        web: newPluginJson.web ?? false,
-        mobile: newPluginJson.mobile ?? false,
-        server: newPluginJson.server ?? false,
-      });
-
-      const newSetting = await prisma.store.upsert({
-        where: {
-          pluginSlug_key_unique: { key: StoreKeys.INSTALLED_PLUGINS, pluginSlug: FlowPluginSlug },
-        },
-        update: { value: installedPlugins },
-        create: {
-          key: StoreKeys.INSTALLED_PLUGINS,
-          pluginSlug: FlowPluginSlug,
-          value: installedPlugins,
-          isSecret: false,
-          isServerOnly: false,
-        },
-      });
-      return newSetting.value as PluginInstallation[];
-    },
-  }),
-);
-
-builder.mutationField("uninstallPlugin", (t) =>
-  t.fieldWithInput({
-    type: [PluginInstallationType],
-    description: "Uninstall a plugin.",
-    input: {
-      slug: t.input.string({ required: true }),
-    },
-    resolve: async (_, args) => {
-      let installedPlugins = await getPluginsInStore();
-
-      // uninstall the plugin on the server's file system
-      await uninstallServerPlugin(args.input.slug);
-
-      // remove old plugin installation if it exists
-      installedPlugins = installedPlugins.filter((p) => p.slug !== args.input.slug);
-
-      const newSetting = await prisma.store.upsert({
-        where: {
-          pluginSlug_key_unique: { key: StoreKeys.INSTALLED_PLUGINS, pluginSlug: FlowPluginSlug },
-        },
-        update: { value: installedPlugins },
-        create: {
-          key: StoreKeys.INSTALLED_PLUGINS,
-          pluginSlug: FlowPluginSlug,
-          value: installedPlugins,
-          isSecret: false,
-          isServerOnly: false,
-        },
-      });
-      return newSetting.value as PluginInstallation[];
     },
   }),
 );

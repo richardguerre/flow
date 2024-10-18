@@ -4,7 +4,8 @@ import path from "node:path";
 import { DefineServerPluginReturn, ServerPluginReturn } from "@flowdev/plugin/server";
 import type { PluginJson } from "@flowdev/plugin/json";
 import { getPluginOptions } from "./getPluginOptions";
-import { FlowPluginSlug, PluginInstallation, StoreKeys } from "../graphql/Store";
+import { FlowPluginSlug, StoreKeys } from "../graphql/Store";
+import { PluginInstallationInStore } from "../graphql/Plugin";
 import { prisma } from "./prisma";
 import { env } from "../env";
 import { reloadPluginPgBossWorkers } from ".";
@@ -41,7 +42,8 @@ export const getPluginsInStore = async () => {
       pluginSlug: FlowPluginSlug,
     },
   });
-  return (storeItem?.value ?? []) as PluginInstallation[];
+  const pluginsFromStore = (storeItem?.value ?? []) as PluginInstallationInStore[];
+  return pluginsFromStore;
 };
 
 type Options = {

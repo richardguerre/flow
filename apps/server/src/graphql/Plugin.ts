@@ -1,11 +1,21 @@
 import { builder } from "./builder";
 import { Plugin, PluginAuthor, PluginVersion, QueryPluginsConnection } from "./ct-graphql";
+import {
+  getPluginJson,
+  getPluginsInStore,
+  installServerPlugin,
+  uninstallServerPlugin,
+} from "../utils/getPlugins";
+import { GraphQLError } from "graphql";
+import { prisma } from "../utils/prisma";
+import { FlowPluginSlug, StoreKeys } from "./Store";
+import { env } from "../env";
 
-const ctGraphql = async <TVariables extends object, TRes extends object>(
+export const ctGraphql = async <TVariables extends object, TRes extends object>(
   query: string,
   variables?: TVariables,
 ) => {
-  const res = await fetch("https://flow-ct.onrender.com/graphql", {
+  const res = await fetch(`${env.FLOW_CT_API_URL ?? "https://flow-ct.onrender.com"}/graphql`, {
     method: "POST",
     headers: {
       "Content-Type": "application/json",
@@ -155,3 +165,190 @@ const PluginTypeFragment = /* GraphQL */ `
   ${PluginAuthorTypeFragment}
   ${PluginVersionTypeFragment}
 `;
+
+export type PluginInstallationInStore = {
+  /** The plugin's slug */
+  slug: string;
+  /** The plugin's version */
+  version: string;
+  /** The plugin's URL. It can be jsdelivr URL or anything that servers application/javascript static files. */
+  url: string;
+
+  /** Whether the plugin has a web runtime. */
+  web: boolean;
+  /** Whether the plugin has a mobile runtime. */
+  mobile: boolean;
+  /** Whether the plugin has a server runtime. */
+  server: boolean;
+};
+
+type PluginInstallation = PluginInstallationInStore & {
+  latestVersion: PluginVersion | null;
+};
+
+const PluginInstallationType = builder.objectType(
+  builder.objectRef<PluginInstallation>("PluginInstallation"),
+  {
+    fields: (t) => ({
+      slug: t.exposeString("slug"),
+      url: t.exposeString("url"),
+      version: t.exposeString("version"),
+      latestVersion: t.expose("latestVersion", { type: PluginVersionType, nullable: true }),
+      hasWebRuntime: t.exposeBoolean("web"),
+      hasMobileRuntime: t.exposeBoolean("mobile"),
+      hasServerRuntime: t.exposeBoolean("server"),
+    }),
+  },
+);
+
+const addCtInfo = async (pluginsInStore: PluginInstallationInStore[]) => {
+  const data = await ctGraphql<{ slugs: string[] }, { plugins: QueryPluginsConnection }>(
+    /* GraphQL */ `
+      query GetInfoOnInstalledPlugins($slugs: [String!]!) {
+        plugins(where: { slug: { in: $slugs } }) {
+          edges {
+            node {
+              slug
+              latestVersion {
+                ...PluginVersion
+              }
+            }
+          }
+        }
+      }
+      ${PluginVersionTypeFragment}
+    `,
+    { slugs: pluginsInStore.map((p) => p.slug) },
+  );
+  const pluginsMap = new Map(data.plugins?.edges?.map((edge) => [edge?.node?.slug, edge.node]));
+
+  return pluginsInStore.map((plugin) => ({
+    latestVersion: pluginsMap.get(plugin.slug)?.latestVersion ?? null,
+    ...plugin,
+  }));
+};
+
+builder.queryField("installedPlugins", (t) =>
+  t.field({
+    type: [PluginInstallationType],
+    description: "Get all installed plugins.",
+    resolve: async () => {
+      const pluginsInStore = await getPluginsInStore();
+      return await addCtInfo(pluginsInStore);
+    },
+  }),
+);
+
+builder.mutationField("installPlugin", (t) =>
+  t.fieldWithInput({
+    type: [PluginInstallationType],
+    description:
+      "Install a plugin. If a plugin with the same slug exists, it will throw an error, unless `override` is set to true.",
+    input: {
+      url: t.input.string({ required: true }),
+      override: t.input.boolean({ required: false }),
+    },
+    resolve: async (_, args) => {
+      let installedPlugins = await getPluginsInStore();
+
+      // this will throw GraphQLErrors if there are problems with the plugin.json file
+      const newPluginJson = await getPluginJson({ url: args.input.url });
+
+      if (!args.input.override && !!installedPlugins.find((p) => p.slug === newPluginJson.slug)) {
+        throw new GraphQLError(
+          `A plugin with the slug "${newPluginJson.slug}" is already installed. Use the \`override\` option to override the existing plugin.`,
+          {
+            extensions: {
+              code: "PLUGIN_WITH_SAME_SLUG",
+              userFriendlyMessage:
+                "There is a problem with the plugin you are trying to install (Error: PLUGIN_WITH_SAME_SLUG). Please contact the plugin author for more information.",
+            },
+          },
+        );
+      }
+
+      if (newPluginJson.slug.includes("_")) {
+        throw new GraphQLError(
+          `The plugin slug "${newPluginJson.slug}" is invalid. Plugin slugs cannot contain underscores.`,
+          {
+            extensions: {
+              code: "PLUGIN_SLUG_INVALID",
+              userFriendlyMessage:
+                "There is a problem with the plugin you are trying to install (Err: PLUGIN_SLUG_INVALID). Please contact the plugin author for more information.",
+            },
+          },
+        );
+      }
+
+      if (newPluginJson.server) {
+        // this will throw GraphQLErrors if there are problems with the plugin installation process
+        await installServerPlugin({
+          url: args.input.url,
+          slug: newPluginJson.slug,
+          override: args.input.override ?? false,
+        });
+      }
+
+      // remove old plugin installation if it exists
+      installedPlugins = installedPlugins.filter((p) => p.slug !== newPluginJson.slug);
+      // add new plugin installation
+      installedPlugins.push({
+        slug: newPluginJson.slug,
+        version: newPluginJson.version,
+        url: args.input.url,
+        web: newPluginJson.web ?? false,
+        mobile: newPluginJson.mobile ?? false,
+        server: newPluginJson.server ?? false,
+      });
+
+      const newSetting = await prisma.store.upsert({
+        where: {
+          pluginSlug_key_unique: { key: StoreKeys.INSTALLED_PLUGINS, pluginSlug: FlowPluginSlug },
+        },
+        update: { value: installedPlugins },
+        create: {
+          key: StoreKeys.INSTALLED_PLUGINS,
+          pluginSlug: FlowPluginSlug,
+          value: installedPlugins,
+          isSecret: false,
+          isServerOnly: false,
+        },
+      });
+      return await addCtInfo(newSetting.value as PluginInstallationInStore[]);
+    },
+  }),
+);
+
+builder.mutationField("uninstallPlugin", (t) =>
+  t.fieldWithInput({
+    type: [PluginInstallationType],
+    description: "Uninstall a plugin.",
+    input: {
+      slug: t.input.string({ required: true }),
+    },
+    resolve: async (_, args) => {
+      let installedPlugins = await getPluginsInStore();
+
+      // uninstall the plugin on the server's file system
+      await uninstallServerPlugin(args.input.slug);
+
+      // remove old plugin installation if it exists
+      installedPlugins = installedPlugins.filter((p) => p.slug !== args.input.slug);
+
+      const newSetting = await prisma.store.upsert({
+        where: {
+          pluginSlug_key_unique: { key: StoreKeys.INSTALLED_PLUGINS, pluginSlug: FlowPluginSlug },
+        },
+        update: { value: installedPlugins },
+        create: {
+          key: StoreKeys.INSTALLED_PLUGINS,
+          pluginSlug: FlowPluginSlug,
+          value: installedPlugins,
+          isSecret: false,
+          isServerOnly: false,
+        },
+      });
+      return await addCtInfo(newSetting.value as PluginInstallationInStore[]);
+    },
+  }),
+);
