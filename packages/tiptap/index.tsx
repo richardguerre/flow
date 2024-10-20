@@ -7,19 +7,19 @@ import {
   ReactNodeViewRenderer,
   NodeViewWrapper,
 } from "@tiptap/react";
-import { Blockquote as $Blockquote, BlockquoteOptions } from "@tiptap/extension-blockquote";
-import { BulletList as $BulletList, BulletListOptions } from "@tiptap/extension-bullet-list";
-import { CodeBlock as $CodeBlock, CodeBlockOptions } from "@tiptap/extension-code-block";
+import { Blockquote, BlockquoteOptions } from "@tiptap/extension-blockquote";
+import { BulletList, BulletListOptions } from "@tiptap/extension-bullet-list";
+import { CodeBlock, CodeBlockOptions } from "@tiptap/extension-code-block";
 import { HardBreak, HardBreakOptions } from "@tiptap/extension-hard-break";
-import { Heading as $Heading, HeadingOptions } from "@tiptap/extension-heading";
+import { Heading, HeadingOptions } from "@tiptap/extension-heading";
 import { HorizontalRule, HorizontalRuleOptions } from "@tiptap/extension-horizontal-rule";
-import { ListItem as $ListItem, ListItemOptions } from "@tiptap/extension-list-item";
-import { OrderedList as $OrderedList, OrderedListOptions } from "@tiptap/extension-ordered-list";
-import { Paragraph as $Paragraph, ParagraphOptions } from "@tiptap/extension-paragraph";
+import { ListItem, ListItemOptions } from "@tiptap/extension-list-item";
+import { OrderedList, OrderedListOptions } from "@tiptap/extension-ordered-list";
+import { Paragraph, ParagraphOptions } from "@tiptap/extension-paragraph";
 import { Text } from "@tiptap/extension-text";
-import { Link as $Link, LinkOptions } from "@tiptap/extension-link";
+import { Link, LinkOptions } from "@tiptap/extension-link";
 import { Bold, BoldOptions } from "@tiptap/extension-bold";
-import { Code as $Code, CodeOptions } from "@tiptap/extension-code";
+import { Code, CodeOptions } from "@tiptap/extension-code";
 import { Italic, ItalicOptions } from "@tiptap/extension-italic";
 import { Strike, StrikeOptions } from "@tiptap/extension-strike";
 import { Dropcursor, DropcursorOptions } from "@tiptap/extension-dropcursor";
@@ -38,6 +38,15 @@ export {
   EditorContent,
   HardBreak,
   HorizontalRule,
+  Blockquote,
+  BulletList,
+  CodeBlock,
+  Heading,
+  ListItem,
+  OrderedList,
+  Paragraph,
+  Link,
+  Code,
   Text,
   Bold,
   Italic,
@@ -55,88 +64,28 @@ export {
   NodeViewWrapper,
 };
 
-export const Paragraph = $Paragraph.configure({
-  HTMLAttributes: {
-    ...$Paragraph.options?.HTMLAttributes,
-    class: $Paragraph.options?.HTMLAttributes?.class ?? "mb-2",
-  },
-});
+export const atomStyles = {
+  p: "[&_p]:mb-2",
+  h1: "[&_h1]:text-4xl [&_h1]:font-semibold [&_h1]:mb-2",
+  h2: "[&_h2]:text-3xl [&_h2]:font-semibold [&_h2]:mb-2",
+  h3: "[&_h3]:text-2xl [&_h3]:font-semibold [&_h3]:mb-2",
+  h4: "[&_h4]:text-xl [&_h4]:font-semibold [&_h4]:mb-2",
+  h5: "[&_h5]:text-lg [&_h5]:font-semibold [&_h5]:mb-2",
+  h6: "[&_h6]:text-base [&_h6]:font-semibold [&_h6]:mb-2",
+  ul: "[&_ul]:list-disc [&_ul]:ml-5 [&_ul]:mb-2",
+  ol: "[&_ol]:list-decimal [&_ol]:ml-6 [&_ol]:mb-2",
+  li: "[&_li]:mb-0 [&_li_*]:mb-0",
+  a: "[&_a]:text-primary-600 [&_a]:no-underline [&_a]:hover:underline",
+  blockquote:
+    "[&_blockquote]:border-l-4 [&_blockquote]:border-background-300 [&_blockquote]:bg-background-300/30 [&_blockquote]:text-foreground-800 [&_blockquote]:px-3 [&_blockquote]:py-1 [&_blockquote]:rounded",
+  pre: "[&_pre]:text-sm [&_pre]:font-mono [&_pre]:bg-background-200 [&_pre]:text-foreground-900 [&_pre]:rounded [&_pre]:py-0.5 [&_pre]:px-1 [&_pre]:not-prose",
+  code: "[&_code]:text-sm [&_code]:font-mono [&_code]:bg-background-200 [&_code]:text-foreground-900 [&_code]:rounded [&_code]:py-0.5 [&_code]:px-1 [&_code]:not-prose",
+};
 
-export const Heading = $Heading.extend({
-  renderHTML(props) {
-    const level = props.node.attrs.level as 1 | 2 | 3 | 4 | 5 | 6;
-    const classes = {
-      1: "text-4xl font-semibold mb-2",
-      2: "text-3xl font-semibold mb-2",
-      3: "text-2xl font-semibold mb-2",
-      4: "text-xl font-semibold mb-2",
-      5: "text-lg font-semibold mb-2",
-      6: "text-base font-semibold mb-2",
-    } as const;
-    return [
-      `h${level}`,
-      mergeAttributes(this.options.HTMLAttributes, props.HTMLAttributes, {
-        class: `${classes[level]}`,
-      }),
-      0,
-    ];
-  },
-});
-
-export const BulletList = $BulletList.configure({
-  HTMLAttributes: {
-    ...$BulletList.options?.HTMLAttributes,
-    class: $BulletList.options?.HTMLAttributes?.class ?? "list-disc ml-5 mb-2",
-  },
-});
-
-export const OrderedList = $OrderedList.configure({
-  HTMLAttributes: {
-    ...$OrderedList.options?.HTMLAttributes,
-    class: $OrderedList.options?.HTMLAttributes?.class ?? "list-decimal ml-6 mb-2",
-  },
-});
-
-export const ListItem = $ListItem.configure({
-  HTMLAttributes: {
-    ...$ListItem.options?.HTMLAttributes,
-    class: $ListItem.options?.HTMLAttributes?.class ?? "!*:mb-0",
-  },
-});
-
-export const Blockquote = $Blockquote.configure({
-  HTMLAttributes: {
-    ...$Blockquote.options?.HTMLAttributes,
-    class:
-      $Blockquote.options?.HTMLAttributes?.class ??
-      "border-l-4 border-background-300 bg-background-300/30 text-foreground-800 px-3 py-1 rounded",
-  },
-});
-
-export const Link = $Link.configure({
-  HTMLAttributes: {
-    ...$Link.options?.HTMLAttributes,
-    class: $Link.options?.HTMLAttributes?.class ?? "text-primary-600 hover:underline no-underline",
-  },
-});
-
-export const Code = $Code.configure({
-  HTMLAttributes: {
-    ...$Code.options?.HTMLAttributes,
-    class:
-      $Code.options?.HTMLAttributes?.class ??
-      "text-sm font-mono bg-background-200 text-foreground-900 rounded py-0.5 px-1 not-prose",
-  },
-});
-
-export const CodeBlock = $CodeBlock.configure({
-  HTMLAttributes: {
-    ...$CodeBlock.options?.HTMLAttributes,
-    class:
-      $CodeBlock.options?.HTMLAttributes?.class ??
-      "text-sm font-mono bg-background-200 text-foreground-900 rounded px-2 py-1 not-prose",
-  },
-});
+/** Styles to apply to a general-purpose editor (multi-line and uses all nodes in the StarterKit). */
+export const allStyles = Object.values(atomStyles).join(" ");
+/** Styles to apply to a single-line editor. */
+export const minimumStyles = `${atomStyles.code} ${atomStyles.a}`;
 
 export const Placeholder = $Placholder.configure({
   emptyNodeClass:
@@ -360,6 +309,7 @@ export const Markdown = (props: { children: string }) => {
         transformPastedText: true, // Allows pasting markdown text in the editor and it get's rendered as HTML
       }),
     ],
+    editorProps: { attributes: { class: allStyles } },
   });
 
   return <EditorContent editor={editor} />;

@@ -3,7 +3,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@flowdev/ui/Tabs";
 import { Textarea } from "@flowdev/ui/Textarea";
 import { usePlugins } from "../getPlugin";
 import { graphql, useLazyLoadQuery } from "@flowdev/relay";
-import { EditorContent, StarterKit, useEditor } from "@flowdev/tiptap";
+import { allStyles, EditorContent, StarterKit, useEditor } from "@flowdev/tiptap";
 import { TemplateEditorQuery } from "../relay/__gen__/TemplateEditorQuery.graphql";
 import { Skeleton } from "@flowdev/ui/Skeleton";
 import { ErrorBoundary } from "@flowdev/error-boundary";
@@ -118,6 +118,7 @@ const PreviewTemplate = (props: { template: Template }) => {
       extensions: [StarterKit, ...pluginExtensions],
       editable: false,
       content: data.renderTemplate,
+      editorProps: { attributes: { class: allStyles } },
     },
     [pluginExtensions.length],
   );

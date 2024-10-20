@@ -16,9 +16,8 @@ import {
 } from "@flowdev/mobile-pwa/relay/__gen__/TaskCardUpdateTaskStatusMutation.graphql";
 import { TaskCardDeleteTaskMutation } from "../relay/__gen__/TaskCardDeleteTaskMutation.graphql";
 import { TaskCardSubtask_task$key } from "../relay/__gen__/TaskCardSubtask_task.graphql";
-import { EditorContent, MinimumKit, useEditor } from "@flowdev/tiptap";
+import { EditorContent, MinimumKit, minimumStyles, useEditor } from "@flowdev/tiptap";
 import { TaskCardTitle_task$key } from "../relay/__gen__/TaskCardTitle_task.graphql";
-import "./TaskCardTitle.scss";
 import { TaskCardStatusButton_task$key } from "../relay/__gen__/TaskCardStatusButton_task.graphql";
 import { TaskTagsExtension, useTaskTags } from "./TaskTags";
 
@@ -134,11 +133,12 @@ const TaskCardTitle = (props: { task: TaskCardTitle_task$key }) => {
       extensions: [MinimumKit, TaskTagsExtension.configure({ tags: taskTags })],
       content: task.title,
       editable: false, // readonly
+      editorProps: { attributes: { class: `focus:outline-transparent ${minimumStyles}` } },
     },
     [taskTags.length],
   );
 
-  return <EditorContent editor={editor} className="TaskCardTitleInput w-full cursor-text p-0" />;
+  return <EditorContent editor={editor} className="w-full cursor-text p-0" />;
 };
 
 const taskCardUpdateTaskStatusMutation = graphql`

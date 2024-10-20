@@ -1,5 +1,5 @@
 import { graphql, useLazyLoadQuery, useMutationPromise } from "@flowdev/relay";
-import { StarterKit, useEditor, EditorContent } from "@flowdev/tiptap";
+import { StarterKit, useEditor, EditorContent, allStyles } from "@flowdev/tiptap";
 import type { Editor } from "@tiptap/core";
 import { Suspense, useEffect, useRef } from "react";
 import { NoteEditorQuery } from "@flowdev/web/relay/__gen__/NoteEditorQuery.graphql";
@@ -139,11 +139,7 @@ const NoteEditorContent = (props: NoteEditorProps) => {
   const editor = useEditor(
     {
       extensions: [StarterKit, ...pluginExtensions],
-      editorProps: {
-        attributes: {
-          class: tw("focus:outline-none", props.className),
-        },
-      },
+      editorProps: { attributes: { class: tw("focus:outline-none", allStyles, props.className) } },
       content: data.note?.content ?? props.initialValue,
       autofocus: props.autofocus,
       onUpdate: ({ editor }) => {

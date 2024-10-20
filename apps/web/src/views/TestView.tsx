@@ -1,4 +1,4 @@
-import { EditorContent, StarterKit, useEditor } from "@flowdev/tiptap";
+import { EditorContent, MinimumKit, minimumStyles, useEditor } from "@flowdev/tiptap";
 import { Tooltip, TooltipContent, TooltipTrigger } from "@flowdev/ui/Tooltip";
 import { tw } from "@flowdev/ui/tw";
 import { Node } from "@tiptap/core";
@@ -18,7 +18,7 @@ export const TestViewContent = () => {
   const ref = useRef<HTMLDivElement>(null);
   const editor = useEditor({
     extensions: [
-      StarterKit,
+      MinimumKit,
       TaskTagsExtension.configure({ tags: [] }),
       Node.create({
         name: "slack-status",
@@ -60,7 +60,8 @@ export const TestViewContent = () => {
         },
       }),
     ],
-    content: `<ul><li>✅ Product daily</li><slack-status filter="{&quot;where&quot;:&quot;\\&quot;test&quot;}"><li>{{slack-status}} {{title}}</li></slack-status></li></ul><slack-workspace-channel data-workspace-id="someId" data-channel-id="someId"></slack-workspace-channel>`,
+    content: `<p>Single line editor</p>`,
+    // content: `<h1>Header 1</h1><p>paragraph under heeader</p><h2>Header 2</h2><p>paragraph under heeader</p><h3>Header 3</h3><p>paragraph under heeader</p><h4>Header 4</h4><p>paragraph under heeader</p><h5>Header 5</h5><p>paragraph under heeader</p><h6>Header 6</h6><p>paragraph under heeader</p><ul><li>list item 1</li><li>list item 2</li></ul><ol><li>list item 1</li><li>list item 2</li></ol><a href="https://www.google.com">link</a><blockquote><p>quote</p></blockquote><code>code</code><pre><code>code block</code></pre>`,
     onUpdate: (props) => {
       console.log(props.editor.getHTML());
       // props.editor.state.doc.descendants((node) => {
@@ -71,7 +72,7 @@ export const TestViewContent = () => {
     },
     editorProps: {
       attributes: {
-        class: "h-full w-full",
+        class: `h-full w-full ${minimumStyles} focus:outline-transparent`,
       },
     },
     autofocus: true,

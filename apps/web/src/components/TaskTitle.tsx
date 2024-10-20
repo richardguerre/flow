@@ -7,10 +7,10 @@ import {
   CatchNewLines,
   MinimumKit,
   OnEscape,
+  minimumStyles,
 } from "@flowdev/tiptap";
 import { TaskTitle_task$key } from "@flowdev/web/relay/__gen__/TaskTitle_task.graphql";
 import { TaskTitleUpdateTaskTitleMutation } from "../relay/__gen__/TaskTitleUpdateTaskTitleMutation.graphql";
-import "./TaskTitle.scss";
 import { TaskTitleCreateTaskMutation } from "../relay/__gen__/TaskTitleCreateTaskMutation.graphql";
 import { createVirtualTask, deleteVirtualTask } from "./Day";
 import { TaskTagsExtension, useTaskTags } from "./TaskTags";
@@ -173,6 +173,7 @@ export const TaskTitleInput = (props: TaskTitleInputProps) => {
       content: props.initialValue ?? "",
       editable: props.readOnly ? false : undefined,
       onBlur: handleSave,
+      editorProps: { attributes: { class: `focus:outline-transparent ${minimumStyles}` } },
     },
     // only depend on tagsLoaded if it's not a new task (i.e. when autoFocus is false)
     [...(props.autoFocus ? [] : [tagsLoaded])],
@@ -204,7 +205,7 @@ export const TaskTitleInput = (props: TaskTitleInputProps) => {
 
   return (
     <EditorContent
-      className={props.className ?? "TaskTitleInput w-full cursor-text p-0"}
+      className={props.className ?? "w-full cursor-text p-0"}
       editor={editorRef.current}
       onClick={handleClick}
     />

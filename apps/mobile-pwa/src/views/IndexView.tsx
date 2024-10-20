@@ -16,6 +16,7 @@ import {
   Editor,
   EditorContent,
   MinimumKit,
+  minimumStyles,
   OnEscape,
   useEditor,
 } from "@flowdev/tiptap";
@@ -267,6 +268,7 @@ const TaskTitleInput = (props: {
         OnEscape(() => editorRef.current!.commands.blur()),
         TaskTagsExtension.configure({ tags: taskTags }),
       ],
+      editorProps: { attributes: { class: `focus:outline-transparent ${minimumStyles}` } },
     },
     [taskTags],
   );

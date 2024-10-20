@@ -1,12 +1,19 @@
 import { useCallback, useEffect, useRef, useState } from "react";
-import { Editor, EditorContent, useEditor, Mention, MinimumKit, OnEscape } from "@flowdev/tiptap";
+import {
+  Editor,
+  EditorContent,
+  useEditor,
+  Mention,
+  MinimumKit,
+  OnEscape,
+  minimumStyles,
+} from "@flowdev/tiptap";
 import { CatchNewLines } from "@flowdev/tiptap";
 import { graphql, useFragment, useMutation } from "@flowdev/relay";
 import { ItemTitle_item$key } from "../relay/__gen__/ItemTitle_item.graphql";
 import { ItemTitleUpdateItemTitleMutation } from "../relay/__gen__/ItemTitleUpdateItemTitleMutation.graphql";
 import { ItemTitleCreateItemMutation } from "../relay/__gen__/ItemTitleCreateItemMutation.graphql";
 import { deleteVirtualItem, isTempItemId } from "./InboxList";
-import "./TaskTitle.scss";
 
 type ItemTitleProps = {
   item: ItemTitle_item$key;
@@ -139,6 +146,7 @@ export const ItemTitleInput = (props: ItemTitleInputProps) => {
     ],
     content: props.initialValue ?? "",
     onBlur: handleSave,
+    editorProps: { attributes: { class: `focus:outline-transparent ${minimumStyles}` } },
   });
 
   const handleClick = () => {
@@ -160,7 +168,7 @@ export const ItemTitleInput = (props: ItemTitleInputProps) => {
 
   return (
     <EditorContent
-      className="TaskTitleInput w-full cursor-text p-0"
+      className="w-full cursor-text p-0"
       editor={editorRef.current}
       onClick={handleClick}
     />
