@@ -79,9 +79,11 @@ const withPubsub = (delegate: any, pub: Pub) => ({
 // @ts-ignore as this works in runtime
 export const prisma: typeof $prisma = {
   ...$prisma,
-  task: withPubsub($prisma.task, (action, rows) =>
-    pubsub.publish(`Tasks${action}`, rows as Task[]),
-  ),
+  task: withPubsub($prisma.task, (action, rows) => {
+    const tasks = rows as Task[];
+    dayPubSub({ tasks: tasks });
+    pubsub.publish(`Tasks${action}`, tasks);
+  }),
   item: withPubsub($prisma.item, (action, rows, op) => {
     if (op.operation === "create" || op.operation === "update" || op.operation === "upsert") {
       taskPubsub(op.args, (action, rowsRaw) => pubsub.publish(`Tasks${action}`, rowsRaw as Task[]));
@@ -148,6 +150,10 @@ export const prisma: typeof $prisma = {
     if (itemsUpdated.length) pubsub.publish("ItemsUpdated", itemsUpdated);
     if (itemsDeleted.length) pubsub.publish("ItemsDeleted", itemsDeleted);
 
+    if (tasksCreated.length || tasksDeleted.length) {
+      dayPubSub({ tasks: [...tasksCreated, ...tasksDeleted] });
+    }
+
     return res;
   },
   $executeRaw: $prisma.$executeRaw,
@@ -166,16 +172,22 @@ const taskPubsub = (
   pub: Pub,
 ) => {
   setImmediate(async () => {
-    const secondsAgo = dayjs().subtract(3, "second").toDate();
     if (!/task/i.test(JSON.stringify(args))) return;
+
+    const secondsAgo = dayjs().subtract(3, "second").toDate();
     const created = await $prisma.task.findMany({
       where: { createdAt: { gte: secondsAgo } },
     });
+    if (created.length) {
+      pub("Created", created, { args: {}, operation: "create" });
+    }
     const updated = await $prisma.task.findMany({
       where: { updatedAt: { gte: secondsAgo } },
     });
-    pub("Created", created, { args: {}, operation: "create" });
-    pub("Updated", updated, { args: {}, operation: "update" });
+    if (updated.length) {
+      pub("Updated", updated, { args: {}, operation: "update" });
+    }
+    dayPubSub({ tasks: [...created, ...updated] });
   });
 };
 
@@ -194,3 +206,12 @@ type Pub = <T>(
     args: any;
   },
 ) => void;
+
+const dayPubSub = (args: { tasks: Task[] }) => {
+  setImmediate(async () => {
+    const days = await prisma.day.findMany({
+      where: { date: { in: args.tasks.map((t) => t.date) } },
+    });
+    pubsub.publish("DayUpdated", days);
+  });
+};

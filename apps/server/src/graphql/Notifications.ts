@@ -3,6 +3,7 @@ import { pubsub } from "../pubsub";
 import { TaskType } from "./Task";
 import { builder } from "./builder";
 import { ItemType } from "./Item";
+import { DayType } from "./Day";
 
 const NotificationsType = builder.simpleObject("Notifications", {
   fields: (t) => ({
@@ -14,6 +15,8 @@ const NotificationsType = builder.simpleObject("Notifications", {
     tasksCreated: t.field({ type: [TaskType] }),
     tasksUpdated: t.field({ type: [TaskType] }),
     tasksDeleted: t.field({ type: [TaskType] }),
+
+    daysUpdated: t.field({ type: [DayType] }),
   }),
 });
 
@@ -48,6 +51,10 @@ builder.subscriptionField("notifications", (t) =>
           pubsub.subscribe("TasksDeleted"),
           map((tasks) => ({ TasksDeleted: tasks })),
         ),
+        pipe(
+          pubsub.subscribe("DayUpdated"),
+          map((days) => ({ DayUpdated: days })),
+        ),
       ]);
     },
     resolve: (payload) => {
@@ -59,6 +66,8 @@ builder.subscriptionField("notifications", (t) =>
         tasksCreated: getArrayInObj(payload, "TasksCreated"),
         tasksUpdated: getArrayInObj(payload, "TasksUpdated"),
         tasksDeleted: getArrayInObj(payload, "TasksDeleted"),
+
+        daysUpdated: getArrayInObj(payload, "DayUpdated"),
       };
     },
   }),

@@ -20,6 +20,10 @@ export const useFlowNotitications = () => {
           itemsDeleted {
             id @deleteRecord
           }
+
+          daysUpdated {
+            ...Day_day
+          }
         }
       }
     `,

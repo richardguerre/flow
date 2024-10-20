@@ -770,6 +770,7 @@ input NoteTagWhereInput {
 }
 
 type Notifications {
+  daysUpdated: [Day!]!
   itemsCreated: [Item!]!
   itemsDeleted: [Item!]!
   itemsUpdated: [Item!]!
