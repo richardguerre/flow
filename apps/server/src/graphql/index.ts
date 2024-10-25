@@ -20,6 +20,7 @@ import "./TaskPluginData";
 import "./TaskTag";
 import "./Util.ts";
 import "./Plugin";
+import "./Shortcut.ts";
 import { env } from "../env";
 
 export const schema = builder.toSchema();

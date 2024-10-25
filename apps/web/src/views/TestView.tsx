@@ -4,7 +4,7 @@ import { tw } from "@flowdev/ui/tw";
 import { Node } from "@tiptap/core";
 import { ReactNodeViewRenderer, NodeViewWrapper } from "@tiptap/react";
 import { TaskTagsExtension } from "../components/TaskTags";
-import { Suspense, useRef } from "react";
+import { Suspense, useRef, useState } from "react";
 
 export default function TestView() {
   return (
@@ -16,6 +16,7 @@ export default function TestView() {
 
 export const TestViewContent = () => {
   const ref = useRef<HTMLDivElement>(null);
+  const [enabled, setEnabled] = useState(false);
   const editor = useEditor({
     extensions: [
       MinimumKit,
@@ -77,6 +78,14 @@ export const TestViewContent = () => {
     },
     autofocus: true,
   });
+  const handleClick = () => {
+    // if (enabled) Mousetrap.unbind("mod+k");
+    // else
+    // Mousetrap.bind("mod+k", (e) => {
+    //   console.log("mod+k", e);
+    // });
+    setEnabled(!enabled);
+  };
   return (
     <div className="flex h-screen items-center justify-center">
       <div className="h-2/3 w-2/3 bg-background-50 gap-2 rounded-lg shadow-md p-4">

@@ -21,6 +21,7 @@ graphql`
     slug
     hasWebRuntime
     ...PluginSettingsView_pluginInstallation
+    ...getPluginsUsePlugins_pluginInstallation
   }
 `;
 

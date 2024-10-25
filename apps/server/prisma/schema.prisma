@@ -347,6 +347,27 @@ model Template {
   routineStepId Int?
 }
 
+model Shortcut {
+  /// The id of the shortcut
+  id         Int      @id @default(autoincrement())
+  /// The date and time of creation of the shortcut
+  createdAt  DateTime @default(now()) @db.Timestamptz()
+  /// The date and time the shortcut was last updated
+  updatedAt  DateTime @updatedAt @db.Timestamptz()
+  /// The slug of the shortcut
+  slug       String
+  /// The plugin slug of the shortcut
+  pluginSlug String
+  /// Focused element type
+  elementId  String
+  /// How the shortcut is triggered (see type ShortcutTrigger in apps/web for more info)
+  trigger    String[]
+  /// Whether the shortcut is enabled. This can be used to pause a shortcut.
+  enabled    Boolean  @default(true)
+
+  @@unique([slug, pluginSlug], name: "slug_pluginSlug_unique")
+}
+
 enum RepetitionPattern {
   MONDAY
   TUESDAY

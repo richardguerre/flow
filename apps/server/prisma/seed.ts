@@ -210,4 +210,13 @@ await prisma.routine.create({
   },
 });
 
+await prisma.shortcut.create({
+  data: {
+    slug: "test",
+    pluginSlug: "flow",
+    elementId: "Global",
+    trigger: ["meta+k"],
+  },
+});
+
 console.log("✅ Seeding complete!");

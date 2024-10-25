@@ -14,6 +14,11 @@ import { getPlugins } from "@flowdev/web/getPlugin";
 import { OnCreateTask, OnCreateTaskProps, PluginStepInfo } from "./OnCreateTask";
 import { DragContext, useDragContext } from "../useDragContext";
 import { getStartOfToday } from "./CalendarList";
+import { useShortcutsOnHover } from "./Shortcuts";
+import {
+  DayShortcuts_day$data,
+  DayShortcuts_day$key,
+} from "@flowdev/web/relay/__gen__/DayShortcuts_day.graphql";
 
 type DayProps = {
   day: Day_day$key;
@@ -25,14 +30,15 @@ export const Day = (props: DayProps) => {
     graphql`
       fragment Day_day on Day {
         date
+        ...DayShortcuts_day
         ...DayContent_day
         ...DayAddTaskActionsBar_day
       }
     `,
     props.day,
   );
-
   const dayRef = useRef<HTMLDivElement>(null);
+  const ref = useDayShortcuts({ day });
 
   useEffect(() => {
     const today = getStartOfToday().format("YYYY-MM-DD");
@@ -42,7 +48,7 @@ export const Day = (props: DayProps) => {
   }, [dayRef]);
 
   return (
-    <div className="relative flex h-full w-64 flex-col shrink-0">
+    <div className="relative flex h-full w-64 flex-col shrink-0" ref={ref}>
       <div ref={dayRef} className="absolute -left-2" />
       <div className="mb-3 px-2">
         <button
@@ -58,6 +64,26 @@ export const Day = (props: DayProps) => {
       <DayContent day={day} />
     </div>
   );
+};
+
+export type DayShortcuts = DayShortcuts_day$data & {
+  createTask: () => void;
+};
+const useDayShortcuts = (props: { day: DayShortcuts_day$key }) => {
+  const day = useFragment(
+    graphql`
+      fragment DayShortcuts_day on Day {
+        date
+      }
+    `,
+    props.day,
+  );
+  const { ref } = useShortcutsOnHover("Day", {
+    ...day,
+    createTask: () => createVirtualTask({ date: day.date }),
+  });
+
+  return ref;
 };
 
 type UpdateTaskDateInfo = {

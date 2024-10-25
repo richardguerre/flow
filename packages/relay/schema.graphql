@@ -237,6 +237,9 @@ type Mutation {
   createOrUpdateTemplate(input: MutationCreateOrUpdateTemplateInput!): Template!
   createRoutine(input: MutationCreateRoutineInput!): Routine!
 
+  """Create a new shortcut."""
+  createShortcut(input: MutationCreateShortcutInput!): Shortcut!
+
   """Create a new subtask."""
   createSubtask(input: MutationCreateSubtaskInput!): Task!
 
@@ -267,10 +270,16 @@ type Mutation {
     id: ID!
   ): Template!
 
+  """Disable a shortcut."""
+  disableShortcut(id: ID!): Shortcut!
+
   """
   Dismiss an item from the inbox. This effectively sets `inboxPoints = null` for the item.
   """
   dismissItemFromInbox(input: MutationDismissItemFromInboxInput!): Item!
+
+  """Enable a shortcut."""
+  enableShortcut(id: ID!): Shortcut!
 
   """
   Install a plugin. If a plugin with the same slug exists, it will throw an error, unless `override` is set to true.
@@ -314,6 +323,9 @@ type Mutation {
   updateItemStatus(input: MutationUpdateItemStatusInput!): Item!
   updateRoutine(input: MutationUpdateRoutineInput!): Routine!
   updateRoutineStep(input: MutationUpdateRoutineStepInput!): RoutineStep!
+
+  """Update a shortcut."""
+  updateShortcut(input: MutationUpdateShortcutInput!): Shortcut!
 
   """Update a task."""
   updateTask(input: MutationUpdateTaskInput!): Task!
@@ -445,6 +457,13 @@ input MutationCreateRoutineInput {
   repeats: [RepetitionPattern!]!
   steps: [RoutineStepInput!]!
   time: Time!
+}
+
+input MutationCreateShortcutInput {
+  elementId: String!
+  pluginSlug: String!
+  slug: String!
+  trigger: [String!]!
 }
 
 input MutationCreateSubtaskInput {
@@ -615,6 +634,14 @@ input MutationUpdateRoutineStepInput {
 
   """The templates linked to the step."""
   templates: [TemplateInput!]
+}
+
+input MutationUpdateShortcutInput {
+  elementId: String
+  id: ID!
+  pluginSlug: String
+  slug: String
+  trigger: [String!]
 }
 
 input MutationUpdateTaskDateInput {
@@ -885,6 +912,17 @@ input PrismaJsonFilter {
   path: JSON
 }
 
+"""Filter input of String"""
+input PrismaStringFilter {
+  contains: String
+  endsWith: String
+  equals: String
+  in: [String!]
+  not: PrismaStringFilter
+  notIn: [String!]
+  startsWith: String
+}
+
 type Query {
   canRefreshCalendarItems: Boolean!
 
@@ -967,6 +1005,9 @@ type Query {
   """Get all routines."""
   routines: [Routine!]!
 
+  """Get keyboard shortcuts."""
+  shortcuts(after: ID, before: ID, first: Int, last: Int, orderBy: ShortcutOrderBy, where: ShortcutFilter): QueryShortcutsConnection!
+
   """
   Get store items.
   
@@ -1046,6 +1087,16 @@ type QueryPluginsConnectionEdge {
 input QueryRenderTemplateInput {
   data: JSON!
   template: String!
+}
+
+type QueryShortcutsConnection {
+  edges: [QueryShortcutsConnectionEdge!]!
+  pageInfo: PageInfo!
+}
+
+type QueryShortcutsConnectionEdge {
+  cursor: ID!
+  node: Shortcut!
 }
 
 input QueryStoreItemsInput {
@@ -1146,6 +1197,47 @@ input RoutineStepInput {
   pluginSlug: String!
   shouldSkip: Boolean!
   stepSlug: String!
+}
+
+type Shortcut implements Node {
+  """The date and time of creation of the shortcut"""
+  createdAt: DateTime!
+
+  """Focused element type"""
+  elementId: String!
+
+  """Whether the shortcut is enabled. This can be used to pause a shortcut."""
+  enabled: Boolean!
+  id: ID!
+
+  """The plugin slug of the shortcut"""
+  pluginSlug: String!
+
+  """The slug of the shortcut"""
+  slug: String!
+
+  """
+  How the shortcut is triggered (see type ShortcutTrigger in apps/web for more info)
+  """
+  trigger: [String!]!
+
+  """The date and time the shortcut was last updated"""
+  updatedAt: DateTime!
+}
+
+input ShortcutFilter {
+  AND: [ShortcutFilter!]
+  NOT: ShortcutFilter
+  OR: [ShortcutFilter!]
+  pluginSlug: PrismaStringFilter
+  slug: PrismaStringFilter
+  trigger: PrismaJsonFilter
+}
+
+input ShortcutOrderBy {
+  createdAt: OrderBy
+  slug: OrderBy
+  updatedAt: OrderBy
 }
 
 """
