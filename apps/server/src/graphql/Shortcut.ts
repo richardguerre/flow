@@ -53,7 +53,7 @@ builder.queryField("shortcuts", (t) =>
   }),
 );
 
-builder.mutationField("createShortcut", (t) =>
+builder.mutationField("upsertShortcut", (t) =>
   t.prismaFieldWithInput({
     type: "Shortcut",
     description: "Create a new shortcut.",
@@ -62,39 +62,22 @@ builder.mutationField("createShortcut", (t) =>
       pluginSlug: t.input.string({ required: true }),
       elementId: t.input.string({ required: true }),
       trigger: t.input.stringList({ required: true }),
+      enabled: t.input.boolean({ required: false }),
     },
     resolve: async (_, __, args) => {
-      return prisma.shortcut.create({
-        data: {
+      return prisma.shortcut.upsert({
+        where: {
+          slug_pluginSlug_unique: { slug: args.input.slug, pluginSlug: args.input.pluginSlug },
+        },
+        create: {
           slug: args.input.slug,
           pluginSlug: args.input.pluginSlug,
           elementId: args.input.elementId,
           trigger: args.input.trigger,
         },
-      });
-    },
-  }),
-);
-
-builder.mutationField("updateShortcut", (t) =>
-  t.prismaFieldWithInput({
-    type: "Shortcut",
-    description: "Update a shortcut.",
-    input: {
-      id: t.input.globalID({ required: true }),
-      slug: t.input.string({ required: false }),
-      pluginSlug: t.input.string({ required: false }),
-      elementId: t.input.string({ required: false }),
-      trigger: t.input.stringList({ required: false }),
-    },
-    resolve: async (_, __, args) => {
-      return prisma.shortcut.update({
-        where: { id: parseInt(args.input.id.id) },
-        data: {
-          slug: u(args.input.slug),
-          pluginSlug: u(args.input.pluginSlug),
-          elementId: u(args.input.elementId),
-          trigger: u(args.input.trigger),
+        update: {
+          trigger: args.input.trigger,
+          enabled: u(args.input.enabled),
         },
       });
     },

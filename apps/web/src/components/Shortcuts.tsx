@@ -1,4 +1,4 @@
-import { createContext, useContext, useEffect, useRef, useState } from "react";
+import { createContext, useContext, useEffect, useMemo, useRef, useState } from "react";
 import { graphql, useLazyLoadQuery } from "@flowdev/relay";
 import { usePlugins } from "../getPlugin";
 import { ShortcutsQuery } from "@flowdev/web/relay/__gen__/ShortcutsQuery.graphql";
@@ -7,53 +7,61 @@ import { DayShortcuts } from "./Day";
 
 type FocusedElements = {
   Day: DayShortcuts;
-  Other: {};
+  Global: { _id: "Global" };
 };
 type FocusedElement = FocusedElements[keyof FocusedElements];
 
-type Shortcut = { handler: ShortcutHandler };
-type Shortcuts = {
-  [elementId: string]: {
-    [pluginSlugShortcutSlug: string]: Shortcut & { trigger: ShortcutTrigger };
-  };
-};
-type ShortcutTrigger = string | string[];
 type ShortcutHandler = <T extends keyof FocusedElements = keyof FocusedElements>(args: {
   element: FocusedElements[T];
   event: ExtendedKeyboardEvent;
 }) => void;
+type Shortcut = { handler: ShortcutHandler };
+type ShortcutTrigger = string | string[];
+type Shortcuts = {
+  [elementId: string]: {
+    [pluginSlugShortcutSlug: string]: Shortcut & {
+      pluginSlug: string;
+      shortcutSlug: string;
+      trigger: ShortcutTrigger;
+    };
+  };
+};
 export type PluginShortcuts = {
   [shortcutSlug: string]: Shortcut & { elementId: string; defaultTrigger: ShortcutTrigger };
 };
 
-const flowDefaultShortcuts: Shortcuts = {
+const defaultShortcuts: Shortcuts = {
   Day: {
     "flow-create-task": {
+      pluginSlug: "flow",
+      shortcutSlug: "create-task",
       trigger: ["c"],
       handler: ({ element }) => {
-        if (!("createTask" in element)) return;
-        element.createTask();
+        if (element._id !== "Day") return;
+        element.createVirtualTask({ date: element.date });
       },
     },
   },
-  Other: {},
 };
 
 export type ShortcutsContext = {
   focusElement: (id: string, element: FocusedElement) => void;
   blurElement: (id: string) => void;
+  shortcuts: Shortcuts;
   loading: boolean;
 };
 
 const shortcutsContext = createContext<ShortcutsContext>({
   focusElement: () => {},
   blurElement: () => {},
+  shortcuts: defaultShortcuts,
   loading: true,
 });
 
 export const ShorcutsProvider = (props: { children: React.ReactNode }) => {
+  const mousetrap = useMemo(() => new Mousetrap(), []);
   const [loading, setLoading] = useState(true);
-  const [shortcuts, setShortcuts] = useState<Shortcuts>(flowDefaultShortcuts);
+  const [shortcuts, setShortcuts] = useState<Shortcuts>(defaultShortcuts);
   const { plugins, pk } = usePlugins();
   const data = useLazyLoadQuery<ShortcutsQuery>(
     graphql`
@@ -80,7 +88,7 @@ export const ShorcutsProvider = (props: { children: React.ReactNode }) => {
 
     for (const s in shortcutsOfElement) {
       const shortcut = shortcutsOfElement[s];
-      Mousetrap.bind(shortcut.trigger, (event) => shortcut.handler({ element, event }));
+      mousetrap.bind(shortcut.trigger, (event) => shortcut.handler({ element, event }));
     }
   };
 
@@ -89,7 +97,7 @@ export const ShorcutsProvider = (props: { children: React.ReactNode }) => {
     if (!shortcutsOfElement) return;
     for (const s in shortcutsOfElement) {
       const shortcut = shortcutsOfElement[s];
-      Mousetrap.unbind(shortcut.trigger);
+      mousetrap.unbind(shortcut.trigger);
     }
   };
 
@@ -103,7 +111,7 @@ export const ShorcutsProvider = (props: { children: React.ReactNode }) => {
       );
     }
 
-    const updatedShortcuts: Shortcuts = {};
+    const updatedShortcuts: Shortcuts = defaultShortcuts;
     for (const pluginSlug in plugins) {
       const plugin = plugins[pluginSlug];
       if (!plugin.shortcuts) continue;
@@ -114,7 +122,12 @@ export const ShorcutsProvider = (props: { children: React.ReactNode }) => {
         const prevShortcuts = updatedShortcuts[shortcut.elementId];
         updatedShortcuts[shortcut.elementId] = {
           ...(prevShortcuts ?? {}),
-          [shortcutSlug]: { trigger, handler: shortcut.handler },
+          [`${pluginSlug}-${shortcutSlug}`]: {
+            pluginSlug,
+            shortcutSlug,
+            trigger,
+            handler: shortcut.handler,
+          },
         };
       }
     }
@@ -123,7 +136,7 @@ export const ShorcutsProvider = (props: { children: React.ReactNode }) => {
   }, [data.shortcuts.edges, pk]);
 
   return (
-    <shortcutsContext.Provider value={{ focusElement, blurElement, loading }}>
+    <shortcutsContext.Provider value={{ focusElement, blurElement, shortcuts, loading }}>
       {props.children}
     </shortcutsContext.Provider>
   );

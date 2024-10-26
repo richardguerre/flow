@@ -237,9 +237,6 @@ type Mutation {
   createOrUpdateTemplate(input: MutationCreateOrUpdateTemplateInput!): Template!
   createRoutine(input: MutationCreateRoutineInput!): Routine!
 
-  """Create a new shortcut."""
-  createShortcut(input: MutationCreateShortcutInput!): Shortcut!
-
   """Create a new subtask."""
   createSubtask(input: MutationCreateSubtaskInput!): Task!
 
@@ -324,9 +321,6 @@ type Mutation {
   updateRoutine(input: MutationUpdateRoutineInput!): Routine!
   updateRoutineStep(input: MutationUpdateRoutineStepInput!): RoutineStep!
 
-  """Update a shortcut."""
-  updateShortcut(input: MutationUpdateShortcutInput!): Shortcut!
-
   """Update a task."""
   updateTask(input: MutationUpdateTaskInput!): Task!
 
@@ -356,6 +350,9 @@ type Mutation {
 
   """Update a template."""
   updateTemplate(input: MutationUpdateTemplateInput!): Template!
+
+  """Create a new shortcut."""
+  upsertShortcut(input: MutationUpsertShortcutInput!): Shortcut!
 
   """
   Creates a store item. If a store item with the same key exists, only its value will be updated (`isSecret` and `isServerOnly` will not be updated).
@@ -457,13 +454,6 @@ input MutationCreateRoutineInput {
   repeats: [RepetitionPattern!]!
   steps: [RoutineStepInput!]!
   time: Time!
-}
-
-input MutationCreateShortcutInput {
-  elementId: String!
-  pluginSlug: String!
-  slug: String!
-  trigger: [String!]!
 }
 
 input MutationCreateSubtaskInput {
@@ -636,14 +626,6 @@ input MutationUpdateRoutineStepInput {
   templates: [TemplateInput!]
 }
 
-input MutationUpdateShortcutInput {
-  elementId: String
-  id: ID!
-  pluginSlug: String
-  slug: String
-  trigger: [String!]
-}
-
 input MutationUpdateTaskDateInput {
   """The new date of the task."""
   date: Date!
@@ -713,6 +695,14 @@ input MutationUpdateTemplateInput {
 
   """The Relay ID of the routine step to link the template to."""
   routineStepId: ID
+}
+
+input MutationUpsertShortcutInput {
+  elementId: String!
+  enabled: Boolean
+  pluginSlug: String!
+  slug: String!
+  trigger: [String!]!
 }
 
 input MutationUpsertStoreItemInput {

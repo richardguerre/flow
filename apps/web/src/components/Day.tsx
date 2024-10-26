@@ -66,9 +66,6 @@ export const Day = (props: DayProps) => {
   );
 };
 
-export type DayShortcuts = DayShortcuts_day$data & {
-  createTask: () => void;
-};
 const useDayShortcuts = (props: { day: DayShortcuts_day$key }) => {
   const day = useFragment(
     graphql`
@@ -80,11 +77,16 @@ const useDayShortcuts = (props: { day: DayShortcuts_day$key }) => {
   );
   const { ref } = useShortcutsOnHover("Day", {
     ...day,
-    createTask: () => createVirtualTask({ date: day.date }),
+    _id: "Day",
+    createVirtualTask,
   });
 
   return ref;
 };
+export type DayShortcuts = {
+  _id: "Day";
+  createVirtualTask: typeof createVirtualTask;
+} & DayShortcuts_day$data;
 
 type UpdateTaskDateInfo = {
   movedTaskId: string;
