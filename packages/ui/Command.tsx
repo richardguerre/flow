@@ -1,23 +1,68 @@
-import { forwardRef, ElementRef, ComponentPropsWithoutRef, HTMLAttributes } from "react";
+import {
+  forwardRef,
+  ElementRef,
+  ComponentPropsWithoutRef,
+  createContext,
+  useContext,
+  useState,
+  useEffect,
+} from "react";
 import { DialogProps } from "@radix-ui/react-dialog";
 import { BsSearch } from "@flowdev/icons";
 import { Command as CommandPrimitive } from "cmdk";
 import { tw } from "./tw";
 import { Dialog, DialogContent } from "./Dialog";
+import { Shortcut } from "./Shortcut";
+
+type CommandContextType = {
+  value: string | undefined;
+  select: (value: string) => void;
+};
+const CommandContext = createContext<CommandContextType>({
+  value: undefined,
+  select: () => {},
+});
+const useCommandContext = () => useContext(CommandContext);
 
 export const Command = forwardRef<
   ElementRef<typeof CommandPrimitive>,
-  ComponentPropsWithoutRef<typeof CommandPrimitive>
->(({ className, ...props }, ref) => (
-  <CommandPrimitive
-    ref={ref}
-    className={tw(
-      "bg-background-50 text-foreground-900 flex h-full w-full flex-col overflow-hidden rounded-md",
-      className,
-    )}
-    {...props}
-  />
-));
+  Omit<ComponentPropsWithoutRef<typeof CommandPrimitive>, "onValueChange"> & {
+    onValueChange?: (
+      value: string,
+      info: {
+        fromShortcut?: boolean;
+      },
+    ) => void;
+  }
+>(({ className, ...props }, ref) => {
+  const [value, setValue] = useState<string | undefined>(props.value);
+
+  useEffect(() => {
+    setValue(props.value);
+  }, [props.value]);
+
+  const select = (value: string, info?: { fromShortcut?: boolean }) => {
+    setValue(value);
+    props.onValueChange?.(value, info ?? {});
+  };
+
+  return (
+    <CommandContext.Provider
+      value={{ value, select: (value) => select(value, { fromShortcut: true }) }}
+    >
+      <CommandPrimitive
+        ref={ref}
+        className={tw(
+          "bg-background-50 text-foreground-900 flex h-full w-full flex-col overflow-hidden rounded-md",
+          className,
+        )}
+        {...props}
+        value={value}
+        onValueChange={select}
+      />
+    </CommandContext.Provider>
+  );
+});
 
 interface CommandDialogProps extends DialogProps {}
 
@@ -95,27 +140,36 @@ export const CommandSeparator = forwardRef<
 
 /**
  * ❗️Note: The value of the `CommandItem` component is case-sensitive as the cmdk package was patched not to lowercase the values.
- * It is recommended to create a mapping function from the label to the value.
+ * ~~It is recommended to create a mapping function from the label to the value.~~
+ * Use the `filter` prop of the `Command` component to filter the items.
  */
 export const CommandItem = forwardRef<
   ElementRef<typeof CommandPrimitive.Item>,
-  ComponentPropsWithoutRef<typeof CommandPrimitive.Item>
->(({ className, ...props }, ref) => (
-  <CommandPrimitive.Item
-    ref={ref}
-    className={tw(
-      "aria-selected:bg-primary-100 aria-selected:text-primary-600 relative flex cursor-default select-none items-center rounded-sm px-2 py-1.5 text-sm outline-none data-[disabled]:pointer-events-none data-[disabled]:opacity-50",
-      className,
-    )}
-    {...props}
-  />
-));
+  ComponentPropsWithoutRef<typeof CommandPrimitive.Item> & {
+    shortcut?: string;
+  }
+>(({ className, ...props }, ref) => {
+  const command = useCommandContext();
+  const handleShortcutTrigger = (_e: Mousetrap.ExtendedKeyboardEvent, _combo: string) => {
+    const value = props.value ?? (typeof props.children === "string" ? props.children : undefined);
+    value && command.select(value);
+  };
 
-export const CommandShortcut = ({ className, ...props }: HTMLAttributes<HTMLSpanElement>) => {
   return (
-    <span
-      className={tw("text-foreground-600 ml-auto text-xs tracking-widest", className)}
+    <CommandPrimitive.Item
+      ref={ref}
+      className={tw(
+        "aria-selected:bg-primary-100 aria-selected:text-primary-600 relative flex cursor-default select-none items-center rounded-sm px-2 py-1.5 text-sm outline-none data-[disabled]:pointer-events-none data-[disabled]:opacity-50",
+        className,
+      )}
       {...props}
-    />
+    >
+      {props.children}
+      {props.shortcut && (
+        <Shortcut className="ml-auto" onTrigger={handleShortcutTrigger}>
+          {props.shortcut}
+        </Shortcut>
+      )}
+    </CommandPrimitive.Item>
   );
-};
+});

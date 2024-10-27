@@ -161,12 +161,3 @@ export const DropdownMenuSeparator = React.forwardRef<
 >(({ className, ...props }, ref) => (
   <Separator ref={ref} className={tw("bg-primary-100 -mx-1 my-1 h-px", className)} {...props} />
 ));
-
-export const DropdownMenuShortcut = ({
-  className,
-  ...props
-}: React.HTMLAttributes<HTMLSpanElement>) => {
-  return (
-    <span className={tw("ml-auto text-xs tracking-widest opacity-60", className)} {...props} />
-  );
-};

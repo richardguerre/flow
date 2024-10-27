@@ -2,7 +2,7 @@ import { createContext, useContext, useEffect, useMemo, useRef, useState } from 
 import { graphql, useLazyLoadQuery } from "@flowdev/relay";
 import { usePlugins } from "../getPlugin";
 import { ShortcutsQuery } from "@flowdev/web/relay/__gen__/ShortcutsQuery.graphql";
-import Mousetrap, { type ExtendedKeyboardEvent } from "mousetrap";
+import { Mousetrap } from "@flowdev/ui/Shortcut";
 import { DayShortcuts } from "./Day";
 
 type FocusedElements = {
@@ -13,10 +13,10 @@ type FocusedElement = FocusedElements[keyof FocusedElements];
 
 type ShortcutHandler = <T extends keyof FocusedElements = keyof FocusedElements>(args: {
   element: FocusedElements[T];
-  event: ExtendedKeyboardEvent;
+  event: Mousetrap.ExtendedKeyboardEvent;
 }) => void;
 type Shortcut = { handler: ShortcutHandler };
-type ShortcutTrigger = string | string[];
+export type ShortcutTrigger = string | string[];
 type Shortcuts = {
   [elementId: string]: {
     [pluginSlugShortcutSlug: string]: Shortcut & {
@@ -180,29 +180,6 @@ export const useShortcutsOnFocus = (id: string, element: FocusedElement) => {
       htmlRef.removeEventListener?.("blur", () => {});
     };
   }, []);
-
-  return { ref };
-};
-
-export const useSimpleShortcuts = (
-  shortcuts: {
-    trigger: string | string[];
-    handler: (e: ExtendedKeyboardEvent, combo: string) => void;
-  }[],
-) => {
-  const ref = useRef<any>(null);
-  const mousetrap = new Mousetrap(ref.current ?? undefined);
-  useEffect(() => {
-    for (const shortcut of shortcuts) {
-      mousetrap.bind(shortcut.trigger, shortcut.handler);
-    }
-
-    return () => {
-      for (const shortcut of shortcuts) {
-        mousetrap.unbind(shortcut.trigger);
-      }
-    };
-  }, [shortcuts.length]);
 
   return { ref };
 };

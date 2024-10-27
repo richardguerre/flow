@@ -19,6 +19,7 @@
     "clsx": "^1.2.1",
     "cmdk": "0.2.0",
     "framer-motion": "^10.12.10",
+    "mousetrap": "^1.6.5",
     "react-hot-toast": "^2.4.1",
     "react-select": "^5.7.7",
     "react-timezone-select": "^2.1.2",
