@@ -14,7 +14,7 @@ import { getPlugins } from "@flowdev/web/getPlugin";
 import { OnCreateTask, OnCreateTaskProps, PluginStepInfo } from "./OnCreateTask";
 import { DragContext, useDragContext } from "../useDragContext";
 import { getStartOfToday } from "./CalendarList";
-import { useShortcutsOnHover } from "./Shortcuts";
+import { useIsPressing, useShortcutsOnHover } from "./Shortcuts";
 import {
   DayShortcuts_day$data,
   DayShortcuts_day$key,
@@ -128,6 +128,7 @@ export const DayContent = (props: DayContentProps) => {
 
   const [tasks, setTasks] = useState(structuredClone(Array.from(day.tasks)));
   const [updateTaskDateInfo, setUpdateTaskDateInfo] = useState<UpdateTaskDateInfo>(null);
+  const isPressingAlt = useIsPressing("Alt");
 
   const handleTaskMove = (e: Sortable.SortableEvent) => {
     setUpdateTaskDateInfo({

@@ -4,9 +4,11 @@ import { usePlugins } from "../getPlugin";
 import { ShortcutsQuery } from "@flowdev/web/relay/__gen__/ShortcutsQuery.graphql";
 import { Mousetrap } from "@flowdev/ui/Shortcut";
 import { DayShortcuts } from "./Day";
+import { InboxListShortcuts } from "./InboxList";
 
 type FocusedElements = {
   Day: DayShortcuts;
+  InboxList: InboxListShortcuts;
   Global: { _id: "Global" };
 };
 type FocusedElement = FocusedElements[keyof FocusedElements];
@@ -39,6 +41,17 @@ const defaultShortcuts: Shortcuts = {
       handler: ({ element }) => {
         if (element._id !== "Day") return;
         element.createVirtualTask({ date: element.date });
+      },
+    },
+  },
+  InboxList: {
+    "flow-create-item": {
+      pluginSlug: "flow",
+      shortcutSlug: "create-item",
+      trigger: ["c"],
+      handler: ({ element }) => {
+        if (element._id !== "InboxList") return;
+        element.createVirtualItem();
       },
     },
   },
@@ -182,4 +195,29 @@ export const useShortcutsOnFocus = (id: string, element: FocusedElement) => {
   }, []);
 
   return { ref };
+};
+
+export const useIsPressing = (trigger: "Alt" | (string & {})) => {
+  const [isPressingShortcut, setIsPressingShortcut] = useState(false);
+
+  useEffect(() => {
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (e.key === trigger) {
+        setIsPressingShortcut(true);
+      }
+    };
+    const handleKeyUp = (e: KeyboardEvent) => {
+      if (e.key === trigger) {
+        setIsPressingShortcut(false);
+      }
+    };
+    document.addEventListener("keydown", handleKeyDown);
+    document.addEventListener("keyup", handleKeyUp);
+    return () => {
+      document.removeEventListener("keydown", handleKeyDown);
+      document.removeEventListener("keyup", handleKeyUp);
+    };
+  }, [trigger]);
+
+  return isPressingShortcut;
 };
