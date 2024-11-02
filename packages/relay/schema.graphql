@@ -220,6 +220,19 @@ type Mutation {
   Change password for the Flow instance and get a new session token to make authenticated requests.
   """
   changePassword(input: MutationChangePasswordInput!): String!
+
+  """
+  Clone an existing task into a new day.
+      
+  It will clone the task, taskPluginDatas linked to it and link to the same item if there was one to the original task. The original task will be left intact.
+  
+  If the new task is for today, it will have the same status as the original task.
+  If the new task is in the past, it will have the status `DONE` and the completedAt set to the end of the day.
+  If the new task is in the future, it will have the status `TODO` and the completedAt set to null.
+  
+  Returns all the days that were updated (as a list in chronological order).
+  """
+  cloneTask(input: MutationCloneTaskInput!): [Day!]!
   completeRoutine(input: MutationCompleteRoutineInput!): Boolean!
 
   """Create an item in the calendar."""
@@ -372,6 +385,17 @@ input MutationChangePasswordInput {
 
   """The old password (unhashed)."""
   oldPassword: String!
+}
+
+input MutationCloneTaskInput {
+  """The date to clone the task into."""
+  date: Date!
+
+  """The Relay ID of the task to clone."""
+  id: ID!
+
+  """The new order of the tasks in the day the task is cloned into."""
+  newTasksOrder: [ID!]!
 }
 
 input MutationCompleteRoutineInput {

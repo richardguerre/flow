@@ -19,6 +19,7 @@ import {
   DayShortcuts_day$data,
   DayShortcuts_day$key,
 } from "@flowdev/web/relay/__gen__/DayShortcuts_day.graphql";
+import { DayCloneTaskMutation } from "../relay/__gen__/DayCloneTaskMutation.graphql";
 
 type DayProps = {
   day: Day_day$key;
@@ -125,6 +126,13 @@ export const DayContent = (props: DayContentProps) => {
       }
     }
   `);
+  const [cloneTask] = useMutation<DayCloneTaskMutation>(graphql`
+    mutation DayCloneTaskMutation($input: MutationCloneTaskInput!) {
+      cloneTask(input: $input) {
+        ...Day_day
+      }
+    }
+  `);
 
   const [tasks, setTasks] = useState(structuredClone(Array.from(day.tasks)));
   const [updateTaskDateInfo, setUpdateTaskDateInfo] = useState<UpdateTaskDateInfo>(null);
@@ -194,18 +202,32 @@ export const DayContent = (props: DayContentProps) => {
     if (!updateTaskDateInfo || updateTaskDateInfo.over === "lists") return; // as the Lists component may be super-imposed on top of the Day component (in the IndexView), the Day component is still a drop target but needs to be ignored as the user is trying to move the task to the Lists component
     const newTasksOrder = Array.from(updateTaskDateInfo.htmlParent.children).map((task) => task.id);
 
-    udpateTaskDate({
-      variables: {
-        input: {
-          id: updateTaskDateInfo.movedTaskId,
-          date: updateTaskDateInfo.htmlParent.id,
-          newTasksOrder,
+    // if pressing alt, we don't want to update the task date, but clone the task into the new day
+    // the day will automtically be updated when the task is cloned
+    if (isPressingAlt) {
+      cloneTask({
+        variables: {
+          input: {
+            id: updateTaskDateInfo.movedTaskId,
+            date: updateTaskDateInfo.htmlParent.id,
+            newTasksOrder,
+          },
         },
-      },
-    });
+      });
+    } else {
+      udpateTaskDate({
+        variables: {
+          input: {
+            id: updateTaskDateInfo.movedTaskId,
+            date: updateTaskDateInfo.htmlParent.id,
+            newTasksOrder,
+          },
+        },
+      });
+    }
 
     setUpdateTaskDateInfo(null);
-  }, [updateTaskDateInfo]);
+  }, [updateTaskDateInfo, isPressingAlt]);
 
   return (
     <>
@@ -223,7 +245,10 @@ export const DayContent = (props: DayContentProps) => {
         animation={150}
         delayOnTouchOnly
         delay={100}
-        group="shared"
+        group={{
+          name: "shared",
+          pull: isPressingAlt ? "clone" : undefined,
+        }}
         onEnd={handleTaskMove}
         disabled={over === "lists"}
       >
