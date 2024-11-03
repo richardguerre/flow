@@ -88,7 +88,7 @@ await prisma.day.create({
         data: [
           {
             status: "TODO",
-            title: "Make a new friend",
+            title: "Meet a friend",
             durationInMinutes: 120,
             itemId: item.id,
           },
@@ -207,6 +207,15 @@ await prisma.routine.create({
         ],
       },
     },
+  },
+});
+
+await prisma.shortcut.create({
+  data: {
+    pluginSlug: "flow",
+    slug: "create-task",
+    elementId: "Day",
+    trigger: ["c"],
   },
 });
 

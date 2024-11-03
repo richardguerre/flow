@@ -18,6 +18,12 @@ export const IntFilter = builder.prismaFilter("Int", {
   ops: ["equals", "lt", "lte", "gt", "gte", "in", "not", "notIn"],
 });
 
+export const StringFilter = builder.prismaFilter("String", {
+  name: "PrismaStringFilter",
+  description: "Filter input of String",
+  ops: ["equals", "in", "not", "notIn", "contains", "startsWith", "endsWith"],
+});
+
 export const JsonFilter = builder.prismaFilter("JSON", {
   name: "PrismaJsonFilter",
   description: "Filter input of JSON",

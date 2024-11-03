@@ -7,7 +7,7 @@ import { getPluginOptions } from "./getPluginOptions";
 import { devImportMap } from "./plugin.dev";
 import { useState } from "react";
 import { useAsyncEffect } from "../useAsyncEffect";
-import { getPluginsUsePluginsQuery } from "../relay/__gen__/getPluginsUsePluginsQuery.graphql";
+import { getPluginsUsePluginsQuery } from "@flowdev/web/relay/__gen__/getPluginsUsePluginsQuery.graphql";
 
 type Input = {
   pluginSlug: string;
@@ -83,12 +83,8 @@ const getInstalledPlugins = async () => {
 };
 
 export type PluginsRecord = Record<string, ReturnType<WebPlugin>>;
-/**
- * @suspends This hook will suspend. Make sure to wrap the component using this hook in a `Suspense` boundary.
- */
-export const usePlugins = () => {
-  const [plugins, setPlugins] = useState<PluginsRecord>({});
-  const [loading, setLoading] = useState(true);
+
+export const usePluginsQuery = () => {
   const data = useLazyLoadQuery<getPluginsUsePluginsQuery>(
     graphql`
       query getPluginsUsePluginsQuery {
@@ -100,6 +96,17 @@ export const usePlugins = () => {
     {},
     { fetchPolicy: "store-or-network" },
   );
+
+  return data;
+};
+
+/**
+ * @suspends This hook will suspend. Make sure to wrap the component using this hook in a `Suspense` boundary.
+ */
+export const usePlugins = () => {
+  const [plugins, setPlugins] = useState<PluginsRecord>({});
+  const [loading, setLoading] = useState(true);
+  const data = usePluginsQuery();
 
   const pluginSlugs = data.installedPlugins.map((plugin) => plugin.slug).join(",");
 
@@ -120,7 +127,12 @@ export const usePlugins = () => {
     setLoading(false);
   }, [pluginSlugs]);
 
-  return { plugins, loading };
+  return {
+    plugins,
+    loading,
+    /** A key to use in the dependency arrays of useEffect, useMemo, useCallback hooks */
+    pk: pluginSlugs,
+  };
 };
 
 graphql`

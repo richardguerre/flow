@@ -14,6 +14,7 @@ import type {
 import type { PluginRenderLists as RenderLists } from "@flowdev/web/src/components/RenderLists";
 import type { PluginRenderList as RenderList } from "@flowdev/web/src/components/RenderList";
 import type { RenderRoutineStepSettings_routineStep$data } from "@flowdev/web/src/relay/__gen__/RenderRoutineStepSettings_routineStep.graphql";
+import type { PluginShortcuts } from "@flowdev/web/src/components/Shortcuts";
 import type { Extensions } from "@tiptap/core";
 import { ComponentType } from "react";
 
@@ -117,6 +118,10 @@ export type WebPlugin = (options: WebPluginOptions) => {
    * TipTap extensions to use in the NoteEditor component.
    */
   noteEditorTipTapExtensions?: Extensions;
+  /**
+   * Shortcuts to add to the web app.
+   */
+  shortcuts?: PluginShortcuts;
 };
 
 export const definePlugin = (plugin: WebPlugin) => ({ plugin });

@@ -14,6 +14,12 @@ import { getPlugins } from "@flowdev/web/getPlugin";
 import { OnCreateTask, OnCreateTaskProps, PluginStepInfo } from "./OnCreateTask";
 import { DragContext, useDragContext } from "../useDragContext";
 import { getStartOfToday } from "./CalendarList";
+import { useIsPressing, useShortcutsOnHover } from "./Shortcuts";
+import {
+  DayShortcuts_day$data,
+  DayShortcuts_day$key,
+} from "@flowdev/web/relay/__gen__/DayShortcuts_day.graphql";
+import { DayCloneTaskMutation } from "../relay/__gen__/DayCloneTaskMutation.graphql";
 
 type DayProps = {
   day: Day_day$key;
@@ -25,14 +31,15 @@ export const Day = (props: DayProps) => {
     graphql`
       fragment Day_day on Day {
         date
+        ...DayShortcuts_day
         ...DayContent_day
         ...DayAddTaskActionsBar_day
       }
     `,
     props.day,
   );
-
   const dayRef = useRef<HTMLDivElement>(null);
+  const ref = useDayShortcuts({ day });
 
   useEffect(() => {
     const today = getStartOfToday().format("YYYY-MM-DD");
@@ -42,7 +49,7 @@ export const Day = (props: DayProps) => {
   }, [dayRef]);
 
   return (
-    <div className="relative flex h-full w-64 flex-col shrink-0">
+    <div className="relative flex h-full w-64 flex-col shrink-0" ref={ref}>
       <div ref={dayRef} className="absolute -left-2" />
       <div className="mb-3 px-2">
         <button
@@ -59,6 +66,28 @@ export const Day = (props: DayProps) => {
     </div>
   );
 };
+
+const useDayShortcuts = (props: { day: DayShortcuts_day$key }) => {
+  const day = useFragment(
+    graphql`
+      fragment DayShortcuts_day on Day {
+        date
+      }
+    `,
+    props.day,
+  );
+  const { ref } = useShortcutsOnHover("Day", {
+    ...day,
+    _id: "Day",
+    createVirtualTask,
+  });
+
+  return ref;
+};
+export type DayShortcuts = {
+  _id: "Day";
+  createVirtualTask: typeof createVirtualTask;
+} & DayShortcuts_day$data;
 
 type UpdateTaskDateInfo = {
   movedTaskId: string;
@@ -97,9 +126,17 @@ export const DayContent = (props: DayContentProps) => {
       }
     }
   `);
+  const [cloneTask] = useMutation<DayCloneTaskMutation>(graphql`
+    mutation DayCloneTaskMutation($input: MutationCloneTaskInput!) {
+      cloneTask(input: $input) {
+        ...Day_day
+      }
+    }
+  `);
 
   const [tasks, setTasks] = useState(structuredClone(Array.from(day.tasks)));
   const [updateTaskDateInfo, setUpdateTaskDateInfo] = useState<UpdateTaskDateInfo>(null);
+  const isPressingAlt = useIsPressing("Alt");
 
   const handleTaskMove = (e: Sortable.SortableEvent) => {
     setUpdateTaskDateInfo({
@@ -165,18 +202,32 @@ export const DayContent = (props: DayContentProps) => {
     if (!updateTaskDateInfo || updateTaskDateInfo.over === "lists") return; // as the Lists component may be super-imposed on top of the Day component (in the IndexView), the Day component is still a drop target but needs to be ignored as the user is trying to move the task to the Lists component
     const newTasksOrder = Array.from(updateTaskDateInfo.htmlParent.children).map((task) => task.id);
 
-    udpateTaskDate({
-      variables: {
-        input: {
-          id: updateTaskDateInfo.movedTaskId,
-          date: updateTaskDateInfo.htmlParent.id,
-          newTasksOrder,
+    // if pressing alt, we don't want to update the task date, but clone the task into the new day
+    // the day will automtically be updated when the task is cloned
+    if (isPressingAlt) {
+      cloneTask({
+        variables: {
+          input: {
+            id: updateTaskDateInfo.movedTaskId,
+            date: updateTaskDateInfo.htmlParent.id,
+            newTasksOrder,
+          },
         },
-      },
-    });
+      });
+    } else {
+      udpateTaskDate({
+        variables: {
+          input: {
+            id: updateTaskDateInfo.movedTaskId,
+            date: updateTaskDateInfo.htmlParent.id,
+            newTasksOrder,
+          },
+        },
+      });
+    }
 
     setUpdateTaskDateInfo(null);
-  }, [updateTaskDateInfo]);
+  }, [updateTaskDateInfo, isPressingAlt]);
 
   return (
     <>
@@ -194,7 +245,10 @@ export const DayContent = (props: DayContentProps) => {
         animation={150}
         delayOnTouchOnly
         delay={100}
-        group="shared"
+        group={{
+          name: "shared",
+          pull: isPressingAlt ? "clone" : undefined,
+        }}
         onEnd={handleTaskMove}
         disabled={over === "lists"}
       >

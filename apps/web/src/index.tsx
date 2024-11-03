@@ -9,6 +9,7 @@ import { getClosestRoutineRoutePathAndName } from "@flowdev/web/views/RoutineVie
 import { Providers } from "@flowdev/web/components/Providers";
 import { ViewErrorBoundary } from "@flowdev/web/components/ViewErrorBoundary";
 import { SuspenseLoadingView } from "@flowdev/ui/Loading";
+import { ShorcutsProvider } from "./components/Shortcuts";
 
 initUnocssRuntime({
   autoPrefix: true,
@@ -35,7 +36,9 @@ const router = createBrowserRouter([
     path: "/",
     element: (
       <SuspenseLoadingView>
-        <Outlet />
+        <ShorcutsProvider>
+          <Outlet />
+        </ShorcutsProvider>
       </SuspenseLoadingView>
     ),
     children: [

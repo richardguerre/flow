@@ -250,6 +250,89 @@ builder.mutationField("createTask", (t) =>
   }),
 );
 
+builder.mutationField("cloneTask", (t) =>
+  t.prismaFieldWithInput({
+    type: [DayType],
+    description: `Clone an existing task into a new day.
+    
+It will clone the task, taskPluginDatas linked to it and link to the same item if there was one to the original task. The original task will be left intact.
+
+If the new task is for today, it will have the same status as the original task.
+If the new task is in the past, it will have the status \`DONE\` and the completedAt set to the end of the day.
+If the new task is in the future, it will have the status \`TODO\` and the completedAt set to null.
+
+Returns all the days that were updated (as a list in chronological order).`,
+    input: {
+      id: t.input.globalID({ required: true, description: "The Relay ID of the task to clone." }),
+      date: t.input.field({
+        type: "Date",
+        required: true,
+        description: "The date to clone the task into.",
+      }),
+      newTasksOrder: t.input.globalIDList({
+        required: true,
+        description: "The new order of the tasks in the day the task is cloned into.",
+      }),
+    },
+    resolve: async (query, _, args) => {
+      const newDate = args.input.date;
+      const task = await prisma.task.findUnique({
+        where: { id: parseInt(args.input.id.id) },
+        include: { day: { select: { date: true, tasksOrder: true } }, pluginDatas: true },
+      });
+      if (!task) {
+        throw new GraphQLError(`Task with ID ${args.input.id.id} not found.`, {
+          extensions: {
+            code: "TASK_NOT_FOUND",
+            userFriendlyMessage:
+              "The task was not found. Please try refreshing the page and try again.",
+          },
+        });
+      }
+      await prisma.$transaction(async (tx) => {
+        const newTasksOrder = args.input.newTasksOrder.map((id) => parseInt(id.id));
+        const isInPast = dayjs().startOf("day").isAfter(newDate);
+        const isToday = dayjs().isSame(newDate, "day");
+        const isInFuture = dayjs().endOf("day").isBefore(newDate);
+
+        await tx.task.create({
+          data: {
+            title: task.title,
+            status: isToday ? task.status : isInPast ? "DONE" : isInFuture ? "TODO" : "TODO",
+            completedAt: isInPast ? dayjs(newDate).endOf("day").toDate() : null,
+            durationInMinutes: task.durationInMinutes,
+            day: { connectOrCreate: { where: { date: newDate }, create: { date: newDate } } },
+            ...(task.itemId ? { item: { connect: { id: task.itemId } } } : {}),
+            pluginDatas: {
+              createMany: {
+                data: task.pluginDatas.map((pluginData) => ({
+                  pluginSlug: pluginData.pluginSlug,
+                  originalId: pluginData.originalId,
+                  min: pluginData.min ?? {},
+                  full: pluginData.full ?? {},
+                })),
+              },
+            },
+          },
+        });
+
+        // update just one day as they are the same
+        await tx.day.update({
+          ...query,
+          where: { date: newDate },
+          data: { tasksOrder: { set: newTasksOrder } },
+        });
+      });
+
+      return prisma.day.findMany({
+        ...query,
+        where: { date: { in: [newDate, task.date] } },
+        orderBy: { date: "asc" },
+      });
+    },
+  }),
+);
+
 const TaskPluginDataInput = builder.inputType("TaskPluginDataInput", {
   fields: (t) => ({
     pluginSlug: t.string({ required: true }),

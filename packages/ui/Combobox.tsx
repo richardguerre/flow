@@ -7,7 +7,6 @@ import {
   CommandItem,
   CommandList,
   CommandSeparator,
-  CommandShortcut,
 } from "./Command";
 import {
   ComponentProps,
@@ -160,9 +159,28 @@ export const ComboboxContent = forwardRef<
     commandProps?: ComponentPropsWithoutRef<typeof Command>;
   }
 >((props, ref) => {
+  const { onOpenChange, setValues, multiselect } = useContext(ComboboxContext);
   return (
     <PopoverContent {...props} ref={ref} sideOffset={props.sideOffset ?? 4}>
-      <Command {...props.commandProps}>{props.children}</Command>
+      <Command
+        {...props.commandProps}
+        onValueChange={(selectedValue, info) => {
+          if (typeof selectedValue !== "string") return;
+          props.commandProps?.onValueChange?.(selectedValue, info);
+          setValues((oldValues) => {
+            if (oldValues.includes(selectedValue)) {
+              return oldValues.filter((v) => v !== selectedValue);
+            }
+            const newValuesSet = new Set(
+              multiselect ? [...oldValues, selectedValue] : [selectedValue],
+            );
+            return Array.from(newValuesSet);
+          });
+          if (info.fromShortcut || !multiselect) onOpenChange?.(false);
+        }}
+      >
+        {props.children}
+      </Command>
     </PopoverContent>
   );
 });
@@ -231,4 +249,3 @@ export const ComboboxSelected = (
   const { selected } = useContext(ComboboxItemContext);
   return <div {...props} className={tw(props.className, selected && props.selectedClassName)} />;
 };
-export const ComboboxShortcut = CommandShortcut;

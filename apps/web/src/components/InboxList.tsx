@@ -11,6 +11,7 @@ import {
 } from "../relay/__gen__/InboxListItems_itemsConnection.graphql";
 import { useDragContext } from "../useDragContext";
 import { useConvertTaskToItem } from "./OnCreateItem";
+import { useShortcutsOnHover } from "./Shortcuts";
 
 type InboxListProps = {};
 
@@ -18,8 +19,10 @@ export const InboxList = (props: InboxListProps) => {
   const [itemsConnectionId, setItemsConnectionId] = useState<string | null>(null);
   const [count, setCount] = useState(0);
 
+  const ref = useInboxListShortcuts({ itemsConnectionId });
+
   return (
-    <div className="bg-background-100 flex h-full flex-col gap-4 pt-3">
+    <div className="bg-background-100 flex h-full flex-col gap-4 pt-3" ref={ref}>
       <div className="flex flex-col gap-2 px-4">
         <div className="text-xl font-semibold">Inbox</div>
         <div className="text-foreground-700">
@@ -43,6 +46,19 @@ export const InboxList = (props: InboxListProps) => {
       <InboxListItems onItemsConnectionIdChange={setItemsConnectionId} count={count} />
     </div>
   );
+};
+
+const useInboxListShortcuts = (props: { itemsConnectionId: string | null }) => {
+  const { ref } = useShortcutsOnHover("InboxList", {
+    _id: "InboxList",
+    createVirtualItem: () =>
+      createVirtualItem({ itemsConnectionId: props?.itemsConnectionId ?? "" }),
+  });
+  return ref;
+};
+export type InboxListShortcuts = {
+  _id: "InboxList";
+  createVirtualItem: () => void;
 };
 
 const InboxListItems = (props: {
