@@ -36,6 +36,61 @@ export default definePlugin((opts) => {
     return accountsTokensItem.value;
   };
 
+  const stringMatchesCriteria = (input: {
+    str: string;
+    criteria: WhereString | undefined;
+  }): boolean => {
+    if (!input.criteria) return true;
+    let matches = false;
+    if (input.criteria.contains) {
+      matches = !!input.str.includes(input.criteria.contains);
+    } else if (input.criteria.endsWith) {
+      matches = !!input.str.endsWith(input.criteria.endsWith);
+    } else if (input.criteria.startsWith) {
+      matches = !!input.str.startsWith(input.criteria.startsWith);
+    } else if (input.criteria.not) {
+      matches = !stringMatchesCriteria({ str: input.str, criteria: input.criteria.not });
+    }
+    return matches;
+  };
+
+  const eventStatusMatchesCriteria = (input: {
+    event: calendar_v3.Schema$Event;
+    criteria: WhereStatus | undefined;
+  }): boolean => {
+    if (!input.criteria || !input.event.status) return true;
+    if (input.criteria.not) {
+      return !eventStatusMatchesCriteria({ event: input.event, criteria: input.criteria.not });
+    }
+    return !!input.criteria.in?.includes(input.event.status as CalendarEventStatus);
+  };
+
+  const eventTypeMatchesCriteria = (input: {
+    event: calendar_v3.Schema$Event;
+    criteria: WhereEventType | undefined;
+  }): boolean => {
+    if (!input.criteria || !input.event.eventType) return true;
+    if (input.criteria.not) {
+      return !eventTypeMatchesCriteria({ event: input.event, criteria: input.criteria.not });
+    }
+    return !!input.criteria.in?.includes(input.event.eventType as CalendarEventType);
+  };
+
+  const eventMatchesCriteria = (input: {
+    event: calendar_v3.Schema$Event;
+    criteria: CalendarWorkflowWhere;
+  }) => {
+    return (
+      stringMatchesCriteria({ str: input.event.summary ?? "", criteria: input.criteria.title }) &&
+      stringMatchesCriteria({
+        str: input.event.description ?? "",
+        criteria: input.criteria.description,
+      }) &&
+      eventStatusMatchesCriteria({ event: input.event, criteria: input.criteria.status }) &&
+      eventTypeMatchesCriteria({ event: input.event, criteria: input.criteria.type })
+    );
+  };
+
   /**
    * Refreshes the tokens if they expired.
    * @throws If the user is not authenticated.
@@ -164,10 +219,30 @@ export default definePlugin((opts) => {
 
     const { isAllDay, scheduledStart, scheduledEnd, isOver } = await getEventStartEnd(input);
     const scheduledAtDate = scheduledStart.tz(usersTimezone).utc(true).toISOString();
-    const isRelevant = input.event.status !== "cancelled" || scheduledEnd.isBefore(opts.dayjs());
+    const isRelevant =
+      eventMatchesCriteria({
+        event: input.event,
+        criteria: input.event.connectCriteria,
+      }) && scheduledEnd.isAfter(opts.dayjs());
+
+    const tagsToAdd: number[] = [];
+    const prefixesToAdd: string[] = [];
+    const suffixesToAdd: string[] = [];
+    for (const workflow of input.event.workflows) {
+      if (!eventMatchesCriteria({ event: input.event, criteria: workflow.where })) continue;
+      for (const action of workflow.actions) {
+        if (action.type === "add-tag") {
+          tagsToAdd.push(action.tagId);
+        } else if (action.type === "prefix") {
+          prefixesToAdd.push(action.chars);
+        } else if (action.type === "suffix") {
+          suffixesToAdd.push(action.chars);
+        }
+      }
+    }
 
     const itemCommonBetweenUpdateAndCreate = {
-      title: input.event.summary ?? "No title",
+      title: `${prefixesToAdd.join("")}${input.event.summary ?? "~~Unknown title~~"}${suffixesToAdd.join("")}`,
       color: input.event.calendarColor ? opts.getNearestItemColor(input.event.calendarColor) : null,
       isAllDay: !!input.event.start?.date,
       scheduledAt: scheduledStart.toISOString(),
@@ -176,6 +251,7 @@ export default definePlugin((opts) => {
         : Math.abs(opts.dayjs(scheduledStart).diff(scheduledEnd, "minute")),
       isRelevant,
       inboxPoints: input.event.status === "tentative" ? 10 : null,
+      tags: { connect: tagsToAdd.map((id) => ({ id })) },
     } satisfies ServerTypes.PrismaTypes.Prisma.ItemUpdateInput;
 
     const min = {
@@ -192,7 +268,7 @@ export default definePlugin((opts) => {
     } satisfies PluginDataFull as any; // the any is required to make typescript happy with Prisma's type system (theoretically there are no issues since we are getting all events from Google's REST API, which returns serialized JSON)
 
     const taskCommonBetweenUpdateAndCreate = {
-      title: itemCommonBetweenUpdateAndCreate["title"],
+      title: itemCommonBetweenUpdateAndCreate.title,
       completedAt: isOver ? scheduledEnd.toISOString() : null,
       status: input.event.status === "cancelled" ? "CANCELED" : isOver ? "DONE" : "TODO",
       day: {
@@ -201,6 +277,7 @@ export default definePlugin((opts) => {
           create: { date: scheduledAtDate, tasksOrder: input.taskId ? [input.taskId] : [] },
         },
       },
+      tags: itemCommonBetweenUpdateAndCreate.tags,
     } satisfies ServerTypes.PrismaTypes.Prisma.TaskUpdateInput;
 
     return {
@@ -290,14 +367,19 @@ export default definePlugin((opts) => {
 
           const connectedCalendarsMap = await opts.store
             .getPluginItem<ConnectedCalendar[]>(CONNECTED_CALENDARS_KEY)
-            .then((res) => new Set(res?.value?.map((c) => c.calendarId) ?? []));
+            .then((res) => new Map(res?.value?.map((c) => [c.calendarId, c]) ?? []));
           data.push({
             account,
             calendars:
-              calendars?.map((calendar) => ({
-                ...calendar,
-                connected: connectedCalendarsMap.has(calendar.id ?? ""),
-              })) ?? [],
+              calendars?.map((calendar) => {
+                const connectedCal = calendar.id ? connectedCalendarsMap.get(calendar.id) : null;
+                return {
+                  ...calendar,
+                  connected: !!connectedCal,
+                  connectCriteria: connectedCal?.connectCriteria ?? {},
+                  workflows: connectedCal?.workflows ?? [],
+                };
+              }) ?? [],
           });
         }
 
@@ -392,6 +474,8 @@ export default definePlugin((opts) => {
               // res.data.expiration is in Unix time, convert it to ISO string
               expiresAt: opts.dayjs(res.expiration ?? 0).toISOString(),
               default: defaultCalendar?.id === calendarId,
+              connectCriteria: { status: { not: { in: ["cancelled"] } } }, // default to not include cancelled events
+              workflows: [],
             });
           }
 
@@ -436,11 +520,17 @@ export default definePlugin((opts) => {
 
           data.push({
             account,
+            // TODO: replace connectCalendars with connectCalendar (singular)
             calendars:
-              allCalendarsInAccount.map((calendar) => ({
-                ...calendar,
-                connected: connectedCalendarsMap.has(calendar.id ?? ""),
-              })) ?? [],
+              allCalendarsInAccount.map((calendar) => {
+                const connectedCal = connectedCalendarsMap.get(calendar.id ?? "");
+                return {
+                  ...calendar,
+                  connected: !!connectedCal,
+                  connectCriteria: connectedCal?.connectCriteria ?? {},
+                  workflows: connectedCal?.workflows ?? [],
+                };
+              }) ?? [],
           });
         }
 
@@ -666,16 +756,24 @@ export default definePlugin((opts) => {
           const certainPeriod = opts.dayjs().add(1, "month");
           if (scheduledEnd.isAfter(certainPeriod)) return;
 
-          await opts.pgBoss.send(
-            UPSERT_EVENT_JOB_NAME,
-            { ...event },
-            { startAfter: scheduledEnd.toDate(), singletonKey: event.id!, singletonMinutes: 1 },
-          );
+          await opts.pgBoss.send(UPSERT_EVENT_JOB_NAME, { ...event } satisfies UpsertEventJobData, {
+            startAfter: scheduledEnd.toDate(),
+            singletonKey: event.id!,
+            singletonMinutes: 1,
+          });
           console.log("Scheduled event to be updated after", scheduledEnd.toISOString());
         }
       }),
       work(GET_EVENTS_JOB_NAME, async (job) => {
         const jobData = job.data as { calendarId: string; days?: number };
+        const connectedCalendars = await opts.store
+          .getPluginItem<ConnectedCalendar[]>(CONNECTED_CALENDARS_KEY)
+          .then((res) => res?.value ?? []);
+        const connectedCal = connectedCalendars.find((c) => c.calendarId === jobData.calendarId);
+        if (!connectedCal) {
+          console.log("❌ Could not find calendar to fetch events from", jobData.calendarId);
+          return;
+        }
         const accountsTokens = await getTokensFromStore();
         for (const account of Object.keys(accountsTokens)) {
           const tokens = await getRefreshedTokens({ account, accountsTokens });
@@ -710,7 +808,12 @@ export default definePlugin((opts) => {
             if (scheduledStart.isAfter(certainPeriod)) continue;
             await opts.pgBoss.send(
               UPSERT_EVENT_JOB_NAME,
-              { ...event, calendarColor: calendar.backgroundColor ?? null },
+              {
+                ...event,
+                calendarColor: calendar.backgroundColor ?? null,
+                connectCriteria: connectedCal.connectCriteria ?? {},
+                workflows: connectedCal.workflows ?? [],
+              } satisfies UpsertEventJobData,
               { singletonKey: event.id!, singletonMinutes: 1 },
             );
           }
@@ -751,7 +854,12 @@ export default definePlugin((opts) => {
         for (const event of events.items ?? []) {
           await opts.pgBoss.send(
             UPSERT_EVENT_JOB_NAME,
-            { ...event, calendarColor: calendar.backgroundColor ?? null },
+            {
+              ...event,
+              calendarColor: calendar.backgroundColor ?? null,
+              connectCriteria: calendarToProcces.connectCriteria ?? {},
+              workflows: calendarToProcces.workflows ?? [],
+            } satisfies UpsertEventJobData,
             { singletonKey: event.id!, singletonMinutes: 1 },
           );
         }
@@ -884,11 +992,15 @@ export default definePlugin((opts) => {
   };
 });
 
-type UpsertEventJobData = calendar_v3.Schema$Event & { calendarColor: string | null };
+type UpsertEventJobData = calendar_v3.Schema$Event & {
+  calendarColor: string | null;
+  connectCriteria: CalendarWorkflowWhere;
+  workflows: CalendarWorkflows[];
+};
 
 export type PluginDataMin = {
-  eventType: "default" | "outOfOffice" | "focusTime" | "workingLocation";
-  status: "confirmed" | "tentative" | "cancelled";
+  eventType: CalendarEventType;
+  status: CalendarEventStatus;
   htmlLink: NonNullable<calendar_v3.Schema$Event["htmlLink"]>;
   numOfAttendees: number;
   conferenceData: calendar_v3.Schema$Event["conferenceData"];
@@ -897,7 +1009,7 @@ export type PluginDataMin = {
 
 export type PluginDataFull = PluginDataMin &
   Omit<calendar_v3.Schema$Event, keyof PluginDataMin | "eventType"> & {
-    eventType: "default" | "outOfOffice" | "focusTime" | "workingLocation";
+    eventType: CalendarEventType;
   };
 
 type GetTokenParams = {
@@ -931,6 +1043,8 @@ type ConnectedCalendar = {
   resourceId: string;
   expiresAt: string;
   default: boolean;
+  connectCriteria?: CalendarWorkflowWhere;
+  workflows?: CalendarWorkflows[];
 };
 
 type DefaultCalendarInfo = {
