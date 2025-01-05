@@ -24,12 +24,20 @@ import {
   ComboboxTrigger,
   ComboboxValue,
 } from "@flowdev/ui/Combobox";
-import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@flowdev/ui/Table";
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableFooter,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from "@flowdev/ui/Table";
 
 export default function TestView() {
   return (
     <Suspense fallback="loading...">
-      <TestViewContent />
+      <TestViewContent2 />
     </Suspense>
   );
 }
@@ -111,32 +119,22 @@ const TestViewContent2 = () => {
     <div className="flex flex-col gap-8 p-8">
       <Table>
         <TableHeader>
-          <TableHead>Test 1</TableHead>
-          <TableHead>Test 2</TableHead>
+          <TableRow>
+            <TableHead>Test 1</TableHead>
+            <TableHead>Test 2</TableHead>
+          </TableRow>
         </TableHeader>
         <TableBody>
           <TableRow>
             <TableCell>Test 1</TableCell>
             <TableCell>Test 2</TableCell>
           </TableRow>
+          <TableRow>
+            <TableCell>Test 3</TableCell>
+            <TableCell>Test 4</TableCell>
+          </TableRow>
         </TableBody>
       </Table>
-      <table className="table">
-        <thead className="border">
-          <th className="border">Test</th>
-          <th className="border">Test 2</th>
-        </thead>
-        <tbody>
-          <tr>
-            <td className="border">Test</td>
-            <td className="border">test 2</td>
-          </tr>
-          <tr>
-            <td className="border">Test</td>
-            <td className="border">test 2</td>
-          </tr>
-        </tbody>
-      </table>
     </div>
   );
 };
@@ -377,7 +375,7 @@ const SlackMark = () => (
 //   </svg>
 // );
 
-const TestViewContent = () => {
+const TestViewContent3 = () => {
   return <ComboboxDemo />;
 };
 
