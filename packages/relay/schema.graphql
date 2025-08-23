@@ -65,7 +65,7 @@ type Day implements Node {
   id: ID!
 
   """The note directly linked to the day"""
-  note: Note!
+  note: Note
 
   """The other notes linked to the day."""
   notes: [Note!]!
@@ -759,7 +759,7 @@ type Note implements Node {
   date: Date!
 
   """The day the note is directly linked to"""
-  directDay: Day!
+  directDay: Day
   id: ID!
 
   """The links from this note to other notes"""
@@ -774,7 +774,7 @@ type Note implements Node {
   tags: [NoteTag!]!
 
   """The task linked to the note"""
-  task: Task!
+  task: Task
 
   """The title of the note in markdown."""
   title: String!
@@ -1335,6 +1335,9 @@ type Task implements Node {
   """The item linked to the task"""
   item: Item
   itemId: ID
+
+  """The note linked to the task"""
+  note: Note
 
   """The plugin datas of the task"""
   pluginDatas: [TaskPluginData!]!
