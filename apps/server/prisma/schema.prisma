@@ -32,7 +32,7 @@ model Day {
   /// The tasks linked to the day.
   tasks             Task[]
   /// The other notes linked to the day.
-  notes             Note[]    @relation("NotesDay")
+  notes             Note[]    @relation("DayNotes")
   /// The routines completed on the day.
   routinesCompleted Routine[]
 }
@@ -48,7 +48,7 @@ model Note {
   /// The date the note was created
   date      DateTime @db.Date
   /// The day the note was created
-  day       Day      @relation("NotesDay", fields: [date], references: [date])
+  day       Day      @relation("DayNotes", fields: [date], references: [date])
   /// The slug of the note which needs to be unique.
   /// It can be used to retrieve the note and update it.
   slug      String   @unique
