@@ -64,7 +64,10 @@ type Day implements Node {
   date: Date!
   id: ID!
 
-  """The notes linked to the day."""
+  """The note directly linked to the day"""
+  note: Note!
+
+  """The other notes linked to the day."""
   notes: [Note!]!
 
   """The routines for the day in chronological order."""
@@ -743,9 +746,10 @@ interface Node {
 
 """A note that the user has created."""
 type Note implements Node {
-  """
-  The content of the note in HTML. If it's text (i.e. one line),\nit will most likely be converted to HTML by the TipTap editor.
-  """
+  """The links to this note from other notes"""
+  backlinks: [NoteLink!]!
+
+  """The content of the note in markdown."""
   content: String!
 
   """The date and time of creation of the note"""
@@ -753,7 +757,13 @@ type Note implements Node {
 
   """The date the note was created"""
   date: Date!
+
+  """The day the note is directly linked to"""
+  directDay: Day!
   id: ID!
+
+  """The links from this note to other notes"""
+  links: [NoteLink!]!
 
   """
   The slug of the note which needs to be unique.\nIt can be used to retrieve the note and update it.
@@ -763,11 +773,20 @@ type Note implements Node {
   """The tags of the note"""
   tags: [NoteTag!]!
 
-  """The title of the note"""
+  """The task linked to the note"""
+  task: Task!
+
+  """The title of the note in markdown."""
   title: String!
 
   """The date and time the note was last updated"""
   updatedAt: DateTime!
+}
+
+type NoteLink implements Node {
+  id: ID!
+  note: Note!
+  sourceNote: Note!
 }
 
 """A tag that can be applied to a note."""
@@ -1329,7 +1348,7 @@ type Task implements Node {
   """The tags of the task """
   tags: [TaskTag!]!
 
-  """The title of the task in text or HTML."""
+  """The title of the task in markdown."""
   title: String!
 }
 

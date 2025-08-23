@@ -13,6 +13,10 @@ export const NoteType = builder.prismaNode("Note", {
     title: t.exposeString("title"),
     content: t.exposeString("content"),
     tags: t.relation("tags"),
+    directDay: t.relation("directDay", { nullable: true }),
+    links: t.relation("links"),
+    backlinks: t.relation("backlinks"),
+    task: t.relation("task", { nullable: true }),
   }),
 });
 

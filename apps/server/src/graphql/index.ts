@@ -5,6 +5,7 @@ import "./Day";
 import "./Item";
 import "./ItemPluginData";
 import "./List";
+import "./NoteLink";
 import "./Note";
 import "./NoteTag";
 import "./Notifications";
