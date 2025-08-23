@@ -23,7 +23,7 @@ model Day {
   /// The date of the day, which acts as the ID
   date       DateTime @id @db.Date
   /// The order of the tasks in the day
-  tasksOrder Int[]
+  tasksOrder Int[]    @default([])
 
   /// The note directly linked to the day
   note   Note? @relation("DirectDayNote", fields: [noteId], references: [id])
