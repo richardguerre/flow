@@ -7,6 +7,7 @@ import {
   MinimumKit,
   OnEscape,
   minimumStyles,
+  getMarkdown,
 } from "@flowdev/tiptap";
 import { CatchNewLines } from "@flowdev/tiptap";
 import { graphql, useFragment, useMutation } from "@flowdev/relay";
@@ -122,7 +123,7 @@ export const ItemTitleInput = (props: ItemTitleInputProps) => {
     // is updated in the next event loop.
     if (!editorRef.current.isEditable) return;
 
-    const newValue = editorRef.current.getHTML();
+    const newValue = getMarkdown(editorRef.current);
     if (newValue === props.initialValue) {
       props.onCancel?.();
       return;

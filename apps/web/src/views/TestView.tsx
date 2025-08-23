@@ -78,7 +78,7 @@ export default function TestView() {
 //     content: `<p>Single line editor</p>`,
 //     // content: `<h1>Header 1</h1><p>paragraph under heeader</p><h2>Header 2</h2><p>paragraph under heeader</p><h3>Header 3</h3><p>paragraph under heeader</p><h4>Header 4</h4><p>paragraph under heeader</p><h5>Header 5</h5><p>paragraph under heeader</p><h6>Header 6</h6><p>paragraph under heeader</p><ul><li>list item 1</li><li>list item 2</li></ul><ol><li>list item 1</li><li>list item 2</li></ol><a href="https://www.google.com">link</a><blockquote><p>quote</p></blockquote><code>code</code><pre><code>code block</code></pre>`,
 //     onUpdate: (props) => {
-//       console.log(props.editor.getHTML());
+//       console.log(getMarkdown(props.editor));
 //       // props.editor.state.doc.descendants((node) => {
 //       //   if (node.type.name === "taskTag") {
 //       //     console.log(node);
