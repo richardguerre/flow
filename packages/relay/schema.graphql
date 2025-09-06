@@ -150,6 +150,11 @@ type ItemPluginData implements Node {
   """The minimum data required to render the information on item cards."""
   min: JSON!
 
+  """
+  The original id of the item given by the plugin, if any\nThis is used for quick queries to find items by plugin data
+  """
+  originalId: String
+
   """The slug of the plugin that created the data"""
   pluginSlug: String!
 
@@ -448,6 +453,9 @@ input MutationCreateOrUpdateNoteInput {
   """The date of the note."""
   date: Date!
 
+  """The date of the day to link to the note."""
+  day: Date
+
   """Create new tags and link them to the note."""
   newTags: [CreateNoteTagInput!]
 
@@ -461,6 +469,9 @@ input MutationCreateOrUpdateNoteInput {
   The IDs of exsiting tags to be linked to the note. If you want to create a new tag, use the `newTags` input.
   """
   tags: [ID!]
+
+  """The Relay ID of the task to link to the note."""
+  taskId: ID
 
   """The title of the note."""
   title: String!
@@ -1383,6 +1394,11 @@ type TaskPluginData implements Node {
 
   """The minimum data required to render the information on task cards."""
   min: JSON!
+
+  """
+  The original id of the task given by the plugin, if any\nThis is used for quick queries to find tasks by plugin data
+  """
+  originalId: String
 
   """The slug of the plugin that created the data"""
   pluginSlug: String!

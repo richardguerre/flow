@@ -6,6 +6,7 @@ export const ItemPluginDataType = builder.prismaNode("ItemPluginData", {
   fields: (t) => ({
     createdAt: t.expose("createdAt", { type: "DateTime" }),
     updatedAt: t.expose("updatedAt", { type: "DateTime" }),
+    originalId: t.exposeString("originalId", { nullable: true }),
     min: t.expose("min", { type: "JSON" }),
     full: t.expose("full", { type: "JSON" }),
     pluginSlug: t.exposeString("pluginSlug"),

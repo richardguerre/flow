@@ -192,6 +192,7 @@ model TaskPluginData {
   /// The slug of the plugin that created the data
   pluginSlug String
   /// The original id of the task given by the plugin, if any
+  /// This is used for quick queries to find tasks by plugin data
   originalId String?
 
   /// The task linked to the plugin data
@@ -214,6 +215,7 @@ model ItemPluginData {
   /// The slug of the plugin that created the data
   pluginSlug String
   /// The original id of the item given by the plugin, if any
+  /// This is used for quick queries to find items by plugin data
   originalId String?
 
   /// The item linked to the plugin data
