@@ -41,6 +41,9 @@
     "vitest": "0.23.4"
   },
   "dependencies": {
+    "@ai-sdk/anthropic": "1.0.0",
+    "@ai-sdk/google": "1.0.0",
+    "@ai-sdk/openai": "1.0.0",
     "@elysiajs/cors": "^0.7.1",
     "@elysiajs/static": "0.7.1",
     "@flowdev/common": "workspace:*",
@@ -54,6 +57,7 @@
     "@pothos/plugin-smart-subscriptions": "3.7.1",
     "@pothos/plugin-with-input": "3.8.0",
     "@prisma/client": "5.4.2",
+    "ai": "4.0.0",
     "dayjs": "1.11.7",
     "elysia": "0.7.15",
     "express": "4.18.1",
@@ -63,6 +67,7 @@
     "handlebars": "4.7.8",
     "handlebars-async-helpers": "^1.0.6",
     "node-html-parser": "^6.1.13",
-    "pg-boss": "9.0.3"
+    "pg-boss": "9.0.3",
+    "zod": "3.22.0"
   }
 }

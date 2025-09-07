@@ -13,6 +13,7 @@ import { decodeGlobalId, encodeGlobalId, htmlEscape, htmlUnescape } from "@flowd
 import htmlToSlack from "html-to-slack";
 import { getPlugins } from "./getPlugins";
 import PgBoss from "pg-boss";
+import { createLLM } from "../llm/service";
 
 type PrismaJsonInput = string | number | boolean | Prisma.JsonObject | Prisma.JsonArray;
 
@@ -260,6 +261,8 @@ export const getPluginOptions = (pluginSlug: string) => {
     decodeGlobalId,
     /** Encode a (GraphQL Relay) global ID. */
     encodeGlobalId,
+    /** LLM service for generating text and structured data. */
+    llm: createLLM(pluginSlug),
   };
 };
 
