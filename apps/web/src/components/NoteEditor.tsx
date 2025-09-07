@@ -1,6 +1,13 @@
 import { graphql, useLazyLoadQuery, useMutationPromise } from "@flowdev/relay";
-import { StarterKit, useEditor, EditorContent, allStyles } from "@flowdev/tiptap";
-import type { Editor } from "@tiptap/core";
+import {
+  StarterKit,
+  useEditor,
+  EditorContent,
+  allStyles,
+  getMarkdown,
+  Editor,
+  EditorCore,
+} from "@flowdev/tiptap";
 import { Suspense, useEffect, useRef } from "react";
 import { NoteEditorQuery } from "@flowdev/web/relay/__gen__/NoteEditorQuery.graphql";
 import { NoteEditorUpsertNoteMutation } from "@flowdev/web/relay/__gen__/NoteEditorUpsertNoteMutation.graphql";
@@ -43,7 +50,7 @@ type NoteEditorProps = {
 
 export type NoteEditorOnChangeValue = {
   /** The TipTap editor instance. */
-  editor: Editor;
+  editor: EditorCore;
   /** The HTML content of the NoteEditor. */
   html: string;
   /**
@@ -105,7 +112,7 @@ const NoteEditorContent = (props: NoteEditorProps) => {
     }
   `);
 
-  const handleSave = async (input: { editor: Editor; html: string }) => {
+  const handleSave = async (input: { editor: EditorCore; html: string }) => {
     props.onSaveBegin?.({
       editor: input.editor,
       html: input.html,
@@ -144,7 +151,7 @@ const NoteEditorContent = (props: NoteEditorProps) => {
       autofocus: props.autofocus,
       onUpdate: ({ editor }) => {
         if (timout.current) clearTimeout(timout.current);
-        const html = editor.getHTML();
+        const html = getMarkdown(editor);
         timout.current = setTimeout(() => {
           handleSave({ editor, html });
         }, 1000); // save after 1 second of inactivity
@@ -164,7 +171,7 @@ const NoteEditorContent = (props: NoteEditorProps) => {
   useEffect(() => {
     if (props.editorRef && editor) props.editorRef.current = editor;
     if (editor && props.saveNow) {
-      handleSave({ editor, html: editor.getHTML() });
+      handleSave({ editor, html: getMarkdown(editor) });
     }
   }, [props.editorRef, props.saveNow, editor]);
 

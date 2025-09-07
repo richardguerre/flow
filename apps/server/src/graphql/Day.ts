@@ -17,6 +17,7 @@ export const DayType = builder.prismaNode("Day", {
   },
   fields: (t) => ({
     date: t.expose("date", { type: "Date", description: "The date of the day." }),
+    note: t.relation("note", { nullable: true }),
     notes: t.relation("notes"),
     tasks: t.prismaField({
       type: ["Task"],
@@ -73,6 +74,8 @@ type DayResolutionType = {
   notes: Note[];
   routines: Routine[];
   routinesCompleted: { id: string }[];
+  note: Note | null;
+  noteId: number | null;
 };
 type DayEdge = { cursor: string; node: DayResolutionType };
 
@@ -103,7 +106,7 @@ Please input a Date in the format: YYYY-MM-DD`,
       end.setDate(end.getDate() + totalDays - 1);
 
       // In order to dataload the relations of the Day type, we need to create a query object that contains the select and include arguments.
-      // Using queryFromInfo creates the query object found when using t.prismaConnection. See https://github.com/hayes/pothos/blob/main/packages/plugin-prisma/src/field-builder.ts#L122-L128
+      // Using queryFromInfo creates the query object found when using t.prismaConnection. See https://github.com/hayes/pothos/blob/main/packages/plugin-prisma/src/field-builder.ts#L151-L159
       const days = await prisma.day.findMany({
         ...queryFromInfo({ context, info, typeName: "Day", path: ["edges", "node"] }),
         where: { date: { gte: start, lte: end } },
@@ -146,4 +149,6 @@ const createEmptyNode = ({ date }: { date: Date }): DayResolutionType => ({
   routines: [],
   routinesCompleted: [],
   tasks: [],
+  noteId: null,
+  note: null,
 });

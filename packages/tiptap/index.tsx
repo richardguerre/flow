@@ -1,4 +1,11 @@
-import { Extension, type Range, Node, mergeAttributes } from "@tiptap/core";
+import {
+  Extension,
+  type Range,
+  Node,
+  mergeAttributes,
+  EditorEvents,
+  Editor as EditorCore,
+} from "@tiptap/core";
 import { Document } from "@tiptap/extension-document";
 import {
   useEditor,
@@ -35,6 +42,7 @@ export {
   Document,
   useEditor,
   Editor,
+  EditorCore,
   EditorContent,
   HardBreak,
   HorizontalRule,
@@ -62,6 +70,7 @@ export {
   mergeAttributes,
   ReactNodeViewRenderer,
   NodeViewWrapper,
+  type EditorEvents,
 };
 
 export const atomStyles = {
@@ -313,4 +322,9 @@ export const Markdown = (props: { children: string }) => {
   });
 
   return <EditorContent editor={editor} />;
+};
+
+export const getMarkdown = (e: Editor | EditorCore) => {
+  const markdown = e.storage?.markdown?.getMarkdown?.() as string | undefined;
+  return markdown ?? e.getHTML();
 };

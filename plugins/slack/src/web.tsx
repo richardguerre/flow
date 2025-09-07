@@ -1,5 +1,5 @@
 import { definePlugin } from "@flowdev/plugin/web";
-import type { Editor } from "@tiptap/core";
+import { type Editor } from "@flowdev/tiptap";
 import { getDefaultPlanYourDayTemplate, POST_TO_SLACK } from "./common";
 import type { webUpdateRoutineStepMutation } from "./relay/__gen__/webUpdateRoutineStepMutation.graphql";
 import { BsCheck, BsChevronDown } from "@flowdev/icons";
@@ -427,8 +427,8 @@ export default definePlugin((opts) => {
 
           React.useEffect(() => {
             if (editorRef.current) {
-              const html = editorRef.current.getHTML();
-              setValue("message", html);
+              const markdown = opts.tiptap.getMarkdown(editorRef.current);
+              setValue("message", markdown);
             }
           }, [editorRef.current]);
 

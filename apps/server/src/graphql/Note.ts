@@ -13,6 +13,10 @@ export const NoteType = builder.prismaNode("Note", {
     title: t.exposeString("title"),
     content: t.exposeString("content"),
     tags: t.relation("tags"),
+    directDay: t.relation("directDay", { nullable: true }),
+    links: t.relation("links"),
+    backlinks: t.relation("backlinks"),
+    task: t.relation("task", { nullable: true }),
   }),
 });
 
@@ -61,6 +65,15 @@ builder.mutationField("createOrUpdateNote", (t) =>
         required: false,
         description: "The IDs of tags to be unlinked from the note.",
       }),
+      taskId: t.input.globalID({
+        required: false,
+        description: "The Relay ID of the task to link to the note.",
+      }),
+      day: t.input.field({
+        type: "Date",
+        required: false,
+        description: "The date of the day to link to the note.",
+      }),
     },
     resolve: (query, _, args) => {
       const date = args.input.date;
@@ -86,6 +99,15 @@ builder.mutationField("createOrUpdateNote", (t) =>
               args.input.removedTags?.map((globalId) => ({
                 id: parseInt(globalId.id),
               })) ?? [],
+          },
+          task: { connect: args.input.taskId ? { id: parseInt(args.input.taskId.id) } : undefined },
+          directDay: {
+            connectOrCreate: args.input.day
+              ? {
+                  where: { date: args.input.day },
+                  create: { date: args.input.day },
+                }
+              : undefined,
           },
         },
         create: {

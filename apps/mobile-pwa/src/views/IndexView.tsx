@@ -15,6 +15,7 @@ import {
   CatchNewLines,
   Editor,
   EditorContent,
+  getMarkdown,
   MinimumKit,
   minimumStyles,
   OnEscape,
@@ -253,11 +254,11 @@ const TaskTitleInput = (props: {
     {
       content: props.value.content,
       onBlur: ({ editor }) => {
-        props.onChange({ content: editor.getHTML(), tags: getTags() });
+        props.onChange({ content: getMarkdown(editor), tags: getTags() });
         props.onBlur();
       },
       onUpdate: ({ editor }) => {
-        props.onChange({ content: editor.getHTML(), tags: getTags() });
+        props.onChange({ content: getMarkdown(editor), tags: getTags() });
       },
       extensions: [
         MinimumKit.configure({ placeholder: { placeholder: "What needs to be done?" } }),

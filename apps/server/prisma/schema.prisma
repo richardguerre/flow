@@ -23,12 +23,16 @@ model Day {
   /// The date of the day, which acts as the ID
   date       DateTime @id @db.Date
   /// The order of the tasks in the day
-  tasksOrder Int[]
+  tasksOrder Int[]    @default([])
+
+  /// The note directly linked to the day
+  note   Note? @relation("DirectDayNote", fields: [noteId], references: [id])
+  noteId Int?  @unique
 
   /// The tasks linked to the day.
   tasks             Task[]
-  /// The notes linked to the day.
-  notes             Note[]
+  /// The other notes linked to the day.
+  notes             Note[]    @relation("DayNotes")
   /// The routines completed on the day.
   routinesCompleted Routine[]
 }
@@ -44,18 +48,35 @@ model Note {
   /// The date the note was created
   date      DateTime @db.Date
   /// The day the note was created
-  day       Day      @relation(fields: [date], references: [date])
+  day       Day      @relation("DayNotes", fields: [date], references: [date])
   /// The slug of the note which needs to be unique.
   /// It can be used to retrieve the note and update it.
   slug      String   @unique
-  /// The title of the note
+  /// The title of the note in markdown.
   title     String
-  /// The content of the note in HTML. If it's text (i.e. one line),
-  /// it will most likely be converted to HTML by the TipTap editor.
+  /// The content of the note in markdown.
   content   String
 
   /// The tags of the note
-  tags NoteTag[]
+  tags      NoteTag[]
+  /// The day the note is directly linked to
+  directDay Day?       @relation("DirectDayNote")
+  /// The links from this note to other notes
+  links     NoteLink[] @relation("FromNote")
+  /// The links to this note from other notes
+  backlinks NoteLink[] @relation("ToNote")
+  /// The task linked to the note
+  task      Task?
+}
+
+model NoteLink {
+  sourceNoteId Int
+  noteId       Int
+
+  sourceNote Note @relation("FromNote", fields: [sourceNoteId], references: [id])
+  note       Note @relation("ToNote", fields: [noteId], references: [id])
+
+  @@id([sourceNoteId, noteId])
 }
 
 /// A tag that can be applied to a note.
@@ -87,7 +108,7 @@ model Task {
   createdAt         DateTime   @default(now()) @db.Timestamptz()
   /// The date and time the task was last updated
   updatedAt         DateTime   @updatedAt @db.Timestamptz()
-  /// The title of the task in text or HTML.
+  /// The title of the task in markdown.
   title             String
   /// The status of the task
   status            TaskStatus @default(TODO)
@@ -101,6 +122,10 @@ model Task {
   durationInMinutes Int?
   /// Order of the subtasks in the task
   subtasksOrder     Int[]
+
+  /// The note linked to the task
+  note   Note? @relation(fields: [noteId], references: [id])
+  noteId Int?  @unique
 
   /// The item linked to the task
   item   Item? @relation(fields: [itemId], references: [id])
@@ -167,6 +192,7 @@ model TaskPluginData {
   /// The slug of the plugin that created the data
   pluginSlug String
   /// The original id of the task given by the plugin, if any
+  /// This is used for quick queries to find tasks by plugin data
   originalId String?
 
   /// The task linked to the plugin data
@@ -189,6 +215,7 @@ model ItemPluginData {
   /// The slug of the plugin that created the data
   pluginSlug String
   /// The original id of the item given by the plugin, if any
+  /// This is used for quick queries to find items by plugin data
   originalId String?
 
   /// The item linked to the plugin data

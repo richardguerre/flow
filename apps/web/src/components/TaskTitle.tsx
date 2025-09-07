@@ -8,6 +8,7 @@ import {
   MinimumKit,
   OnEscape,
   minimumStyles,
+  getMarkdown,
 } from "@flowdev/tiptap";
 import { TaskTitle_task$key } from "@flowdev/web/relay/__gen__/TaskTitle_task.graphql";
 import { TaskTitleUpdateTaskTitleMutation } from "../relay/__gen__/TaskTitleUpdateTaskTitleMutation.graphql";
@@ -154,7 +155,7 @@ export const TaskTitleInput = (props: TaskTitleInputProps) => {
     // is updated in the next event loop.
     if (!editorRef.current.isEditable) return;
 
-    const newValue = editorRef.current.getHTML();
+    const newValue = getMarkdown(editorRef.current);
     if (newValue === props.initialValue) {
       props.onCancel?.();
       return;
@@ -199,7 +200,7 @@ export const TaskTitleInput = (props: TaskTitleInputProps) => {
   useEffect(() => {
     if (!editorRef.current) return;
     if (props.initialValue === undefined) return;
-    if (props.initialValue === editorRef.current.getHTML()) return;
+    if (props.initialValue === getMarkdown(editorRef.current)) return;
     editorRef.current.commands.setContent(props.initialValue);
   }, [editorRef.current, props.initialValue]);
 

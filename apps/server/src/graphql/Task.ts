@@ -43,6 +43,7 @@ export const TaskType = builder.prismaNode("Task", {
         return subtasks.sort((a, b) => order.indexOf(a.id) - order.indexOf(b.id));
       },
     }),
+    note: t.relation("note", { nullable: true }),
   }),
 });
 
