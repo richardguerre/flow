@@ -35,11 +35,13 @@ const router = createBrowserRouter([
      */
     path: "/",
     element: (
-      <SuspenseLoadingView>
-        <ShorcutsProvider>
-          <Outlet />
-        </ShorcutsProvider>
-      </SuspenseLoadingView>
+      <ViewErrorBoundary>
+        <SuspenseLoadingView>
+          <ShorcutsProvider>
+            <Outlet />
+          </ShorcutsProvider>
+        </SuspenseLoadingView>
+      </ViewErrorBoundary>
     ),
     children: [
       {

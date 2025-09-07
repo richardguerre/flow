@@ -64,7 +64,7 @@ type Day implements Node {
   date: Date!
   id: ID!
 
-  """The other notes linked to the day."""
+  """The notes linked to the day."""
   notes: [Note!]!
 
   """The routines for the day in chronological order."""
@@ -743,7 +743,9 @@ interface Node {
 
 """A note that the user has created."""
 type Note implements Node {
-  """The content of the note in markdown."""
+  """
+  The content of the note in HTML. If it's text (i.e. one line),\nit will most likely be converted to HTML by the TipTap editor.
+  """
   content: String!
 
   """The date and time of creation of the note"""
@@ -761,7 +763,7 @@ type Note implements Node {
   """The tags of the note"""
   tags: [NoteTag!]!
 
-  """The title of the note in markdown."""
+  """The title of the note"""
   title: String!
 
   """The date and time the note was last updated"""
@@ -1327,7 +1329,7 @@ type Task implements Node {
   """The tags of the task """
   tags: [TaskTag!]!
 
-  """The title of the task in markdown."""
+  """The title of the task in text or HTML."""
   title: String!
 }
 

@@ -13,11 +13,12 @@ export const ViewErrorBoundary = (props: Props) => {
     <ErrorBoundary
       resetKeys={[location.pathname]}
       fallbackRender={({ error }) => {
+        console.log(error);
         const unauthenticatedError = error.cause?.find(
           (e: any) => e.extensions?.code === "UNAUTHENTICATED",
         );
         const errorMessages = error.message.split("\n").map((m: string) => (
-          <p key={m} className="text-gray-500">
+          <p key={m} className="text-foreground-700">
             {m}
           </p>
         ));
