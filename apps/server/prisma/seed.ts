@@ -77,14 +77,6 @@ await prisma.day.create({
         ],
       },
     },
-    note: {
-      create: {
-        title: "Note for yesterday",
-        content: "This is a note for yesterday",
-        date: yesterday,
-        slug: "note-for-yesterday",
-      },
-    },
   },
 });
 
