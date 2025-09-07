@@ -4,9 +4,9 @@ Effective date: 21/10/2023
 
 Welcome to Flow.
 
-Flow (“us”, “we”, or “our”) operates https://startflow.in and https://isflow.in (hereinafter referred to as “Service”).
+Flow (“us”, “we”, or “our”) operates https://startflow.in and https://flw.so (hereinafter referred to as “Service”).
 
-Our Privacy Policy governs your visit to https://startflow.in and https://isflow.in, and explains how we collect, safeguard and disclose information that results from your use of our Service.
+Our Privacy Policy governs your visit to https://startflow.in and https://flw.so, and explains how we collect, safeguard and disclose information that results from your use of our Service.
 
 We use your data to provide and improve Service. By using Service, you agree to the collection and use of information in accordance with this policy. Unless otherwise defined in this Privacy Policy, the terms used in this Privacy Policy have the same meanings as in our Terms and Conditions.
 

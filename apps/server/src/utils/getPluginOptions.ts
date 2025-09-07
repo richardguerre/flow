@@ -40,7 +40,7 @@ export const getPluginOptions = (pluginSlug: string) => {
   return {
     /** The plugin's slug. There is no difference with the one passed into `definePlugin`. It can be used to not repeat it throughout the plugin's code. */
     pluginSlug,
-    /** The server's origin without the slash at the end. For example, `https://user.isflow.in` or `http://localhost:4000` if testing locally. */
+    /** The server's origin without the slash at the end. For example, `https://user.flw.so` or `http://localhost:4000` if testing locally. */
     serverOrigin: env.ORIGIN,
     /**
      * The dayjs package. This prevents the dayjs package from being bundled with the plugin, so that installs are faster.
