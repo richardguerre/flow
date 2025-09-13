@@ -14,6 +14,7 @@ import htmlToSlack from "html-to-slack";
 import { getPlugins } from "./getPlugins";
 import PgBoss from "pg-boss";
 import { createLLM } from "../llm/service";
+import { z } from "zod";
 
 type PrismaJsonInput = string | number | boolean | Prisma.JsonObject | Prisma.JsonArray;
 
@@ -50,6 +51,10 @@ export const getPluginOptions = (pluginSlug: string) => {
      * - utc
      */
     dayjs,
+    /** Zod package. This prevents the zod package from being bundled with the plugin, so that installs are faster. */
+    zod: z,
+    /** Alias of `opts.zod`. */
+    z,
     pgBoss: {
       /** Documentation: https://github.com/timgit/pg-boss/blob/HEAD/docs/readme.md#send */
       send: pgBossSend,
