@@ -1,0 +1,82 @@
+{
+  "name": "flow",
+  "description": "Personal daily planner with plugin architecture",
+  "workspaceRoot": "/Users/richardguerre/Projects/flow/.conductor",
+  "targetBranch": "main",
+  "commonWorkflows": [
+    {
+      "name": "Full Stack Feature",
+      "description": "Work on both backend and frontend for a new feature",
+      "tasks": [
+        "Modify GraphQL schema and add resolvers in apps/server",
+        "Update database schema in apps/server/prisma/schema.prisma if needed",
+        "Run 'bun relay' to regenerate Relay artifacts",
+        "Implement React components in apps/web",
+        "Test in browser and format code with 'bun run format'"
+      ]
+    },
+    {
+      "name": "Plugin Development",
+      "description": "Create or modify a plugin",
+      "tasks": [
+        "Start three servers: apps/server, apps/web, apps/plugin-dev",
+        "Create/modify plugin in plugins/ directory",
+        "Add GraphQL schema extensions in plugin's onSchema",
+        "Add UI components in plugin's onUI",
+        "Follow plugin installation workflow (remove --watch flag)"
+      ]
+    },
+    {
+      "name": "Database Schema Change",
+      "description": "Update database schema and propagate changes",
+      "tasks": [
+        "Modify apps/server/prisma/schema.prisma",
+        "Run 'bun db:migrate' to create migration",
+        "Run 'bun db:dev' to apply migration",
+        "Update GraphQL schema in apps/server/src/graphql/",
+        "Run 'bun relay' to regenerate Relay artifacts",
+        "Update frontend components to use new fields"
+      ]
+    }
+  ],
+  "importantFiles": [
+    "apps/server/prisma/schema.prisma",
+    "apps/server/src/graphql/schema.ts",
+    "apps/web/src/router.tsx",
+    "package.json",
+    ".claude-code/instructions.md"
+  ],
+  "commands": {
+    "dev": "bun dev",
+    "format": "bun run format",
+    "relay": "bun relay",
+    "db:reset": "cd apps/server && bun db:reset",
+    "db:dev": "cd apps/server && bun db:dev"
+  },
+  "conventions": {
+    "noObjectDestructuring": true,
+    "alwaysFormatBeforeCommit": true,
+    "runRelayAfterSchemaChanges": true,
+    "noTests": "Testing infrastructure not yet maintained"
+  },
+  "parallelWorkspaces": {
+    "enabled": true,
+    "suggested": [
+      {
+        "name": "backend",
+        "focus": "Server, GraphQL schema, database",
+        "paths": ["apps/server"]
+      },
+      {
+        "name": "frontend",
+        "focus": "Web and mobile-pwa UI",
+        "paths": ["apps/web", "apps/mobile-pwa"]
+      },
+      {
+        "name": "plugin",
+        "focus": "Plugin development",
+        "paths": ["plugins", "plugin-apps"]
+      }
+    ]
+  }
+}

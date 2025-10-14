@@ -18,6 +18,34 @@ Features:
 
 If you have suggestions for how Flow could be improved, or want to report a bug, [open an issue](https://github.com/richardguerre/flow/issues/new)! All contributions are welcome.
 
+## Working with Claude Code & Conductor
+
+Flow is optimized for development with [Claude Code](https://claude.com/claude-code) and [Conductor](https://conductor.build). All documentation for AI-assisted development is in the `.claude-code/` directory:
+
+- **`.claude-code/instructions.md`** - Main reference for development workflows, commands, and conventions
+- **`.claude-code/setup.md`** - Environment setup and troubleshooting
+- **`.claude-code/conventions.md`** - Code style guide (includes the no-destructuring rule)
+- **`.claude-code/architecture.md`** - System architecture and design decisions
+- **`.claude-code/plugin-development.md`** - Complete guide to building plugins
+
+### Key Things to Know
+
+**Critical Workflows:**
+- Always run `bun relay` after GraphQL schema changes
+- Always run `bun run format` before committing
+- When installing plugins, temporarily remove `--watch` flag from server (see plugin development guide)
+
+**Code Conventions:**
+- No object destructuring (except React hooks and arrays) - see conventions.md for details
+- Use `props.value` instead of destructuring
+- Tests are not maintained yet (skip for now)
+
+**Development Servers:**
+- Standard: `cd apps/server && bun dev` + `cd apps/web && bun dev`
+- Plugin dev: Add `cd apps/plugin-dev && bun dev` (serves plugins with hot-reload)
+- OAuth testing: Use ngrok for plugin-apps
+
+See `.claude-code/instructions.md` for complete workflows and troubleshooting.
 
 ## Getting started with GitHub Codespaces
 
