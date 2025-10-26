@@ -56,22 +56,3 @@ export interface PromptOptions {
   apiKey?: string;
   baseUrl?: string;
 }
-
-export interface LLMService {
-  prompt(
-    messages: string | ChatMessage[],
-    options?: PromptOptions,
-  ): Promise<{
-    text: string;
-    usage: { promptTokens: number; completionTokens: number; totalTokens: number };
-  }>;
-
-  generateObject<T>(
-    schema: z.ZodSchema<T>,
-    messages: string | ChatMessage[],
-    options?: PromptOptions,
-  ): Promise<{
-    object: T;
-    usage: { promptTokens: number; completionTokens: number; totalTokens: number };
-  }>;
-}

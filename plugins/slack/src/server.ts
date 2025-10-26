@@ -1,5 +1,5 @@
 import { definePlugin, type ServerTypes } from "@flowdev/plugin/server";
-import { POST_TO_SLACK, getDefaultPlanYourDayTemplate } from "./common";
+import { POST_TO_SLACK, SLACK_SUMMARY, getDefaultPlanYourDayTemplate } from "./common";
 
 const ACCOUNT_TOKENS_STORE_KEY = "account-tokens";
 const CACHED_CHANNELS = "slack-cached-channels";
@@ -310,6 +310,323 @@ export default definePlugin((opts) => {
           } as PostMessageData,
         };
       },
+      getSlackSummary: async (input: GetSlackSummaryInput) => {
+        const tokenItem = await getTokensFromStore().catch(() => null);
+        if (!tokenItem) {
+          throw new opts.GraphQLError("User not authenticated.", {
+            extensions: {
+              code: "NOT_AUTHENTICATED",
+              userFriendlyMessage:
+                "You are not authenticated and will need to connect your Slack account(s) first.",
+            },
+          });
+        }
+
+        const fromDate = opts.dayjs(input.fromDate);
+        const toDate = opts.dayjs(input.toDate);
+        const maxMessages = input.maxMessages ?? 100;
+
+        // Parse user prompt to get filters
+        let messageFilter: MessageFilter = {};
+        if (input.userPrompt) {
+          const filterResult = await opts.llm.generateObject({
+            messages: `Parse this user request for filtering Slack messages: "${input.userPrompt}"
+            
+            Return a structured filter object based on the user's request. Available options:
+            - ignoreBots: boolean (ignore bot messages)
+            - authors: string[] (specific user IDs to include/exclude)
+            - keywords: string[] (keywords to filter by)
+            - messageTypes: ('text' | 'file' | 'link')[] (types of messages to include)
+            
+            If the user mentions "ignore bots" or similar, set ignoreBots to true.
+            If they mention specific people, try to extract user IDs or names.
+            If they mention keywords or topics, extract them into the keywords array.`,
+            schema: opts.z.object({
+              ignoreBots: opts.z.boolean(),
+              authors: opts.z.array(opts.z.string()),
+              keywords: opts.z.array(opts.z.string()),
+              messageTypes: opts.z.array(opts.z.enum(["text", "file", "link"])),
+            }),
+          });
+          messageFilter = filterResult.object;
+        }
+
+        // Get all channels for the team(s)
+        const channels = await getSlackChannels();
+        const filteredChannels = channels.filter((channel) => {
+          if (input.channelsToIgnore?.includes(channel.id)) return false;
+          if (input.teamId && channel.team.id !== input.teamId) return false;
+          return true;
+        });
+
+        // Fetch messages from all channels
+        const allMessages: SlackMessage[] = [];
+        const allThreads: SlackThread[] = [];
+
+        for (const channel of filteredChannels) {
+          const token = tokenItem[channel.team.id].authed_user.access_token;
+
+          // Get channel history
+          const messages = await fetchChannelHistory(
+            token,
+            channel.id,
+            fromDate.unix(),
+            toDate.unix(),
+            maxMessages - allMessages.length,
+          );
+
+          // Apply filters
+          const filteredMessages = applyMessageFilters(messages, messageFilter);
+          allMessages.push(...filteredMessages);
+
+          // Collect threads
+          const threads = await fetchThreadReplies(token, channel.id, filteredMessages);
+          allThreads.push(...threads);
+        }
+
+        // Sort by timestamp (latest first) and limit
+        allMessages.sort((a, b) => parseFloat(b.ts) - parseFloat(a.ts));
+        const limitedMessages = allMessages.slice(0, maxMessages);
+
+        // Get user info for @mentions
+        const userInfo = await getUserInfo(tokenItem);
+
+        console.log({ limitedMessages, allThreads, userInfo, userPrompt: input.userPrompt });
+
+        // Generate summary using LLM
+        const summary = await generateSlackSummary(
+          limitedMessages,
+          allThreads,
+          userInfo,
+          input.userPrompt,
+          opts,
+        );
+
+        return {
+          data: {
+            summary,
+            messageCount: limitedMessages.length,
+            threadCount: allThreads.length,
+            dateRange: {
+              from: fromDate.toISOString(),
+              to: toDate.toISOString(),
+            },
+          } as GetSlackSummaryData,
+        };
+      },
+      getThreadSummary: async (input: GetThreadSummaryInput) => {
+        const tokenItem = await getTokensFromStore().catch(() => null);
+        if (!tokenItem) {
+          throw new opts.GraphQLError("User not authenticated.", {
+            extensions: {
+              code: "NOT_AUTHENTICATED",
+              userFriendlyMessage:
+                "You are not authenticated and will need to connect your Slack account(s) first.",
+            },
+          });
+        }
+
+        const token = tokenItem[input.teamId].authed_user.access_token;
+
+        // Get thread messages
+        const threadMessages = await fetchThreadMessages(token, input.channelId, input.threadTs);
+
+        // Get user info for @mentions
+        const userInfo = await getUserInfo(tokenItem);
+
+        // Generate thread summary
+        const summary = await generateThreadSummary(threadMessages, userInfo, opts);
+
+        const uniqueUserIds = [...new Set(threadMessages.map((m) => m.user))];
+        const participants = uniqueUserIds.map((userId) => {
+          const user = userInfo.get(userId);
+          return {
+            id: userId,
+            name: user?.name || "Unknown",
+            real_name: user?.real_name || "Unknown User",
+            avatar: user?.profile.image_48 || "",
+          };
+        });
+
+        return {
+          data: {
+            summary,
+            messageCount: threadMessages.length,
+            participants,
+          } as GetThreadSummaryData,
+        };
+      },
+      createTaskFromMessage: async (input: CreateTaskFromMessageInput) => {
+        const tokenItem = await getTokensFromStore().catch(() => null);
+        if (!tokenItem) {
+          throw new opts.GraphQLError("User not authenticated.", {
+            extensions: {
+              code: "NOT_AUTHENTICATED",
+              userFriendlyMessage:
+                "You are not authenticated and will need to connect your Slack account(s) first.",
+            },
+          });
+        }
+
+        // Get the original message
+        const token = tokenItem[input.teamId].authed_user.access_token;
+        const message = await getMessageByTs(token, input.channelId, input.messageTs);
+
+        if (!message) {
+          throw new opts.GraphQLError("Message not found.", {
+            extensions: {
+              code: "MESSAGE_NOT_FOUND",
+              userFriendlyMessage: "The original Slack message could not be found.",
+            },
+          });
+        }
+
+        // Get channel and team info for URL construction
+        const channelInfo = await fetch(
+          `https://slack.com/api/conversations.info?channel=${input.channelId}`,
+          { headers: { Authorization: `Bearer ${token}` } },
+        )
+          .then(async (req) => (await req.json()) as ConversationInfoReq)
+          .catch(() => null);
+
+        const teamInfo = tokenItem[input.teamId].team;
+        const channelName = channelInfo?.channel?.name || "unknown";
+        const teamName = teamInfo.name;
+        const url = `https://${teamInfo.domain || teamInfo.id}.slack.com/archives/${input.channelId}/p${input.messageTs.replace(".", "")}`;
+
+        // Generate item title using LLM
+        const titleResult = await opts.llm.prompt({
+          messages: `Generate a concise, actionable title for this task based on the action item: "${input.actionItem}"
+          
+          The title should be:
+          - Clear and specific
+          - Action-oriented (start with a verb when possible)
+          - Under 100 characters
+          - Professional tone
+          
+          Just return the title, nothing else.`,
+        });
+
+        // Create Flow item
+        const item = await opts.prisma.item.create({
+          data: {
+            title: titleResult.text.trim(),
+            pluginDatas: {
+              create: {
+                pluginSlug: opts.pluginSlug,
+                min: {
+                  slackMessageTs: input.messageTs,
+                  slackChannelId: input.channelId,
+                  slackTeamId: input.teamId,
+                  channelName,
+                  teamName,
+                  url,
+                } as SlackMessageItemMin,
+                full: {
+                  slackMessageTs: input.messageTs,
+                  slackChannelId: input.channelId,
+                  slackTeamId: input.teamId,
+                  originalMessage: message.text,
+                  originalUser: message.user,
+                  originalTimestamp: message.ts,
+                  channelName,
+                  teamName,
+                  url,
+                } as SlackMessageItemFull,
+              },
+            },
+          },
+        });
+
+        // Create Flow task
+        const task = await opts.prisma.task.create({
+          data: {
+            title: titleResult.text.trim(),
+            itemId: item.id,
+            date: input.date, // Use the provided date
+            pluginDatas: {
+              create: {
+                pluginSlug: opts.pluginSlug,
+                min: {
+                  slackMessageTs: input.messageTs,
+                  slackChannelId: input.channelId,
+                  slackTeamId: input.teamId,
+                  channelName,
+                  teamName,
+                  url,
+                } as SlackMessageItemMin,
+                full: {
+                  slackMessageTs: input.messageTs,
+                  slackChannelId: input.channelId,
+                  slackTeamId: input.teamId,
+                  originalMessage: message.text,
+                  originalUser: message.user,
+                  originalTimestamp: message.ts,
+                  channelName,
+                  teamName,
+                  url,
+                } as SlackMessageItemFull,
+              },
+            },
+          },
+        });
+
+        return {
+          data: {
+            taskId: task.id.toString(),
+            itemId: item.id.toString(),
+          } as CreateTaskFromMessageData,
+        };
+      },
+      quickReply: async (input: QuickReplyInput) => {
+        const tokenItem = await getTokensFromStore().catch(() => null);
+        if (!tokenItem) {
+          throw new opts.GraphQLError("User not authenticated.", {
+            extensions: {
+              code: "NOT_AUTHENTICATED",
+              userFriendlyMessage:
+                "You are not authenticated and will need to connect your Slack account(s) first.",
+            },
+          });
+        }
+
+        const token = tokenItem[input.teamId].authed_user.access_token;
+
+        // Convert rich text to Slack format
+        const slackMessage = opts.html.toSlack(input.messageInHTML);
+
+        // Post reply to thread
+        const response = await fetch(`https://slack.com/api/chat.postMessage`, {
+          method: "POST",
+          headers: {
+            Authorization: `Bearer ${token}`,
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({
+            channel: input.channelId,
+            thread_ts: input.threadTs,
+            text: slackMessage,
+          }),
+        });
+
+        const result = (await response.json()) as { ok: boolean; ts: string; error?: string };
+
+        if (!result.ok) {
+          throw new opts.GraphQLError(`Failed to send reply: ${result.error}`, {
+            extensions: {
+              code: "REPLY_FAILED",
+              userFriendlyMessage: "Could not send the reply to Slack.",
+            },
+          });
+        }
+
+        return {
+          data: {
+            ok: true,
+            ts: result.ts,
+          } as QuickReplyData,
+        };
+      },
     },
     onUpdateTaskStatusEnd: async (input) => {
       const date = opts.dayjs(input.task.date);
@@ -338,6 +655,9 @@ export default definePlugin((opts) => {
           },
           update: { routineStepId: input.step.id }, // don't update the template if it already exists, just update the routineStepId
         });
+      } else if (input.step.stepSlug === SLACK_SUMMARY) {
+        // No default template needed for Slack Summary step
+        // The step is self-contained and doesn't need a template
       }
     },
     handlebars: {
@@ -721,3 +1041,302 @@ type CachedChannels = {
   updatedAt: string;
   channels: GetChannelsData["channels"];
 };
+
+// Helper types for Slack API
+type SlackMessage = {
+  ts: string;
+  user: string;
+  text: string;
+  channel: string;
+  thread_ts?: string;
+  subtype?: string;
+  bot_id?: string;
+  files?: any[];
+  attachments?: any[];
+};
+
+type SlackThread = {
+  channel: string;
+  thread_ts: string;
+  messages: SlackMessage[];
+  summary?: string;
+};
+
+type SlackUser = {
+  id: string;
+  name: string;
+  real_name: string;
+  profile: {
+    image_24: string;
+    image_32: string;
+    image_48: string;
+    image_72: string;
+    image_192: string;
+    image_512: string;
+  };
+};
+
+// Helper functions
+async function fetchChannelHistory(
+  token: string,
+  channelId: string,
+  oldest: number,
+  latest: number,
+  limit: number,
+): Promise<SlackMessage[]> {
+  const messages: SlackMessage[] = [];
+  let cursor: string | undefined;
+
+  while (messages.length < limit) {
+    const url = new URL("https://slack.com/api/conversations.history");
+    url.searchParams.set("channel", channelId);
+    url.searchParams.set("oldest", oldest.toString());
+    url.searchParams.set("latest", latest.toString());
+    url.searchParams.set("limit", Math.min(limit - messages.length, 100).toString());
+    if (cursor) url.searchParams.set("cursor", cursor);
+
+    const response = await fetch(url.toString(), {
+      headers: { Authorization: `Bearer ${token}` },
+    });
+
+    const data = (await response.json()) as {
+      ok: boolean;
+      messages: SlackMessage[];
+      response_metadata?: { next_cursor?: string };
+    };
+
+    if (!data.ok) break;
+
+    messages.push(...data.messages);
+    cursor = data.response_metadata?.next_cursor;
+
+    if (!cursor) break;
+  }
+
+  return messages;
+}
+
+async function fetchThreadMessages(
+  token: string,
+  channelId: string,
+  threadTs: string,
+): Promise<SlackMessage[]> {
+  const url = new URL("https://slack.com/api/conversations.replies");
+  url.searchParams.set("channel", channelId);
+  url.searchParams.set("ts", threadTs);
+  url.searchParams.set("limit", "100");
+
+  const response = await fetch(url.toString(), {
+    headers: { Authorization: `Bearer ${token}` },
+  });
+
+  const data = (await response.json()) as {
+    ok: boolean;
+    messages: SlackMessage[];
+  };
+
+  return data.ok ? data.messages : [];
+}
+
+async function fetchThreadReplies(
+  token: string,
+  channelId: string,
+  messages: SlackMessage[],
+): Promise<SlackThread[]> {
+  const threads: SlackThread[] = [];
+  const threadMessages = messages.filter((m) => m.thread_ts);
+
+  for (const message of threadMessages) {
+    if (!message.thread_ts) continue;
+
+    const threadMessages = await fetchThreadMessages(token, channelId, message.thread_ts);
+    if (threadMessages.length > 1) {
+      // Only include threads with replies
+      threads.push({
+        channel: channelId,
+        thread_ts: message.thread_ts,
+        messages: threadMessages,
+      });
+    }
+  }
+
+  return threads;
+}
+
+async function getMessageByTs(
+  token: string,
+  channelId: string,
+  messageTs: string,
+): Promise<SlackMessage | null> {
+  const url = new URL("https://slack.com/api/conversations.history");
+  url.searchParams.set("channel", channelId);
+  url.searchParams.set("latest", messageTs);
+  url.searchParams.set("limit", "1");
+  url.searchParams.set("inclusive", "true");
+
+  const response = await fetch(url.toString(), {
+    headers: { Authorization: `Bearer ${token}` },
+  });
+
+  const data = (await response.json()) as {
+    ok: boolean;
+    messages: SlackMessage[];
+  };
+
+  return data.ok && data.messages.length > 0 ? data.messages[0] : null;
+}
+
+async function getUserInfo(tokenItem: AccountsTokens): Promise<Map<string, SlackUser>> {
+  const userMap = new Map<string, SlackUser>();
+
+  for (const teamId in tokenItem) {
+    const token = tokenItem[teamId].authed_user.access_token;
+
+    const response = await fetch("https://slack.com/api/users.list", {
+      headers: { Authorization: `Bearer ${token}` },
+    });
+
+    const data = (await response.json()) as {
+      ok: boolean;
+      members: SlackUser[];
+    };
+
+    if (data.ok) {
+      for (const user of data.members) {
+        userMap.set(user.id, user);
+      }
+    }
+  }
+
+  return userMap;
+}
+
+function applyMessageFilters(messages: SlackMessage[], filter: MessageFilter): SlackMessage[] {
+  return messages.filter((message) => {
+    if (filter.ignoreBots && (message.bot_id || message.subtype === "bot_message")) {
+      return false;
+    }
+
+    if (filter.authors && filter.authors.length > 0) {
+      if (!filter.authors.includes(message.user)) {
+        return false;
+      }
+    }
+
+    if (filter.keywords && filter.keywords.length > 0) {
+      const messageText = message.text.toLowerCase();
+      if (!filter.keywords.some((keyword) => messageText.includes(keyword.toLowerCase()))) {
+        return false;
+      }
+    }
+
+    if (filter.messageTypes && filter.messageTypes.length > 0) {
+      const hasFiles = message.files && message.files.length > 0;
+      const hasAttachments = message.attachments && message.attachments.length > 0;
+      const hasLinks = message.text.includes("http");
+
+      if (filter.messageTypes.includes("text") && !hasFiles && !hasAttachments) return true;
+      if (filter.messageTypes.includes("file") && hasFiles) return true;
+      if (filter.messageTypes.includes("link") && hasLinks) return true;
+
+      return false;
+    }
+
+    return true;
+  });
+}
+
+async function generateSlackSummary(
+  messages: SlackMessage[],
+  threads: SlackThread[],
+  userInfo: Map<string, SlackUser>,
+  userPrompt?: string,
+  opts?: any,
+): Promise<string> {
+  // Replace @mentions with display names
+  const processedMessages = messages.map((msg) => ({
+    ...msg,
+    text: replaceMentions(msg.text, userInfo),
+  }));
+
+  const processedThreads = threads.map((thread) => ({
+    ...thread,
+    messages: thread.messages.map((msg) => ({
+      ...msg,
+      text: replaceMentions(msg.text, userInfo),
+    })),
+  }));
+
+  // Generate summary using LLM
+  const prompt = `Summarize these Slack messages and extract action items. ${userPrompt ? `Focus on: ${userPrompt}` : ""}
+
+Messages:
+${processedMessages.map((msg) => `[${msg.ts}] ${msg.user}: ${msg.text}`).join("\n")}
+
+Threads:
+${processedThreads
+  .map(
+    (thread) =>
+      `Thread ${thread.thread_ts}:\n${thread.messages.map((msg) => `  [${msg.ts}] ${msg.user}: ${msg.text}`).join("\n")}`,
+  )
+  .join("\n\n")}
+
+Return enhanced markdown with:
+1. A summary of the key discussions
+2. Individual message references using <slack-message> tags
+3. Action items using <task> tags
+4. Thread summaries using <slack-thread> tags
+
+Format:
+- <slack-message ts="timestamp" user="userId" channel="channelId">message text</slack-message>
+- <task message_ts="timestamp">action item text</task>
+- <slack-thread channel="channelId" thread_ts="timestamp">thread summary</slack-thread>`;
+
+  const result = await opts.llm.prompt({ prompt });
+  return result.text;
+}
+
+async function generateThreadSummary(
+  messages: SlackMessage[],
+  userInfo: Map<string, SlackUser>,
+  opts?: any,
+): Promise<string> {
+  if (messages.length <= 5) {
+    // For short threads, just return the messages
+    return messages
+      .map(
+        (msg) =>
+          `<slack-message ts="${msg.ts}" user="${msg.user}">${replaceMentions(msg.text, userInfo)}</slack-message>`,
+      )
+      .join("\n");
+  }
+
+  // For long threads, summarize first + last 5 messages
+  const firstMessage = messages[0];
+  const lastMessages = messages.slice(-5);
+
+  const prompt = `Summarize this Slack thread discussion:
+
+First message: [${firstMessage.ts}] ${firstMessage.user}: ${replaceMentions(firstMessage.text, userInfo)}
+
+Last messages:
+${lastMessages.map((msg) => `[${msg.ts}] ${msg.user}: ${replaceMentions(msg.text, userInfo)}`).join("\n")}
+
+Return:
+1. A brief summary of the thread discussion
+2. The last message for context
+
+Format:
+<slack-thread-summary>brief summary</slack-thread-summary>
+<slack-message ts="${lastMessages[lastMessages.length - 1].ts}" user="${lastMessages[lastMessages.length - 1].user}">${replaceMentions(lastMessages[lastMessages.length - 1].text, userInfo)}</slack-message>`;
+
+  const result = await opts.llm.prompt({ prompt });
+  return result.text;
+}
+
+function replaceMentions(text: string, userInfo: Map<string, SlackUser>): string {
+  return text.replace(/<@([A-Z0-9]+)>/g, (match, userId) => {
+    const user = userInfo.get(userId);
+    return user ? `@${user.real_name || user.name}` : match;
+  });
+}

@@ -7,16 +7,17 @@ import {
   LLMUsageStats,
   LLMRateLimit,
   LLMGlobalKeys,
-  LLMService,
   LLMProviderConfig,
   ChatMessage,
   LLMUsageWindow,
+  PromptOptions,
 } from "./types";
 import { prisma } from "../utils/prisma";
 import { FlowPluginSlug } from "../graphql/Store";
 import { dayjs } from "../utils/dayjs";
+import { z } from "zod";
 
-export function createLLM($pluginSlug?: string): LLMService {
+export function createLLM($pluginSlug?: string) {
   const pluginSlug = $pluginSlug || FlowPluginSlug;
 
   const getModel = async (provider: string, model: string, apiKey?: string, baseUrl?: string) => {
@@ -181,7 +182,7 @@ export function createLLM($pluginSlug?: string): LLMService {
   };
 
   return {
-    async prompt(messages, options = {}) {
+    async prompt(args: { messages: string | ChatMessage[]; options?: PromptOptions }) {
       try {
         const configItem = await prisma.store.findFirst({
           where: { key: "llm-config", pluginSlug: FlowPluginSlug },
@@ -191,21 +192,24 @@ export function createLLM($pluginSlug?: string): LLMService {
           model: "gpt-4-turbo",
         };
 
-        const provider = options.provider || config.provider;
-        const model = options.model || config.model;
-        const apiKey = options.apiKey || config.apiKey;
-        const baseUrl = options.baseUrl || config.baseUrl;
+        const provider = args.options?.provider || config.provider;
+        const model = args.options?.model || config.model;
+        const apiKey = args.options?.apiKey || config.apiKey;
+        const baseUrl = args.options?.baseUrl || config.baseUrl;
 
-        const estimatedTokens = estimateTokens(messages);
+        const estimatedTokens = estimateTokens(args.messages);
         await checkRateLimits(estimatedTokens);
 
         const modelInstance = await getModel(provider, model, apiKey, baseUrl);
 
         const result = await generateText({
           model: modelInstance,
-          messages: typeof messages === "string" ? [{ role: "user", content: messages }] : messages,
-          maxTokens: options.maxTokens,
-          temperature: options.temperature,
+          messages:
+            typeof args.messages === "string"
+              ? [{ role: "user", content: args.messages }]
+              : args.messages,
+          maxTokens: args.options?.maxTokens,
+          temperature: args.options?.temperature,
         });
 
         await updateUsageStats(result.usage);
@@ -221,7 +225,11 @@ export function createLLM($pluginSlug?: string): LLMService {
       }
     },
 
-    async generateObject(schema, messages, options = {}) {
+    async generateObject(args: {
+      schema: z.ZodSchema;
+      messages: string | ChatMessage[];
+      options?: PromptOptions;
+    }) {
       try {
         const configItem = await prisma.store.findFirst({
           where: { key: "llm-config", pluginSlug: FlowPluginSlug },
@@ -231,22 +239,25 @@ export function createLLM($pluginSlug?: string): LLMService {
           model: "gpt-4-turbo",
         };
 
-        const provider = options.provider || config.provider;
-        const model = options.model || config.model;
-        const apiKey = options.apiKey || config.apiKey;
-        const baseUrl = options.baseUrl || config.baseUrl;
+        const provider = args.options?.provider || config.provider;
+        const model = args.options?.model || config.model;
+        const apiKey = args.options?.apiKey || config.apiKey;
+        const baseUrl = args.options?.baseUrl || config.baseUrl;
 
-        const estimatedTokens = estimateTokens(messages);
+        const estimatedTokens = estimateTokens(args.messages);
         await checkRateLimits(estimatedTokens);
 
         const modelInstance = await getModel(provider, model, apiKey, baseUrl);
 
         const result = await generateObject({
           model: modelInstance,
-          schema,
-          messages: typeof messages === "string" ? [{ role: "user", content: messages }] : messages,
-          maxTokens: options.maxTokens,
-          temperature: options.temperature,
+          schema: args.schema,
+          messages:
+            typeof args.messages === "string"
+              ? [{ role: "user", content: args.messages }]
+              : args.messages,
+          maxTokens: args.options?.maxTokens,
+          temperature: args.options?.temperature,
         });
 
         await updateUsageStats(result.usage);

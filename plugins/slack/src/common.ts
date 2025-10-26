@@ -1,4 +1,5 @@
 export const POST_TO_SLACK = "post-to-slack";
+export const SLACK_SUMMARY = "slack-summary";
 
 export const getDefaultPlanYourDayTemplate = (props?: { withLinear?: boolean }) => {
   const linearLink = props?.withLinear

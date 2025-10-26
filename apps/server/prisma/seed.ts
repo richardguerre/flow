@@ -155,6 +155,7 @@ await prisma.store.create({
       {
         slug: "essentials",
         url: "https://cdn.jsdelivr.net/gh/richardguerre/flow@main/plugins/essentials/out",
+        version: "0.1.0",
         web: true,
         server: true,
       },
